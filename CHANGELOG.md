@@ -1,6 +1,10 @@
 # Changelog
 
-## v2.1.1 (Current)
+## v2.1.2 (Current)
+*   **Version Bump**: Validated UI enhancements for Gate/Comp value displays.
+*   **Maintenance**: Confirmed stable operation of preset system.
+
+## v2.1.1
 *   **UI Enhancements**:
     *   Added numerical value displays (0.00 - 1.00) to Gate and Compressor sliders (Attack, Hold, Release, Ratio).
     *   Improved layout of Envelope controls.
