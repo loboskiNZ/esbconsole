@@ -986,6 +986,72 @@ function AppContent() {
                                         <span style={{fontSize:'0.8em', color:'#888', textAlign:'center'}}>dB</span>
                                     </div>
                                 </div>
+                                
+                                {/* PAN & LINK COLUMN */}
+                                <div style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', marginLeft:'20px', gap:'20px', width:'60px'}}>
+                                     {/* PAN */}
+                                     <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                                        <label style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>PAN</label>
+                                        <input 
+                                            type="range" min="0" max="1" step="0.01"
+                                            value={x32State[overlay.channelId]?.pan !== undefined ? x32State[overlay.channelId].pan : 0.5}
+                                            onChange={(e) => {
+                                                const val = parseFloat(e.target.value);
+                                                setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], pan: val } }));
+                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'pan', value: val });
+                                            }}
+                                            style={{
+                                                width: '60px', accentColor: '#00bbff'
+                                            }}
+                                        />
+                                        <button 
+                                            onClick={() => {
+                                                const val = 0.5;
+                                                setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], pan: val } }));
+                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'pan', value: val });
+                                            }}
+                                            style={{
+                                                marginTop:'5px', fontSize:'0.6em', background:'#333', border:'none', color:'#ccc', 
+                                                width:'100%', cursor:'pointer', padding:'2px'
+                                            }}
+                                        >
+                                            CENTER
+                                        </button>
+                                     </div>
+
+                                     {/* LINK */}
+                                     {/* Only show Link on Odd channels (starts of pairs) or if we want to allow linking from either */}
+                                     {/* X32 links pairs 1-2, 3-4. Let's just allow toggling on any channel which toggles the pair. */}
+                                     <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+                                         <label style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>LINK</label>
+                                         <button
+                                            onClick={() => {
+                                                // Toggle Link. Note: Backend logic handles pair ID.
+                                                // Ideally we should know if it's currently linked. 
+                                                // Assuming x32State[id].link holds true/false.
+                                                const current = x32State[overlay.channelId]?.link || false;
+                                                const newVal = !current;
+                                                setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], link: newVal } }));
+                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'link', value: newVal });
+                                                
+                                                // Optimistic update for neighbor too (optional but nice)
+                                                // const idNum = parseInt(overlay.channelId);
+                                                // const neighbor = idNum % 2 !== 0 ? idNum + 1 : idNum - 1;
+                                                // setX32State(prev => ({ ...prev, [neighbor]: { ...(prev[neighbor]||{}), link: newVal } }));
+                                            }}
+                                            style={{
+                                                width:'40px', height:'40px', borderRadius:'50%', 
+                                                background: x32State[overlay.channelId]?.link ? '#00ffaa' : '#333',
+                                                border: '2px solid #555', color: x32State[overlay.channelId]?.link ? '#000' : '#888',
+                                                cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center',
+                                                boxShadow: x32State[overlay.channelId]?.link ? '0 0 8px #00ffaa' : 'none'
+                                            }}
+                                            title="Link Stereo Pair"
+                                         >
+                                            ∞
+                                         </button>
+                                     </div>
+                                </div>
 
                                 {/* PRESETS SECTION */}
                                 <div style={{width:'1px', background:'#333', height:'100%', margin:'0 20px'}}></div>

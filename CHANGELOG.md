@@ -1,6 +1,11 @@
 # Changelog
 
-## v2.1.2 (Current)
+## v2.2.0 (Current)
+*   **Pan Control**: Added Pan slider and Center reset button to the Gain/Preamp Overlay.
+*   **Stereo Linking**: Added Channel Link (∞) toggle to link/unlink adjacent mono channels (1-2, 3-4, etc.) into stereo pairs.
+*   **Version Bump**: Updated to 2.2.0.
+
+## v2.1.2
 *   **Version Bump**: Validated UI enhancements for Gate/Comp value displays.
 *   **Maintenance**: Confirmed stable operation of preset system.
 

@@ -148,7 +148,9 @@ for (let i = 1; i <= 32; i++) {
         // ... (standard props)
         gate: false, dyn: false, eq: false, hpf: false,
         hpfFreq: 0.0, hcut: false, hcutFreq: 1.0, 
+        hpfFreq: 0.0, hcut: false, hcutFreq: 1.0, 
         preampGain: 0.5, phantom: false, invert: false,
+        pan: 0.5, link: false,
         gateThr: 0.5, gateAttack: 0.0, gateHold: 0.0, gateRelease: 0.0,
         dynThr: 0.5, dynRatio: 0.0, dynGain: 0.5, dynAttack: 0.0, dynHold: 0.0, dynRelease: 0.0,
         // Custom Color Props
@@ -411,6 +413,20 @@ function getX32Address(channelId, type, extra) {
         case 'hpfFreq': return `/ch/${ch}/preamp/hpf`;
         case 'preampGain': return `/headamp/${ha}/gain`;
         case 'phantom': return `/headamp/${ha}/phantom`;
+        case 'pan': return `/ch/${ch}/mix/pan`;
+        // Link is special, usually handled via /config/chlink
+        case 'link': {
+             // Link works on pairs 1-2, 3-4 etc.
+             // We need to find the pair ID.
+             // Pair 1 = Ch 1-2. Pair 2 = Ch 3-4.
+             // Pair ID = ceil(ch / 2)
+             // But wait, the command is /config/chlink/1-2
+             const idNum = parseInt(channelId);
+             const isOdd = idNum % 2 !== 0;
+             const pairStart = isOdd ? idNum : idNum - 1;
+             const pairEnd = pairStart + 1;
+             return `/config/chlink/${pairStart}-${pairEnd}`;
+        }
         default: return null;
     }
 }
