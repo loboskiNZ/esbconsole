@@ -1,7 +1,7 @@
 {
   "1": {
     "level": 0.48,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": true,
@@ -53,7 +53,7 @@
   },
   "2": {
     "level": 0.54,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": false,
@@ -105,7 +105,7 @@
   },
   "3": {
     "level": 0.37,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -157,7 +157,7 @@
   },
   "4": {
     "level": 0.51,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -209,7 +209,7 @@
   },
   "5": {
     "level": 0.31500000000000006,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -261,7 +261,7 @@
   },
   "6": {
     "level": 0.28500000000000003,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -313,7 +313,7 @@
   },
   "7": {
     "level": 0.425,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -365,7 +365,7 @@
   },
   "8": {
     "level": 0.24333333333333335,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -417,7 +417,7 @@
   },
   "9": {
     "level": 0.435,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -521,7 +521,7 @@
   },
   "11": {
     "level": 0.49000000000000005,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -573,7 +573,7 @@
   },
   "12": {
     "level": 0.44499999999999995,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -1297,7 +1297,7 @@
         "type": 0
       }
     },
-    "name": "ABL Drums"
+    "name": "Drums"
   },
   "26": {
     "level": 0,
@@ -1349,7 +1349,7 @@
         "type": 0
       }
     },
-    "name": "ABL Bass"
+    "name": "Bass"
   },
   "27": {
     "level": 0,
@@ -1401,7 +1401,7 @@
         "type": 0
       }
     },
-    "name": "ABL Keys"
+    "name": "Keys"
   },
   "28": {
     "level": 0,
@@ -1426,7 +1426,7 @@
     "dynHold": 0,
     "dynRelease": 0,
     "color": "#FFFFFF",
-    "labelColor": "white",
+    "labelColor": "black",
     "eqBands": {
       "1": {
         "f": 0.2,
@@ -1453,7 +1453,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 1"
+    "name": "Horns"
   },
   "29": {
     "level": 0,
@@ -1478,7 +1478,7 @@
     "dynHold": 0,
     "dynRelease": 0,
     "color": "#FFFFFF",
-    "labelColor": "white",
+    "labelColor": "black",
     "eqBands": {
       "1": {
         "f": 0.2,
@@ -1505,7 +1505,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 2"
+    "name": "VOX"
   },
   "30": {
     "level": 0.16333333333333327,
@@ -1529,8 +1529,8 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
-    "labelColor": "white",
+    "color": "#FFFFFF",
+    "labelColor": "black",
     "eqBands": {
       "1": {
         "f": 0.2,
@@ -1557,7 +1557,7 @@
         "type": 0
       }
     },
-    "name": "Spare 3"
+    "name": "Samples"
   },
   "31": {
     "level": 0,
@@ -1581,7 +1581,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1609,7 +1609,7 @@
         "type": 0
       }
     },
-    "name": "Spare 4"
+    "name": "FX"
   },
   "32": {
     "level": 0.265,
@@ -1633,7 +1633,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#CCCCCC",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1661,7 +1661,7 @@
         "type": 0
       }
     },
-    "name": "Spare 5"
+    "name": "Click"
   },
   "master": {
     "mute": false,

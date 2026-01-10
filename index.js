@@ -148,7 +148,7 @@ for (let i = 1; i <= 32; i++) {
         // ... (standard props)
         gate: false, dyn: false, eq: false, hpf: false,
         hpfFreq: 0.0, hcut: false, hcutFreq: 1.0, 
-        preampGain: 0.5, phantom: false,
+        preampGain: 0.5, phantom: false, invert: false,
         gateThr: 0.5, gateAttack: 0.0, gateHold: 0.0, gateRelease: 0.0,
         dynThr: 0.5, dynRatio: 0.0, dynGain: 0.5, dynAttack: 0.0, dynHold: 0.0, dynRelease: 0.0,
         // Custom Color Props
@@ -285,6 +285,11 @@ function parseX32Path(address) {
             if (parts[4] === 'attack') return { id: String(id), type: 'gateAttack' };
             if (parts[4] === 'hold') return { id: String(id), type: 'gateHold' };
             if (parts[4] === 'release') return { id: String(id), type: 'gateRelease' };
+        }
+        if (parts[3] === 'preamp') {
+             if (parts[4] === 'invert') return { id: String(id), type: 'invert' }; // Maps to x32State[id].invert
+             if (parts[4] === 'hpon') return { id: String(id), type: 'hpf' };
+             if (parts[4] === 'hpf') return { id: String(id), type: 'hpfFreq' };
         }
         if (parts[3] === 'dyn') {
             if (parts[4] === 'on') return { id: String(id), type: 'dyn' };

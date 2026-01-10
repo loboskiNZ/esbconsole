@@ -1,6 +1,11 @@
 # Changelog
 
-## v2.0.3 (Current)
+## v2.0.4 (Current)
+*   **Phase Invert Control**: Added Phase/Polarity Invert (Ø) toggle to the Gain/Preamp overlay.
+*   **Backend**: Added OSC support for `/ch/{id}/preamp/invert`.
+*   **Version Bump**: Updated to 2.0.4.
+
+## v2.0.3
 *   **Bi-Directional EQ Sync**:
     *   Console changes to Freq, Gain, Q, and Type now update the UI immediately.
     *   Added Master Channel sync (Fader + EQ).

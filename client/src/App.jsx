@@ -937,7 +937,27 @@ function AppContent() {
                                             width: '20px', height: '100%', accentColor: '#ffaa00'
                                         }}
                                     />
-                                    <div style={{display:'flex', flexDirection:'column', justifyContent:'center'}}>
+                                    <div style={{display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
+                                         {/* PHASE INVERT */}
+                                         <button 
+                                            onClick={() => {
+                                                const newVal = !x32State[overlay.channelId]?.invert;
+                                                // Optimistic update
+                                                setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], invert: newVal}}));
+                                                // Type 'phase' maps to /preamp/invert in backend
+                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'phase', value: newVal });
+                                            }}
+                                            style={{
+                                                background: x32State[overlay.channelId]?.invert ? '#ff5500' : '#444',
+                                                color: 'white', border: '1px solid #555', borderRadius:'50%',
+                                                width:'30px', height:'30px', fontSize:'0.8em', marginBottom:'15px', cursor:'pointer',
+                                                boxShadow: x32State[overlay.channelId]?.invert ? '0 0 5px #ff5500' : 'none'
+                                            }}
+                                            title="Phase Invert / Polarity Reverse"
+                                         >
+                                            Ø
+                                         </button>
+
                                         <input 
                                             type="number"
                                             value={(() => {
