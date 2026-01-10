@@ -1477,13 +1477,15 @@ function AppContent() {
                                                     // Q Log Mapping: 0.0 -> 0.3, 1.0 -> 10.0
                                                     // Q = 0.3 * (10/0.3)^val
                                                     // val = log(Q/0.3) / log(10/0.3)
-                                                    const minQ = 0.3;
-                                                    const maxQ = 10.0;
-                                                    const rangeQLog = Math.log(maxQ/minQ);
-                                                    
-                                                    const qVal = bands[idx]?.q !== undefined ? bands[idx].q : 0.5;
-                                                    const realQ = minQ * Math.exp(qVal * rangeQLog);
-                                                    value={realQ.toFixed(1)} 
+                                                    // Q Log Mapping: 0.0 -> 0.3, 1.0 -> 10.0
+                                                    value={(() => {
+                                                        const minQ = 0.3;
+                                                        const maxQ = 10.0;
+                                                        const rangeQLog = Math.log(maxQ/minQ);
+                                                        const qVal = bands[idx]?.q !== undefined ? bands[idx].q : 0.5;
+                                                        const realQ = minQ * Math.exp(qVal * rangeQLog);
+                                                        return realQ.toFixed(1);
+                                                    })()} 
                                                     onChange={(e) => {
                                                         let userQ = parseFloat(e.target.value);
                                                         // Clamp
