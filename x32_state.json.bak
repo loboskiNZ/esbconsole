@@ -1,0 +1,1634 @@
+{
+  "1": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "2": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "3": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "4": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "5": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "6": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "7": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "8": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "9": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ffafc9",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "10": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ff0000",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "11": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ffff00",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "12": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ffff00",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "13": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#008000",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "14": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#008000",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "15": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#008000",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "16": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#008000",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "17": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "18": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "19": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "20": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "21": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "22": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#000000",
+    "labelColor": "#add8e6",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "23": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "24": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "25": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#add8e6",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "26": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ffafc9",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "27": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": "#ffff00",
+    "labelColor": "black",
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "28": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "29": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "30": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "31": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  },
+  "32": {
+    "level": 0,
+    "mute": true,
+    "gate": false,
+    "dyn": false,
+    "eq": false,
+    "hpf": false,
+    "hpfFreq": 0,
+    "hcut": false,
+    "hcutFreq": 1,
+    "preampGain": 0.5,
+    "phantom": false,
+    "gateThr": 0.5,
+    "gateAttack": 0,
+    "gateHold": 0,
+    "gateRelease": 0,
+    "dynThr": 0.5,
+    "dynRatio": 0,
+    "dynGain": 0.5,
+    "dynAttack": 0,
+    "dynHold": 0,
+    "dynRelease": 0,
+    "color": null,
+    "labelColor": null,
+    "eqBands": {
+      "1": {
+        "f": 0.2,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "2": {
+        "f": 0.4,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "3": {
+        "f": 0.6,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      },
+      "4": {
+        "f": 0.8,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 0
+      }
+    }
+  }
+}
