@@ -904,94 +904,107 @@ function AppContent() {
                   
                   <div style={{display:'flex', justifyContent:'center', marginTop:'30px', gap:'40px'}}>
                       
-                      {/* GAIN / PREAMP CONTROLS */}
+                      {/* GAIN / PREAMP CONTROLS REFACTORED */}
                       {(overlay.type === 'hpf' || overlay.type === 'gain') && (
-                          <>
-                            <div style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent: 'center'}}>
-                                <button 
-                                    onClick={() => handleToggleParam(overlay.channelId, 'phantom', x32State[overlay.channelId]?.phantom || false)}
-                                    style={{
-                                        width:'60px', height:'60px', borderRadius:'50%', 
-                                        background: x32State[overlay.channelId]?.phantom ? '#f00' : '#444',
-                                        color: 'white', fontWeight:'bold', border:'2px solid #222',
-                                        boxShadow: x32State[overlay.channelId]?.phantom ? '0 0 15px #f00' : 'none'
-                                    }}
-                                >
-                                    48V
-                                </button>
-                            </div>
+                          <div style={{display:'flex', gap:'30px', height:'350px'}}>
                             
-                            <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-                                <label style={{marginBottom:'10px'}}>GAIN</label>
-                                <div style={{display:'flex', gap:'10px', height:'150px', alignItems:'center'}}>
-                                    <input 
-                                        type="range" min="0" max="1" step="0.005"
-                                        value={x32State[overlay.channelId]?.preampGain || 0}
-                                        onChange={(e) => {
-                                            if(!overlay.channelId) return;
-                                            const val = parseFloat(e.target.value);
-                                            setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], preampGain: val}}));
-                                            axios.post('/api/set-param', { channelId: overlay.channelId, type: 'preampGain', value: val });
-                                        }}
+                            {/* LEFT CARD: CHANNEL STRIP */}
+                            <div style={{
+                                display:'flex', gap:'20px', background:'#222', padding:'20px', 
+                                borderRadius:'12px', border:'1px solid #333', boxShadow:'inset 0 0 20px #000'
+                            }}>
+                                {/* STRIP 1: PREAMP (GAIN) */}
+                                <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'70px', height:'100%'}}>
+                                    <label style={{color:'#ffaa00', fontSize:'0.8em', fontWeight:'bold', marginBottom:'10px'}}>GAIN</label>
+                                    
+                                    {/* 48V BUTTON */}
+                                    <button 
+                                        onClick={() => handleToggleParam(overlay.channelId, 'phantom', x32State[overlay.channelId]?.phantom || false)}
                                         style={{
-                                            writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
-                                            width: '20px', height: '100%', accentColor: '#ffaa00'
+                                            width:'40px', height:'40px', borderRadius:'50%', 
+                                            background: x32State[overlay.channelId]?.phantom ? '#ff0000' : '#333',
+                                            color: '#fff', fontWeight:'bold', border:'2px solid #555',
+                                            marginBottom:'10px', cursor:'pointer', fontSize:'0.7em',
+                                            boxShadow: x32State[overlay.channelId]?.phantom ? '0 0 10px #ff0000' : 'none'
                                         }}
-                                    />
-                                    <div style={{display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
-                                         {/* PHASE INVERT */}
-                                         <button 
-                                            onClick={() => {
-                                                const newVal = !x32State[overlay.channelId]?.invert;
-                                                // Optimistic update
-                                                setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], invert: newVal}}));
-                                                // Type 'phase' maps to /preamp/invert in backend
-                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'phase', value: newVal });
-                                            }}
-                                            style={{
-                                                background: x32State[overlay.channelId]?.invert ? '#ff5500' : '#444',
-                                                color: 'white', border: '1px solid #555', borderRadius:'50%',
-                                                width:'30px', height:'30px', fontSize:'0.8em', marginBottom:'15px', cursor:'pointer',
-                                                boxShadow: x32State[overlay.channelId]?.invert ? '0 0 5px #ff5500' : 'none'
-                                            }}
-                                            title="Phase Invert / Polarity Reverse"
-                                         >
-                                            Ø
-                                         </button>
+                                        title="+48V Phantom Power"
+                                    >
+                                        48V
+                                    </button>
 
-                                    </div>
-                                    <div style={{display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
+                                    {/* GAIN SLIDER */}
+                                    <div style={{flex:1, display:'flex', justifyContent:'center', padding:'5px 0'}}>
                                         <input 
-                                            type="number"
-                                            value={(() => {
-                                                const val = x32State[overlay.channelId]?.preampGain || 0;
-                                                return ((val * 72) - 12).toFixed(1);
-                                            })()}
+                                            type="range" min="0" max="1" step="0.005"
+                                            value={x32State[overlay.channelId]?.preampGain || 0}
                                             onChange={(e) => {
                                                 if(!overlay.channelId) return;
-                                                let db = parseFloat(e.target.value);
-                                                if (isNaN(db)) return;
-                                                if (db < -12) db = -12;
-                                                if (db > 60) db = 60;
-                                                const val = (db + 12) / 72;
+                                                const val = parseFloat(e.target.value);
                                                 setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], preampGain: val}}));
                                                 axios.post('/api/set-param', { channelId: overlay.channelId, type: 'preampGain', value: val });
                                             }}
                                             style={{
-                                                width: '70px', background: '#333', border: '1px solid #555',
-                                                color: 'white', padding: '5px', borderRadius: '4px',
-                                                textAlign: 'center', marginBottom: '5px'
+                                                writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
+                                                width: '30px', height: '100%', accentColor: '#ffaa00'
                                             }}
                                         />
-                                        <span style={{fontSize:'0.8em', color:'#888', textAlign:'center'}}>dB</span>
+                                    </div>
+
+                                    {/* PHASE BUTTON */}
+                                    <button 
+                                        onClick={() => {
+                                            const newVal = !x32State[overlay.channelId]?.invert;
+                                            setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], invert: newVal}}));
+                                            axios.post('/api/set-param', { channelId: overlay.channelId, type: 'phase', value: newVal });
+                                        }}
+                                        style={{
+                                            background: x32State[overlay.channelId]?.invert ? '#ff8800' : '#333',
+                                            color: 'white', border: '1px solid #555', borderRadius:'50%',
+                                            width:'30px', height:'30px', fontSize:'0.9em', marginTop:'10px', cursor:'pointer',
+                                            boxShadow: x32State[overlay.channelId]?.invert ? '0 0 8px #ff8800' : 'none'
+                                        }}
+                                        title="Phase Invert (Ø)"
+                                    >
+                                        Ø
+                                    </button>
+
+                                    {/* VALUE DISPLAY */}
+                                    <div style={{marginTop:'10px', background:'#111', padding:'4px 8px', borderRadius:'4px', border:'1px solid #333'}}>
+                                        <span style={{color:'#ffaa00', fontSize:'0.9em', fontFamily:'monospace'}}>
+                                            {(( (x32State[overlay.channelId]?.preampGain || 0) * 72) - 12).toFixed(1)} <span style={{color:'#666', fontSize:'0.7em'}}>dB</span>
+                                        </span>
                                     </div>
                                 </div>
-                                
-                                {/* PAN & LINK COLUMN */}
-                                <div style={{display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', marginLeft:'20px', gap:'20px', width:'60px'}}>
-                                     {/* PAN */}
-                                     <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-                                        <label style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>PAN</label>
+
+                                {/* DIVIDER */}
+                                <div style={{width:'1px', background:'#333', height:'100%'}}></div>
+
+                                {/* STRIP 2: PAN / LINK */}
+                                <div style={{display:'flex', flexDirection:'column', alignItems:'center', width:'70px', height:'100%'}}>
+                                    <label style={{color:'#00ccff', fontSize:'0.8em', fontWeight:'bold', marginBottom:'10px'}}>PAN</label>
+
+                                    {/* LINK BUTTON */}
+                                    <button
+                                        onClick={() => {
+                                            const newVal = !(x32State[overlay.channelId]?.link);
+                                            setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], link: newVal } }));
+                                            axios.post('/api/set-param', { channelId: overlay.channelId, type: 'link', value: newVal });
+                                        }}
+                                        style={{
+                                            width:'40px', height:'40px', borderRadius:'50%', 
+                                            background: x32State[overlay.channelId]?.link ? '#00ffaa' : '#333',
+                                            border: '2px solid #555', color: x32State[overlay.channelId]?.link ? '#000' : '#888',
+                                            cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center',
+                                            boxShadow: x32State[overlay.channelId]?.link ? '0 0 8px #00ffaa' : 'none',
+                                            marginBottom:'10px'
+                                        }}
+                                        title="Link Stereo Pair"
+                                    >
+                                        ∞
+                                    </button>
+
+                                    {/* PAN SLIDER (Vertical for alignment) */}
+                                    <div style={{flex:1, display:'flex', justifyContent:'center', padding:'5px 0', position:'relative'}}>
                                         <input 
                                             type="range" min="0" max="1" step="0.01"
                                             value={x32State[overlay.channelId]?.pan !== undefined ? x32State[overlay.channelId].pan : 0.5}
@@ -1001,130 +1014,98 @@ function AppContent() {
                                                 axios.post('/api/set-param', { channelId: overlay.channelId, type: 'pan', value: val });
                                             }}
                                             style={{
-                                                width: '60px', accentColor: '#00bbff'
+                                                writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
+                                                width: '30px', height: '100%', accentColor: '#00ccff'
                                             }}
                                         />
-                                        <button 
-                                            onClick={() => {
-                                                const val = 0.5;
-                                                setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], pan: val } }));
-                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'pan', value: val });
-                                            }}
-                                            style={{
-                                                marginTop:'5px', fontSize:'0.6em', background:'#333', border:'none', color:'#ccc', 
-                                                width:'100%', cursor:'pointer', padding:'2px'
-                                            }}
-                                        >
-                                            CENTER
-                                        </button>
-                                     </div>
+                                        {/* Center Detent Marker */}
+                                        <div style={{position:'absolute', top:'50%', left:'32px', width:'6px', height:'2px', background:'#555'}}></div>
+                                    </div>
 
-                                     {/* LINK */}
-                                     {/* Only show Link on Odd channels (starts of pairs) or if we want to allow linking from either */}
-                                     {/* X32 links pairs 1-2, 3-4. Let's just allow toggling on any channel which toggles the pair. */}
-                                     <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-                                         <label style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>LINK</label>
-                                         <button
-                                            onClick={() => {
-                                                // Toggle Link. Note: Backend logic handles pair ID.
-                                                // Ideally we should know if it's currently linked. 
-                                                // Assuming x32State[id].link holds true/false.
-                                                const current = x32State[overlay.channelId]?.link || false;
-                                                const newVal = !current;
-                                                setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], link: newVal } }));
-                                                axios.post('/api/set-param', { channelId: overlay.channelId, type: 'link', value: newVal });
-                                                
-                                                // Optimistic update for neighbor too (optional but nice)
-                                                // const idNum = parseInt(overlay.channelId);
-                                                // const neighbor = idNum % 2 !== 0 ? idNum + 1 : idNum - 1;
-                                                // setX32State(prev => ({ ...prev, [neighbor]: { ...(prev[neighbor]||{}), link: newVal } }));
-                                            }}
-                                            style={{
-                                                width:'40px', height:'40px', borderRadius:'50%', 
-                                                background: x32State[overlay.channelId]?.link ? '#00ffaa' : '#333',
-                                                border: '2px solid #555', color: x32State[overlay.channelId]?.link ? '#000' : '#888',
-                                                cursor:'pointer', fontWeight:'bold', display:'flex', alignItems:'center', justifyContent:'center',
-                                                boxShadow: x32State[overlay.channelId]?.link ? '0 0 8px #00ffaa' : 'none'
-                                            }}
-                                            title="Link Stereo Pair"
-                                         >
-                                            ∞
-                                         </button>
-                                     </div>
-                                </div>
+                                    {/* CENTER BTN */}
+                                    <button 
+                                        onClick={() => {
+                                            setX32State(prev => ({ ...prev, [overlay.channelId]: { ...prev[overlay.channelId], pan: 0.5 } }));
+                                            axios.post('/api/set-param', { channelId: overlay.channelId, type: 'pan', value: 0.5 });
+                                        }}
+                                        style={{
+                                            marginTop:'10px', fontSize:'0.7em', background:'transparent', border:'1px solid #444', 
+                                            color:'#888', padding:'2px 6px', borderRadius:'3px', cursor:'pointer'
+                                        }}
+                                    >
+                                        CTR
+                                    </button>
 
-                                {/* PRESETS SECTION */}
-                                <div style={{width:'1px', background:'#333', height:'100%', margin:'0 20px'}}></div>
-                                
-                                <div style={{display:'flex', flexDirection:'column', height:'100%', width:'400px'}}>
-                                    <h3 style={{marginTop:0, color:'#888', fontSize:'0.9em', borderBottom:'1px solid #444', paddingBottom:'5px'}}>QUICK PRESETS</h3>
-                                    <div style={{display:'flex', flexWrap:'wrap', gap:'8px', overflowY:'auto'}}>
-                                        {Object.keys(INSTRUMENT_PRESETS).map(key => (
-                                            <button
-                                                key={key}
-                                                onClick={() => {
-                                                    const p = INSTRUMENT_PRESETS[key];
-                                                    const id = overlay.channelId;
-                                                    
-                                                    // 1. HPF
-                                                    if (p.hpf !== undefined) {
-                                                        axios.post('/api/set-param', { channelId: id, type: 'hpf', value: p.hpf });
-                                                        if (p.hpfFreq) axios.post('/api/set-param', { channelId: id, type: 'hpfFreq', value: p.hpfFreq });
-                                                    }
-                                                    
-                                                    // 2. EQ Bands
-                                                    if (p.eq) {
-                                                        // Ensure EQ is ON
-                                                        axios.post('/api/set-param', { channelId: id, type: 'eq', value: true });
-                                                        [1,2,3,4].forEach(bIdx => {
-                                                            const b = p.eq[bIdx];
-                                                            if (b) {
-                                                                if(b.type !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'type', value: b.type });
-                                                                if(b.f !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'f', value: b.f });
-                                                                if(b.g !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'g', value: b.g });
-                                                                if(b.q !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'q', value: b.q });
-                                                            }
-                                                        });
-                                                    }
-                                                    
-                                                    // 3. Gate
-                                                    if (p.gate) {
-                                                        const g = p.gate;
-                                                        if(g.on !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gate', value: g.on });
-                                                        if(g.thr !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateThr', value: g.thr });
-                                                        if(g.attack !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateAttack', value: g.attack });
-                                                        if(g.hold !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateHold', value: g.hold });
-                                                        if(g.release !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateRelease', value: g.release });
-                                                    }
-                                                    
-                                                    // 4. Dyn (Comp)
-                                                    if (p.dyn) {
-                                                        const d = p.dyn;
-                                                        if(d.on !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dyn', value: d.on });
-                                                        if(d.thr !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynThr', value: d.thr });
-                                                        if(d.ratio !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynRatio', value: d.ratio });
-                                                        if(d.attack !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynAttack', value: d.attack });
-                                                        if(d.release !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynRelease', value: d.release });
-                                                    }
-                                                    
-                                                    // Note: We are optimistically relying on the x32_update socket event coming back 
-                                                    // to update the UI state, rather than setting it all locally here, 
-                                                    // because it's a lot of state. The user will see the knobs move in <50ms.
-                                                }}
-                                                style={{
-                                                    background:'#222', border:'1px solid #444', 
-                                                    color:'#ccc', fontSize:'0.8em', padding:'5px 10px',
-                                                    borderRadius:'4px', cursor:'pointer', flex:'1 0 30%'
-                                                }}
-                                            >
-                                                {key}
-                                            </button>
-                                        ))}
+                                    {/* VALUE DISPLAY */}
+                                    <div style={{marginTop:'5px', background:'#111', padding:'4px 8px', borderRadius:'4px', border:'1px solid #333'}}>
+                                        <span style={{color:'#00ccff', fontSize:'0.8em', fontFamily:'monospace'}}>
+                                            {(() => {
+                                                const p = x32State[overlay.channelId]?.pan !== undefined ? x32State[overlay.channelId].pan : 0.5;
+                                                const val = Math.round((p - 0.5) * 200); // -100 to 100
+                                                if (val === 0) return 'C';
+                                                return val < 0 ? `L${Math.abs(val)}` : `R${val}`;
+                                            })()}
+                                        </span>
                                     </div>
                                 </div>
-
                             </div>
-                          </>
+
+                            {/* RIGHT CARD: PRESETS */}
+                            <div style={{
+                                width:'400px', display:'flex', flexDirection:'column', 
+                                background:'#222', borderRadius:'12px', border:'1px solid #333', 
+                                padding:'15px', overflow:'hidden'
+                            }}>
+                                <h3 style={{marginTop:0, color:'#888', fontSize:'0.9em', borderBottom:'1px solid #444', paddingBottom:'10px', letterSpacing:'1px'}}>
+                                    QUICK PRESETS
+                                </h3>
+                                <div style={{
+                                    display:'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap:'8px', 
+                                    overflowY:'auto', paddingRight:'5px'
+                                }}>
+                                    {Object.keys(INSTRUMENT_PRESETS).map(key => (
+                                        <button
+                                            key={key}
+                                            onClick={() => {
+                                                const p = INSTRUMENT_PRESETS[key];
+                                                const id = overlay.channelId;
+                                                // Batch apply logic
+                                                if(p.hpf!==undefined) axios.post('/api/set-param',{channelId:id,type:'hpf',value:p.hpf});
+                                                if(p.hpfFreq) axios.post('/api/set-param',{channelId:id,type:'hpfFreq',value:p.hpfFreq});
+                                                if(p.eq) {
+                                                    axios.post('/api/set-param',{channelId:id,type:'eq',value:true});
+                                                    [1,2,3,4].forEach(b => {
+                                                        if(p.eq[b]) {
+                                                            const bb=p.eq[b];
+                                                            ['type','f','g','q'].forEach(k=>{if(bb[k]!==undefined)axios.post('/api/set-param',{channelId:id,type:'eqParam',band:b,param:k,value:bb[k]})});
+                                                        }
+                                                    });
+                                                }
+                                                if(p.gate) { Object.keys(p.gate).forEach(k => { 
+                                                    const t = k==='on'?'gate':`gate${k.charAt(0).toUpperCase()+k.slice(1)}`;
+                                                    axios.post('/api/set-param',{channelId:id,type:t,value:p.gate[k]});
+                                                })}
+                                                if(p.dyn) { Object.keys(p.dyn).forEach(k => { 
+                                                    const t = k==='on'?'dyn':`dyn${k.charAt(0).toUpperCase()+k.slice(1)}`;
+                                                    axios.post('/api/set-param',{channelId:id,type:t,value:p.dyn[k]});
+                                                })}
+                                            }}
+                                            style={{
+                                                background:'#2a2a2a', border:'1px solid #444', 
+                                                color:'#ccc', fontSize:'0.75em', padding:'10px 5px',
+                                                borderRadius:'6px', cursor:'pointer', textAlign:'center',
+                                                transition: 'all 0.1s'
+                                            }}
+                                            onMouseOver={e => e.currentTarget.style.background = '#333'}
+                                            onMouseOut={e => e.currentTarget.style.background = '#2a2a2a'}
+                                        >
+                                            {key}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                          </div>
                       )}
 
                       {/* GATE CONTROLS */}

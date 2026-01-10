@@ -1,6 +1,13 @@
 # Changelog
 
-## v2.2.0 (Current)
+## v2.3.0 (Current)
+*   **UI Redesign**: Complete overhaul of the Gain/Preamp Overlay.
+    *   **Channel Strip Layout**: Grouped Gain and Pan into parallel vertical sliders (similar to a console strip).
+    *   **Visual Grouping**: Separated controls into card-like containers for Preamp/Pan and Presets.
+    *   **Presets Grid**: Moved presets into a structured grid for easier access.
+*   **Version Bump**: Updated to 2.3.0.
+
+## v2.2.0
 *   **Pan Control**: Added Pan slider and Center reset button to the Gain/Preamp Overlay.
 *   **Stereo Linking**: Added Channel Link (∞) toggle to link/unlink adjacent mono channels (1-2, 3-4, etc.) into stereo pairs.
 *   **Version Bump**: Updated to 2.2.0.

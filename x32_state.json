@@ -50,26 +50,27 @@
       }
     },
     "name": "Kick",
-    "phase": true,
-    "invert": 0
+    "phase": false,
+    "invert": 0,
+    "link": false
   },
   "2": {
-    "level": 0.54,
+    "level": 0.4799608886241913,
     "mute": true,
     "gate": true,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.4,
+    "hpfFreq": 0.1599999964237213,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.405,
+    "preampGain": 0.5,
     "phantom": false,
-    "gateThr": 0.3,
-    "gateAttack": 0,
-    "gateHold": 0.05,
-    "gateRelease": 0.15,
-    "dynThr": 0.35,
+    "gateThr": 0.3499999940395355,
+    "gateAttack": 0.05000000074505806,
+    "gateHold": 0.10000000149011612,
+    "gateRelease": 0.20000000298023224,
+    "dynThr": 0.4000000059604645,
     "dynRatio": 0.15,
     "dynGain": 0.24,
     "dynAttack": 0,
@@ -79,31 +80,61 @@
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.45,
-        "g": 0.6,
-        "q": 0.5,
-        "type": 1
+        "f": 0.20000000298023224,
+        "g": 0.6499999761581421,
+        "q": 0.39436620473861694,
+        "type": 2
       },
       "2": {
-        "f": 0.6,
-        "g": 0.4,
-        "q": 0.7,
+        "f": 0.550000011920929,
+        "g": 0.3499999940395355,
+        "q": 0.591549277305603,
         "type": 0
       },
       "3": {
-        "f": 0.85,
-        "g": 0.65,
+        "f": 0.8199999928474426,
+        "g": 0.6000000238418579,
         "q": 0.5,
         "type": 0
       },
       "4": {
         "f": 0.95,
-        "g": 0.6,
+        "g": 0.5,
         "q": 0.5,
-        "type": 4
+        "type": 5
       }
     },
-    "name": "Snare"
+    "name": "Snare",
+    "mixSends": {
+      "13": {
+        "level": 0.35624998807907104
+      },
+      "14": {
+        "level": 0.29374998807907104
+      },
+      "15": {
+        "level": 0.4437499940395355
+      },
+      "16": {
+        "level": 0.675000011920929
+      },
+      "01": {
+        "level": 0.6499999761581421
+      },
+      "02": {
+        "level": 0.59375
+      },
+      "03": {
+        "level": 0.643750011920929
+      },
+      "04": {
+        "level": 0.4312500059604645
+      },
+      "05": {
+        "level": 0.3687500059604645
+      }
+    },
+    "invert": 0
   },
   "3": {
     "level": 0.37,
@@ -314,7 +345,7 @@
     "name": "Floor Tom"
   },
   "7": {
-    "level": 0.425,
+    "level": 0.38,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -363,10 +394,12 @@
         "type": 4
       }
     },
-    "name": "OH1"
+    "name": "OH1",
+    "link": true,
+    "pan": 0.5
   },
   "8": {
-    "level": 0.24333333333333335,
+    "level": 0.3792766332626343,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -375,7 +408,7 @@
     "hpfFreq": 0.65,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.5,
+    "preampGain": 0.4166666567325592,
     "phantom": false,
     "gateThr": 0.5,
     "gateAttack": 0,
@@ -415,7 +448,24 @@
         "type": 4
       }
     },
-    "name": "OH2"
+    "name": "OH2",
+    "mixSends": {
+      "01": {
+        "level": 0.6625000238418579
+      },
+      "02": {
+        "level": 0
+      },
+      "03": {
+        "level": 0
+      },
+      "04": {
+        "level": 0.29374998807907104
+      },
+      "05": {
+        "level": 0
+      }
+    }
   },
   "9": {
     "level": 0.435,
@@ -522,7 +572,7 @@
     "name": "Gat"
   },
   "11": {
-    "level": 0.49000000000000005,
+    "level": 0.3,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -571,10 +621,11 @@
         "type": 0
       }
     },
-    "name": "Keys 1"
+    "name": "Keys 1",
+    "link": true
   },
   "12": {
-    "level": 0.44499999999999995,
+    "level": 0.3000977635383606,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -583,7 +634,7 @@
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.5,
+    "preampGain": 0.5416666865348816,
     "phantom": false,
     "gateThr": 0.5,
     "gateAttack": 0,
@@ -623,7 +674,21 @@
         "type": 0
       }
     },
-    "name": "Keys 2"
+    "name": "Keys 2",
+    "mixSends": {
+      "01": {
+        "level": 0.3062500059604645
+      },
+      "02": {
+        "level": 0.33125001192092896
+      },
+      "03": {
+        "level": 0.3812499940395355
+      },
+      "05": {
+        "level": 0.29374998807907104
+      }
+    }
   },
   "13": {
     "level": 0.3625,
