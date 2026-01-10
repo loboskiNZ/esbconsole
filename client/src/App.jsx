@@ -812,7 +812,7 @@ function AppContent() {
             <div style={{display:'flex', gap:'20px', alignItems:'center'}}>
                 <div style={{display:'flex', flexDirection:'column', gap:'5px', minWidth:'140px'}}>
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console</h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.01</span></h1>
                         <button onClick={() => setShowDMX(!showDMX)} style={{
                             background: showDMX ? '#0f0' : '#222', color: showDMX ? '#000' : '#888',
                             border: '1px solid #444', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
@@ -1464,16 +1464,7 @@ function AppContent() {
                 <div style={{}}>
                     <h3 style={{marginTop:0, color:'#888', borderBottom:'1px solid #444', paddingBottom:'5px'}}>GROUPS / MUTES</h3>
                     <div style={{display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center'}}>
-                        {[
-                            { key: 'drums', ids: ['1','2','3','4','5','6','7','8'], label: 'drums', bg: '#add8e6', txt: 'black' }, 
-                            { key: 'keys', ids: ['11','12'], label: 'Keys', bg: '#ffff00', txt: 'black' },
-                            { key: 'gats', ids: ['10'], label: 'Gats', bg: '#ff0000', txt: 'black' },
-                            { key: 'bass', ids: ['9'], label: 'Bass', bg: '#ffafc9', txt: 'black' },
-                            { key: 'samples', ids: ['25','26','27','28','29'], label: 'Smpl', bg: '#555555', txt: 'white' },
-                            { key: 'vox', ids: ['17','18','19','20','21','22'], label: 'Vox', bg: '#0000ff', txt: 'white' },
-                            { key: 'click', ids: [], label: 'Click', bg: '#ffffff', txt: 'black' },
-                            { key: 'horns', ids: ['13','14','15','16'], label: 'Horns', bg: '#008000', txt: 'black' },
-                        ].map(c => {
+                        {config && config.groups && config.groups.map(c => {
                             // Use explicit IDs for robustness
                             const groupChannels = c.ids && c.ids.length > 0
                                 ? config.inputs.filter(ch => c.ids.includes(String(ch.id)))

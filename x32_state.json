@@ -2,17 +2,17 @@
   "1": {
     "level": 0.56,
     "mute": false,
-    "gate": true,
+    "gate": false,
     "dyn": false,
     "eq": false,
-    "hpf": false,
+    "hpf": true,
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.57,
     "phantom": false,
     "gateThr": 0.35,
-    "gateAttack": 0.18,
+    "gateAttack": 0.4,
     "gateHold": 0.61,
     "gateRelease": 0.36,
     "dynThr": 0.5,
@@ -21,7 +21,7 @@
     "dynAttack": 0.18,
     "dynHold": 0.18,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -48,7 +48,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Kick"
   },
   "2": {
     "level": 0.54,
@@ -72,7 +73,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -99,7 +100,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Snare"
   },
   "3": {
     "level": 0.37,
@@ -123,7 +125,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -150,7 +152,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Hat"
   },
   "4": {
     "level": 0.51,
@@ -174,7 +177,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -202,7 +205,7 @@
         "type": 0
       }
     },
-    "name": "Tom 1"
+    "name": "Rack Tom 1"
   },
   "5": {
     "level": 0.31500000000000006,
@@ -226,7 +229,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -254,7 +257,7 @@
         "type": 0
       }
     },
-    "name": "Tom 2"
+    "name": "Rack Tom 2"
   },
   "6": {
     "level": 0.28500000000000003,
@@ -278,7 +281,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -306,7 +309,7 @@
         "type": 0
       }
     },
-    "name": "Fl Tom"
+    "name": "Floor Tom"
   },
   "7": {
     "level": 0.425,
@@ -330,7 +333,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -357,7 +360,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "OH1"
   },
   "8": {
     "level": 0.24333333333333335,
@@ -381,7 +385,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -408,7 +412,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "OH2"
   },
   "9": {
     "level": 0.435,
@@ -432,7 +437,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffafc9",
+    "color": "#FF00FF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -459,7 +464,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Bass"
   },
   "10": {
     "level": 0.44499999999999995,
@@ -483,7 +489,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ff0000",
+    "color": "#FF0000",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -510,7 +516,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Gat"
   },
   "11": {
     "level": 0.49000000000000005,
@@ -534,7 +541,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffff00",
+    "color": "#FFFF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -561,7 +568,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Keys 1"
   },
   "12": {
     "level": 0.44499999999999995,
@@ -585,7 +593,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffff00",
+    "color": "#FFFF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -612,7 +620,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Keys 2"
   },
   "13": {
     "level": 0.3625,
@@ -636,7 +645,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#008000",
+    "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -663,7 +672,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Sous"
   },
   "14": {
     "level": 0.4925,
@@ -687,7 +697,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#008000",
+    "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -714,7 +724,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Tromb"
   },
   "15": {
     "level": 0.4325,
@@ -738,7 +749,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#008000",
+    "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -765,7 +776,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Sax"
   },
   "16": {
     "level": 0.28250000000000003,
@@ -789,7 +801,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#008000",
+    "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -816,7 +828,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "Trump"
   },
   "17": {
     "level": 0.325,
@@ -840,7 +853,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -868,7 +881,7 @@
         "type": 0
       }
     },
-    "name": "Ed"
+    "name": "Vox Ed"
   },
   "18": {
     "level": 0.41000000000000003,
@@ -892,7 +905,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -920,7 +933,7 @@
         "type": 0
       }
     },
-    "name": "Nat"
+    "name": "Vox Nathan"
   },
   "19": {
     "level": 0.4975,
@@ -944,7 +957,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -972,7 +985,7 @@
         "type": 0
       }
     },
-    "name": "Claire"
+    "name": "Vox Claire"
   },
   "20": {
     "level": 0.41999999999999993,
@@ -996,7 +1009,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1024,7 +1037,7 @@
         "type": 0
       }
     },
-    "name": "Alan"
+    "name": "Vox Alan"
   },
   "21": {
     "level": 0.47000000000000003,
@@ -1048,7 +1061,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1076,7 +1089,7 @@
         "type": 0
       }
     },
-    "name": "Hyram"
+    "name": "Vox Hyram"
   },
   "22": {
     "level": 0.465,
@@ -1100,7 +1113,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1128,7 +1141,7 @@
         "type": 0
       }
     },
-    "name": "Davina"
+    "name": "Vox Davina"
   },
   "23": {
     "level": 0,
@@ -1152,7 +1165,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffffff",
+    "color": "#333333",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1180,7 +1193,7 @@
         "type": 0
       }
     },
-    "name": "MD"
+    "name": "-"
   },
   "24": {
     "level": 0,
@@ -1204,7 +1217,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffffff",
+    "color": "#333333",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1232,7 +1245,7 @@
         "type": 0
       }
     },
-    "name": "Mic"
+    "name": "-"
   },
   "25": {
     "level": 0.4,
@@ -1256,7 +1269,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#add8e6",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1283,7 +1296,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "ABL Drums"
   },
   "26": {
     "level": 0,
@@ -1307,7 +1321,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffafc9",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1334,7 +1348,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "ABL Bass"
   },
   "27": {
     "level": 0,
@@ -1358,7 +1373,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffff00",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1385,7 +1400,8 @@
         "q": 0.5,
         "type": 0
       }
-    }
+    },
+    "name": "ABL Keys"
   },
   "28": {
     "level": 0,
@@ -1409,7 +1425,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#555555",
+    "color": "#FFFFFF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1437,7 +1453,7 @@
         "type": 0
       }
     },
-    "name": "ABL tracks"
+    "name": "ABL Spare 1"
   },
   "29": {
     "level": 0,
@@ -1461,7 +1477,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#0000ff",
+    "color": "#FFFFFF",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1489,7 +1505,7 @@
         "type": 0
       }
     },
-    "name": "ABL vox"
+    "name": "ABL Spare 2"
   },
   "30": {
     "level": 0.16333333333333327,
@@ -1513,7 +1529,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#555555",
+    "color": "#333333",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -1541,7 +1557,7 @@
         "type": 0
       }
     },
-    "name": "ABL FX"
+    "name": "Spare 3"
   },
   "31": {
     "level": 0,
@@ -1565,7 +1581,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#ffffff",
+    "color": "#333333",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1593,7 +1609,7 @@
         "type": 0
       }
     },
-    "name": "ABL click"
+    "name": "Spare 4"
   },
   "32": {
     "level": 0.265,
@@ -1617,7 +1633,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#008000",
+    "color": "#333333",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1645,7 +1661,7 @@
         "type": 0
       }
     },
-    "name": "ABL horns"
+    "name": "Spare 5"
   },
   "master": {
     "mute": false,

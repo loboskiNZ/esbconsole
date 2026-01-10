@@ -80,6 +80,10 @@ app.get('/api/scenes', (req, res) => {
     });
 });
 
+app.get('/api/config', (req, res) => {
+    res.json(config);
+});
+
 app.post('/api/scenes/save', (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ error: "Name required" });
@@ -174,8 +178,40 @@ const osc = new OSC({
     })
 });
 
-osc.on('open', () => console.log('✅ OSC Port Open'));
+osc.on('open', () => {
+    console.log('✅ OSC Port Open');
+    syncConfigToConsole();
+});
 osc.open();
+
+// --- FORCE SYNC ---
+function syncConfigToConsole() {
+    console.log("🔄 FORCE SYNC: Overwriting Console Strip Config...");
+    config.inputs.forEach(ch => {
+        if (!ch.name || ch.id > 32) return;
+
+        // 1. Set Name
+        // Address: /ch/{01..32}/config/name s "Name"
+        const paddedId = String(ch.id).padStart(2, '0');
+        osc.send(new OSC.Message(`/ch/${paddedId}/config/name`, ch.name));
+
+        // 2. Set Color
+        // Address: /ch/{01..32}/config/color i {id}
+        // Colors: 1:Red, 2:Green, 3:Yellow, 4:Blue, 5:Magenta, 6:Cyan, 7:White
+        if (ch.colorId) {
+             osc.send(new OSC.Message(`/ch/${paddedId}/config/color`, Number(ch.colorId)));
+        }
+        
+        // Also update internal state so UI gets it immediately if connected
+        if (!x32State[ch.id]) x32State[ch.id] = {};
+        x32State[ch.id].name = ch.name;
+        x32State[ch.id].color = ch.colorHex;
+
+        // Spread transmission to avoid packet loss
+        // (Actually osc-js handles queueing reasonably well, but we rely on speed here)
+    });
+    console.log("✅ Sync Commands Sent");
+}
 
 // Start Polling (Attaches listeners)
 // Ensure startMeterPolling is defined/hoisted or move this call to after definition.
@@ -982,10 +1018,7 @@ function dbToFloat(db) {
     return (db + 60) / 120;
 }
 
-const soloContext = {
-    activeIds: null, // Set of strings or null
-    snapshots: {} // { [chId]: floatLevel }
-};
+
 
 // Rate limit ramping to avoid flooding OSC
 const RAMP_INTERVAL = 30; 
