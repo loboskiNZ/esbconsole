@@ -1092,8 +1092,8 @@ function AppContent() {
                                     const key = `gate${param}`;
                                     const val = x32State[overlay.channelId]?.[key] || 0;
                                     return (
-                                        <div key={param} style={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'180px'}}>
-                                            <label style={{fontSize:'0.8em', width:'60px'}}>{param.toUpperCase()}</label>
+                                        <div key={param} style={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'220px'}}>
+                                            <label style={{fontSize:'0.7em', width:'50px', color:'#888'}}>{param.toUpperCase()}</label>
                                             <input 
                                                 type="range" min="0" max="1" step="0.01"
                                                 value={val}
@@ -1102,8 +1102,9 @@ function AppContent() {
                                                     setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], [key]: newVal}}));
                                                     axios.post('/api/set-param', { channelId: overlay.channelId, type: key, value: newVal });
                                                 }}
-                                                style={{flex:1, accentColor: '#aaa'}}
+                                                style={{flex:1, accentColor: '#aaa', margin:'0 10px'}}
                                             />
+                                            <span style={{fontSize:'0.8em', width:'35px', textAlign:'right', color:'#ccc'}}>{val.toFixed(2)}</span>
                                         </div>
                                     )
                                 })}
@@ -1145,8 +1146,8 @@ function AppContent() {
                                     if(param === 'Ratio') displayVal = `1:${(val * 100).toFixed(0)}`; // Rough calc
                                     
                                     return (
-                                        <div key={param} style={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'180px'}}>
-                                            <label style={{fontSize:'0.8em', width:'60px'}}>{param.toUpperCase()}</label>
+                                        <div key={param} style={{display:'flex', alignItems:'center', justifyContent:'space-between', width:'220px'}}>
+                                            <label style={{fontSize:'0.7em', width:'50px', color:'#4fecff'}}>{param.toUpperCase()}</label>
                                             <input 
                                                 type="range" min="0" max="1" step="0.01"
                                                 value={val}
@@ -1155,8 +1156,9 @@ function AppContent() {
                                                     setX32State(prev => ({...prev, [overlay.channelId]: {...prev[overlay.channelId], [key]: newVal}}));
                                                     axios.post('/api/set-param', { channelId: overlay.channelId, type: key, value: newVal });
                                                 }}
-                                                style={{flex:1, accentColor: '#4fecff'}}
+                                                style={{flex:1, accentColor: '#4fecff', margin:'0 10px'}}
                                             />
+                                            <span style={{fontSize:'0.8em', width:'45px', textAlign:'right', color:'#ccc'}}>{displayVal}</span>
                                         </div>
                                     )
                                 })}

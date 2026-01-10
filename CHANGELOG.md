@@ -1,6 +1,12 @@
 # Changelog
 
-## v2.1.0 (Current)
+## v2.1.1 (Current)
+*   **UI Enhancements**:
+    *   Added numerical value displays (0.00 - 1.00) to Gate and Compressor sliders (Attack, Hold, Release, Ratio).
+    *   Improved layout of Envelope controls.
+*   **Version Bump**: Updated to 2.1.1.
+
+## v2.1.0
 *   **Instrument Presets**:
     *   Added "Quick Presets" menu to the Gain/Preamp Overlay.
     *   Includes 15+ professionally tuned presets for Kick, Snare, Toms, Bass, Guitars, Vocals, Horns, etc.
