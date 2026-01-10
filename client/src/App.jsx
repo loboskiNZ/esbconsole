@@ -1108,8 +1108,15 @@ function AppContent() {
                           const maxLog = Math.log10(20000);
                           const rangeLog = maxLog - minLog;
                           
+                          
                           const fToHz = (f) => Math.pow(10, minLog + (f * rangeLog));
                           const hzToF = (hz) => (Math.log10(hz) - minLog) / rangeLog;
+
+                          // HPF Specific (20Hz - 400Hz)
+                          const maxHpfLog = Math.log10(400); 
+                          const rangeHpfLog = maxHpfLog - minLog;
+                          const hpfToHz = (f) => Math.pow(10, minLog + (f * rangeHpfLog));
+
                           
                           // Mapping
                           const fToX = (f) => f * w; 
@@ -1206,7 +1213,7 @@ function AppContent() {
                                              
                                              // 1. HPF (Butterworth HP)
                                              if (hasHPF) {
-                                                 const cutoffHz = fToHz(hpfFreq);
+                                                 const cutoffHz = hpfToHz(hpfFreq);
                                                  // MagSq = 1 / (1 + (fc/f)^2n ) for HP. Order 2 (12dB/oct) -> n=2
                                                  // Attenuation dB = 10 log10(MagSq)
                                                  // Avoid div by 0
@@ -1322,7 +1329,7 @@ function AppContent() {
                                              }}
                                              style={{width:'50px', accentColor:'#ffff00'}}
                                          />
-                                         <div style={{fontSize:'0.6em', color:'#888'}}>{Math.round(fToHz(hpfFreq))} Hz</div>
+                                         <div style={{fontSize:'0.6em', color:'#888'}}>{Math.round(hpfToHz(hpfFreq))} Hz</div>
                                      </div>
                                  )}
                                  
