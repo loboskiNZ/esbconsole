@@ -899,7 +899,7 @@ function AppContent() {
                   borderRadius: '16px', padding: '24px', border: '1px solid #444',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.8)', overflowY: 'auto'
               }} onClick={e => e.stopPropagation()}>
-                  <h2>CH {overlay.channelId} - {overlay.title}</h2>
+                  <h2>CH {overlay.channelId} | {x32State[overlay.channelId]?.name || 'Unknown'} - {overlay.title}</h2>
                   
                   <div style={{display:'flex', justifyContent:'center', marginTop:'30px', gap:'40px'}}>
                       

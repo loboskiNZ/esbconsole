@@ -1665,7 +1665,7 @@
   },
   "master": {
     "mute": false,
-    "level": 0.575
+    "level": 0
   },
   "undefined": {
     "preampGain": 0.54,
