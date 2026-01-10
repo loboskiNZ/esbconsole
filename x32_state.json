@@ -9,7 +9,7 @@
     "hpfFreq": 0.16,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.5,
+    "preampGain": 0.495,
     "phantom": false,
     "gateThr": 0.35,
     "gateAttack": 0.05,
@@ -52,7 +52,8 @@
     "name": "Kick",
     "phase": false,
     "invert": 0,
-    "link": false
+    "link": false,
+    "pan": 0.5
   },
   "2": {
     "level": 0.4799608886241913,
@@ -64,7 +65,7 @@
     "hpfFreq": 0.1599999964237213,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.5,
+    "preampGain": 0.4930555522441864,
     "phantom": false,
     "gateThr": 0.3499999940395355,
     "gateAttack": 0.05000000074505806,
@@ -345,7 +346,7 @@
     "name": "Floor Tom"
   },
   "7": {
-    "level": 0.38,
+    "level": 0.36,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -396,10 +397,10 @@
     },
     "name": "OH1",
     "link": true,
-    "pan": 0.5
+    "pan": 0.09
   },
   "8": {
-    "level": 0.3792766332626343,
+    "level": 0.35972630977630615,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -465,7 +466,8 @@
       "05": {
         "level": 0
       }
-    }
+    },
+    "pan": 1
   },
   "9": {
     "level": 0.435,
@@ -572,7 +574,7 @@
     "name": "Gat"
   },
   "11": {
-    "level": 0.3,
+    "level": 0.31,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -625,7 +627,7 @@
     "link": true
   },
   "12": {
-    "level": 0.3000977635383606,
+    "level": 0.30987292528152466,
     "mute": true,
     "gate": false,
     "dyn": false,

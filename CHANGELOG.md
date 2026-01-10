@@ -1,6 +1,13 @@
 # Changelog
 
-## v2.3.0 (Current)
+## v2.3.1 (Current)
+*   **UI Optimization**: Switch Gain/Pan to Full-Width Horizontal Sliders.
+    *   **Horizontal Layout**: Maximized width for Gain and Pan controls for finer adjustments.
+    *   **Button Row**: Consolidated 48V, Phase, Link, and Center into a unified toolbar row.
+    *   **Responsive Presets**: Presets grid now expands to fill available width.
+*   **Version Bump**: Updated to 2.3.1.
+
+## v2.3.0
 *   **UI Redesign**: Complete overhaul of the Gain/Preamp Overlay.
     *   **Channel Strip Layout**: Grouped Gain and Pan into parallel vertical sliders (similar to a console strip).
     *   **Visual Grouping**: Separated controls into card-like containers for Preamp/Pan and Presets.
