@@ -895,7 +895,7 @@ function AppContent() {
               display: 'flex', justifyContent: 'center', alignItems: 'center'
           }} onClick={() => setOverlay(null)}>
               <div style={{
-                  width: '400px', height: 'auto', maxHeight: '90vh', background: '#222', 
+                  width: '1050px', height: 'auto', maxHeight: '90vh', background: '#222', 
                   borderRadius: '16px', padding: '24px', border: '1px solid #444',
                   boxShadow: '0 10px 40px rgba(0,0,0,0.8)', overflowY: 'auto'
               }} onClick={e => e.stopPropagation()}>
@@ -1093,8 +1093,8 @@ function AppContent() {
 
                       {/* EQ CONTROLS */}
                       {overlay.type === 'eq' && (() => {
-                          const w = 350;
-                          const h = 150; 
+                          const w = 1000;
+                          const h = 250; 
                           const isMaster = overlay.channelId === 'master';
                           const channelState = isMaster ? (x32State.master||{}) : (x32State[overlay.channelId]||{});
                           const bands = channelState.eqBands || {};
@@ -1190,16 +1190,47 @@ function AppContent() {
                              }}>
                                  <svg width={w} height={h} style={{display:'block'}}>
                                      {/* Log Grid Lines */}
-                                     {[100, 1000, 10000].map(hz => {
-                                         const x = hzToF(hz) * w;
+                                     {/* 1. Horizontal dB Grid (+15 to -15 range) */}
+                                     {[15, 10, 5, 0, -5, -10, -15].map(db => {
+                                         // Map dB to Y: +15 -> 0, -15 -> 1.  range 30.
+                                         // y = 1 - (db + 15)/30  (normalized 0-1 from bottom)
+                                         // But g is 0-1.  g=1 (+15), g=0 (-15).
+                                         // 1-g is visual top-down. 
+                                         // db to g: (db + 15)/30.
+                                         const g = (db + 15) / 30;
+                                         const y = gToY(g);
+                                         const isZero = db === 0;
                                          return (
-                                             <g key={hz}>
-                                                 <line x1={x} y1={0} x2={x} y2={h} stroke="#333" />
-                                                 <text x={x+3} y={h-5} fill="#555" fontSize="10">{hz>=1000? (hz/1000)+'k':hz}</text>
+                                             <g key={db}>
+                                                 <line x1={0} y1={y} x2={w} y2={y} stroke={isZero ? "#555" : "#333"} strokeDasharray={isZero ? "" : "2 2"} />
+                                                 <text x={w-25} y={y+3} fill="#555" fontSize="9">{db>0?`+${db}`:db}</text>
                                              </g>
                                          );
                                      })}
-                                     <line x1={0} y1={h/2} x2={w} y2={h/2} stroke="#333" strokeDasharray="4 4" />
+
+                                     {/* 2. Vertical Log Grid Lines */}
+                                     {[
+                                         20, 30, 40, 50, 60, 80, 
+                                         100, 200, 300, 400, 500, 600, 800,
+                                         1000, 2000, 3000, 4000, 5000, 6000, 8000,
+                                         10000, 20000
+                                     ].map(hz => {
+                                         const x = hzToF(hz) * w;
+                                         const isMajor = [100, 1000, 10000].includes(hz);
+                                         const isOctave = [20, 50, 200, 500, 2000, 5000, 20000].includes(hz);
+                                         
+                                         return (
+                                             <g key={hz}>
+                                                 <line x1={x} y1={0} x2={x} y2={h} stroke={isMajor ? "#444" : "#2a2a2a"} />
+                                                 {(isMajor || isOctave) && (
+                                                     <text x={x+2} y={h-5} fill={isMajor ? "#888" : "#444"} fontSize="9">
+                                                         {hz >= 1000 ? (hz/1000)+'k' : hz}
+                                                     </text>
+                                                 )}
+
+                                             </g>
+                                         );
+                                     })}
                                      
                                      {/* Combined Response Curve */}
                                      {(() => {
@@ -1333,6 +1364,131 @@ function AppContent() {
                                      </div>
                                  )}
                                  
+                                 {/* EQ BANDS 1-4 */}
+                                 {[1,2,3,4].map(idx => {
+                                     // Helper: Gain dB Converter
+                                     const gToDB = (g) => ((g * 30) - 15).toFixed(1);
+                                     const dbToG = (db) => (parseFloat(db) + 15) / 30;
+                                     const qVal = bands[idx]?.q || 0.5; // default
+                                     const bandName = ['LOW', 'L-MID', 'H-MID', 'HIGH'][idx-1];
+
+                                     return (
+                                        <div key={idx} style={{display:'flex', flexDirection:'column', alignItems:'center', border:'1px solid #444', padding:'4px', borderRadius:'4px', background:'#222', minWidth:'70px'}}>
+                                            <div style={{fontSize:'0.7em', color:'#aaa', marginBottom:'4px', fontWeight:'bold'}}>{bandName}</div>
+                                            
+                                            {/* TYPE */}
+                                            <select 
+                                                style={{fontSize:'0.6em', background:'#333', color:'white', border:'none', marginBottom:'5px', width:'100%'}}
+                                                value={bands[idx]?.type || 1}
+                                                onChange={(e) => {
+                                                    const val = parseInt(e.target.value);
+                                                    const id = overlay.channelId;
+                                                    setX32State(p => {
+                                                        const targetState = id === 'master' ? (p.master || {}) : (p[id] || {});
+                                                        const bandState = targetState.eqBands ? {...targetState.eqBands} : {};
+                                                        if(!bandState[idx]) bandState[idx] = {};
+                                                        bandState[idx].type = val;
+                                                        if(id === 'master') return {...p, master: {...targetState, eqBands: bandState}};
+                                                        return {...p, [id]: {...targetState, eqBands: bandState}};
+                                                    });
+                                                    axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: idx, param: 'type', value: val });
+                                                }}
+                                            >
+                                                <option value="0">LCut</option>
+                                                <option value="1">LShv</option>
+                                                <option value="2">PEQ</option>
+                                                <option value="3">VEQ</option>
+                                                <option value="4">HShv</option>
+                                                <option value="5">HCut</option>
+                                            </select>
+
+                                            {/* FREQ */}
+                                            <div style={{display:'flex', gap:'2px', alignItems:'center', width:'100%'}}>
+                                                <label style={{fontSize:'0.5em', color:'#666'}}>F</label>
+                                                <input 
+                                                    type="number" 
+                                                    style={{width:'100%', background:'#111', border:'1px solid #333', color:'#0f0', fontSize:'0.7em', textAlign:'center'}} 
+                                                    value={Math.round(fToHz(bands[idx]?.f || (idx*0.2)))}
+                                                    onChange={(e) => {
+                                                        const hz = parseFloat(e.target.value);
+                                                        const val = hzToF(hz);
+                                                        const id = overlay.channelId;
+                                                        setX32State(p => {
+                                                            const targetState = id === 'master' ? (p.master || {}) : (p[id] || {});
+                                                            const bandState = targetState.eqBands ? {...targetState.eqBands} : {};
+                                                            if(!bandState[idx]) bandState[idx] = {};
+                                                            bandState[idx].f = val;
+                                                            if(id === 'master') return {...p, master: {...targetState, eqBands: bandState}};
+                                                            return {...p, [id]: {...targetState, eqBands: bandState}};
+                                                        });
+                                                        axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: idx, param: 'f', value: val });
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* GAIN */}
+                                            <div style={{display:'flex', gap:'2px', alignItems:'center', width:'100%', marginTop:'2px'}}>
+                                                <label style={{fontSize:'0.5em', color:'#666'}}>G</label>
+                                                <input 
+                                                    type="number" 
+                                                    style={{width:'100%', background:'#111', border:'1px solid #333', color:'#ffaa00', fontSize:'0.7em', textAlign:'center'}} 
+                                                    value={gToDB(bands[idx]?.g !== undefined ? bands[idx].g : 0.5)}
+                                                    onChange={(e) => {
+                                                        const db = parseFloat(e.target.value);
+                                                        const val = dbToG(db);
+                                                        const id = overlay.channelId;
+                                                        setX32State(p => {
+                                                            const targetState = id === 'master' ? (p.master || {}) : (p[id] || {});
+                                                            const bandState = targetState.eqBands ? {...targetState.eqBands} : {};
+                                                            if(!bandState[idx]) bandState[idx] = {};
+                                                            bandState[idx].g = val;
+                                                            if(id === 'master') return {...p, master: {...targetState, eqBands: bandState}};
+                                                            return {...p, [id]: {...targetState, eqBands: bandState}};
+                                                        });
+                                                        axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: idx, param: 'g', value: val });
+                                                    }}
+                                                />
+                                            </div>
+
+                                            {/* Q */}
+                                            <div style={{display:'flex', gap:'2px', alignItems:'center', width:'100%', marginTop:'2px'}}>
+                                                <label style={{fontSize:'0.5em', color:'#666'}}>Q</label>
+                                                <input 
+                                                    // Q Log Mapping: 0.0 -> 0.3, 1.0 -> 10.0
+                                                    // Q = 0.3 * (10/0.3)^val
+                                                    // val = log(Q/0.3) / log(10/0.3)
+                                                    const minQ = 0.3;
+                                                    const maxQ = 10.0;
+                                                    const rangeQLog = Math.log(maxQ/minQ);
+                                                    
+                                                    const qVal = bands[idx]?.q !== undefined ? bands[idx].q : 0.5;
+                                                    const realQ = minQ * Math.exp(qVal * rangeQLog);
+                                                    value={realQ.toFixed(1)} 
+                                                    onChange={(e) => {
+                                                        let userQ = parseFloat(e.target.value);
+                                                        // Clamp
+                                                        if(userQ < 0.3) userQ = 0.3; if(userQ > 10) userQ = 10;
+                                                        
+                                                        // Convert back to 0-1 for OSC
+                                                        const val = Math.log(userQ/minQ) / rangeQLog;
+                                                        
+                                                        const id = overlay.channelId;
+                                                        setX32State(p => {
+                                                            const targetState = id === 'master' ? (p.master || {}) : (p[id] || {});
+                                                            const bandState = targetState.eqBands ? {...targetState.eqBands} : {};
+                                                            if(!bandState[idx]) bandState[idx] = {};
+                                                            bandState[idx].q = val;
+                                                            if(id === 'master') return {...p, master: {...targetState, eqBands: bandState}};
+                                                            return {...p, [id]: {...targetState, eqBands: bandState}};
+                                                        });
+                                                        axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: idx, param: 'q', value: val });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                     );
+                                 })}
+
                                  {/* HIGH CUT */}
                                  <div style={{display:'flex', flexDirection:'column', alignItems:'center', border:'1px solid #555', padding:'4px', borderRadius:'4px', background:'#222', minWidth:'60px'}}>
                                      <div style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>HI CUT</div>

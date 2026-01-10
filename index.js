@@ -166,6 +166,18 @@ for (let i = 1; i <= 32; i++) {
     };
 }
 
+// Initialize Master State
+x32State.master = {
+    level: 0,
+    mute: false,
+    eqBands: {
+        1: { f: 0.2, g: 0.5, q: 0.5, type: 0 },
+        2: { f: 0.4, g: 0.5, q: 0.5, type: 0 },
+        3: { f: 0.6, g: 0.5, q: 0.5, type: 0 },
+        4: { f: 0.8, g: 0.5, q: 0.5, type: 0 }
+    }
+};
+
 // Load persisted state immediately
 loadState();
 
@@ -181,6 +193,13 @@ const osc = new OSC({
 osc.on('open', () => {
     console.log('✅ OSC Port Open');
     syncConfigToConsole();
+    
+    // Start X32 Subscription Loop (Heartbeat)
+    setInterval(() => {
+        try {
+            osc.send(new OSC.Message('/xremote'));
+        } catch(e) { /* ignore */ }
+    }, 9000);
 });
 osc.open();
 
@@ -227,6 +246,22 @@ function parseX32Path(address) {
         const ch = ha + 1;
         if (parts[3] === 'gain') return { id: String(ch), type: 'preampGain' };
         if (parts[3] === 'phantom') return { id: String(ch), type: 'phantom' };
+    }
+    
+    if (parts[1] === 'main' && parts[2] === 'st') {
+        if (parts[3] === 'mix') {
+             if (parts[4] === 'on') return { id: 'master', type: 'mute' };
+             if (parts[4] === 'fader') return { id: 'master', type: 'level' };
+        }
+        if (parts[3] === 'eq') {
+             const band = parseInt(parts[4]);
+             if (!isNaN(band)) {
+                  const param = parts[5];
+                  if (['f', 'g', 'q', 'type'].includes(param)) {
+                      return { id: 'master', type: 'eqParam', band, param };
+                  }
+             }
+        }
     }
 
     if (parts[1] === 'ch') {
@@ -418,8 +453,16 @@ app.post('/api/set-param', (req, res) => {
         else if (typeof value === 'boolean') {
             oscVal = value ? 1 : 0;
         }
+
+        console.log(`📡 Sending OSC: ${addr} = ${oscVal} (Type: ${typeof oscVal})`);
         
-        osc.send(new OSC.Message(addr, oscVal));
+        try {
+            osc.send(new OSC.Message(addr, oscVal));
+        } catch (e) {
+            console.error("❌ OSC Send Error:", e.message);
+        }
+    } else {
+        console.warn(`⚠️ Could not resolve OSC address for Channel ${channelId} Type ${type}`);
     }
     
     // Update internal state

@@ -1,6 +1,17 @@
 # Changelog
 
-## v2.02 (Current)
+## v2.0.3 (Current)
+*   **Bi-Directional EQ Sync**:
+    *   Console changes to Freq, Gain, Q, and Type now update the UI immediately.
+    *   Added Master Channel sync (Fader + EQ).
+    *   Implemented `/xremote` heartbeat to maintain console subscriptions.
+*   **Fixes**:
+    *   Fixed Q-Factor scaling to match X32 logarithmic scale (0.3 - 10.0).
+    *   Fixed Master EQ Type selector bug.
+    *   Fixed server startup errors (zombie process killing).
+*   **Version Bump**: Updated to 2.0.3.
+
+## v2.02
 *   **Enhanced Gain/Preamp Overlay**: 
     *   Added Channel Name to the Header (e.g., "CH 1 | Kick - GAIN").
     *   Implemented bi-directional sync for Preamp Gain sliders.
