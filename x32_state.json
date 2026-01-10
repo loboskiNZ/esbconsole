@@ -2,8 +2,8 @@
   "1": {
     "level": 0.48,
     "mute": true,
-    "gate": false,
-    "dyn": false,
+    "gate": true,
+    "dyn": true,
     "eq": true,
     "hpf": true,
     "hpfFreq": 0.16,
@@ -11,42 +11,42 @@
     "hcutFreq": 1,
     "preampGain": 0.5,
     "phantom": false,
-    "gateThr": 0.38,
-    "gateAttack": 0.4,
-    "gateHold": 0.61,
-    "gateRelease": 0.36,
-    "dynThr": 0.5,
-    "dynRatio": 0.25,
+    "gateThr": 0.35,
+    "gateAttack": 0.05,
+    "gateHold": 0.1,
+    "gateRelease": 0.2,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0.18,
+    "dynAttack": 0.05,
     "dynHold": 0.18,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.20999999344348907,
-        "g": 0.4583333432674408,
-        "q": 0.5070422291755676,
-        "type": 1
+        "f": 0.2,
+        "g": 0.65,
+        "q": 0.4,
+        "type": 2
       },
       "2": {
-        "f": 0.46000000834465027,
-        "g": 0.7083333134651184,
-        "q": 0.4507042169570923,
+        "f": 0.55,
+        "g": 0.35,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6080000143051147,
-        "g": 0.5893333253860473,
-        "q": 0.19718310236930847,
-        "type": 2
+        "f": 0.82,
+        "g": 0.6,
+        "q": 0.5,
+        "type": 0
       },
       "4": {
-        "f": 0.8600000143051147,
-        "g": 0.7166666388511658,
-        "q": 0.4084506928920746,
-        "type": 4
+        "f": 0.95,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 5
       }
     },
     "name": "Kick",
@@ -56,51 +56,51 @@
   "2": {
     "level": 0.54,
     "mute": true,
-    "gate": false,
+    "gate": true,
     "dyn": true,
-    "eq": false,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.4,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.405,
     "phantom": false,
-    "gateThr": 0.405,
-    "gateAttack": 0.4,
-    "gateHold": 0.52,
-    "gateRelease": 0.42,
-    "dynThr": 0.52,
-    "dynRatio": 0.49,
+    "gateThr": 0.3,
+    "gateAttack": 0,
+    "gateHold": 0.05,
+    "gateRelease": 0.15,
+    "dynThr": 0.35,
+    "dynRatio": 0.15,
     "dynGain": 0.24,
-    "dynAttack": 0.46,
+    "dynAttack": 0,
     "dynHold": 0.39,
-    "dynRelease": 0.36,
+    "dynRelease": 0.2,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.45,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.6,
+        "g": 0.4,
+        "q": 0.7,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.85,
+        "g": 0.65,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Snare"
@@ -108,11 +108,11 @@
   "3": {
     "level": 0.37,
     "mute": true,
-    "gate": false,
-    "dyn": false,
-    "eq": false,
+    "gate": true,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.65,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.72,
@@ -121,38 +121,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.6,
+    "dynRatio": 0.1,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.2,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.5,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
+        "f": 0.7,
+        "g": 0.45,
         "q": 0.5,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.9,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.98,
+        "g": 0.65,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Hat"
@@ -160,51 +160,51 @@
   "4": {
     "level": 0.51,
     "mute": true,
-    "gate": false,
-    "dyn": false,
-    "eq": false,
+    "gate": true,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
     "phantom": false,
-    "gateThr": 0.5,
-    "gateAttack": 0,
-    "gateHold": 0,
-    "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "gateThr": 0.4,
+    "gateAttack": 0.05,
+    "gateHold": 0.1,
+    "gateRelease": 0.3,
+    "dynThr": 0.4,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.4,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 2
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.6,
+        "g": 0.3,
+        "q": 0.8,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.8,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Rack Tom 1"
@@ -212,51 +212,51 @@
   "5": {
     "level": 0.31500000000000006,
     "mute": true,
-    "gate": false,
-    "dyn": false,
-    "eq": false,
+    "gate": true,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
     "phantom": false,
-    "gateThr": 0.5,
-    "gateAttack": 0,
-    "gateHold": 0,
-    "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "gateThr": 0.4,
+    "gateAttack": 0.05,
+    "gateHold": 0.1,
+    "gateRelease": 0.3,
+    "dynThr": 0.4,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.4,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 2
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.6,
+        "g": 0.3,
+        "q": 0.8,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.8,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Rack Tom 2"
@@ -264,51 +264,51 @@
   "6": {
     "level": 0.28500000000000003,
     "mute": true,
-    "gate": false,
-    "dyn": false,
-    "eq": false,
+    "gate": true,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.35,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
     "phantom": false,
-    "gateThr": 0.5,
-    "gateAttack": 0,
-    "gateHold": 0,
-    "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "gateThr": 0.4,
+    "gateAttack": 0.05,
+    "gateHold": 0.1,
+    "gateRelease": 0.4,
+    "dynThr": 0.4,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.35,
+        "g": 0.65,
         "q": 0.5,
-        "type": 0
+        "type": 2
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.55,
+        "g": 0.3,
+        "q": 0.8,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.78,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Floor Tom"
@@ -317,10 +317,10 @@
     "level": 0.425,
     "mute": true,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.65,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -329,38 +329,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.6,
+    "dynRatio": 0.1,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.2,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.5,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
+        "f": 0.7,
+        "g": 0.45,
         "q": 0.5,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.9,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.98,
+        "g": 0.65,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "OH1"
@@ -369,10 +369,10 @@
     "level": 0.24333333333333335,
     "mute": true,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.65,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -381,38 +381,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.6,
+    "dynRatio": 0.1,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.2,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.5,
     "color": "#00FFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
+        "f": 0.7,
+        "g": 0.45,
         "q": 0.5,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.9,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.98,
+        "g": 0.65,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "OH2"
@@ -421,10 +421,10 @@
     "level": 0.435,
     "mute": true,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.3,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -433,38 +433,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.3,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.2,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#FF00FF",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.35,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 2
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.55,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.7,
+        "g": 0.55,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 5
       }
     },
     "name": "Bass"
@@ -473,10 +473,10 @@
     "level": 0.44499999999999995,
     "mute": true,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -486,37 +486,37 @@
     "gateHold": 0,
     "gateRelease": 0,
     "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynRatio": 0.1,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#FF0000",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.45,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
+        "f": 0.6,
+        "g": 0.45,
         "q": 0.5,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.78,
+        "g": 0.6,
+        "q": 0.6,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 5
       }
     },
     "name": "Gat"
@@ -629,10 +629,10 @@
     "level": 0.3625,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.25,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -641,38 +641,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.25,
+    "dynRatio": 0.4,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.05,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
+        "f": 0.35,
+        "g": 0.65,
         "q": 0.5,
-        "type": 0
+        "type": 2
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.5,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.7,
+        "g": 0.55,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.85,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 5
       }
     },
     "name": "Sous"
@@ -681,10 +681,10 @@
     "level": 0.4925,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.4,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -693,38 +693,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
-        "g": 0.5,
-        "q": 0.5,
-        "type": 0
-      },
-      "2": {
         "f": 0.4,
         "g": 0.5,
         "q": 0.5,
+        "type": 1
+      },
+      "2": {
+        "f": 0.55,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.75,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.9,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 5
       }
     },
     "name": "Tromb"
@@ -733,10 +733,10 @@
     "level": 0.4325,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.5,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -745,38 +745,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.2,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.3,
     "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.65,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.8,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
+        "f": 0.95,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Sax"
@@ -785,10 +785,10 @@
     "level": 0.28250000000000003,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.5,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -797,38 +797,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.3,
+    "dynRatio": 0.3,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.05,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.2,
     "color": "#00FF00",
     "labelColor": "black",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.65,
+        "g": 0.45,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.85,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Trump"
@@ -837,10 +837,10 @@
     "level": 0.325,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -849,38 +849,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.45,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.58,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.82,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.55,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Ed"
@@ -888,11 +888,11 @@
   "18": {
     "level": 0.41000000000000003,
     "mute": false,
-    "gate": true,
+    "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -901,38 +901,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.45,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.58,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.82,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.55,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Nathan"
@@ -941,10 +941,10 @@
     "level": 0.4975,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
+    "dyn": true,
+    "eq": true,
     "hpf": true,
-    "hpfFreq": 0,
+    "hpfFreq": 0.5,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -953,38 +953,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.6,
+        "g": 0.45,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.85,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.96,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Claire"
@@ -993,10 +993,10 @@
     "level": 0.41999999999999993,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
-    "hpf": false,
-    "hpfFreq": 0,
+    "dyn": true,
+    "eq": true,
+    "hpf": true,
+    "hpfFreq": 0.795,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1005,38 +1005,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.45,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.58,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.82,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.55,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Alan"
@@ -1045,10 +1045,10 @@
     "level": 0.47000000000000003,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
-    "hpf": false,
-    "hpfFreq": 0,
+    "dyn": true,
+    "eq": true,
+    "hpf": true,
+    "hpfFreq": 0.45,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1057,38 +1057,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.45,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.58,
+        "g": 0.4,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.82,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.95,
+        "g": 0.55,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Hyram"
@@ -1097,10 +1097,10 @@
     "level": 0.465,
     "mute": false,
     "gate": false,
-    "dyn": false,
-    "eq": false,
-    "hpf": false,
-    "hpfFreq": 0,
+    "dyn": true,
+    "eq": true,
+    "hpf": true,
+    "hpfFreq": 0.5,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1109,38 +1109,38 @@
     "gateAttack": 0,
     "gateHold": 0,
     "gateRelease": 0,
-    "dynThr": 0.5,
-    "dynRatio": 0,
+    "dynThr": 0.4,
+    "dynRatio": 0.15,
     "dynGain": 0.5,
-    "dynAttack": 0,
+    "dynAttack": 0.1,
     "dynHold": 0,
-    "dynRelease": 0,
+    "dynRelease": 0.4,
     "color": "#0000FF",
     "labelColor": "white",
     "eqBands": {
       "1": {
-        "f": 0.2,
+        "f": 0.5,
         "g": 0.5,
         "q": 0.5,
-        "type": 0
+        "type": 1
       },
       "2": {
-        "f": 0.4,
-        "g": 0.5,
-        "q": 0.5,
+        "f": 0.6,
+        "g": 0.45,
+        "q": 0.6,
         "type": 0
       },
       "3": {
-        "f": 0.6,
-        "g": 0.5,
+        "f": 0.85,
+        "g": 0.6,
         "q": 0.5,
         "type": 0
       },
       "4": {
-        "f": 0.8,
-        "g": 0.5,
+        "f": 0.96,
+        "g": 0.6,
         "q": 0.5,
-        "type": 0
+        "type": 4
       }
     },
     "name": "Vox Davina"

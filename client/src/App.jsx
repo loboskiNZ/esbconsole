@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
+import { INSTRUMENT_PRESETS } from './presets';
 import './index.css';
 
 const socket = io('/', { path: '/socket.io' });
@@ -958,6 +959,8 @@ function AppContent() {
                                             Ø
                                          </button>
 
+                                    </div>
+                                    <div style={{display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
                                         <input 
                                             type="number"
                                             value={(() => {
@@ -983,6 +986,77 @@ function AppContent() {
                                         <span style={{fontSize:'0.8em', color:'#888', textAlign:'center'}}>dB</span>
                                     </div>
                                 </div>
+
+                                {/* PRESETS SECTION */}
+                                <div style={{width:'1px', background:'#333', height:'100%', margin:'0 20px'}}></div>
+                                
+                                <div style={{display:'flex', flexDirection:'column', height:'100%', width:'400px'}}>
+                                    <h3 style={{marginTop:0, color:'#888', fontSize:'0.9em', borderBottom:'1px solid #444', paddingBottom:'5px'}}>QUICK PRESETS</h3>
+                                    <div style={{display:'flex', flexWrap:'wrap', gap:'8px', overflowY:'auto'}}>
+                                        {Object.keys(INSTRUMENT_PRESETS).map(key => (
+                                            <button
+                                                key={key}
+                                                onClick={() => {
+                                                    const p = INSTRUMENT_PRESETS[key];
+                                                    const id = overlay.channelId;
+                                                    
+                                                    // 1. HPF
+                                                    if (p.hpf !== undefined) {
+                                                        axios.post('/api/set-param', { channelId: id, type: 'hpf', value: p.hpf });
+                                                        if (p.hpfFreq) axios.post('/api/set-param', { channelId: id, type: 'hpfFreq', value: p.hpfFreq });
+                                                    }
+                                                    
+                                                    // 2. EQ Bands
+                                                    if (p.eq) {
+                                                        // Ensure EQ is ON
+                                                        axios.post('/api/set-param', { channelId: id, type: 'eq', value: true });
+                                                        [1,2,3,4].forEach(bIdx => {
+                                                            const b = p.eq[bIdx];
+                                                            if (b) {
+                                                                if(b.type !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'type', value: b.type });
+                                                                if(b.f !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'f', value: b.f });
+                                                                if(b.g !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'g', value: b.g });
+                                                                if(b.q !== undefined) axios.post('/api/set-param', { channelId: id, type: 'eqParam', band: bIdx, param: 'q', value: b.q });
+                                                            }
+                                                        });
+                                                    }
+                                                    
+                                                    // 3. Gate
+                                                    if (p.gate) {
+                                                        const g = p.gate;
+                                                        if(g.on !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gate', value: g.on });
+                                                        if(g.thr !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateThr', value: g.thr });
+                                                        if(g.attack !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateAttack', value: g.attack });
+                                                        if(g.hold !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateHold', value: g.hold });
+                                                        if(g.release !== undefined) axios.post('/api/set-param', { channelId: id, type: 'gateRelease', value: g.release });
+                                                    }
+                                                    
+                                                    // 4. Dyn (Comp)
+                                                    if (p.dyn) {
+                                                        const d = p.dyn;
+                                                        if(d.on !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dyn', value: d.on });
+                                                        if(d.thr !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynThr', value: d.thr });
+                                                        if(d.ratio !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynRatio', value: d.ratio });
+                                                        if(d.attack !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynAttack', value: d.attack });
+                                                        if(d.release !== undefined) axios.post('/api/set-param', { channelId: id, type: 'dynRelease', value: d.release });
+                                                    }
+                                                    
+                                                    // Note: We are optimistically relying on the x32_update socket event coming back 
+                                                    // to update the UI state, rather than setting it all locally here, 
+                                                    // because it's a lot of state. The user will see the knobs move in <50ms.
+                                                }}
+                                                style={{
+                                                    background:'#222', border:'1px solid #444', 
+                                                    color:'#ccc', fontSize:'0.8em', padding:'5px 10px',
+                                                    borderRadius:'4px', cursor:'pointer', flex:'1 0 30%'
+                                                }}
+                                            >
+                                                {key}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
                             </div>
                           </>
                       )}

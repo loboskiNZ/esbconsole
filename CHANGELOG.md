@@ -1,6 +1,13 @@
 # Changelog
 
-## v2.0.4 (Current)
+## v2.1.0 (Current)
+*   **Instrument Presets**:
+    *   Added "Quick Presets" menu to the Gain/Preamp Overlay.
+    *   Includes 15+ professionally tuned presets for Kick, Snare, Toms, Bass, Guitars, Vocals, Horns, etc.
+    *   Instantly applies EQ (Freq, Gain, Q, Type), Gate, and Compressor settings.
+*   **Version Bump**: Updated to 2.1.0 (Minor version increment).
+
+## v2.0.4
 *   **Phase Invert Control**: Added Phase/Polarity Invert (Ø) toggle to the Gain/Preamp overlay.
 *   **Backend**: Added OSC support for `/ch/{id}/preamp/invert`.
 *   **Version Bump**: Updated to 2.0.4.
