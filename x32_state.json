@@ -1,6 +1,6 @@
 {
   "1": {
-    "level": 0.56,
+    "level": 0.61,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -9,7 +9,7 @@
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.57,
+    "preampGain": 0.38,
     "phantom": false,
     "gateThr": 0.35,
     "gateAttack": 0.4,
@@ -61,7 +61,7 @@
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
-    "preampGain": 0.41,
+    "preampGain": 0.405,
     "phantom": false,
     "gateThr": 0.5,
     "gateAttack": 0,

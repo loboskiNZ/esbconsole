@@ -812,7 +812,7 @@ function AppContent() {
             <div style={{display:'flex', gap:'20px', alignItems:'center'}}>
                 <div style={{display:'flex', flexDirection:'column', gap:'5px', minWidth:'140px'}}>
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.01</span></h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.02</span></h1>
                         <button onClick={() => setShowDMX(!showDMX)} style={{
                             background: showDMX ? '#0f0' : '#222', color: showDMX ? '#000' : '#888',
                             border: '1px solid #444', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
