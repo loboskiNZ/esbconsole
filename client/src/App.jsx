@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import SetlistManager from './SetlistManager';
+import SharePointBrowser from './SharePointBrowser';
+import MusiciansManager from './MusiciansManager';
 import { INSTRUMENT_PRESETS } from './presets';
 import './index.css';
 
@@ -560,6 +563,9 @@ function AppContent() {
   const [status, setStatus] = useState({ x32: 'connected', midi: 'pending', dmx: 'ready' });
 
   const [showDMX, setShowDMX] = useState(false);
+  const [showSharePoint, setShowSharePoint] = useState(false);
+  const [showSetlist, setShowSetlist] = useState(false);
+  const [showMusicians, setShowMusicians] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
   const [midiMsg, setMidiMsg] = useState(null);
   const [x32State, setX32State] = useState({});
@@ -813,12 +819,17 @@ function AppContent() {
             <div style={{display:'flex', gap:'20px', alignItems:'center'}}>
                 <div style={{display:'flex', flexDirection:'column', gap:'5px', minWidth:'140px'}}>
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.02</span></h1>
-                        <button onClick={() => setShowDMX(!showDMX)} style={{
-                            background: showDMX ? '#0f0' : '#222', color: showDMX ? '#000' : '#888',
-                            border: '1px solid #444', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
-                            fontWeight: 'bold', fontSize:'0.8em'
-                        }}>STAGE</button>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.5.2</span></h1>
+                        <button onClick={() => setShowSharePoint(true)} style={{
+                    background: showSharePoint ? '#0078d4' : '#222', color: showSharePoint ? '#fff' : '#0078d4',
+                    border: '1px solid #005a9e', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize:'0.8em', marginLeft: '5px'
+                }}>FILES</button>
+                <button onClick={() => setShowMusicians(true)} style={{
+                    background: showMusicians ? '#ffaa00' : '#222', color: showMusicians ? '#000' : '#ffaa00',
+                    border: '1px solid #c80', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
+                    fontWeight: 'bold', fontSize:'0.8em', marginLeft: '5px'
+                }}>MUSICIANS</button>
                     </div>
                     <div style={{display:'flex', gap:'8px', fontSize:'0.7em'}}>
                         <span style={{color: status.x32 ? '#0f0' : '#555'}}>● X32 ({config ? config.x32_ip : ''})</span>
@@ -1736,6 +1747,21 @@ function AppContent() {
                             <option key={song.id} value={song.id}>{song.title}</option>
                         ))}
                     </select>
+                     <button 
+                        onClick={() => setShowSetlist(true)}
+                        style={{
+                            background: showSetlist ? '#ffaa00' : '#222', 
+                            color: showSetlist ? 'black' : '#ffaa00',
+                            border: '1px solid #c80', 
+                            borderRadius: '4px',
+                            padding: '5px 10px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontSize: '0.9em'
+                        }}
+                     >
+                        EDIT
+                     </button>
                 </div>
 
                 <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
@@ -2152,7 +2178,10 @@ function AppContent() {
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
       </div>
       
-      {showVisualizer && <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} />}
+      {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
+      {showMusicians ? <MusiciansManager onClose={() => setShowMusicians(false)} /> : null}
+      {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
+      {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
     </div>
   );
 }

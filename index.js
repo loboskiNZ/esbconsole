@@ -1,16 +1,39 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
 const socketIo = require('socket.io');
 const OSC = require('osc-js');
 const easymidi = require('easymidi');
 const os = require('os');
 const DMX = require('dmx');
 const config = require('./config');
+const authManager = require('./authManager');
+const setlistManager = require('./setlistManager');
 const path = require('path');
 const fs = require('fs');
 
+// GLOBAL ERROR HANDLER
+process.on('uncaughtException', (err) => {
+    console.error('🔥 UNCAUGHT EXCEPTION:', err);
+    fs.appendFileSync('crash.log', `[${new Date().toISOString()}] CRASH: ${err.stack}\n`);
+    // Keep running if possible, or exit? For dev, let's try to keep running or at least log effectively.
+    // process.exit(1); 
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('🔥 UNHANDLED REJECTION:', reason);
+    fs.appendFileSync('crash.log', `[${new Date().toISOString()}] REJECTION: ${reason}\n`);
+});
+
 // --- GLOBALS ---
 let meterInterval = null;
+let musiciansData = { musicians: [], sharepoint: {} };
+try {
+    if (fs.existsSync('./musicians.json')) {
+        musiciansData = JSON.parse(fs.readFileSync('./musicians.json', 'utf8'));
+    }
+} catch (e) {
+    console.error("Failed to load musicians.json", e);
+}
 
 // --- SOLO GROUPS DEFINITION ---
 const SOLO_GROUPS = {
@@ -24,7 +47,22 @@ const SOLO_GROUPS = {
 };
 
 const app = express();
-const server = http.createServer(app);
+
+// HTTPS CONFIG
+let server;
+try {
+    const certPath = path.join(__dirname, 'certs');
+    const options = {
+        key: fs.readFileSync(path.join(certPath, 'key.pem')),
+        cert: fs.readFileSync(path.join(certPath, 'cert.pem'))
+    };
+    server = https.createServer(options, app);
+    console.log("🔒 HTTPS Enabled");
+} catch (e) {
+    console.warn("⚠️ HTTPS Failed (Missing certs?), falling back to HTTP", e.message);
+    server = http.createServer(app);
+}
+
 const io = socketIo(server, { cors: { origin: '*' } });
 
 // Middleware - MUST BE BEFORE ROUTES
@@ -1255,6 +1293,174 @@ app.get('/api/solo-status', (req, res) => {
     res.json({ activeIds: list });
 });
 
+// ... imports
+
+// ... existing code ...
+
+// --- SHAREPOINT PROXY ---
+// --- SHAREPOINT PROXY ---
+// Load SharePoint config
+// Note: musiciansData is defined below, but accessible in callbacks due to module scope.
+
+// Routes:
+app.get('/api/sharepoint/config', (req, res) => {
+    res.json(musiciansData.sharepoint || {});
+});
+
+app.post('/api/sharepoint/config', (req, res) => {
+    const conf = req.body;
+    musiciansData.sharepoint = conf;
+    // Save to musicians.json
+    fs.writeFile('./musicians.json', JSON.stringify(musiciansData, null, 2), (err) => {
+        if (err) return res.status(500).json({ error: "Save failed" });
+        res.json({ success: true });
+    });
+});
+
+app.get('/api/sharepoint/files', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if(!token) return res.status(401).json({error: "No token"});
+        
+        const folderId = req.query.folderId || musiciansData.sharepoint?.folderId;
+        const driveId = musiciansData.sharepoint?.driveId;
+        const siteId = musiciansData.sharepoint?.siteId;
+
+        console.log(`📂 SharePoint List: folder=${folderId} drive=${driveId} site=${siteId}`);
+
+        const client = authManager.getGraphClient(token);
+        
+        let query;
+        if (folderId) {
+             if (driveId) {
+                 query = client.api(`/drives/${driveId}/items/${folderId}/children`);
+                 console.log(`   -> Query: /drives/${driveId}/items/${folderId}/children`);
+             } else {
+                 query = client.api(`/me/drive/items/${folderId}/children`);
+                 console.log(`   -> Query: /me/drive/items/${folderId}/children`);
+             }
+        } else if (siteId && driveId) {
+             query = client.api(`/sites/${siteId}/drives/${driveId}/root/children`);
+        } else if (driveId) {
+             query = client.api(`/drives/${driveId}/root/children`);
+        } else {
+             // Default to Me
+             query = client.api('/me/drive/root/children');
+        }
+
+        const response = await query.select('id,name,folder,size,webUrl').get();
+        if (response.value && response.value.length > 0) {
+            console.log("Graph Item 0:", JSON.stringify(response.value[0], null, 2));
+        }
+        res.json(response.value.map(val => ({
+            id: val.id,
+            name: val.name,
+            folder: !!val.folder,
+            size: val.size,
+            webUrl: val.webUrl
+        })));
+    } catch (e) {
+        console.error("SharePoint List Error", e);
+        fs.appendFileSync('crash.log', `[${new Date().toISOString()}] SHAREPOINT ERROR: ${e.message}\n`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.get('/api/sharepoint/download/:id', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if(!token) return res.status(401).json({error: "No token"});
+        
+        const fileId = req.params.id;
+        const driveId = musiciansData.sharepoint?.driveId;
+        
+        const client = authManager.getGraphClient(token);
+        // We need to get the download URL or stream
+        // Graph API /content endpoint redirects to a download URL
+        
+        // Use a raw fetch to handle stream better or use client.api(...).responseType('stream')
+        const endpoint = driveId 
+            ? `/drives/${driveId}/items/${fileId}/content`
+            : `/me/drive/items/${fileId}/content`;
+
+        // We can redirect the client to the @microsoft.graph.downloadUrl 
+        // OR proxy the stream. 
+        // client-side expects 'blob' from this endpoint.
+        // Let's try proxying.
+        
+        const stream = await client.api(endpoint).responseType('stream').get();
+        stream.pipe(res);
+        
+    } catch (e) {
+        console.error("SharePoint Download Error", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/sharepoint/folder', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if(!token) return res.status(401).json({error: "No token"});
+        
+        const { parentId, name } = req.body;
+        const driveId = musiciansData.sharepoint?.driveId;
+        
+        if (!name) return res.status(400).json({error: "Missing name"});
+
+        const client = authManager.getGraphClient(token);
+        
+        const endpoint = driveId 
+            ? `/drives/${driveId}/items/${parentId || 'root'}/children`
+            : `/me/drive/items/${parentId || 'root'}/children`;
+
+        const newFolder = {
+            name: name,
+            folder: {},
+            "@microsoft.graph.conflictBehavior": "rename"
+        };
+
+        const response = await client.api(endpoint).post(newFolder);
+        res.status(201).json(response);
+
+    } catch (e) {
+        console.error("Create Folder Error", e);
+        fs.appendFileSync('crash.log', `[${new Date().toISOString()}] CREATE FOLDER ERROR: ${e.message}\n`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- MUSICIANS API ---
+// musiciansData is defined in Globals
+
+// --- SETLIST API ---
+app.get('/api/setlist/data', (req, res) => {
+    res.json(setlistManager.getAll());
+});
+
+app.post('/api/setlist/update', (req, res) => {
+    const { id, updates } = req.body;
+    const result = setlistManager.updateSetlist(id, updates);
+    res.json(result);
+});
+
+// ... (Other Setlist routes can be added later as needed)
+
+app.get('/api/musicians', (req, res) => {
+    res.json(musiciansData.musicians);
+});
+
+app.post('/api/musicians', (req, res) => {
+    const list = req.body;
+    if (!Array.isArray(list)) return res.status(400).json({ error: "Expected array" });
+    
+    musiciansData.musicians = list;
+    
+    fs.writeFile('./musicians.json', JSON.stringify(musiciansData, null, 2), (err) => {
+        if (err) return res.status(500).json({ error: "Save failed" });
+        res.json({ success: true });
+    });
+});
+
 io.on('connection', (socket) => {
   console.log('⚡ Client Connected:', socket.id);
   socket.emit('x32_bulk_update', x32State);
@@ -1270,5 +1476,6 @@ io.on('connection', (socket) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`🌟 Controller Server running at http://localhost:${PORT}`);
+  const protocol = server instanceof https.Server ? 'https' : 'http';
+  console.log(`🌟 Controller Server running at ${protocol}://localhost:${PORT}`);
 });

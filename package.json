@@ -1,6 +1,6 @@
 {
   "name": "x32-controller",
-  "version": "2.3.1",
+  "version": "2.5.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -11,10 +11,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@azure/msal-node": "^3.8.4",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "dmx": "^0.25.1",
+    "docxtemplater": "^3.67.6",
     "easymidi": "^3.1.0",
     "express": "^5.2.1",
+    "isomorphic-fetch": "^3.0.0",
+    "multer": "^2.0.2",
     "osc-js": "^2.4.1",
+    "pizzip": "^3.2.0",
     "socket.io": "^4.8.3",
     "winston": "^3.19.0"
   }

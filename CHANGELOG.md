@@ -1,6 +1,47 @@
 # Changelog
 
-## v2.3.1 (Current)
+## v2.5.1 (Current)
+**Date:** 2026-01-11
+
+### Features
+*   **Server-Side PDF Export**: "EXPORT PDF" now uses server-side conversion (LibreOffice) to generate high-quality PDFs from the user's Word Template. This preserves all vector graphics, fonts, and layout.
+*   **UI Polish**: Renamed "PRINT" to "EXPORT PDF" and removed deprecated help buttons (moved to Manual).
+
+## v2.5.0 (Current) - Setlist Management Milestone
+**Date:** 2026-01-11
+
+### New Features
+#### Setlist Management
+*   **Print Setlist**: Added "PRINT" button for stage-ready setlists (Large font, Logo, Notes, Numbered).
+*   **Word Export**: Export setlists to `.docx` using custom templates (`templates/setlist_template.docx`).
+*   **Notes Field**: Added persistent "Notes" field for each song.
+*   **Smart Bus Naming**: Monitor buses now auto-label based on assignments (e.g., "Vox Ed").
+
+#### UI Enhancements
+*   **Assignment Panel**: Improved "Select Input" dropdown with smart filtering and stereo-link awareness.
+*   **Chartless Mode**: Support for assigning channels without uploading a chart.
+*   **Dynamic Filenames**: Exports and Downloads use `Setlist - [Name]` format.
+
+### Backend
+*   **New Endpoints**: `/api/setlist/export-docx`, `/api/setlist/update`.
+*   **Dependencies**: Added `docxtemplater`, `pizzip`.
+
+## v2.4.2 (Current)
+*   **UI Refinement**: Master Panel buttons (Auto FX, EQ, DYN) are now vertically stacked with uniform styling.
+*   **Version Bump**: Updated to 2.4.2.
+
+## v2.4.1
+*   **Master Combinator**: Implemented full control suite (Mix, Ratio, Gain, SBC) for the Master Bus Combinator (Slot 8).
+*   **FX UI Refinement**:
+    *   Removed duplicate controls for Dub Echo.
+    *   Added formatting for 'Ratio' and 'dB' values.
+    *   Aligned Slot 2 (Drum Verb) controls with documentation.
+
+## v2.4.0
+*   **Automated FX Rack**: Added "AUTO FX" button to Master Strip. One-click configuration of X32 FX Slots 1-4 & 8 with professional "Dub" settings (Vintage Room, Hall, Stereo Delay, Vocal Doubler, Master Combinator).
+*   **Documentation**: Added "Pro Tips" section to User Manual with detailed recipes for Dub FX and Instrument Processing.
+
+## v2.3.1
 *   **UI Optimization**: Switch Gain/Pan to Full-Width Horizontal Sliders.
     *   **Horizontal Layout**: Maximized width for Gain and Pan controls for finer adjustments.
     *   **Button Row**: Consolidated 48V, Phase, Link, and Center into a unified toolbar row.

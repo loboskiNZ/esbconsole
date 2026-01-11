@@ -40,3 +40,36 @@
 .read-the-docs {
   color: #888;
 }
+
+@media print {
+  @page { margin: 1cm; size: A4; }
+  
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Show only the printable setlist */
+  #printable-setlist, 
+  #printable-setlist * {
+    visibility: visible;
+  }
+  
+  #printable-setlist {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    z-index: 9999;
+  }
+
+  /* Ensure table borders show */
+  #printable-setlist table, 
+  #printable-setlist th, 
+  #printable-setlist td {
+    border-color: black;
+  }
+}

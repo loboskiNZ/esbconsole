@@ -1,0 +1,76 @@
+{
+  "musicians": [
+    {
+      "id": "mk96kye8na28umt2w2",
+      "name": "Ed Lobo",
+      "role": "Machines",
+      "email": "ed@loboski.nz",
+      "mixBusId": 1,
+      "linkedChannels": [
+        9,
+        17,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ]
+    },
+    {
+      "id": "mk96n7bo1erl10qx5w8",
+      "name": "Nathan Hill",
+      "role": "Singer",
+      "email": "nathan.hill@nzsafetyblackwoods.co.nz",
+      "mixBusId": 2,
+      "linkedChannels": [
+        18
+      ]
+    },
+    {
+      "id": "mk96nscv54so8b88ss4",
+      "name": "Alex Ramsey",
+      "role": "Drummer",
+      "email": "alex@unitedmachinists.co.nz",
+      "mixBusId": 7,
+      "linkedChannels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": "mk96qpzyk03gidjc8wr",
+      "name": "Chris Brett",
+      "role": "Guitarrist",
+      "email": "chrishrbrett@gmail.com",
+      "mixBusId": 10,
+      "linkedChannels": [
+        10
+      ]
+    },
+    {
+      "id": "mk96s6qfahvj4kjpeon",
+      "name": "Peter Kesha",
+      "role": "Keyboard",
+      "email": "peterkeshamusic@xtra.co.nz",
+      "mixBusId": 9,
+      "linkedChannels": [
+        11,
+        12
+      ]
+    }
+  ],
+  "sharepoint": {
+    "siteId": "",
+    "driveId": "",
+    "folderId": "01RI4564YCB74UVRSNKBBIJ56PUFUF5IV6"
+  }
+}
