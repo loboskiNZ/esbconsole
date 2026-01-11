@@ -1,6 +1,6 @@
 {
   "1": {
-    "level": 0.49000000000000005,
+    "level": 0.55,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -56,7 +56,7 @@
     "pan": 0.5
   },
   "2": {
-    "level": 0.45496088862419126,
+    "level": 0.57,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -138,7 +138,7 @@
     "invert": 0
   },
   "3": {
-    "level": 0.34500000000000003,
+    "level": 0.63,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -190,7 +190,7 @@
     "name": "Hat"
   },
   "4": {
-    "level": 0.48,
+    "level": 0.57,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -242,7 +242,7 @@
     "name": "Rack Tom 1"
   },
   "5": {
-    "level": 0.29000000000000004,
+    "level": 0.59,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -294,7 +294,7 @@
     "name": "Rack Tom 2"
   },
   "6": {
-    "level": 0.26000000000000006,
+    "level": 0.58,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -343,10 +343,11 @@
         "type": 4
       }
     },
-    "name": "Floor Tom"
+    "name": "Floor Tom",
+    "mixSend": 0.46
   },
   "7": {
-    "level": 0.33499999999999996,
+    "level": 0.59,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -397,10 +398,11 @@
     },
     "name": "OH1",
     "link": true,
-    "pan": 0.09
+    "pan": 0.09,
+    "mixSend": 0.46
   },
   "8": {
-    "level": 0.33472630977630613,
+    "level": 0.589442789554596,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -467,10 +469,11 @@
         "level": 0
       }
     },
-    "pan": 1
+    "pan": 1,
+    "mixSend": 0.255
   },
   "9": {
-    "level": 0.41000000000000003,
+    "level": 0.62,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -519,10 +522,11 @@
         "type": 5
       }
     },
-    "name": "Bass"
+    "name": "Bass",
+    "mixSend": 0.515
   },
   "10": {
-    "level": 0.41999999999999993,
+    "level": 0.6089931726455688,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -574,7 +578,7 @@
     "name": "Gat"
   },
   "11": {
-    "level": 0.3725,
+    "level": 0.6568915247917175,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -627,7 +631,7 @@
     "link": true
   },
   "12": {
-    "level": 0.37237292528152466,
+    "level": 0.6568915247917175,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -693,7 +697,7 @@
     }
   },
   "13": {
-    "level": 0.3375,
+    "level": 0.59,
     "mute": false,
     "gate": false,
     "dyn": true,
@@ -745,7 +749,7 @@
     "name": "Sous"
   },
   "14": {
-    "level": 0.46749999999999997,
+    "level": 0.67253178358078,
     "mute": false,
     "gate": false,
     "dyn": true,
@@ -797,7 +801,7 @@
     "name": "Tromb"
   },
   "15": {
-    "level": 0.40750000000000003,
+    "level": 0.6842619776725769,
     "mute": false,
     "gate": false,
     "dyn": true,
@@ -849,7 +853,7 @@
     "name": "Sax"
   },
   "16": {
-    "level": 0.2575,
+    "level": 0.6412512063980103,
     "mute": false,
     "gate": false,
     "dyn": true,
@@ -901,13 +905,13 @@
     "name": "Trump"
   },
   "17": {
-    "level": 0.3,
+    "level": 0.6842619776725769,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.45,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -953,13 +957,13 @@
     "name": "Vox Ed"
   },
   "18": {
-    "level": 0.38500000000000006,
+    "level": 0.6764418482780457,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.45,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1005,13 +1009,13 @@
     "name": "Vox Nathan"
   },
   "19": {
-    "level": 0.47250000000000003,
+    "level": 0.67253178358078,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.5,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1057,13 +1061,13 @@
     "name": "Vox Claire"
   },
   "20": {
-    "level": 0.3949999999999999,
+    "level": 0.6695992350578308,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.795,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1109,13 +1113,13 @@
     "name": "Vox Alan"
   },
   "21": {
-    "level": 0.445,
+    "level": 0.6705767512321472,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.45,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1161,13 +1165,13 @@
     "name": "Vox Hyram"
   },
   "22": {
-    "level": 0.44000000000000006,
+    "level": 0.6774193644523621,
     "mute": false,
     "gate": false,
     "dyn": true,
     "eq": true,
     "hpf": true,
-    "hpfFreq": 0.5,
+    "hpfFreq": 0.5699999928474426,
     "hcut": false,
     "hcutFreq": 1,
     "preampGain": 0.5,
@@ -1234,7 +1238,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1262,7 +1266,7 @@
         "type": 0
       }
     },
-    "name": "-"
+    "name": "SPD1"
   },
   "24": {
     "level": 0,
@@ -1286,7 +1290,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1314,10 +1318,10 @@
         "type": 0
       }
     },
-    "name": "-"
+    "name": "SPD2"
   },
   "25": {
-    "level": 0.375,
+    "level": 0.6617791056632996,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1369,7 +1373,7 @@
     "name": "ABL Drums"
   },
   "26": {
-    "level": 0.37,
+    "level": 0.67253178358078,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1421,7 +1425,7 @@
     "name": "ABL Bass"
   },
   "27": {
-    "level": 0.37,
+    "level": 0.6510263681411743,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1473,7 +1477,7 @@
     "name": "ABL Keys"
   },
   "28": {
-    "level": 0.37,
+    "level": 0.6715542674064636,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1522,10 +1526,10 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 1"
+    "name": "ABL Gat"
   },
   "29": {
-    "level": 0.34,
+    "level": 0.6441837549209595,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1574,10 +1578,10 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 2"
+    "name": "ABL Tracks"
   },
   "30": {
-    "level": 0.37,
+    "level": 0.62,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1598,7 +1602,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1626,10 +1630,10 @@
         "type": 0
       }
     },
-    "name": "Spare 3"
+    "name": "ABL Vox"
   },
   "31": {
-    "level": 0.38,
+    "level": 0.6451612710952759,
     "mute": false,
     "gate": false,
     "dyn": false,
@@ -1650,7 +1654,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -1678,10 +1682,10 @@
         "type": 0
       }
     },
-    "name": "Spare 4"
+    "name": "ABL FX"
   },
   "32": {
-    "level": 0.24333333333333335,
+    "level": 0.6510263681411743,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -1730,11 +1734,85 @@
         "type": 0
       }
     },
-    "name": "Spare 5"
+    "name": "ABL CLICK"
+  },
+  "bus1": {
+    "level": 0.625,
+    "mute": false
+  },
+  "bus2": {
+    "level": 0.61,
+    "mute": false
+  },
+  "bus3": {
+    "mute": false,
+    "level": 0.6187683343887329
+  },
+  "bus4": {
+    "mute": false,
+    "level": 0.6353861093521118
+  },
+  "bus5": {
+    "mute": false,
+    "level": 0.6520038843154907
+  },
+  "bus6": {
+    "mute": false,
+    "level": 0.6275659799575806
+  },
+  "bus7": {
+    "mute": false,
+    "level": 0.6236559152603149
+  },
+  "bus8": {
+    "mute": false,
+    "level": 0.628543496131897
+  },
+  "bus9": {
+    "mute": false,
+    "level": 0.6529814004898071
+  },
+  "bus10": {
+    "mute": false,
+    "level": 0.6666666865348816
+  },
+  "bus11": {
+    "mute": false,
+    "level": 0.6813294291496277
+  },
+  "bus12": {
+    "level": 0.6520038843154907,
+    "mute": false,
+    "name": "Bus 12",
+    "color": null
+  },
+  "bus13": {
+    "level": 0,
+    "mute": false,
+    "name": "Bus 13",
+    "color": null
+  },
+  "bus14": {
+    "level": 0,
+    "mute": false,
+    "name": "Bus 14",
+    "color": null
+  },
+  "bus15": {
+    "level": 0,
+    "mute": false,
+    "name": "Bus 15",
+    "color": null
+  },
+  "bus16": {
+    "level": 0,
+    "mute": false,
+    "name": "Bus 16",
+    "color": null
   },
   "master": {
-    "mute": false,
-    "level": 0.51,
+    "mute": true,
+    "level": 0.638318657875061,
     "hcut": false,
     "dynGain": 0.5
   },

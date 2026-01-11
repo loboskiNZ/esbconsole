@@ -205,6 +205,15 @@ for (let i = 1; i <= 32; i++) {
         }
     };
 }
+// Initialize Bus State (1-16)
+for (let i = 1; i <= 16; i++) {
+    x32State['bus' + i] = {
+        level: 0,
+        mute: false,
+        name: `Bus ${i}`,
+        color: null
+    };
+}
 
 // Initialize Master State
 x32State.master = {
@@ -315,7 +324,9 @@ function parseX32Path(address) {
              if (!isNaN(parseInt(bus))) {
                  const param = parts[5];
                  if (['level', 'on'].includes(param)) {
-                     return { id: String(id), type: 'mixSend', bus, param };
+                     // Normalize bus ID (remove leading zero) to match x32State keys
+                     const normalizedBus = String(parseInt(bus, 10));
+                     return { id: String(id), type: 'mixSend', bus: normalizedBus, param };
                  }
              }
         }
@@ -350,6 +361,19 @@ function parseX32Path(address) {
         if (parts[3] === 'preamp') {
              if (parts[4] === 'hpon') return { id: String(id), type: 'hpf' };
              if (parts[4] === 'hpf') return { id: String(id), type: 'hpfFreq' };
+        }
+    }
+
+    if (parts[1] === 'bus') {
+        const id = parseInt(parts[2], 10);
+        const busId = 'bus' + id;
+        if (parts[3] === 'mix') {
+             if (parts[4] === 'on') return { id: busId, type: 'mute' };
+             if (parts[4] === 'fader') return { id: busId, type: 'level' };
+        }
+        if (parts[3] === 'config') {
+             if (parts[4] === 'name') return { id: busId, type: 'name' };
+             if (parts[4] === 'color') return { id: busId, type: 'color' };
         }
     }
     // ...
@@ -406,6 +430,20 @@ osc.on('/*', message => {
 try {
   osc.open(); 
   console.log(`📡 OSC Interface ready (Target: ${X32_IP}:${X32_PORT}, Listening on 10023)`);
+  
+  // POLL FOR BUS NAMES & CONFIG (Startup)
+  setTimeout(() => {
+     console.log("📥 Fetching Bus Configs...");
+     for(let i=1; i<=16; i++) {
+        const id = String(i).padStart(2, '0');
+        try {
+            osc.send(new OSC.Message(`/bus/${id}/config/name`));
+            osc.send(new OSC.Message(`/bus/${id}/config/color`));
+            osc.send(new OSC.Message(`/bus/${id}/mix/fader`));
+            osc.send(new OSC.Message(`/bus/${id}/mix/on`));
+        } catch(e) { console.error("Bus Fetch Error", e); }
+     }
+  }, 2000); 
 } catch (err) {
   console.error('❌ OSC Error:', err.message);
 }
@@ -419,6 +457,18 @@ function getX32Address(channelId, type, extra) {
             case 'dyn': return '/main/st/dyn/on';
             case 'eqParam': return `/main/st/eq/${extra.band}/${extra.param}`;
             default: return null;
+        }
+    }
+
+    // BUS ADDRESSING
+    if (String(channelId).startsWith('bus')) {
+        const busNum = parseInt(channelId.replace('bus',''));
+        const ch = String(busNum).padStart(2, '0');
+        switch(type) {
+            case 'mute': return `/bus/${ch}/mix/on`;
+            case 'level': return `/bus/${ch}/mix/fader`;
+            case 'name': return `/bus/${ch}/config/name`;
+            case 'color': return `/bus/${ch}/config/color`;
         }
     }
 
@@ -456,18 +506,23 @@ function getX32Address(channelId, type, extra) {
         case 'link': {
              // Link works on pairs 1-2, 3-4 etc.
              // We need to find the pair ID.
-             // Pair 1 = Ch 1-2. Pair 2 = Ch 3-4.
-             // Pair ID = ceil(ch / 2)
-             // But wait, the command is /config/chlink/1-2
              const idNum = parseInt(channelId);
              const isOdd = idNum % 2 !== 0;
              const pairStart = isOdd ? idNum : idNum - 1;
              const pairEnd = pairStart + 1;
              return `/config/chlink/${pairStart}-${pairEnd}`;
         }
+        case 'mixSend': {
+             const bus = String(parseInt(extra)).padStart(2, '0');
+             const addr = `/ch/${ch}/mix/${bus}/level`;
+             console.log(`🔧 Generated MixSend Address: ${addr} (ch=${ch}, bus=${bus}, extra=${extra})`);
+             return addr;
+        }
         default: return null;
     }
 }
+
+
 
 // ... MIDI & DMX ...
 
@@ -492,10 +547,13 @@ app.post('/api/set-param', (req, res) => {
     // internal params check
     const isInternal = ['color', 'labelColor', 'name'].includes(type);
     let addr = null;
-    
+
     if (!isInternal) {
         if (type === 'eqParam') {
             addr = getX32Address(channelId, type, { band, param });
+        } else if (type === 'mixSend') {
+            const targetBus = req.body.bus; 
+            addr = getX32Address(channelId, 'mixSend', targetBus);
         } else {
             addr = getX32Address(channelId, type);
         }
@@ -516,7 +574,12 @@ app.post('/api/set-param', (req, res) => {
         console.log(`📡 Sending OSC: ${addr} = ${oscVal} (Type: ${typeof oscVal})`);
         
         try {
-            osc.send(new OSC.Message(addr, oscVal));
+            // Force Float for levels to ensure X32 accepts it
+            if (type === 'level' || type === 'mixSend' || type === 'dynThr' || type === 'gateThr') {
+                 osc.send(new OSC.Message(addr,  Number(oscVal)));
+            } else {
+                 osc.send(new OSC.Message(addr, oscVal));
+            }
         } catch (e) {
             console.error("❌ OSC Send Error:", e.message);
         }
@@ -541,6 +604,24 @@ app.post('/api/set-param', (req, res) => {
                 color: value, 
                 labelColor: labelColor || x32State[channelId].labelColor 
             });
+            io.emit('x32_update', { 
+                id: channelId, 
+                type: 'color', 
+                color: value, 
+                labelColor: labelColor || x32State[channelId].labelColor 
+            });
+    } else if (type === 'mixSend') {
+        const busNum = req.body.bus;
+        if (!busNum) {
+            console.error("❌ MixSend request missing 'bus' parameter");
+            return res.status(400).json({ error: "Missing bus parameter" });
+        }
+
+        if (!x32State[channelId].mixSends) x32State[channelId].mixSends = {};
+        if (!x32State[channelId].mixSends[busNum]) x32State[channelId].mixSends[busNum] = {};
+        
+        x32State[channelId].mixSends[busNum].level = value;
+        io.emit('x32_update', { id: channelId, type: 'mixSend', bus: busNum, param: 'level', value });
     } else {
         x32State[channelId][type] = value;
         io.emit('x32_update', { id: channelId, type, value });

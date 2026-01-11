@@ -4,6 +4,7 @@ import { io } from 'socket.io-client';
 import SetlistManager from './SetlistManager';
 import SharePointBrowser from './SharePointBrowser';
 import MusiciansManager from './MusiciansManager';
+import MonitorsOverlay from './MonitorsOverlay';
 import { INSTRUMENT_PRESETS } from './presets';
 import './index.css';
 
@@ -566,6 +567,7 @@ function AppContent() {
   const [showSharePoint, setShowSharePoint] = useState(false);
   const [showSetlist, setShowSetlist] = useState(false);
   const [showMusicians, setShowMusicians] = useState(false);
+  const [showMonitors, setShowMonitors] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
   const [midiMsg, setMidiMsg] = useState(null);
   const [x32State, setX32State] = useState({});
@@ -643,7 +645,7 @@ function AppContent() {
             } else if (data.type === 'name') {
                  return {
                     ...prev,
-                    [data.id]: { ...chanState, name: data.name }
+                    [data.id]: { ...chanState, name: data.value }
                 };
             } else if (data.type === 'color') {
                  return {
@@ -818,20 +820,34 @@ function AppContent() {
             {/* LEFT: Logo & Status */}
             <div style={{display:'flex', gap:'20px', alignItems:'center'}}>
                 <div style={{display:'flex', flexDirection:'column', gap:'5px', minWidth:'140px'}}>
+                    
+                    {/* TITLE ROW */}
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.5.2</span></h1>
-                        <button onClick={() => setShowSharePoint(true)} style={{
-                    background: showSharePoint ? '#0078d4' : '#222', color: showSharePoint ? '#fff' : '#0078d4',
-                    border: '1px solid #005a9e', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
-                    fontWeight: 'bold', fontSize:'0.8em', marginLeft: '5px'
-                }}>FILES</button>
-                <button onClick={() => setShowMusicians(true)} style={{
-                    background: showMusicians ? '#ffaa00' : '#222', color: showMusicians ? '#000' : '#ffaa00',
-                    border: '1px solid #c80', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
-                    fontWeight: 'bold', fontSize:'0.8em', marginLeft: '5px'
-                }}>MUSICIANS</button>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.6.0</span></h1>
                     </div>
-                    <div style={{display:'flex', gap:'8px', fontSize:'0.7em'}}>
+                    
+                    {/* NAVIGATION ROW (Under Title) */}
+                    <div style={{display:'flex', gap:'5px', marginTop:'5px'}}>
+                         <button onClick={() => setShowSharePoint(true)} style={{
+                            background: showSharePoint ? '#0078d4' : '#222', color: showSharePoint ? '#fff' : '#0078d4',
+                            border: '1px solid #005a9e', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
+                            fontWeight: 'bold', fontSize:'0.8em'
+                        }}>FILES</button>
+                        
+                        <button onClick={() => setShowMusicians(true)} style={{
+                            background: showMusicians ? '#ffaa00' : '#222', color: showMusicians ? '#000' : '#ffaa00',
+                            border: '1px solid #c80', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
+                            fontWeight: 'bold', fontSize:'0.8em'
+                        }}>MUSICIANS</button>
+
+                        <button onClick={() => setShowMonitors(true)} style={{
+                            background: showMonitors ? '#0088ff' : '#222', color: showMonitors ? '#fff' : '#0088ff',
+                            border: '1px solid #0055aa', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
+                            fontWeight: 'bold', fontSize:'0.8em'
+                        }}>MONITORS</button>
+                    </div>
+
+                    <div style={{display:'flex', gap:'8px', fontSize:'0.7em', marginTop:'5px'}}>
                         <span style={{color: status.x32 ? '#0f0' : '#555'}}>● X32 ({config ? config.x32_ip : ''})</span>
                         <span style={{color: status.midi ? '#0f0' : '#555'}}>● MIDI</span>
                         <span style={{color: status.dmx ? '#0f0' : '#555'}}>● DMX</span>
@@ -2180,6 +2196,7 @@ function AppContent() {
       
       {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
       {showMusicians ? <MusiciansManager onClose={() => setShowMusicians(false)} /> : null}
+      {showMonitors ? <MonitorsOverlay config={config} x32State={x32State} onClose={() => setShowMonitors(false)} /> : null}
       {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
       {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
     </div>
