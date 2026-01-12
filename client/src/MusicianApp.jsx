@@ -12,6 +12,7 @@ import WelcomeSplash from './components/WelcomeSplash';
 const MusicianApp = ({ socket, x32State }) => {
     const [musician, setMusician] = useState(null);
     const [activeView, setActiveView] = useState('monitors');
+    const [isGroupMode, setIsGroupMode] = useState(false); // NEW: Group Mode State
     const [setlist, setSetlist] = useState(null);
     const [showSplash, setShowSplash] = useState(false);
 
@@ -125,15 +126,18 @@ const MusicianApp = ({ socket, x32State }) => {
             <MusicianLayout 
                 user={musician} 
                 onLogout={handleLogout}
-                onSave={handleSaveMix} // Passed to Layout
+                onSave={handleSaveMix} 
                 activeTab={activeView}
                 onTabChange={setActiveView}
+                isGroupMode={isGroupMode} // NEW
+                onToggleGroupMode={() => setIsGroupMode(!isGroupMode)} // NEW
             >
                      {activeView === 'monitors' && (
                          <MusicianMix 
                             socket={socket} 
                             x32State={x32State} 
                             user={musician} 
+                            isGroupMode={isGroupMode} // NEW
                         />
                      )}
 

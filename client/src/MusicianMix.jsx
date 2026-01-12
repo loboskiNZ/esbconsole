@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import FaderStrip from './components/FaderStrip';
 
-const MusicianMix = ({ socket, x32State, user }) => {
+const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
     // Show all 32 channels + Aux if needed. For now 1-32.
     const channels = Array.from({length: 32}, (_, i) => String(i + 1));
     const mixBusId = user?.mixBusId || 1; // Default to 1 if missing safely
@@ -108,7 +108,125 @@ const MusicianMix = ({ socket, x32State, user }) => {
                     );
                  })()}
 
-                 {channels.map(chId => {
+                 {isGroupMode ? (
+                     // --- GROUP VIEW ---
+                     Object.values(
+                         channels.reduce((acc, chId) => {
+                             const data = getChannelData(chId);
+                             if (!data) return acc;
+                             
+                             // Group Key: Color (or 'No Color')
+                             // X32 colors are usually indexed 1-16 or handled as hex strings.
+                             // data.color is Hex String (e.g. '#FF0000') or undefined.
+                             const groupKey = data.color || '#333333';
+                             
+                             if (!acc[groupKey]) {
+                                 acc[groupKey] = {
+                                     id: groupKey,
+                                     name: '', // Will infer name? Or just use color?
+                                     color: groupKey,
+                                     members: []
+                                 };
+                             }
+                             acc[groupKey].members.push(chId);
+                             return acc;
+                         }, {})
+                     ).map(group => {
+                         // Calculate Group Values
+                         // Level = Max of members?
+                         const memberLevels = group.members.map(chId => {
+                             const d = getChannelData(chId);
+                             const send = d?.mixSends?.[user.mixBusId.toString()] || {};
+                             return send.level !== undefined ? send.level : 0;
+                         });
+                         const maxLevel = Math.max(...memberLevels, 0);
+
+                         // Mute = If ANY is unmuted (0), Group is Unmuted.
+                         // Only if ALL are muted is Group Muted.
+                         const memberMutes = group.members.map(chId => {
+                             const d = getChannelData(chId);
+                             const send = d?.mixSends?.[user.mixBusId.toString()] || {};
+                             return send.on !== undefined ? send.on : 1; // 1=On
+                         });
+                         const isGroupUnmuted = memberMutes.some(on => on === 1);
+                         
+                         // Determine Label
+                         // If all memebers share a scribble strip name commonality? 
+                         // Or just count? e.g. "4 Channels".
+                         // Better: "Drums" if Red? X32 doesn't name colors.
+                         // Let's use first member name? Or just "Group". 
+                         // "Group" is weak. 
+                         // Let's try to find common name? "Drums I", "Drums II" -> "Drums"?
+                         // Simplest: "X chans" + Color swatch.
+                         // Or just list first 2 names...
+                         const groupLabel = `${group.members.length} Chs`;
+
+                         return (
+                             <div key={group.id} style={{
+                                flex: '0 0 80px', height: '100%',
+                                display: 'flex', flexDirection: 'column'
+                             }}>
+                                 <FaderStrip 
+                                     label={groupLabel}
+                                     color={group.color}
+                                     value={maxLevel}
+                                     isMuted={!isGroupUnmuted}
+                                     onChange={(val) => {
+                                         // Proportional or Max-Lock? 
+                                         // Max-Lock: simplest for MVP.
+                                         // If dragging group fader, set ALL members to this level relative to their own?
+                                         // Or just set ALL to this level?
+                                         // User said "control all of them at same time".
+                                         // VCA behavior (Scaling) is best.
+                                         // Ratio = val / currentMax.
+                                         // If currentMax is 0, add Delta?
+                                         
+                                         // COMPLEXITY: Stateless scaling is hard.
+                                         // Let's implement ABSOLUTE SET for now as fallback, 
+                                         // OR simple Delta if we had previous value.
+                                         // But we don't have 'prevVal'.
+                                         // Let's try: Calculate scale factor from *current* maxLevel.
+                                         
+                                         let scale = 0;
+                                         if (maxLevel > 0.001) {
+                                             scale = val / maxLevel;
+                                         }
+                                         
+                                         group.members.forEach(chId => {
+                                             const d = getChannelData(chId);
+                                             const send = d?.mixSends?.[user.mixBusId.toString()] || {};
+                                             const current = send.level !== undefined ? send.level : 0;
+                                             
+                                             let next;
+                                             if (maxLevel <= 0.001) {
+                                                 // Raising from silence: Set all to target val (Absolute)
+                                                 next = val; 
+                                             } else {
+                                                 // Scaling
+                                                 next = Math.min(1, Math.max(0, current * scale));
+                                             }
+                                             handleLevelChange(chId, next);
+                                         });
+                                     }}
+                                     onMuteToggle={() => {
+                                         // Toggle Force
+                                         const shouldMute = isGroupUnmuted; // If unmuted, go to Mute.
+                                         const targetOn = shouldMute ? 0 : 1;
+                                         
+                                         group.members.forEach(chId => {
+                                             const chStr = chId.toString().padStart(2, '0');
+                                             const busStr = mixBusId.toString().padStart(2, '0');
+                                             sendOsc(`/ch/${chStr}/mix/${busStr}/on`, targetOn);
+                                         });
+                                     }}
+                                 />
+                             </div>
+                         );
+                     })
+                 
+                 ) : (
+                     // --- STANDARD VIEW ---
+                     channels.map(chId => {
                     const data = getChannelData(chId);
                     
                     // Loading State
@@ -145,7 +263,8 @@ const MusicianMix = ({ socket, x32State, user }) => {
                             />
                         </div>
                     );
-                })}
+                })
+                )}
 
                 {/* Connection/Data Error Overlay */}
                 {(!x32State || Object.keys(x32State).length < 2) && (
