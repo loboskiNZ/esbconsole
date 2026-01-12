@@ -48,7 +48,8 @@ const MusicianMix = ({ socket, x32State, user }) => {
 
     return (
         <div style={{
-            height: '100%', 
+            height: '100%', width: '100%',
+            minWidth: 0, // Fix horizontal scroll clipping
             display: 'flex', 
             flexDirection: 'column', 
             background: '#121212', 
@@ -61,14 +62,16 @@ const MusicianMix = ({ socket, x32State, user }) => {
             {/* 3. SCROLLABLE FADER AREA */}
             <div style={{
                 flex: 1, 
+                width: '100%',
                 overflowX: 'auto', 
                 overflowY: 'hidden', 
                 display: 'flex', 
                 flexDirection: 'row',
                 alignItems: 'stretch',
-                padding: '10px',
+                padding: '10px 10px 10px 10px', // Uniform padding
                 gap: '12px',
                 // Webkit Scrollbar Styling
+                webkitOverflowScrolling: 'touch', // Critical for iOS momentum
                 scrollbarWidth: 'thin',
                 scrollbarColor: '#444 #222'
             }}>

@@ -16,22 +16,29 @@ const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChan
     return (
         <div style={{
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            height: '100dvh', width: '100%',
+            width: '100%',
             display: 'flex', flexDirection: 'column', 
             background: '#121212', color: 'white', fontFamily: 'sans-serif',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            touchAction: 'none' // Prevent body scroll
         }}>
             
             {/* MAIN CONTENT AREA */}
             <div style={{
-                flex: 1, display: 'flex', flexDirection: 'column', 
-                position: 'relative', overflow: 'hidden',
-                paddingBottom: '70px' // Use padding to clear the fixed nav
+                position: 'absolute', top: 0, left: 0, right: 0, bottom: '70px',
+                display: 'flex', flexDirection: 'column',
+                overflow: 'hidden',
+                paddingBottom: 'env(safe-area-inset-bottom)' // Extra safety if bottom bar doesn't cover
             }}>
                 
-                {/* NO HEADERS - Content fills area */}
+                {/* Content wrapper */}
                 <div style={{
-                    flex: 1, overflowY: 'hidden', 
+                    flex: 1, 
+                    position: 'relative',
+                    width: '100%',
+                    height: '100%',
+                    minWidth: 0, // CRITICAL FIX for flex scroll
+                    overflow: 'hidden',
                     display: 'flex', flexDirection: 'column',
                     background: 'linear-gradient(to bottom, #121212, #000)',
                 }}>
