@@ -19,16 +19,16 @@ const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChan
             width: '100%',
             display: 'flex', flexDirection: 'column', 
             background: '#121212', color: 'white', fontFamily: 'sans-serif',
-            overflow: 'hidden',
-            touchAction: 'none' // Prevent body scroll
+            overflow: 'hidden'
+            // touchAction: 'none' REMOVED: Blocks scrolling!
         }}>
             
             {/* MAIN CONTENT AREA */}
             <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, bottom: '70px',
+                position: 'absolute', top: 0, left: 0, right: 0, 
+                bottom: 'calc(70px + env(safe-area-inset-bottom))', // Robust bottom spacing
                 display: 'flex', flexDirection: 'column',
-                overflow: 'hidden',
-                paddingBottom: 'env(safe-area-inset-bottom)' // Extra safety if bottom bar doesn't cover
+                overflow: 'hidden'
             }}>
                 
                 {/* Content wrapper */}
