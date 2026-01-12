@@ -268,7 +268,7 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State }) 
                                         const isDragOver = dragOverIndex === idx;
                                         return (
                                         <div 
-                                            key={idx}
+                                            key={`${selectedSong.id}-${idx}`} // Force re-render on song change
                                             draggable
                                             onDragStart={(e) => {
                                                 e.dataTransfer.setData('text/plain', String(idx));
@@ -313,7 +313,7 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State }) 
                                                 <div style={{display:'flex', alignItems:'center', gap:'5px', flex:1}}>
                                                     <span style={{color: isDragOver ? '#00ffff' : '#555', fontSize:'1.2em', cursor:'grab'}}>☰</span>
                                                     <input 
-                                                        key={cue.name} 
+                                                        key={`${selectedSong.id}-${idx}-input`}
                                                         defaultValue={cue.name}
                                                         onBlur={(e) => {
                                                             const newName = e.target.value;

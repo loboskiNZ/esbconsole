@@ -1,6 +1,21 @@
 # Changelog
 
-## v2.5.1 (Current)
+## v2.8.1 (Current)
+**Date:** 2026-01-13
+
+### Bug Fixes
+*   **Setlist Editor**: Fixed a React Rendering bug where Cue Name inputs would not update when switching songs, displaying stale or empty data (falling back to "preset"). Forced component recreation on song selection.
+
+## v2.8.0
+**Date:** 2026-01-13
+
+### Critical Fixes
+*   **Cue Sync**: Refactored Cue Sync to use **Index** instead of Name. This resolves the issue where duplicate cue names (e.g. multiple "Chorus" sections) were all highlighted simultaneously.
+*   **Admin UI**: Updated Admin UI buttons to highlight based on unique Index.
+*   **Server Stability**: Fixed a crash in `triggerPart` caused by accessing properties on undefined objects.
+*   **Song Selection**: Fixed ID type mismatch (String vs Number) that prevented song selection in the Musician App.
+
+## v2.5.1
 **Date:** 2026-01-11
 
 ### Features
