@@ -1,6 +1,12 @@
 # Changelog
 
-## v2.8.1 (Current)
+## v2.8.2 (Current)
+**Date:** 2026-01-13
+
+### Stability Fixes
+*   **Spontaneous Channel Reset**: Disabled the server's "Force Sync" on startup (`syncConfigToConsole`). The server will no longer overwrite the console's Scribble Strips (Channel Names/Colors) with default values on connection/restart. This prevents the "Reset to Default/Spare" issue during live use.
+
+## v2.8.1
 **Date:** 2026-01-13
 
 ### Bug Fixes

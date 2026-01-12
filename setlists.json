@@ -488,6 +488,81 @@
             "path": "uploads/284a52b784194adb44a814e47ef079af",
             "size": 52623
           }
+        },
+        {
+          "id": 1768246143408,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca BASS.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "a53e2ea3e7ea4f9b45e5fd5c8b25fef5",
+            "path": "uploads/a53e2ea3e7ea4f9b45e5fd5c8b25fef5",
+            "size": 39913
+          }
+        },
+        {
+          "id": 1768246181645,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca BASS.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "f16f0b90c91b0bdfdba152d8006e2fbb",
+            "path": "uploads/f16f0b90c91b0bdfdba152d8006e2fbb",
+            "size": 39913
+          }
+        },
+        {
+          "id": 1768246214393,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca TROMBONE.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "49bbc90aacf1a53ec0b7accba5ff98d1",
+            "path": "uploads/49bbc90aacf1a53ec0b7accba5ff98d1",
+            "size": 48201
+          }
+        },
+        {
+          "id": 1768246266527,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca ALTO.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "39420b5c939196d18c226edea6f11ed3",
+            "path": "uploads/39420b5c939196d18c226edea6f11ed3",
+            "size": 48798
+          }
+        },
+        {
+          "id": 1768246289003,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca RHYTHM SECTION.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "702c31e16d4a3533e1bcee47d1af1fc3",
+            "path": "uploads/702c31e16d4a3533e1bcee47d1af1fc3",
+            "size": 73639
+          }
         }
       ]
     },

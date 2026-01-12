@@ -2164,7 +2164,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2192,7 +2192,7 @@
         "type": 0
       }
     },
-    "name": "-",
+    "name": "SPD1",
     "mixSends": {
       "2": {
         "level": 0.5687500238418579
@@ -2243,7 +2243,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2271,7 +2271,7 @@
         "type": 0
       }
     },
-    "name": "-",
+    "name": "SPD2",
     "mixSends": {
       "2": {
         "level": 0.5687500238418579
@@ -2631,7 +2631,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 1",
+    "name": "ABL Samples",
     "mixSends": {
       "2": {
         "level": 0.36250001192092896
@@ -2724,7 +2724,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 2",
+    "name": "ABL Horns",
     "mixSends": {
       "2": {
         "level": 0.4124999940395355
@@ -2789,7 +2789,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2817,7 +2817,7 @@
         "type": 0
       }
     },
-    "name": "Spare 3",
+    "name": "ABL Vox",
     "mixSends": {
       "2": {
         "level": 0.39375001192092896
@@ -2885,7 +2885,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2913,7 +2913,7 @@
         "type": 0
       }
     },
-    "name": "Spare 4",
+    "name": "ABL FX",
     "mixSends": {
       "2": {
         "level": 0.3812499940395355
@@ -2981,7 +2981,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#CCCCCC",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -3009,7 +3009,7 @@
         "type": 0
       }
     },
-    "name": "Spare 5",
+    "name": "Click",
     "mixSends": {
       "2": {
         "level": 0.3812499940395355

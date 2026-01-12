@@ -585,7 +585,7 @@ const osc = new OSC({
 
 osc.on('open', () => {
     console.log('✅ OSC Port Open');
-    syncConfigToConsole();
+    // syncConfigToConsole(); // DISABLED: Prevent overwriting console state on reconnect
     
     // Start X32 Subscription Loop (Heartbeat)
     setInterval(() => {

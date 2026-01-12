@@ -2981,7 +2981,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#CCCCCC",
     "labelColor": "black",
     "eqBands": {
       "1": {
