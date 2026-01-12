@@ -21,6 +21,8 @@ const FaderStrip = ({
     }, [value]); // CRITICAL FIX: Only update when VALUE changes, not when dragging state changes.
 
     // Unified Move Handler
+    const percentage = Math.max(0, Math.min(100, (internalValue || 0) * 100)); // Restored
+
     const handleMove = (clientY) => {
         if (!trackRef.current) return;
         const rect = trackRef.current.getBoundingClientRect();
