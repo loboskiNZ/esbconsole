@@ -15,7 +15,9 @@ const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChan
 
     return (
         <div style={{
-            display: 'flex', flexDirection: 'column', height: '100dvh', 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            height: '100dvh', width: '100%',
+            display: 'flex', flexDirection: 'column', 
             background: '#121212', color: 'white', fontFamily: 'sans-serif',
             overflow: 'hidden'
         }}>
@@ -24,7 +26,7 @@ const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChan
             <div style={{
                 flex: 1, display: 'flex', flexDirection: 'column', 
                 position: 'relative', overflow: 'hidden',
-                marginBottom: '70px' // Space for fixed bottom menu
+                paddingBottom: '70px' // Use padding to clear the fixed nav
             }}>
                 
                 {/* NO HEADERS - Content fills area */}
