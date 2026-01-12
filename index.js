@@ -2454,7 +2454,9 @@ io.on('connection', (socket) => {
           // 1. Forward to Hardware
           // if (osc && osc.status() === OSC.STATUS.OPEN) { 
           // Check removed: 'restore' works without it, so we trust osc.send()
-          const message = new OSC.Message(data.address, ...data.args);
+          // Explicitly coerce to Number for X32 (it ignores strings for levels)
+          const args = data.args.map(a => Number(a));
+          const message = new OSC.Message(data.address, ...args);
           osc.send(message);
           
           // DEBUG: Log specific channel sends to see if they are firing
