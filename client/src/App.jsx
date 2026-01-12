@@ -380,6 +380,7 @@ const SystemMonitor = ({ socket }) => {
             boxShadow: '0 0 10px #000'
         }}>
             <span style={{fontWeight:'bold'}}>MONITOR:</span>
+            <span style={{color: stats.ip ? '#0ff' : '#666'}}>IP: {stats.ip || '...'}</span>
             <span>CPU: {stats.cpu}%</span>
             <span>MEM: {stats.mem} MB</span>
             <span>UP: {formatTime(stats.uptime)}</span>
@@ -575,6 +576,8 @@ function AppContent() {
   const [soloIds, setSoloIds] = useState([]); // Array of strings
   const [scenes, setScenes] = useState([]); // List of scene names
   const [inputMeters, setInputMeters] = useState(Array(32).fill(0));
+  const [toast, setToast] = useState(null); // { msg, type }
+  const [syncProgress, setSyncProgress] = useState(null); // { step, label, detail }
 
   // Load initial config & scenes
   useEffect(() => {
@@ -701,6 +704,23 @@ function AppContent() {
         setX32State(data);
     });
 
+    // Hardware Sync Notifications
+    socket.on('sync_start', (data) => {
+        console.log("🚀 Sync Start Received:", data);
+        setSyncProgress({ step: 1, label: "Loading Names & Colors...", detail: `Scene: ${data.name}` });
+    });
+    socket.on('sync_progress', (data) => {
+        console.log("🔄 Sync Progress:", data);
+        setSyncProgress(prev => ({ ...prev, ...data }));
+    });
+    socket.on('verify_progress', (data) => {
+        setSyncProgress(prev => ({ ...prev, detail: data.detail }));
+    });
+    socket.on('sync_complete', () => {
+        setSyncProgress({ step: 6, label: "Sync Complete!", detail: "All Systems Go" });
+        setTimeout(() => setSyncProgress(null), 2500);
+    });
+
     return () => {
         socket.off('connect');
         socket.off('active_part');
@@ -708,7 +728,7 @@ function AppContent() {
         socket.off('solo_update');
         socket.off('x32_bulk_update');
     };
-  }, [selectedSongId]);
+  }, []);
 
   const handleTrigger = async (partName) => {
     if (!selectedSongId) return;
@@ -766,8 +786,8 @@ function AppContent() {
   const handleLoadScene = async (name) => {
     if (!confirm(`Load scene "${name}"? Current settings will be overwritten.`)) return;
     try {
-      await axios.post(`/api/scenes/${name}/load`);
-      alert("Scene loaded!");
+      await axios.post('/api/scenes/load', { name });
+      // alert("Scene loaded!"); // Removed to allow Overlay to show
     } catch (err) {
       console.error("Failed to load scene", err);
       alert("Error loading scene");
@@ -845,6 +865,19 @@ function AppContent() {
                             border: '1px solid #0055aa', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
                             fontWeight: 'bold', fontSize:'0.8em'
                         }}>MONITORS</button>
+                    </div>
+
+                    {/* SETLIST INFO ROW (Restored) */}
+                    <div style={{marginTop:'5px', padding:'4px 8px', background:'#222', borderRadius:'4px', border:'1px solid #333', display:'flex', alignItems:'center', gap:'10px'}}>
+                        <div style={{color:'#aaa', fontSize:'0.7em'}}>SETLIST: <span style={{color:'white', fontWeight:'bold'}}>{config.activeSetlist || 'Default'}</span></div>
+                        <div style={{width:'1px', height:'10px', background:'#444'}}></div>
+                        <div style={{color:'#aaa', fontSize:'0.7em'}}>SONG: <span style={{color:'#0f0', fontWeight:'bold', fontSize:'1.1em'}}>{currentSong ? currentSong.title : '--'}</span></div>
+                        <div style={{width:'1px', height:'10px', background:'#444'}}></div>
+                        <div style={{color:'#666', fontSize:'0.7em'}}>NEXT: <span style={{color:'#CCC'}}>{(() => {
+                             const idx = config && config.songs ? config.songs.findIndex(s => s.id === selectedSongId) : -1;
+                             const next = (config && config.songs && idx !== -1 && idx < config.songs.length - 1) ? config.songs[idx + 1] : null;
+                             return next ? next.title : '--';
+                        })()}</span></div>
                     </div>
 
                     <div style={{display:'flex', gap:'8px', fontSize:'0.7em', marginTop:'5px'}}>
@@ -1753,7 +1786,7 @@ function AppContent() {
                      <span style={{color:'#666', fontSize:'0.8em', textTransform:'uppercase', letterSpacing:'1px', fontWeight:'bold'}}>SETLIST:</span>
                      <select 
                         value={selectedSongId || ''} 
-                        onChange={(e) => setSelectedSongId(parseInt(e.target.value))}
+                        onChange={(e) => setSelectedSongId(e.target.value)}
                         style={{
                             background:'#333', color:'white', border:'1px solid #555', 
                             padding:'5px 10px', borderRadius:'4px', fontSize:'1em', minWidth:'250px'
@@ -1808,10 +1841,12 @@ function AppContent() {
                     <h3 style={{marginTop:0, color:'#888', borderBottom:'1px solid #444', paddingBottom:'5px'}}>GROUPS / MUTES</h3>
                     <div style={{display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center'}}>
                         {config && config.groups && config.groups.map(c => {
-                            // Use explicit IDs for robustness
-                            const groupChannels = c.ids && c.ids.length > 0
-                                ? config.inputs.filter(ch => c.ids.includes(String(ch.id)))
-                                : config.inputs.filter(ch => x32State[ch.id]?.color === c.bg);
+                            // UNIFIED LOGIC: Match by ID *OR* Color
+                            const groupChannels = config.inputs.filter(ch => {
+                                const matchesId = c.ids && c.ids.includes(String(ch.id));
+                                const matchesColor = x32State[ch.id]?.color === c.bg;
+                                return matchesId || matchesColor;
+                            });
 
                             const isGroupActive = groupChannels.length > 0;
                             const allMuted = isGroupActive && groupChannels.every(ch => x32State[ch.id]?.mute === true);
@@ -2198,9 +2233,110 @@ function AppContent() {
       {showMusicians ? <MusiciansManager onClose={() => setShowMusicians(false)} /> : null}
       {showMonitors ? <MonitorsOverlay config={config} x32State={x32State} onClose={() => setShowMonitors(false)} /> : null}
       {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
-      {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
+       {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
+
+       {/* DEBUG: SOCKET STATUS BANNER (REMOVE LATER) */}
+       <div style={{
+          position: 'fixed', top: '130px', left: '50%', transform: 'translateX(-50%)',
+          background: socket.connected ? 'rgba(0,100,0,0.8)' : 'rgba(100,0,0,0.8)',
+          color: 'white', padding: '5px 10px', borderRadius: '4px', zIndex: 999999,
+          pointerEvents: 'none', fontSize: '0.8em', border: '1px solid white'
+       }}>
+          DEBUG: Socket {socket.connected ? 'CONNECTED' : 'DISCONNECTED'} | ID: {socket.id || '...'}
+          {syncProgress && <span> | SYNC: Step {syncProgress.step}</span>}
+       </div>
+
+       {/* SCENE LOADING OVERLAY */}
+       {syncProgress && <SceneLoadingOverlay progress={syncProgress} onClose={() => setSyncProgress(null)} />}
+
+      {/* TOAST NOTIFICATION */}
+      {toast && (
+          <div style={{
+              position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
+              background: toast.type === 'success' ? 'rgba(0, 100, 0, 0.9)' : 'rgba(0, 0, 100, 0.9)',
+              color: 'white', padding: '15px 30px', borderRadius: '8px', zIndex: 10000,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              fontSize: '1.2em', fontWeight: 'bold',
+              display: 'flex', alignItems: 'center', gap: '10px'
+          }}>
+              {toast.type === 'info' && <span className="spinner">↻</span>}
+              {toast.msg}
+          </div>
+      )}
     </div>
   );
 }
 
-export default App;
+const SceneLoadingOverlay = ({ progress, onClose }) => {
+    // progress: { step: number, label: string, detail?: string }
+    // Steps 1-5
+    const steps = [
+        "Names & Colors",
+        "Channel Settings (Gain, EQ, Dyn)",
+        "Effects & Mix Sends",
+        "Mutes & Levels",
+        "Granular Verification"
+    ];
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            background: 'rgba(0,0,0,0.92)', zIndex: 99999,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            color: 'white', fontFamily: 'monospace'
+        }}>
+            {/* Background Logo */}
+            <img src="/esb_logo.png" style={{
+                position: 'absolute', width: '600px', opacity: 0.15,
+                animation: 'spin 10s linear infinite', pointerEvents: 'none'
+            }} />
+            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
+            
+            <div style={{ zIndex: 2, background: '#111', padding: '40px', borderRadius: '15px', border: '1px solid #333', minWidth: '400px' }}>
+                <h2 style={{ textAlign: 'center', borderBottom: '1px solid #444', paddingBottom: '15px', marginTop: 0 }}>
+                    SCENE SYNC
+                </h2>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '20px 0' }}>
+                    {steps.map((text, idx) => {
+                        const stepNum = idx + 1;
+                        const isDone = progress.step > stepNum || (progress.step === 6 && stepNum === 5); // 6=Complete
+                        const isCurrent = progress.step === stepNum;
+                        
+                        return (
+                            <div key={idx} style={{ 
+                                display: 'flex', alignItems: 'center', gap: '15px',
+                                opacity: isDone || isCurrent ? 1 : 0.3,
+                                color: isCurrent ? '#4fecff' : (isDone ? '#0f0' : '#888')
+                            }}>
+                                <div style={{ 
+                                    width: '24px', height: '24px', 
+                                    border: `2px solid ${isCurrent ? '#4fecff' : '#555'}`,
+                                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    background: isDone ? '#0f0' : 'transparent'
+                                }}>
+                                    {isDone && <span style={{color:'black', fontWeight:'bold'}}>✓</span>}
+                                    {isCurrent && <span className="spinner" style={{fontSize:'12px'}}>↻</span>}
+                                </div>
+                                <span style={{ fontSize: '1.2em', fontWeight: isCurrent ? 'bold' : 'normal' }}>
+                                    {text}
+                                </span>
+                            </div>
+                        )
+                    })}
+                </div>
+
+                {/* Detail Text for Verification */}
+                <div style={{ 
+                    height: '30px', textAlign: 'center', color: '#666', fontSize: '0.9em',
+                    borderTop: '1px solid #444', paddingTop: '15px' 
+                }}>
+                    {progress.detail || progress.label || "Waiting..."}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default App; // Ensure this replaces the corrected export

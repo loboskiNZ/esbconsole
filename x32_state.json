@@ -1,7 +1,7 @@
 {
   "1": {
     "level": 0.6344085931777954,
-    "mute": false,
+    "mute": true,
     "gate": true,
     "dyn": true,
     "eq": true,
@@ -1172,7 +1172,7 @@
   },
   "13": {
     "level": 0.59,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1271,7 +1271,7 @@
   },
   "14": {
     "level": 0.67253178358078,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1370,7 +1370,7 @@
   },
   "15": {
     "level": 0.6842619776725769,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1469,7 +1469,7 @@
   },
   "16": {
     "level": 0.6412512063980103,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1565,7 +1565,7 @@
   },
   "17": {
     "level": 0.6842619776725769,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1661,7 +1661,7 @@
   },
   "18": {
     "level": 0.6764418482780457,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1754,7 +1754,7 @@
   },
   "19": {
     "level": 0.67253178358078,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1847,7 +1847,7 @@
   },
   "20": {
     "level": 0.6695992350578308,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -1940,7 +1940,7 @@
   },
   "21": {
     "level": 0.6705767512321472,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -2033,7 +2033,7 @@
   },
   "22": {
     "level": 0.6774193644523621,
-    "mute": false,
+    "mute": true,
     "gate": false,
     "dyn": true,
     "eq": true,
@@ -2125,12 +2125,12 @@
     }
   },
   "23": {
-    "level": 0,
+    "level": 0.5210165977478027,
     "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
-    "hpf": false,
+    "hpf": true,
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
@@ -2146,7 +2146,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2174,7 +2174,7 @@
         "type": 0
       }
     },
-    "name": "-",
+    "name": "SPD1",
     "mixSends": {
       "2": {
         "level": 0.5687500238418579
@@ -2197,15 +2197,16 @@
       "02": {
         "level": 0.41874998807907104
       }
-    }
+    },
+    "link": true
   },
   "24": {
-    "level": 0,
+    "level": 0.5210165977478027,
     "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
-    "hpf": false,
+    "hpf": true,
     "hpfFreq": 0,
     "hcut": false,
     "hcutFreq": 1,
@@ -2221,7 +2222,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2249,19 +2250,25 @@
         "type": 0
       }
     },
-    "name": "-",
+    "name": "SPD2",
     "mixSends": {
+      "2": {
+        "level": 0.5687500238418579
+      },
       "3": {
-        "level": 0.2874999940395355
+        "level": 0.3125
+      },
+      "6": {
+        "level": 0.012500000186264515
       },
       "9": {
         "level": 0
       },
       "10": {
-        "level": 0.2562499940395355
+        "level": 0.26875001192092896
       },
       "12": {
-        "level": 0.4375
+        "level": 0.41874998807907104
       },
       "02": {
         "level": 0.375
@@ -2269,8 +2276,8 @@
     }
   },
   "25": {
-    "level": 0.6617791056632996,
-    "mute": false,
+    "level": 0.6422287225723267,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2318,7 +2325,7 @@
         "type": 0
       }
     },
-    "name": "ABL Drums",
+    "name": "Drums",
     "mixSends": {
       "2": {
         "level": 0.36250001192092896
@@ -2359,8 +2366,8 @@
     }
   },
   "26": {
-    "level": 0.67253178358078,
-    "mute": false,
+    "level": 0.5767350792884827,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2408,7 +2415,7 @@
         "type": 0
       }
     },
-    "name": "ABL Bass",
+    "name": "Bass",
     "mixSends": {
       "2": {
         "level": 0.34375
@@ -2452,8 +2459,8 @@
     }
   },
   "27": {
-    "level": 0.6510263681411743,
-    "mute": false,
+    "level": 0.5610948204994202,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2501,7 +2508,7 @@
         "type": 0
       }
     },
-    "name": "ABL Keys",
+    "name": "Keys",
     "mixSends": {
       "2": {
         "level": 0.3375000059604645
@@ -2542,8 +2549,8 @@
     }
   },
   "28": {
-    "level": 0.6715542674064636,
-    "mute": false,
+    "level": 0.523949146270752,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2591,7 +2598,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 1",
+    "name": "horns",
     "mixSends": {
       "2": {
         "level": 0.36250001192092896
@@ -2632,8 +2639,8 @@
     }
   },
   "29": {
-    "level": 0.6441837549209595,
-    "mute": false,
+    "level": 0.5532746911048889,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2681,7 +2688,7 @@
         "type": 0
       }
     },
-    "name": "ABL Spare 2",
+    "name": "samples",
     "mixSends": {
       "2": {
         "level": 0.4124999940395355
@@ -2722,8 +2729,8 @@
     }
   },
   "30": {
-    "level": 0.62,
-    "mute": false,
+    "level": 0.5405669808387756,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2743,7 +2750,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2771,7 +2778,7 @@
         "type": 0
       }
     },
-    "name": "Spare 3",
+    "name": "vox",
     "mixSends": {
       "2": {
         "level": 0.39375001192092896
@@ -2815,8 +2822,8 @@
     }
   },
   "31": {
-    "level": 0.6451612710952759,
-    "mute": false,
+    "level": 0.5669599175453186,
+    "mute": true,
     "gate": false,
     "dyn": false,
     "eq": false,
@@ -2836,7 +2843,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#FFFFFF",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2864,7 +2871,7 @@
         "type": 0
       }
     },
-    "name": "Spare 4",
+    "name": "FX",
     "mixSends": {
       "2": {
         "level": 0.3812499940395355
@@ -2911,7 +2918,7 @@
     }
   },
   "32": {
-    "level": 0.6510263681411743,
+    "level": 0.47409579157829285,
     "mute": true,
     "gate": false,
     "dyn": false,
@@ -2932,7 +2939,7 @@
     "dynAttack": 0,
     "dynHold": 0,
     "dynRelease": 0,
-    "color": "#333333",
+    "color": "#CCCCCC",
     "labelColor": "black",
     "eqBands": {
       "1": {
@@ -2960,7 +2967,7 @@
         "type": 0
       }
     },
-    "name": "Spare 5",
+    "name": "Click",
     "mixSends": {
       "2": {
         "level": 0.3812499940395355
@@ -3079,7 +3086,7 @@
   },
   "master": {
     "mute": true,
-    "level": 0.638318657875061,
+    "level": 0.5826001763343811,
     "hcut": false,
     "dynGain": 0.5
   },

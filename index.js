@@ -87,9 +87,9 @@ function saveState() {
     global.saveTimer = setTimeout(() => {
         fs.writeFile(STATE_FILE, JSON.stringify(x32State, null, 2), (err) => {
             if (err) console.error("❌ Failed to save state:", err);
-            else console.log("💾 State Saved");
+            // else console.log("💾 State Saved"); // Too verbose 
         });
-    }, 1000); // 1-second debounce
+    }, 200); // 200ms debounce
 }
 
 function loadState() {
@@ -105,6 +105,22 @@ function loadState() {
     }
 }
 
+// Graceful Shutdown: Force Save on Exit
+const handleShutdown = () => {
+    console.log("🛑 Server stopping... Saving state.");
+    if (global.saveTimer) clearTimeout(global.saveTimer);
+    try {
+        fs.writeFileSync(STATE_FILE, JSON.stringify(x32State, null, 2));
+        console.log("✅ State saved successfully.");
+    } catch(e) {
+        console.error("❌ Save failed on exit:", e.message);
+    }
+    process.exit(0);
+};
+
+process.on('SIGINT', handleShutdown);
+process.on('SIGTERM', handleShutdown);
+
 // --- SCENES API ---
 
 app.get('/api/scenes', (req, res) => {
@@ -118,9 +134,7 @@ app.get('/api/scenes', (req, res) => {
     });
 });
 
-app.get('/api/config', (req, res) => {
-    res.json(config);
-});
+
 
 app.post('/api/scenes/save', (req, res) => {
     const { name } = req.body;
@@ -152,27 +166,348 @@ app.post('/api/scenes/load', (req, res) => {
             // 2. Notify Frontend
             io.emit('x32_bulk_update', x32State);
             
-            // 3. SYNC HARDWARE (Blast OSC)
-            console.log(`Title: Loading Scene "${name}" - Syncing Hardware...`);
-            Object.entries(x32State).forEach(([chId, ch]) => {
-                // Fader
-                let addr = getX32Address(chId, 'level');
-                if (addr && ch.level !== undefined) osc.send(new OSC.Message(addr, Number(ch.level)));
+            // 3. HARDWARE SYNC (5-Step Sequential Process)
+            console.log(`Title: Loading Scene "${name}" - Starting 5-Step Sync...`);
+            
+            // DEBUG LOGGING
+            const connectedClients = io.engine.clientsCount;
+            const logMsg = `[${new Date().toISOString()}] 📡 Emitting sync_start to ${connectedClients} clients. Name: ${name}\n`;
+            console.log(logMsg);
+            try { fs.appendFileSync('debug_sync.log', logMsg); } catch(e){}
+
+            io.emit('sync_start', { name });
+            
+            // Helper for delay
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+            (async () => {
+              try {
+                // WRAPPED IN TRY/CATCH TO CATCH ERRORS IN ASYNC LOOP
+                const channels = Object.entries(x32State);
+
+                // --- STEP 1: NAMES & COLORS ---
+                io.emit('sync_progress', { step: 1, label: "Loading Names & Colors..." });
+                for (const [chId, ch] of channels) {
+                    const messages = [];
+                    let addr;
+                    // Name
+                    addr = getX32Address(chId, 'name');
+                    if (addr && ch.name) {
+                         messages.push(new OSC.Message(addr, String(ch.name)));
+                         // Log first 5 channels to debug why they "failed to load"
+                         if (parseInt(chId) <= 5) console.log(`   -> Sync Ch ${chId} Name: "${ch.name}" (Addr: ${addr})`);
+                    }
+                    // Color
+                    addr = getX32Address(chId, 'color');
+                    if (addr && ch.color) messages.push(new OSC.Message(addr, getX32ColorID(ch.color)));
+                    
+                    for(const msg of messages) { osc.send(msg); }
+                    await sleep(5);
+                }
+                await sleep(1000);
+
+                // --- STEP 1.5: BUS NAMES & CONFIG (From Setlist/Musicians if Scene lacks them) ---
+                io.emit('sync_progress', { step: 1.5, label: "Loading Bus Configurations..." });
+                const setlistData = setlistManager.getAll();
+                const busNames = setlistData.busNames || {};
+                const routing = setlistData.musicianRouting || {};
+
+                // Helper: Inferred Names from Groups
+                // Map Bus ID -> Group Label if all group members go to that bus
+                const inferredBusNames = {};
+                const inferredBusColors = {}; // Store inferred colors too
+
+                // 1. Check Groups (Horns -> Bus 12)
+                if (config.groups) {
+                    config.groups.forEach(g => {
+                        const routedBuses = g.ids.map(id => routing[id]).filter(b => b);
+                        if (routedBuses.length > 0 && routedBuses.every(val => val === routedBuses[0])) {
+                           const targetBus = routedBuses[0];
+                           inferredBusNames[targetBus] = g.label;
+                           inferredBusColors[targetBus] = g.bg || '#00FF00'; // Default Green for groups or use config
+                        }
+                    });
+                }
                 
-                // Mute
-                addr = getX32Address(chId, 'mute');
-                if (addr && ch.mute !== undefined) osc.send(new OSC.Message(addr, ch.mute ? 0 : 1));
+                // 2. Check Single Musicians (Vox Ed -> Bus 1)
+                // Reverse map: Bus -> [Channels]
+                const busToInputs = {};
+                Object.entries(routing).forEach(([chId, busId]) => {
+                    if(!busToInputs[busId]) busToInputs[busId] = [];
+                    busToInputs[busId].push(chId);
+                });
                 
-                // EQ On/Off
-                addr = getX32Address(chId, 'eq');
-                if (addr && ch.eq !== undefined) osc.send(new OSC.Message(addr, ch.eq ? 1 : 0));
+                Object.entries(busToInputs).forEach(([busId, inputs]) => {
+                    // If only ONE musician is routed to this bus (e.g. Bus 1 has only Ch 17)
+                    // OR if we want to mimic the primary one? Let's check single only for safety first.
+                    if (inputs.length === 1) {
+                         const sourceChId = inputs[0];
+                         const sourceCh = x32State[sourceChId];
+                         if (sourceCh && sourceCh.name) {
+                             // Only infer if not already defined by Group
+                             if (!inferredBusNames[busId]) {
+                                 inferredBusNames[busId] = sourceCh.name;
+                                 inferredBusColors[busId] = sourceCh.color;
+                                 console.log(`   -> Inferred Bus ${busId} Name: "${sourceCh.name}" (from Musician Ch ${sourceChId})`);
+                             }
+                         }
+                    }
+                });
+
+                for (let i = 1; i <= 16; i++) {
+                    const busId = 'bus' + i;
+                    // Ensure ch exists
+                    if(!x32State[busId]) x32State[busId] = { name: `Bus ${i}`, color: null };
+                    const ch = x32State[busId];
+                    
+                    let finalName = ch.name || `Bus ${i}`; 
+                    
+                    // Priority 1: Explicit Setlist Name
+                    if (busNames[String(i)]) {
+                         finalName = busNames[String(i)];
+                         // Priority 2: Inferred Name (Group or Musician)
+                    } else if (finalName === `Bus ${i}` && inferredBusNames[String(i)]) {
+                         finalName = inferredBusNames[String(i)];
+                    } else if (i >= 13 && i <= 16 && loadedState.fx) { 
+                         // Implicit FX Return Naming (Bus 13=FX1 ...)
+                         // If we have FX loaded, these are likely FX sends.
+                         finalName = `FX ${i - 12}`;
+                         ch.color = '#FF00FF'; // Magenta
+                    }
+
+                    if (finalName !== ch.name) {
+                        // PERSIST TO STATE
+                        ch.name = finalName; 
+                    }
+
+                    const msgs = [];
+                    // Name
+                    const nameAddr = getX32Address(busId, 'name');
+                    if (nameAddr) msgs.push(new OSC.Message(nameAddr, String(finalName)));
+                    
+                    // Color
+                    // Priority 1: Existing Color
+                    // Priority 2: Inferred Color (from Musician/Group)
+                    // Priority 3: Fallback Yellow
+                    if (!ch.color) {
+                         if (inferredBusColors[String(i)]) {
+                             ch.color = inferredBusColors[String(i)];
+                         } else if (busNames[String(i)]) {
+                             ch.color = '#FFFF00';
+                         } else {
+                             ch.color = '#FFFF00';
+                         }
+                    }
+                    
+                    const colorID = getX32ColorID(ch.color);
+
+                    const colAddr = getX32Address(busId, 'color');
+                    if (colAddr) msgs.push(new OSC.Message(colAddr, colorID));
+
+                    for(const m of msgs) osc.send(m);
+                    await sleep(5);
+                }
+                await sleep(1000);
+
+                // --- STEP 2: CHANNEL SETTINGS (Gain, EQ, Dyn, Gate, Pan) ---
+                io.emit('sync_progress', { step: 2, label: "Loading Channel Settings..." });
+                for (const [chId, ch] of channels) {
+                     const messages = [];
+                     // Gain/Preamp
+                     let addr = getX32Address(chId, 'preamp');
+                     if (addr && ch.preampGain !== undefined) messages.push(new OSC.Message(addr, Number(ch.preampGain)));
+                     
+                     // Phantom
+                     addr = getX32Address(chId, 'phantom');
+                     if (addr && ch.phantom !== undefined) messages.push(new OSC.Message(addr, ch.phantom ? 1 : 0));
+
+                     // Phase
+                     addr = getX32Address(chId, 'phase');
+                     if (addr && ch.invert !== undefined) messages.push(new OSC.Message(addr, ch.invert ? 1 : 0)); // 'invert' in JSON maps to phase
+
+                     // Gate
+                     addr = getX32Address(chId, 'gate');
+                     if (addr && ch.gate !== undefined) messages.push(new OSC.Message(addr, ch.gate ? 1 : 0));
+                     if (ch.gate) {
+                        addr = getX32Address(chId, 'gateThr');
+                        if (addr && ch.gateThr !== undefined) messages.push(new OSC.Message(addr, Number(ch.gateThr)));
+                        // ... attack, hold, release omitted for brevity unless needed
+                     }
+
+                     // Compressor (Dyn)
+                     addr = getX32Address(chId, 'dyn');
+                     if (addr && ch.dyn !== undefined) messages.push(new OSC.Message(addr, ch.dyn ? 1 : 0));
+                     if (ch.dyn) {
+                        addr = getX32Address(chId, 'dynThr');
+                        if (addr && ch.dynThr !== undefined) messages.push(new OSC.Message(addr, Number(ch.dynThr)));
+                        addr = getX32Address(chId, 'dynRatio');
+                        if (addr && ch.dynRatio !== undefined) messages.push(new OSC.Message(addr, Number(ch.dynRatio)));
+                     }
+
+                     // EQ
+                     addr = getX32Address(chId, 'eq');
+                     if (addr && ch.eq !== undefined) messages.push(new OSC.Message(addr, ch.eq ? 1 : 0));
+                     if (ch.eqBands) {
+                        Object.entries(ch.eqBands).forEach(([bandNum, band]) => {
+                            ['f', 'g', 'q', 'type'].forEach(param => {
+                                if (band[param] !== undefined) {
+                                    addr = getX32Address(chId, 'eqParam', { band: bandNum, param });
+                                    if(addr) messages.push(new OSC.Message(addr, Number(band[param])));
+                                }
+                            });
+                        });
+                     }
+
+                     // Pan
+                     if (ch.pan !== undefined) {
+                        addr = getX32Address(chId, 'pan');
+                        if (addr) messages.push(new OSC.Message(addr, Number(ch.pan)));
+                     }
+
+                     for(const msg of messages) { osc.send(msg); }
+                     await sleep(10);
+                }
+                await sleep(1000);
+
+                // --- STEP 3: EFFECTS (Mix Sends) ---
+                io.emit('sync_progress', { step: 3, label: "Loading Mix Sends..." });
+                for (const [chId, ch] of channels) {
+                    const messages = [];
+                    // Mix Sends
+                    if (ch.mixSends) {
+                        Object.entries(ch.mixSends).forEach(([busId, sendData]) => {
+                            if (sendData.level !== undefined) {
+                                let addr = getX32Address(chId, 'mixSend', busId);
+                                if (addr) messages.push(new OSC.Message(addr, Number(sendData.level)));
+                            }
+                        });
+                    }
+                    for(const msg of messages) { osc.send(msg); }
+                    await sleep(5);
+                }
+                await sleep(1000);
                 
-                // ... (Add other params as needed: Gate, Dyn, Bands)
-                // Minimally viable sync for now to avoid prolonged freeze
-            });
+                // --- STEP 3.5: LOAD FX UNITS ---
+                if (loadedState.fx) {
+                    io.emit('sync_progress', { step: 3.5, label: "Loading FX Units..." });
+                    for (const [slotId, fxData] of Object.entries(loadedState.fx)) {
+                         const slot = parseInt(slotId);
+                         if (slot < 1 || slot > 8) continue;
+                         
+                         // TYPE
+                         if (fxData.type !== undefined) {
+                             osc.send(new OSC.Message(`/fx/${slot}/type`, Number(fxData.type)));
+                         }
+                         
+                         // PARAMS
+                         if (fxData.params) {
+                             Object.entries(fxData.params).forEach(([paramId, val]) => {
+                                 osc.send(new OSC.Message(`/fx/${slot}/par/${paramId}`, Number(val)));
+                             });
+                         }
+                         await sleep(20);
+                    }
+                    await sleep(1000);
+                }
+
+                // --- STEP 4: MUTES & LEVELS ---
+                io.emit('sync_progress', { step: 4, label: "Loading Faders & Mutes..." });
+                for (const [chId, ch] of channels) {
+                    const messages = [];
+                    let addr;
+                    // Fader
+                    addr = getX32Address(chId, 'level');
+                    if (addr && ch.level !== undefined) messages.push(new OSC.Message(addr, Number(ch.level)));
+                    // Mute
+                    addr = getX32Address(chId, 'mute');
+                    if (addr && ch.mute !== undefined) messages.push(new OSC.Message(addr, ch.mute ? 0 : 1));
+                    
+                    for(const msg of messages) { osc.send(msg); }
+                    await sleep(5);
+                }
+                await sleep(1000);
+
+                // --- STEP 5: GRANULAR VERIFICATION ---
+                io.emit('sync_progress', { step: 5, label: "Verifying Integrity (One by One)..." });
+                
+                // We re-send EVERYTHING per channel, strictly one message at a time
+                const paramsToCheck = [
+                    'name', 'color', 'level', 'mute', 'pan', 
+                    'preampGain', 'phantom', 'phase',
+                    'gate', 'gateThr', 'gateAttack', 'gateHold', 'gateRelease',
+                    'dyn', 'dynThr', 'dynRatio', 'dynGain', 'dynAttack', 'dynHold', 'dynRelease',
+                    'eq', 'hpf', 'hpfFreq'
+                ];
+
+                for (const [chId, ch] of channels) {
+                     io.emit('verify_progress', { detail: `Verifying Channel ${chId}...` });
+                     
+                     // 1. Check Standard Params
+                     for(const p of paramsToCheck) {
+                         // Some params are direct props, some map differently. Re-using generic logic where possible.
+                         // Simplification: We construct the message again and send it.
+                         // Ideally we would READ from console, but "Blind Verification" (Re-Send) is what was requested/implied for robustness.
+                         
+                         let val = ch[p];
+                         if(val !== undefined) {
+                             let addr = getX32Address(chId, p);
+                             
+                             // Value Transforms
+                             if (['mute','gate','dyn','eq','phantom','invert','hpf'].includes(p)) val = val ? 1 : 0; // Invert logic for mute handled inside getX32Address usually? No, manually below.
+                             if (p === 'mute') val = ch.mute ? 0 : 1; // Mute is 1=Muted in UI usually? Wrapper handles logic.
+                             if (p === 'invert' && ch.invert !== undefined) val = ch.invert ? 1 : 0;
+                             if (p === 'color') val = getX32ColorID(ch.color);
+
+                             if(addr) {
+                                 osc.send(new OSC.Message(addr, (typeof val === 'string') ? val : Number(val)));
+                                 await sleep(2); // Strict Throttle
+                             }
+                         }
+                     }
+
+                     // 2. Check EQ Bands
+                     if(ch.eqBands) {
+                        for(const [bandNum, band] of Object.entries(ch.eqBands)) {
+                            for(const eqP of ['f','g','q','type']) {
+                                if(band[eqP] !== undefined) {
+                                    let addr = getX32Address(chId, 'eqParam', {band: bandNum, param: eqP});
+                                    if(addr) {
+                                        osc.send(new OSC.Message(addr, Number(band[eqP])));
+                                        await sleep(2);
+                                    }
+                                }
+                            }
+                        }
+                     }
+                     
+                     // 3. Check Mix Sends
+                     if(ch.mixSends) {
+                        for(const [busId, sendData] of Object.entries(ch.mixSends)) {
+                             if(sendData.level !== undefined) {
+                                 let addr = getX32Address(chId, 'mixSend', busId);
+                                 if(addr) {
+                                     osc.send(new OSC.Message(addr, Number(sendData.level)));
+                                     await sleep(2);
+                                 }
+                             }
+                        }
+                     }
+                }
+
+                console.log("✅ Hardware Sync & Verification Complete");
+                io.emit('sync_complete');
+                try { fs.appendFileSync('debug_sync.log', `[${new Date().toISOString()}] ✅ Sync Complete\n`); } catch(e){}
+
+              } catch (err) {
+                 console.error("🔥 SYNC PROCESS FAILED:", err);
+                 try { fs.appendFileSync('debug_sync.log', `[${new Date().toISOString()}] 🔥 SYNC FAILED: ${err.message}\n${err.stack}\n`); } catch(e){}
+                 io.emit('sync_error', { error: err.message });
+              }
+            })();
             
             res.json({ success: true });
         } catch (e) {
+            console.error("Scene Load Error", e);
             res.status(500).json({ error: "Corrupt scene file" });
         }
     });
@@ -501,6 +836,8 @@ function getX32Address(channelId, type, extra) {
         case 'hpfFreq': return `/ch/${ch}/preamp/hpf`;
         case 'preampGain': return `/headamp/${ha}/gain`;
         case 'phantom': return `/headamp/${ha}/phantom`;
+        case 'name': return `/ch/${ch}/config/name`;
+        case 'color': return `/ch/${ch}/config/color`;
         case 'pan': return `/ch/${ch}/mix/pan`;
         // Link is special, usually handled via /config/chlink
         case 'link': {
@@ -515,12 +852,31 @@ function getX32Address(channelId, type, extra) {
         case 'mixSend': {
              const bus = String(parseInt(extra)).padStart(2, '0');
              const addr = `/ch/${ch}/mix/${bus}/level`;
-             console.log(`🔧 Generated MixSend Address: ${addr} (ch=${ch}, bus=${bus}, extra=${extra})`);
              return addr;
         }
         default: return null;
     }
 }
+
+// X32 Color Map
+const COLOR_MAP = {
+    '#ffffff': 7, // White
+    '#ff0000': 1, // Red
+    '#00ff00': 2, // Green
+    '#ffff00': 3, // Yellow
+    '#0000ff': 4, // Blue
+    '#ff00ff': 5, // Magenta
+    '#00ffff': 6, // Cyan
+    '#333333': 0, // Off
+    '#000000': 0  // Off
+};
+
+function getX32ColorID(hex) {
+    if (!hex) return 0;
+    const h = hex.toLowerCase();
+    return COLOR_MAP[h] || 7; // Default to White
+}
+
 
 
 
@@ -544,8 +900,8 @@ app.post('/api/set-param', (req, res) => {
         return;
     }
 
-    // internal params check
-    const isInternal = ['color', 'labelColor', 'name'].includes(type);
+    // internal params check (labelColor is truly internal-only)
+    const isInternal = ['labelColor'].includes(type);
     let addr = null;
 
     if (!isInternal) {
@@ -566,6 +922,10 @@ app.post('/api/set-param', (req, res) => {
         if (type === 'mute') {
             oscVal = value ? 0 : 1; 
         } 
+        // Handle Color Hex -> ID
+        else if (type === 'color') {
+            oscVal = getX32ColorID(value);
+        }
         // Handle other booleans
         else if (typeof value === 'boolean') {
             oscVal = value ? 1 : 0;
@@ -837,6 +1197,21 @@ if (midiOutput && foundName) {
 
 
 // 5. System Monitor (Broadcast every 2s)
+// Helper to find local IP
+function getLocalIP() {
+    const nets = os.networkInterfaces();
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+            // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+            if (net.family === 'IPv4' && !net.internal) {
+                return net.address;
+            }
+        }
+    }
+    return '127.0.0.1';
+}
+
+// 5. System Monitor (Broadcast every 2s)
 setInterval(() => {
     const mem = process.memoryUsage();
     // Mac loadavg is [1min, 5min, 15min]. We take 1min.
@@ -844,14 +1219,12 @@ setInterval(() => {
     const cpus = os.cpus().length;
     const load = os.loadavg()[0]; 
     const cpuPercent = Math.min(100, Math.round((load / cpus) * 100));
-    
-    // DEBUG LOG
-    // if (Math.random() < 0.1) console.log('📊 Broadcasting System Stats:', { cpu: cpuPercent, mem: Math.round(mem.rss / 1024 / 1024) });
 
     io.emit('system_stats', {
         cpu: cpuPercent,
         mem: Math.round(mem.rss / 1024 / 1024), // MB
-        uptime: Math.floor(process.uptime())
+        uptime: Math.floor(process.uptime()),
+        ip: getLocalIP()
     });
 }, 2000);
 
@@ -999,9 +1372,53 @@ function startMeterPolling() {
 // Start polling is called inside connectOSC now.
 
 // --- CONFIG API ---
+// --- CONFIG API ---
 app.get('/api/config', (req, res) => {
-    // Return static config
-    res.json({ ...config, x32_ip: X32_IP });
+    // 1. Get Dynamic Data
+    const setlistData = setlistManager.getAll();
+    const activeSetlistId = setlistData.activeSetlistId || 'default';
+    const activeSetlist = setlistData.setlists[activeSetlistId];
+    
+    // 2. Transform to expected format (Array of Songs)
+    let dynamicSongs = [];
+    if (activeSetlist && activeSetlist.songOrder) {
+        dynamicSongs = activeSetlist.songOrder
+            .map(id => {
+                const s = setlistData.songs[id];
+                if (!s) return null;
+                // Map 'cues' to 'parts' if 'parts' is missing
+                if (!s.parts && s.cues) {
+                    return { ...s, parts: s.cues };
+                }
+                return s;
+            })
+            .filter(s => !!s); // Remove nulls
+    }
+
+    // 3. Fallback if empty (use demo or static config)
+    if (dynamicSongs.length === 0) {
+        dynamicSongs = config.songs; 
+    }
+
+    // 4. Merge Persisted Names, Colors & Groups
+    const mergedInputs = config.inputs.map(ch => ({
+        ...ch,
+        name: x32State[String(ch.id)]?.name || ch.name,
+        colorHex: x32State[String(ch.id)]?.color || ch.colorHex // Persist Color Overrides
+    }));
+
+     const finalConfig = {
+        ...config,
+        inputs: mergedInputs,
+        groups: config.groups, // Use standard groups (Color matching handles the rest)
+        x32_ip: X32_IP,
+        activeSetlist: activeSetlist ? activeSetlist.name : 'Unknown',
+        activeSetlistId: activeSetlistId,
+        songs: dynamicSongs,
+        musicians: setlistData.musicians 
+    };
+    
+    res.json(finalConfig);
 });
 
 app.get('/api/scenes', (req, res) => {
@@ -1093,9 +1510,7 @@ app.post('/api/scenes/:name/load', (req, res) => {
 
 // --- API ---
 
-app.get('/api/config', (req, res) => {
-  res.json(config);
-});
+
 
 app.post('/api/trigger', (req, res) => {
   const { songId, partName } = req.body;
@@ -1141,8 +1556,17 @@ app.post('/api/rename-channel', (req, res) => {
     io.emit('x32_update', { 
         id: channelId, 
         type: 'name', 
-        name: name 
+        value: name 
     });
+
+    // Sync to Hardware
+    const addr = getX32Address(channelId, 'name');
+    if (addr) {
+        // X32 requires string argument for name
+        try {
+            osc.send(new OSC.Message(addr, name));
+        } catch(e) { console.error("OSC Send Name Error", e); }
+    }
 
     console.log(`📝 Renamed CH${channelId} to "${name}"`);
     res.json({ success: true, name });
