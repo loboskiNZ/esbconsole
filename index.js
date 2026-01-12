@@ -101,6 +101,10 @@ function loadState() {
             const data = fs.readFileSync(STATE_FILE);
             const saved = JSON.parse(data);
             Object.assign(x32State, saved);
+            // Ensure systemConfig exists
+            if (!x32State.systemConfig) {
+                x32State.systemConfig = { musicianPassword: 'otokia' };
+            }
             console.log("📂 State Loaded from Disk");
         }
     } catch (err) {
@@ -136,6 +140,8 @@ app.get('/api/scenes', (req, res) => {
         res.json(scenes);
     });
 });
+
+
 
 
 
@@ -1064,7 +1070,7 @@ midiInputs.forEach(inputName => {
 
     // LISTENER: MIDI NOTES
     input.on('noteon', (msg) => {
-        console.log(`🎹 Note On: ${msg.note} Vel: ${msg.velocity} Ch: ${msg.channel}`);
+        // console.log(`🎹 Note On: ${msg.note} Vel: ${msg.velocity} Ch: ${msg.channel}`);
         
         // Broadcast to Frontend
         io.emit('midi_msg', { 
@@ -1094,7 +1100,7 @@ midiInputs.forEach(inputName => {
             const action = map[msg.note];
             if (lighting[action.fn]) lighting[action.fn]();
             io.emit('scene_change', action.evt);
-            console.log(`🎹 Triggered Scene: ${action.evt} (Note ${msg.note})`);
+            // console.log(`🎹 Triggered Scene: ${action.evt} (Note ${msg.note})`);
         }
     });
     console.log(`🎹 Listening for Clock on: ${inputName}`);
@@ -1127,32 +1133,35 @@ try {
 const LightingEngine = require('./lighting-engine');
 
 const dmx = new DMX();
-// Use 'null' driver for virtual dev. Change to real driver path for hardware.
-const lighting = new LightingEngine(dmx, 'main', 'null');
+const DummyDriver = require('./dummy_driver');
+try {
+    dmx.registerDriver('dummy', DummyDriver);
+} catch (e) { console.error("Driver reg error:", e); }
+
+// Use 'dummy' driver for virtual dev to avoid console spam.
+const lighting = new LightingEngine(dmx, 'main', 'dummy');
 console.log('--- SERVER RESTART DEBUG ---');
-console.log('💡 DMX Lighting Engine Initialized');
+console.log('💡 DMX Lighting Engine Initialized (Silent Mode)');
 
 // Broadcast DMX updates to Frontend Visualizer
-let lastDmxUpdate = Date.now();
-let dmxUpdateTimeout = null;
-dmx.on('update', (universe, state) => {
-    const timeSinceLast = Date.now() - lastDmxUpdate;
-
-    const dispatch = () => {
-        io.emit('dmx_update', { universe, state });
-        lastDmxUpdate = Date.now();
-        dmxUpdateTimeout = null;
-    };
-
-    // Throttle to ~20fps (50ms)
-    if (timeSinceLast > 50) {
-        if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
-        dispatch();
-    } else {
-        if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
-        dmxUpdateTimeout = setTimeout(dispatch, 50 - timeSinceLast);
-    }
-});
+// Broadcast DMX updates to Frontend Visualizer (DISABLED FOR PERFORMANCE)
+// let lastDmxUpdate = Date.now();
+// let dmxUpdateTimeout = null;
+// dmx.on('update', (universe, state) => {
+//     // const timeSinceLast = Date.now() - lastDmxUpdate;
+//     // const dispatch = () => {
+//     //     io.emit('dmx_update', { universe, state });
+//     //     lastDmxUpdate = Date.now();
+//     //     dmxUpdateTimeout = null;
+//     // };
+//     // if (timeSinceLast > 50) {
+//     //     if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
+//     //     dispatch();
+//     // } else {
+//     //     if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
+//     //     dmxUpdateTimeout = setTimeout(dispatch, 50 - timeSinceLast);
+//     // }
+// });
 
 // 4. MIDI Input (Control Listener)
 // Reuse the found MIDI device name from above if possible
@@ -1233,16 +1242,39 @@ setInterval(() => {
 
 // --- Logic ---
 
-function triggerPart(songId, partName) {
-  console.log(`🚀 Triggering: Song ${songId}, Part ${partName}`);
-  const song = config.songs.find(s => s.id == songId);
-  if (!song) return;
-  const part = song.parts.find(p => p.name == partName);
-  if (!part) return;
+function triggerPart(songId, partName, partIndex) {
+  console.log(`🚀 Triggering: Song ${songId}, Part ${partName} [Index: ${partIndex}]`);
+  
+  // FIX: Use SetlistManager for dynamic data
+  const allData = setlistManager.getAll();
+  let song = allData.songs[songId];
+  
+  if (!song) {
+      console.warn(`❌ triggerPart: Song ${songId} NOT FOUND in setlistManager`);
+      return;
+  }
+  
+  // Handle Parts/Cues alias
+  const parts = song.parts || song.cues || [];
+  
+  let part = null;
+  if (partIndex !== undefined && parts[partIndex]) {
+      part = parts[partIndex];
+  } else {
+      part = parts.find(p => p.name == partName);
+  }
+  
+  if (!part) {
+      console.warn(`❌ triggerPart: Part ${partName} NOT FOUND in song ${song.title}`);
+      return;
+  }
+  
+  // Safety: Ensure 'cues' property exists, or treat part itself as cues if structure varies
+  const cues = part.cues || part; 
 
   // 1. Send OSC Commands
-  if (part.cues.x32) {
-    Object.entries(part.cues.x32).forEach(([channelId, settings]) => {
+  if (cues && cues.x32) {
+    Object.entries(cues.x32).forEach(([channelId, settings]) => {
         if (settings.mute !== undefined) {
             const addr = getX32Address(channelId, 'mute');
             // X32: 0 = Muted (Off), 1 = Unmuted (On)
@@ -1271,22 +1303,23 @@ function triggerPart(songId, partName) {
 
   // 2. Send MIDI Config
   // Logic: Send a specific Note to trigger a Scene in Ableton
-  if (part.cues.midi && midiOutput) {
-      if (part.cues.midi.note) {
+  if (cues && cues.midi && midiOutput) {
+      if (cues.midi.note) {
           // Sending momentary note on/off to trigger
-          midiOutput.send('noteon', { note: part.cues.midi.note, velocity: 127, channel: 0 });
+          midiOutput.send('noteon', { note: cues.midi.note, velocity: 127, channel: 0 });
           setTimeout(() => {
-            midiOutput.send('noteoff', { note: part.cues.midi.note, velocity: 0, channel: 0 });
+            midiOutput.send('noteoff', { note: cues.midi.note, velocity: 0, channel: 0 });
           }, 100);
-          console.log(`🎹 Sent MIDI Note: ${part.cues.midi.note}`);
+          console.log(`🎹 Sent MIDI Note: ${cues.midi.note}`);
       }
   }
 
   // 3. Send DMX Config
   // Logic: Update all channels for a scene
-  if (part.cues.dmx && universe) {
-      if (part.cues.dmx.values) {
-          universe.update(part.cues.dmx.values);
+  // 4. Notify Clients (Active Part Highlight) -> Move to end (already there)
+  if (cues && cues.dmx && universe) {
+      if (cues.dmx.values) {
+          universe.update(cues.dmx.values);
           console.log('💡 Updated DMX Universe');
       }
       // Or just a general "Scene" index mapped to DMX channels?
@@ -1294,7 +1327,13 @@ function triggerPart(songId, partName) {
   }
   
   // Notify UI of success
-  io.emit('active_part', { songId, partName });
+  // Calculate index if not provided, for consistent client highlighting
+  if (partIndex === undefined) {
+      partIndex = parts.indexOf(part);
+  }
+
+  console.log(`📡 BROADCASTING active_part: Song ${songId}, Part ${partName}, Index ${partIndex}`);
+  io.emit('active_part', { songId, partName, partIndex });
 }
 
 
@@ -1404,11 +1443,31 @@ app.get('/api/config', (req, res) => {
     }
 
     // 4. Merge Persisted Names, Colors & Groups
-    const mergedInputs = config.inputs.map(ch => ({
-        ...ch,
-        name: x32State[String(ch.id)]?.name || ch.name,
-        colorHex: x32State[String(ch.id)]?.color || ch.colorHex // Persist Color Overrides
-    }));
+    // 4. Merge Persisted Names, Colors & Groups
+    const mergedInputs = config.inputs.map(ch => {
+        let savedColor = x32State[String(ch.id)]?.color;
+        
+        // Fix: If savedColor is an X32 Integer ID (1-7), convert to Hex
+        if (typeof savedColor === 'number') {
+            const colorMap = {
+                1: '#FF0000', // Red
+                2: '#00FF00', // Green
+                3: '#FFFF00', // Yellow
+                4: '#0000FF', // Blue
+                5: '#FF00FF', // Magenta
+                6: '#00FFFF', // Cyan
+                7: '#FFFFFF', // White
+                0: '#333333'  // Off/Black
+            };
+            savedColor = colorMap[savedColor] || null;
+        }
+
+        return {
+            ...ch,
+            name: x32State[String(ch.id)]?.name || ch.name,
+            colorHex: savedColor || ch.colorHex // Persist Color Overrides
+        };
+    });
 
      const finalConfig = {
         ...config,
@@ -1422,6 +1481,47 @@ app.get('/api/config', (req, res) => {
     };
     
     res.json(finalConfig);
+});
+
+// --- SETLIST API (Specific for Musician View) ---
+app.get('/api/setlist', (req, res) => {
+    // Return the Active Setlist with resolved songs
+    const setlistData = setlistManager.getAll();
+    const activeSetlistId = setlistData.activeSetlistId || 'default';
+    const activeSetlist = setlistData.setlists[activeSetlistId];
+    
+    console.log(`[API/SETLIST] Requested. ActiveID: ${activeSetlistId}, Found: ${!!activeSetlist}`);
+    if (activeSetlist) {
+        console.log(`[API/SETLIST] Song Order: ${activeSetlist.songOrder?.length} items`);
+    }
+
+    // Resolve Songs
+    const songs = (activeSetlist?.songOrder || [])
+        .map(id => {
+            const s = setlistData.songs[id];
+            if (!s) console.warn(`[API/SETLIST] Missing song for ID: ${id}`);
+            return s;
+        })
+        .filter(s => !!s)
+        .map(s => {
+             // Ensure 'parts' exists alias for cues
+             if (!s.parts && s.cues) return { ...s, parts: s.cues };
+             return s;
+        });
+    
+    console.log(`[API/SETLIST] Resolved Songs: ${songs.length}`);
+
+    if (activeSetlist) {
+        res.json({
+            id: activeSetlist.id,
+            name: activeSetlist.name,
+            songs: songs,
+            order: activeSetlist.songOrder || [] 
+        });
+    } else {
+        // Fallback or Empty
+        res.json({ songs: [], order: [] });
+    }
 });
 
 app.get('/api/scenes', (req, res) => {
@@ -1795,6 +1895,89 @@ app.post('/api/solo', (req, res) => {
 // Remove old activateSolo if it exists or just let this block replace the region
 
 
+// --- CHARTS API ---
+const chartsDir = path.join(__dirname, 'charts');
+if (!fs.existsSync(chartsDir)) fs.mkdirSync(chartsDir);
+
+
+
+// Multer for Charts
+const chartStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const { songId } = req.body;
+        // Create song subdir if needed
+        const songDir = path.join(chartsDir, songId);
+        if (!fs.existsSync(songDir)) fs.mkdirSync(songDir, { recursive: true });
+        cb(null, songDir);
+    },
+    filename: (req, file, cb) => {
+        const { role } = req.body; // e.g. "Drummer", "Bass"
+        // Sanitize role filename
+        const safeRole = role.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        // Keep original extension or force PDF/Img? Let's keep original for now.
+        const ext = path.extname(file.originalname);
+        cb(null, `${safeRole}${ext}`);
+    }
+});
+const uploadChart = multer({ storage: chartStorage });
+
+app.post('/api/charts/upload', uploadChart.single('chart'), (req, res) => {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+    res.json({ success: true, path: req.file.path });
+});
+
+app.get('/api/charts/:songId/:role', (req, res) => {
+    const { songId, role } = req.params;
+    const { busId } = req.query; // New: Support legacy lookup via Bus ID
+    
+    const safeRole = role.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const songDir = path.join(chartsDir, songId);
+    
+    // 1. Try NEW System (charts/songId/role.*)
+    let foundNew = false;
+    if (fs.existsSync(songDir)) {
+        try {
+            const files = fs.readdirSync(songDir);
+            const match = files.find(f => f.toLowerCase().startsWith(safeRole + '.'));
+            if (match) {
+                return res.sendFile(path.join(songDir, match));
+            }
+        } catch (e) {
+            console.error("Chart Read Error", e);
+        }
+    }
+
+    // 2. Try LEGACY System (setlists.json -> song.chartAssignments)
+    if (busId) {
+        // We need to look up the song in setlistManager
+        const song = setlistManager.data.songs[songId];
+        if (song && song.chartAssignments) {
+            // Find assignment for this bus
+            const assignment = song.chartAssignments.find(a => String(a.monitorBus) === String(busId));
+            if (assignment && assignment.file && assignment.file.path) {
+                if (assignment.file.filename === 'noChart.txt' || assignment.file.path.endsWith('noChart.txt')) {
+                    // Skip legacy placeholder
+                } else {
+                    const legacyPath = path.resolve(__dirname, assignment.file.path);
+                    if (fs.existsSync(legacyPath)) {
+                       // console.log(`📂 Serving Legacy Chart: ${legacyPath}`);
+                       return res.sendFile(legacyPath);
+                    }
+                }
+            }
+        }
+    }
+
+    res.status(404).json({ error: "Chart not found" });
+});
+
+app.get('/api/musicians/groups', (req, res) => {
+    // Return all (admin view) or filtering? 
+    // Usually fetching 'me' handles the specific ones.
+    // This might be for debug or admin.
+    res.json({}); 
+});
+
 app.get('/api/solo-status', (req, res) => {
     // Send back array
     const list = soloContext.activeIds ? Array.from(soloContext.activeIds) : [];
@@ -2136,6 +2319,53 @@ app.post('/api/setlist/export-pdf', (req, res) => {
 
 // ... (Other Setlist routes can be added later as needed)
 
+// --- MUSICIAN AUTH ENDPOINTS ---
+
+// 1. LOGIN
+app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    
+    // Check Password
+    const currentPass = (x32State.systemConfig && x32State.systemConfig.musicianPassword) || 'otokia';
+    if (password !== currentPass) {
+        return res.status(401).json({ error: "Invalid Password" });
+    }
+
+    // Check Email
+    const musician = musiciansData.musicians.find(m => m.email.toLowerCase().trim() === email.toLowerCase().trim());
+    if (!musician) {
+        return res.status(401).json({ error: "Email not found in Roster" });
+    }
+
+    // Success
+    // In a real app, sign a JWT. Here, return a simple session obj.
+    res.json({
+        token: "session_" + musician.id + "_" + Date.now(),
+        musician: musician
+    });
+});
+
+// 2. SET SYSTEM PASSWORD
+app.post('/api/system/password', (req, res) => {
+    const { password } = req.body;
+    if (!password) return res.status(400).json({ error: "Password required" });
+
+    if (!x32State.systemConfig) x32State.systemConfig = {};
+    x32State.systemConfig.musicianPassword = password;
+    
+    saveState();
+    console.log("🔐 Musician Password Updated");
+    res.json({ success: true });
+});
+
+// 3. GET CURRENT PASSWORD (For Admin UI only - simplified)
+app.get('/api/system/password', (req, res) => {
+    const pass = (x32State.systemConfig && x32State.systemConfig.musicianPassword) || 'otokia';
+    res.json({ password: pass });
+});
+
+// --- ENDPOINTS ---
+
 app.get('/api/musicians', (req, res) => {
     res.json(musiciansData.musicians);
 });
@@ -2154,8 +2384,31 @@ app.post('/api/musicians', (req, res) => {
 
 io.on('connection', (socket) => {
   console.log('⚡ Client Connected:', socket.id);
-  socket.emit('x32_bulk_update', x32State);
+  socket.on('disconnect', () => {
+        console.log('🔌 Client Disconnected:', socket.id);
+    });
+    
+    socket.on('trigger_part', (data) => {
+        // data = { songId, partName, partIndex }
+        console.log(`[SOCKET] Received trigger_part:`, data);
+        if (data && data.songId && (data.partName || data.partIndex !== undefined)) {
+            triggerPart(data.songId, data.partName, data.partIndex);
+        } else {
+            console.warn("[SOCKET] trigger_part ignored (missing data):", data);
+        }
+    });
 
+    // --- SEND INITIAL STATE ---
+    // Flatten channels Map/Object if needed, but x32State is an object here
+    // Send full state so client isn't blank
+    socket.emit('init_x32_state', x32State);
+
+    // Pull Mechanism
+    socket.on('request_state', () => {
+        console.log(`📤 Sending Full State to ${socket.id} (${Object.keys(x32State.channels||{}).length} chans)`);
+        socket.emit('init_x32_state', x32State);
+    });
+  
   socket.on('dmx_trigger', (sceneName) => {
         console.log('💡 Manual Trigger:', sceneName);
         try {
@@ -2164,6 +2417,67 @@ io.on('connection', (socket) => {
             console.error('❌ DMX Trigger Error:', e);
         }
   });
+
+  // --- OSC BRIDGE (Client -> X32) ---
+  // --- OSC BRIDGE (Client -> X32) ---
+  socket.on('osc', (data) => {
+      // Expects: { address: '/ch/01/mix/01/level', args: [0.75] }
+      if (!data || !data.address) return;
+      
+      try {
+          const val = data.args[0];
+
+          // 1. Forward to Hardware
+          if (osc && osc.status() === OSC.STATUS.OPEN) {
+              const message = new OSC.Message(data.address, ...data.args);
+              osc.send(message);
+          }
+
+          // 2. Parse & Update Internal State (Optimistic Server-Side)
+          // /ch/{id}/mix/{bus}/level
+          const mixMatch = data.address.match(/\/ch\/(\d+)\/mix\/(\d+)\/(level|on)/);
+          if (mixMatch) {
+              const [_, chIdStr, busIdStr, param] = mixMatch;
+              const chId = parseInt(chIdStr).toString(); // Normalize "01" -> "1"
+              const busId = parseInt(busIdStr).toString(); 
+
+              if (!x32State[chId]) x32State[chId] = {};
+              if (!x32State[chId].mixSends) x32State[chId].mixSends = {};
+              if (!x32State[chId].mixSends[busId]) x32State[chId].mixSends[busId] = {};
+              
+              const target = x32State[chId].mixSends[busId];
+              target[param] = val; // Update state
+
+              // Broadcast to sync all clients (including sender)
+              io.emit('x32_update', {
+                  id: chId,
+                  type: 'mixSend',
+                  bus: busId,
+                  param: param,
+                  value: val
+              });
+              
+              // TRIGGER AUTO-SAVE
+              // Debounced save to disk (defined in global scope)
+              saveState();
+          }
+          
+          // Master Fader? /bus/{id}/mix/fader
+           // (Add logic if needed for master fader sync)
+
+      } catch (e) {
+          console.error("❌ OSC Bridge Error:", e);
+      }
+  });
+
+});
+
+
+
+// --- SPA FALLBACK ---
+// --- SPA FALLBACK ---
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
 
 server.listen(PORT, () => {

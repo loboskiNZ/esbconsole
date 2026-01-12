@@ -5,6 +5,8 @@ import SetlistManager from './SetlistManager';
 import SharePointBrowser from './SharePointBrowser';
 import MusiciansManager from './MusiciansManager';
 import MonitorsOverlay from './MonitorsOverlay';
+import MusicianApp from './MusicianApp';
+import SceneLoadingOverlay from './components/SceneLoadingOverlay';
 import { INSTRUMENT_PRESETS } from './presets';
 import './index.css';
 
@@ -551,6 +553,8 @@ const DMXVisualizer = ({ socket, onClose }) => {
 
 
 function App() {
+
+
   return (
     <ErrorBoundary>
         <AppContent />
@@ -562,6 +566,7 @@ function AppContent() {
   const [config, setConfig] = useState(null);
   const [selectedSongId, setSelectedSongId] = useState(null);
   const [activePart, setActivePart] = useState(null);
+  const [activePartIndex, setActivePartIndex] = useState(null);
   const [status, setStatus] = useState({ x32: 'connected', midi: 'pending', dmx: 'ready' });
 
   const [showDMX, setShowDMX] = useState(false);
@@ -593,7 +598,8 @@ function AppContent() {
         }
       })
       .catch(err => console.error("Failed to load config", err));
-      
+  }, []); // Add dependency array to close this useEffect properly
+
     // Check initial solo status
     axios.get('/api/solo-status').then(res => setSoloIds(res.data.activeIds || []));
 
@@ -604,140 +610,147 @@ function AppContent() {
         })
         .catch(e => console.error(e));
 
-    socket.on('connect', () => {
-      console.log("Socket connected");
-    });
-    
-    socket.on('active_part', (data) => {
-        if (data.songId === selectedSongId) {
-            setActivePart(data.partName);
-        }
-    });
+    // --- SOCKET MANAGEMENT ---
+    useEffect(() => {
+        // 1. Define Handlers
+        const onConnect = () => {
+             console.log("Socket connected, requesting state...");
+             socket.emit('request_state');
+        };
 
-    socket.on('midi_msg', (data) => {
-        setMidiMsg(data);
-        if(window.midiTimeout) clearTimeout(window.midiTimeout);
-        window.midiTimeout = setTimeout(() => setMidiMsg(null), 1500);
-    });
+        const onActivePart = (data) => {
+             if (data.songId === selectedSongId) {
+                 setActivePart(data.partName);
+                 if (data.partIndex !== undefined) setActivePartIndex(data.partIndex);
+             }
+        };
 
-    socket.on('meters_inputs', (data) => {
-        setInputMeters(data);
-    });
+        const onMidiMsg = (data) => {
+             setMidiMsg(data);
+             if(window.midiTimeout) clearTimeout(window.midiTimeout);
+             window.midiTimeout = setTimeout(() => setMidiMsg(null), 1500);
+        };
 
-    socket.on('meters_inputs', (levels) => {
-        setInputMeters(levels);
-    });
+        const onMeters = (data) => setInputMeters(data);
 
-    socket.on('x32_update', (data) => {
-        setX32State(prev => {
-            const chanState = prev[data.id] || {};
-            
-            if (data.type === 'mixSend') {
-                const sends = chanState.mixSends ? {...chanState.mixSends} : {};
-                const send = sends[data.bus] ? {...sends[data.bus]} : {};
-                send[data.param] = data.value;
-                sends[data.bus] = send;
+        const onInitState = (fullState) => {
+             console.log("📥 Received Initial X32 State:", Object.keys(fullState).length, "channels");
+             setX32State(fullState);
+        };
+
+        const onUpdate = (data) => {
+            setX32State(prev => {
+                if(!data || !data.id) return prev;
+                const chanState = prev[data.id] || {};
                 
-                return {
-                    ...prev,
-                    [data.id]: {
-                        ...chanState,
-                        mixSends: sends
-                    }
-                };
-            } else if (data.type === 'name') {
-                 return {
-                    ...prev,
-                    [data.id]: { ...chanState, name: data.value }
-                };
-            } else if (data.type === 'color') {
-                 return {
-                    ...prev,
-                    [data.id]: { ...chanState, color: data.color, labelColor: data.labelColor }
-                };
-            } else if (data.type === 'master') {
-                const master = prev.master ? {...prev.master} : {level:0, mute:false};
-                master[data.param] = data.value;
-                return { ...prev, master: master };
-            }
+                if (data.type === 'mixSend') {
+                    const sends = chanState.mixSends ? {...chanState.mixSends} : {};
+                    const send = sends[data.bus] ? {...sends[data.bus]} : {};
+                    send[data.param] = data.value;
+                    sends[data.bus] = send;
+                    return { ...prev, [data.id]: { ...chanState, mixSends: sends } };
 
-            if (data.type === 'masterEqBand') {
-                const master = prev.master ? {...prev.master} : {level:0, mute:false};
-                const bands = master.eqBands ? {...master.eqBands} : {};
-                if (!bands[data.band]) bands[data.band] = {};
-                bands[data.band][data.param] = data.value;
-                master.eqBands = bands;
-                return { ...prev, master: master };
-            }
-            
-            if (data.type === 'eqBand') {
-                const bands = chanState.eqBands ? {...chanState.eqBands} : {};
-                const band = bands[data.band] ? {...bands[data.band]} : {};
-                band[data.param] = data.value;
-                bands[data.band] = band;
-                
-                return {
-                    ...prev,
-                    [data.id]: {
-                        ...chanState,
-                        eqBands: bands
-                    }
-                };
-            }
-            
-            return {
-                ...prev,
-                [data.id]: {
-                    ...chanState,
-                    [data.type]: data.value
+                } else if (data.type === 'name') {
+                     return { ...prev, [data.id]: { ...chanState, name: data.value } };
+
+                } else if (data.type === 'color') {
+                     return { ...prev, [data.id]: { ...chanState, color: data.color, labelColor: data.labelColor } };
+
+                } else if (data.type === 'master') {
+                    const master = prev.master ? {...prev.master} : {level:0, mute:false};
+                    master[data.param] = data.value;
+                    return { ...prev, master: master };
                 }
-            };
-        });
-    });
-    
-    socket.on('solo_update', (data) => {
-        console.log("🎸 Solo Update:", data);
-        setSoloIds(data.activeIds || []);
-    });
-    
-    socket.on('x32_bulk_update', (data) => {
-        setX32State(data);
-    });
 
-    // Hardware Sync Notifications
-    socket.on('sync_start', (data) => {
-        console.log("🚀 Sync Start Received:", data);
-        setSyncProgress({ step: 1, label: "Loading Names & Colors...", detail: `Scene: ${data.name}` });
-    });
-    socket.on('sync_progress', (data) => {
-        console.log("🔄 Sync Progress:", data);
-        setSyncProgress(prev => ({ ...prev, ...data }));
-    });
-    socket.on('verify_progress', (data) => {
-        setSyncProgress(prev => ({ ...prev, detail: data.detail }));
-    });
-    socket.on('sync_complete', () => {
-        setSyncProgress({ step: 6, label: "Sync Complete!", detail: "All Systems Go" });
-        setTimeout(() => setSyncProgress(null), 2500);
-    });
+                if (data.type === 'masterEqBand') {
+                    const master = prev.master ? {...prev.master} : {level:0, mute:false};
+                    const bands = master.eqBands ? {...master.eqBands} : {};
+                    if (!bands[data.band]) bands[data.band] = {};
+                    bands[data.band][data.param] = data.value;
+                    master.eqBands = bands;
+                    return { ...prev, master: master };
+                }
+                
+                if (data.type === 'eqBand') {
+                    const bands = chanState.eqBands ? {...chanState.eqBands} : {};
+                    const band = bands[data.band] ? {...bands[data.band]} : {};
+                    band[data.param] = data.value;
+                    bands[data.band] = band;
+                    return { ...prev, [data.id]: { ...chanState, eqBands: bands } };
+                }
+                
+                return { ...prev, [data.id]: { ...chanState, [data.type]: data.value } };
+            });
+        };
 
-    return () => {
-        socket.off('connect');
-        socket.off('active_part');
-        socket.off('x32_update');
-        socket.off('solo_update');
-        socket.off('x32_bulk_update');
-    };
-  }, []);
+        const onSoloUpdate = (data) => {
+            console.log("🎸 Solo Update:", data);
+            setSoloIds(data.activeIds || []);
+        };
 
-  const handleTrigger = async (partName) => {
+        const onBulkUpdate = (data) => setX32State(data);
+
+        // Hardware Sync Notifications
+        const onSyncStart = (data) => {
+            console.log("🚀 Sync Start Received:", data);
+            setSyncProgress({ step: 1, label: "Loading Names & Colors...", detail: `Scene: ${data.name}` });
+        };
+        const onSyncProgress = (data) => {
+            setSyncProgress(prev => ({ ...prev, ...data }));
+        };
+        const onVerifyProgress = (data) => {
+            setSyncProgress(prev => ({ ...prev, detail: data.detail }));
+        };
+        const onSyncComplete = () => {
+            setSyncProgress({ step: 6, label: "Sync Complete!", detail: "All Systems Go" });
+            setTimeout(() => setSyncProgress(null), 2500);
+        };
+
+
+        // 2. Attach Listeners
+        socket.on('connect', onConnect);
+        socket.on('active_part', onActivePart);
+        socket.on('midi_msg', onMidiMsg);
+        socket.on('meters_inputs', onMeters);
+        socket.on('init_x32_state', onInitState);
+        socket.on('x32_update', onUpdate);
+        socket.on('solo_update', onSoloUpdate);
+        socket.on('x32_bulk_update', onBulkUpdate);
+        socket.on('sync_start', onSyncStart);
+        socket.on('sync_progress', onSyncProgress);
+        socket.on('verify_progress', onVerifyProgress);
+        socket.on('sync_complete', onSyncComplete);
+
+
+        // 3. Initial Request (if already connected)
+        if (socket.connected) { 
+            console.log("Socket already active, requesting state...");
+            socket.emit('request_state');
+        }
+
+        // 4. Cleanup
+        return () => {
+            socket.off('connect', onConnect);
+            socket.off('active_part', onActivePart);
+            socket.off('midi_msg', onMidiMsg);
+            socket.off('meters_inputs', onMeters);
+            socket.off('init_x32_state', onInitState);
+            socket.off('x32_update', onUpdate);
+            socket.off('solo_update', onSoloUpdate);
+            socket.off('x32_bulk_update', onBulkUpdate);
+            socket.off('sync_start', onSyncStart);
+            socket.off('sync_progress', onSyncProgress);
+            socket.off('verify_progress', onVerifyProgress);
+            socket.off('sync_complete', onSyncComplete);
+        };
+    }, []); // Run Once on Mount
+
+  const handleTrigger = async (partName, partIndex) => {
     if (!selectedSongId) return;
     setActivePart(partName);
-    try {
-      await axios.post('/api/trigger', { songId: selectedSongId, partName });
-    } catch (err) {
-      console.error("Trigger failed", err);
-    }
+    setActivePartIndex(partIndex);
+    // Use Socket directly for faster sync + verifying the listener works
+    socket.emit('trigger_part', { songId: selectedSongId, partName, partIndex });
   };
   
   const handleCapture = async () => {
@@ -819,6 +832,11 @@ function AppContent() {
   const openOverlay = (channelId, type, title) => {
       setOverlay({ channelId, type, title });
   };
+
+  // ROUTING: Musician Interface (Inside AppContent to access State)
+  if (window.location.pathname.startsWith('/musician')) {
+      return <MusicianApp socket={socket} x32State={x32State} />;
+  }
 
   if (!config) return <div className="glass-panel"><h1>loading...</h1></div>;
 
@@ -1815,23 +1833,27 @@ function AppContent() {
 
                 <div style={{display:'flex', gap:'10px', alignItems:'center'}}>
                     <span style={{color:'#666', fontSize:'0.8em', textTransform:'uppercase', letterSpacing:'1px', fontWeight:'bold', borderLeft:'1px solid #444', paddingLeft:'20px'}}>CUES:</span>
-                    {currentSong && currentSong.parts.map(part => (
+                    {currentSong && currentSong.parts.map((part, index) => {
+                        const isPartActive = (activePartIndex !== undefined && activePartIndex !== null)
+                            ? activePartIndex === index
+                            : activePart === part.name;
+
+                        return (
                         <button 
-                            key={part.name} 
-                            onClick={()=>handleTrigger(part.name)} 
+                            key={`${part.name}-${index}`} 
+                            onClick={()=>handleTrigger(part.name, index)} 
                             style={{
-                                background: activePart===part.name ? '#00bbff' : '#222',
-                                color: activePart===part.name ? 'black' : '#ccc',
+                                background: isPartActive ? '#00bbff' : '#222',
+                                color: isPartActive ? 'black' : '#ccc',
                                 border: '1px solid #444', borderRadius:'4px',
                                 padding: '8px 20px', fontWeight:'bold', cursor:'pointer',
                                 textTransform: 'uppercase', fontSize:'0.8em',
                                 transition: 'all 0.1s',
-                                boxShadow: activePart===part.name ? '0 0 10px rgba(0,255,255,0.5)' : 'none'
+                                boxShadow: isPartActive ? '0 0 10px rgba(0,255,255,0.5)' : 'none'
                             }}>
                             {part.name}
                         </button>
-
-                    ))}
+                    )})}
                 </div>
             </div>
 
@@ -2259,75 +2281,4 @@ function AppContent() {
   );
 }
 
-const SceneLoadingOverlay = ({ progress, onClose }) => {
-    // progress: { step: number, label: string, detail?: string }
-    // Steps 1-5
-    const steps = [
-        "Names & Colors",
-        "Channel Settings (Gain, EQ, Dyn)",
-        "Effects & Mix Sends",
-        "Mutes & Levels",
-        "Granular Verification"
-    ];
-
-    return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-            background: 'rgba(0,0,0,0.92)', zIndex: 99999,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontFamily: 'monospace'
-        }}>
-            {/* Background Logo */}
-            <img src="/esb_logo.png" style={{
-                position: 'absolute', width: '600px', opacity: 0.15,
-                animation: 'spin 10s linear infinite', pointerEvents: 'none'
-            }} />
-            <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
-            
-            <div style={{ zIndex: 2, background: '#111', padding: '40px', borderRadius: '15px', border: '1px solid #333', minWidth: '400px' }}>
-                <h2 style={{ textAlign: 'center', borderBottom: '1px solid #444', paddingBottom: '15px', marginTop: 0 }}>
-                    SCENE SYNC
-                </h2>
-                
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', margin: '20px 0' }}>
-                    {steps.map((text, idx) => {
-                        const stepNum = idx + 1;
-                        const isDone = progress.step > stepNum || (progress.step === 6 && stepNum === 5); // 6=Complete
-                        const isCurrent = progress.step === stepNum;
-                        
-                        return (
-                            <div key={idx} style={{ 
-                                display: 'flex', alignItems: 'center', gap: '15px',
-                                opacity: isDone || isCurrent ? 1 : 0.3,
-                                color: isCurrent ? '#4fecff' : (isDone ? '#0f0' : '#888')
-                            }}>
-                                <div style={{ 
-                                    width: '24px', height: '24px', 
-                                    border: `2px solid ${isCurrent ? '#4fecff' : '#555'}`,
-                                    borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    background: isDone ? '#0f0' : 'transparent'
-                                }}>
-                                    {isDone && <span style={{color:'black', fontWeight:'bold'}}>✓</span>}
-                                    {isCurrent && <span className="spinner" style={{fontSize:'12px'}}>↻</span>}
-                                </div>
-                                <span style={{ fontSize: '1.2em', fontWeight: isCurrent ? 'bold' : 'normal' }}>
-                                    {text}
-                                </span>
-                            </div>
-                        )
-                    })}
-                </div>
-
-                {/* Detail Text for Verification */}
-                <div style={{ 
-                    height: '30px', textAlign: 'center', color: '#666', fontSize: '0.9em',
-                    borderTop: '1px solid #444', paddingTop: '15px' 
-                }}>
-                    {progress.detail || progress.label || "Waiting..."}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default App; // Ensure this replaces the corrected export
+export default App;

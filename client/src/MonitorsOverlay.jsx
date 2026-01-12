@@ -32,6 +32,21 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
         return (db > 0 ? '+' : '') + db.toFixed(1) + ' dB';
     };
 
+    // Helper to resolve color (Shared)
+    const resolveColor = (val) => {
+        if (!val) return null;
+        if (String(val).startsWith('#')) return val;
+        const num = parseInt(val);
+        if (!isNaN(num)) {
+            const map = {
+                1: '#FF0000', 2: '#00FF00', 3: '#FFFF00', 4: '#0000FF',
+                5: '#FF00FF', 6: '#00FFFF', 7: '#FFFFFF', 0: '#333333'
+            };
+            return map[num];
+        }
+        return val;
+    };
+
     // --- RENDER ---
     return (
         <div style={{
@@ -42,7 +57,7 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
             {/* HEADER */}
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px', borderBottom:'1px solid #444', paddingBottom:'20px'}}>
                 <h1 style={{margin:0, color:'#0088ff', textShadow:'0 0 10px #004488'}}>
-                    MONITORS {selectedBusId ? `> ${getBus(selectedBusId).name || `Bus ${selectedBusId.replace('bus','')}`}` : ''}
+                    MONITORS (v2) {selectedBusId ? `> ${getBus(selectedBusId).name || `Bus ${selectedBusId.replace('bus','')}`}` : ''}
                 </h1>
                 <div style={{display:'flex', gap:'20px'}}>
                     {selectedBusId && (
@@ -78,14 +93,33 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                             const musician = getMusicianForBus(busNum);
                             const hasMusician = !!musician;
 
+                            // Resolve Bus Color
+                            const rawColor = resolveColor(busState.color);
+                            const busColor = (rawColor && rawColor !== '#333333') ? rawColor : '#0088ff'; // Default Blue
+                            const isBright = ['#FF0000', '#00FF00', '#FFFF00', '#00FFFF', '#FFFFFF', '#FF00FF'].includes(busColor);
+                            const txtColor = isBright ? 'black' : 'white';
+
                             return (
                                 <div key={busId} style={{
-                                    background: '#222', borderRadius: '8px', border: '1px solid #333',
+                                    background: '#222', borderRadius: '8px', 
+                                    border: '1px solid #333',
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px',
                                     position: 'relative'
                                 }}>
-                                    {/* TITLE */}
-                                    <h3 style={{marginTop:0, color:'#0088ff', fontSize:'1.2em'}}>Bus {busNum}</h3>
+                                    {/* TITLE / SCRIBBLE STRIP */}
+                                    <div style={{
+                                        width: '100%', 
+                                        background: busColor, 
+                                        color: txtColor,
+                                        marginTop:0, marginBottom:'10px',
+                                        padding: '5px 0',
+                                        borderRadius: '4px',
+                                        textAlign: 'center',
+                                        fontWeight: 'bold', fontSize:'1.1em',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                    }}>
+                                        Bus {busNum}
+                                    </div>
                                     
                                     {/* MUSICIAN DISPLAY */}
                                     <div style={{
@@ -118,7 +152,7 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                             }}
                                             style={{
                                                 writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
-                                                width: '100%', height: '100%', accentColor: '#0088ff',
+                                                width: '100%', height: '100%', accentColor: busColor,
                                                 zIndex: 5
                                             }}
                                          />
@@ -151,8 +185,11 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                     <button
                                         onClick={() => setSelectedBusId(busId)}
                                         style={{
-                                            width:'100%', background:'#0088ff', color:'white', border:'none',  
-                                            padding:'15px', borderRadius:'4px', fontWeight:'bold', cursor:'pointer'
+                                            width:'100%', background: busColor === '#0088ff' ? '#444' : busColor, 
+                                            color: txtColor, 
+                                            border:'none',  
+                                            padding:'15px', borderRadius:'4px', fontWeight:'bold', cursor:'pointer',
+                                            opacity: 0.9
                                         }}
                                     >
                                         MIX SENDS
@@ -195,15 +232,74 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                  const chState = x32State[ch.id] || {};
                                  const sendState = chState.mixSends && chState.mixSends[busNum] ? chState.mixSends[busNum] : { level: 0, on: false };
                                  const isLinked = musicians.find(m => m.mixBusId === parseInt(busNum))?.linkedChannels.includes(ch.id);
+                                 // Helper to resolve color
+                                 const resolveColor = (val) => {
+                                     // If null/undefined
+                                     if (!val) return null;
+                                     // If explicit hex
+                                     if (String(val).startsWith('#')) return val;
+                                     // If numeric ID (X32)
+                                     const num = parseInt(val);
+                                     if (!isNaN(num)) {
+                                         const map = {
+                                             1: '#FF0000', // Red
+                                             2: '#00FF00', // Green
+                                             3: '#FFFF00', // Yellow
+                                             4: '#0000FF', // Blue
+                                             5: '#FF00FF', // Magenta
+                                             6: '#00FFFF', // Cyan
+                                             7: '#FFFFFF', // White
+                                             0: '#333333'
+                                         };
+                                         return map[num];
+                                     }
+                                     return val; // Fallback (e.g. named color)
+                                 };
+
+                                 const stateColor = resolveColor(chState.color);
+                                 const configColor = resolveColor(ch.colorHex) || ch.colorHex;
+
+                                 // FIX: If state says "Black" (#333333), ignore it and use Config Color.
+                                 // This ensures that uninitialized or default-black channels on Console still show their System Config color.
+                                 const effectiveStateColor = (stateColor && stateColor !== '#333333') ? stateColor : null;
+                                 
+                                 const chColor = effectiveStateColor || configColor || (isLinked ? '#0088ff' : '#666'); 
+
+                                 // Determine Text Color based on Background (Simple Logic)
+                                 // If color is Red/Green/Yellow/Cyan/White/Magenta (Bright) -> Black Text
+                                 // If color is Blue/Black (Dark) -> White Text
+                                 const isBright = ['#FF0000', '#00FF00', '#FFFF00', '#00FFFF', '#FFFFFF', '#FF00FF'].includes(chColor);
+                                 const txtColor = isBright ? 'black' : 'white';
 
                                  return (
                                      <div key={ch.id} style={{
                                          minWidth:'80px', flex:'0 0 auto', background: isLinked ? '#002233' : '#222', 
-                                         border: isLinked ? '2px solid #0088ff' : '1px solid #333', borderRadius:'6px',
-                                         display:'flex', flexDirection:'column', alignItems:'center', padding:'5px'
+                                         // border: isLinked ? '2px solid #0088ff' : '1px solid #333', 
+                                         border: '1px solid #444',
+                                         borderRadius:'6px',
+                                         display:'flex', flexDirection:'column', alignItems:'center', padding:'5px',
+                                         overflow: 'hidden'
                                      }}>
-                                         <div style={{fontSize:'0.8em', color: isLinked ? '#66ccff' : '#888', marginBottom:'5px', fontWeight:'bold', textAlign:'center'}}>
+                                         {/* Full Colored Scribble Strip Header */}
+                                         <div style={{
+                                             width: '100%', 
+                                             background: chColor, 
+                                             color: txtColor,
+                                             marginBottom:'5px', 
+                                             fontWeight:'bold', 
+                                             textAlign:'center',
+                                             padding: '5px 0',
+                                             borderRadius: '4px',
+                                             fontSize:'0.9em',
+                                             textShadow: 'none',
+                                             boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                         }}>
                                              {ch.name || `CH ${ch.id}`}
+                                         </div>
+
+                                         {/* DEBUG: Raw Color Value */}
+                                         <div style={{fontSize:'0.6em', color:'yellow', marginBottom:'2px', whiteSpace:'pre'}}>
+                                             St: {String(chState.color)} | Cfg: {String(ch.colorHex)}
                                          </div>
                                          
                                          {/* Fader */}
@@ -217,7 +313,6 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                                   onChange={(e) => {
                                                       const val = parseFloat(e.target.value);
                                                       // Optimistic
-                                                      // (We rely on global update for consistency, but sending now)
                                                       axios.post('/api/set-param', { 
                                                           channelId: ch.id, 
                                                           type: 'mixSend', 
@@ -227,7 +322,8 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                                   }}
                                                   style={{
                                                       writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
-                                                      width: '100%', height: '100%', accentColor: isLinked ? '#0088ff' : '#666',
+                                                      width: '100%', height: '100%', 
+                                                      accentColor: chColor, // Dynamic Color
                                                       zIndex: 5
                                                   }}
                                               />
@@ -241,11 +337,6 @@ const MonitorsOverlay = ({ onClose, x32State, config }) => {
                                               {floatToDB(sendState.level || 0)}
                                           </div>
 
-                                          {/* Mute/On Toggle for Send */}
-                                          {/* Note: X32 sends might not always have individual mutes exposed easily or used often for monitor mixes, 
-                                              usually it's post-fader or pre-fader. Let's assume just Fader for now unless requested. 
-                                              Actually, sends DO have tap points and can be muted. Let's keep it simple: Just Level.
-                                          */}
                                           <div style={{fontSize:'0.7em', color:'#555'}}>{ch.id}</div>
                                      </div>
                                  )

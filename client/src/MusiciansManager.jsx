@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { QRCodeSVG } from 'qrcode.react';
 
 const MusiciansManager = ({ onClose }) => {
     const [musicians, setMusicians] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [dirty, setDirty] = useState(false);
+    
+    // New State for Modals
+    const [showQR, setShowQR] = useState(false);
+    const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+    const [newPassword, setNewPassword] = useState("");
 
     useEffect(() => {
         fetchMusicians();
@@ -73,24 +79,51 @@ const MusiciansManager = ({ onClose }) => {
         updateMusician(id, 'linkedChannels', arr);
     };
 
+    // Password Logic
+    const handlePasswordSave = async () => {
+        if (!newPassword) return;
+        try {
+            await axios.post('/api/system/password', { password: newPassword });
+            setShowPasswordPrompt(false);
+            alert("Password Updated!");
+        } catch (e) {
+            alert("Failed to update password");
+        }
+    };
+
+    const musicianUrl = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/musician";
+
     return (
         <div style={{
-            position:'fixed', top:'10%', left:'10%', width:'80%', height:'80%', 
-            background:'#222', zIndex:3100, border:'1px solid #444', 
-            borderRadius:'8px', display:'flex', flexDirection:'column',
-            boxShadow:'0 0 50px rgba(0,0,0,0.8)'
+            position: 'fixed', top: 50, left: 50, right: 50, bottom: 50,
+            background: '#222', border: '1px solid #444', borderRadius: '8px',
+            display: 'flex', flexDirection: 'column', zIndex: 2000, boxShadow: '0 0 50px rgba(0,0,0,0.8)'
         }}>
-            <div style={{
-                padding:'15px', borderBottom:'1px solid #333', background:'#1a1a1a', 
-                borderRadius:'8px 8px 0 0', display:'flex', justifyContent:'space-between', alignItems:'center'
-            }}>
+            {/* Header */}
+            <div style={{padding: '20px', borderBottom: '1px solid #444', display:'flex', justifyContent:'space-between', alignItems:'center', background:'#1a1a1a', borderRadius:'8px 8px 0 0'}}>
                 <h2 style={{margin:0, color:'#ffaa00'}}>Musicians Roster</h2>
                 <div style={{display:'flex', gap:'10px'}}>
-                    {dirty && <button onClick={saveMusicians} style={{padding:'5px 15px', background:'#0f0', color:'#000', border:'none', borderRadius:'4px', fontWeight:'bold', cursor:'pointer'}}>SAVE CHANGES</button>}
-                    <button onClick={onClose} style={{background:'#f00', color:'#fff', border:'none', padding:'5px 15px', borderRadius:'4px', cursor:'pointer'}}>CLOSE</button>
+                     <button 
+                        onClick={() => setShowQR(true)}
+                        style={{background:'#0088ff', color:'white', border:'none', padding:'8px 15px', borderRadius:'4px', cursor:'pointer'}}
+                    >
+                        📱 Show QR
+                    </button>
+                    <button 
+                        onClick={() => {
+                            axios.get('/api/system/password').then(res => setNewPassword(res.data.password));
+                            setShowPasswordPrompt(true);
+                        }}
+                        style={{background:'#e67e22', color:'white', border:'none', padding:'8px 15px', borderRadius:'4px', cursor:'pointer'}}
+                    >
+                        🔒 Set Password
+                    </button>
+                    {dirty && <button onClick={saveMusicians} style={{padding:'8px 15px', background:'#0f0', color:'#000', border:'none', borderRadius:'4px', fontWeight:'bold', cursor:'pointer'}}>SAVE CHANGES</button>}
+                    <button onClick={onClose} style={{background:'#555', color:'white', border:'none', padding:'8px 15px', borderRadius:'4px', cursor:'pointer'}}>Close</button>
                 </div>
             </div>
 
+            {/* Content Table */}
             <div style={{flex:1, overflowY:'auto', padding:'20px'}}>
                 {loading && <div style={{color:'#888'}}>Loading...</div>}
                 
@@ -140,6 +173,44 @@ const MusiciansManager = ({ onClose }) => {
                     + Add Musician
                 </button>
             </div>
+
+            {/* QR OVERLAY */}
+            {showQR && (
+                <div style={{
+                    position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.9)', 
+                    display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', zIndex: 3000
+                }} onClick={() => setShowQR(false)}>
+                    <div style={{background:'white', padding:'40px', borderRadius:'20px', textAlign:'center'}} onClick={e => e.stopPropagation()}>
+                        <h2 style={{color:'black', marginTop:0}}>Scan to Join Studio</h2>
+                        <QRCodeSVG value={musicianUrl} size={300} />
+                        <p style={{color:'#333', fontSize:'1.2em', marginTop:'20px', fontFamily:'monospace'}}>{musicianUrl}</p>
+                        <button onClick={() => setShowQR(false)} style={{marginTop:'20px', padding:'10px 30px', background:'#333', color:'white', border:'none', borderRadius:'6px', cursor:'pointer'}}>Close</button>
+                    </div>
+                </div>
+            )}
+
+            {/* PASSWORD PROMPT MODAL */}
+            {showPasswordPrompt && (
+                <div style={{
+                    position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.8)', 
+                    display:'flex', alignItems:'center', justifyContent:'center', zIndex: 3000
+                }}>
+                    <div style={{background:'#333', padding:'30px', borderRadius:'8px', width:'300px', border:'1px solid #555'}}>
+                        <h3 style={{marginTop:0, color:'#e67e22'}}>Set Studio Password</h3>
+                        <p style={{color:'#aaa', fontSize:'0.9em'}}>Shared password for all musicians</p>
+                        <input 
+                            type="text" 
+                            value={newPassword} 
+                            onChange={e => setNewPassword(e.target.value)}
+                            style={{width:'100%', padding:'10px', marginTop:'10px', background:'#222', border:'1px solid #444', color:'white', fontSize:'1.2em', boxSizing:'border-box'}}
+                        />
+                        <div style={{marginTop:'20px', display:'flex', justifyContent:'flex-end', gap:'10px'}}>
+                            <button onClick={() => setShowPasswordPrompt(false)} style={{background:'transparent', color:'#aaa', border:'none', cursor:'pointer'}}>Cancel</button>
+                            <button onClick={handlePasswordSave} style={{background:'#e67e22', color:'white', border:'none', padding:'8px 15px', borderRadius:'4px', cursor:'pointer'}}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

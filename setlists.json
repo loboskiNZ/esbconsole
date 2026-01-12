@@ -32,7 +32,7 @@
           "data": ""
         },
         {
-          "name": "chorus 1",
+          "name": "chorus1",
           "type": "preset",
           "data": ""
         },
@@ -340,7 +340,99 @@
         }
       ],
       "charts": {},
-      "notes": "Lead singer: Ed\nfirst chorus: Ella (short) x2\nsecond chorus Ella (long) X 2\nSoft bit VB: La Luna (x4)\nlast part all to the end: Tell me you love me one more time"
+      "notes": "Lead singer: Ed\nfirst chorus: Ella (short) x2\nsecond chorus Ella (long) X 2\nSoft bit VB: La Luna (x4)\nlast part all to the end: Tell me you love me one more time",
+      "chartAssignments": [
+        {
+          "id": 1768222220640,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "a69ca42bacd2947d8161fbe8df036151",
+            "path": "uploads/a69ca42bacd2947d8161fbe8df036151",
+            "size": 111828
+          }
+        },
+        {
+          "id": 1768222489364,
+          "inputChannel": "10",
+          "monitorBus": "10",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Electric Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "552ae57b0d2d4ebde61d47b880b5f856",
+            "path": "uploads/552ae57b0d2d4ebde61d47b880b5f856",
+            "size": 124445
+          }
+        },
+        {
+          "id": 1768224253955,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Piano.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "8ef1c7f482423892a1448d875724c80a",
+            "path": "uploads/8ef1c7f482423892a1448d875724c80a",
+            "size": 116868
+          }
+        },
+        {
+          "id": 1768224291330,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "339b266cdab9bd77b75fbbf08e9e0155",
+            "path": "uploads/339b266cdab9bd77b75fbbf08e9e0155",
+            "size": 111828
+          }
+        },
+        {
+          "id": 1768224322564,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Trombone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "2c0b2705174ba749b4cf8fdcc6101ad0",
+            "path": "uploads/2c0b2705174ba749b4cf8fdcc6101ad0",
+            "size": 102764
+          }
+        },
+        {
+          "id": 1768224352220,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Alto Saxophone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "351bb9ace9a113ba6398eca759aeebf3",
+            "path": "uploads/351bb9ace9a113ba6398eca759aeebf3",
+            "size": 104409
+          }
+        }
+      ]
     },
     "1768048199423": {
       "title": "Nube Blanca - Seeing red",
@@ -380,7 +472,24 @@
         }
       ],
       "charts": {},
-      "notes": "Lead vocals: Ed / Claire\n\nChorus: Nube Blanca\n\nSeeing red Chorus: \nSay your prayers\nSeing red \n(x3)\nbridge all the time afte chorus"
+      "notes": "Lead vocals: Ed / Claire\n\nChorus: Nube Blanca\n\nSeeing red Chorus: \nSay your prayers\nSeing red \n(x3)\nbridge all the time afte chorus",
+      "chartAssignments": [
+        {
+          "id": 1768224499478,
+          "inputChannel": "16",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca TRUMPET.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "284a52b784194adb44a814e47ef079af",
+            "path": "uploads/284a52b784194adb44a814e47ef079af",
+            "size": 52623
+          }
+        }
+      ]
     },
     "1768048250223": {
       "title": "Magico Amor",
@@ -752,8 +861,9 @@
   },
   "busNames": {
     "7": "Drums",
-    "8": "bass",
+    "8": "Bass",
     "9": "Keys",
-    "10": "Gat"
+    "10": "Gat",
+    "12": "Horns"
   }
 }
