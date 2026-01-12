@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.8.3 (Current)
+## v2.8.4 (Current)
 **Date:** 2026-01-13
 
 ### New Features (Musician UI)
@@ -9,6 +9,7 @@
 *   **Save Mix Button**: Added "Save" icon to bottom navigation. Persists current mix to local device for future restoration.
 
 ### Bug Fixes
+*   **Master Mute**: Fixed Master Fader/Mute not syncing with console state.
 *   **Fader Control**: Fixed an issue where Musician App faders would not control the console because of a strict "OSC Status" check.
 *   **Splash Crash**: Removed `backdrop-filter` blur to prevent crashes on iPad/Safari.
 

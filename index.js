@@ -2487,8 +2487,36 @@ io.on('connection', (socket) => {
               saveState();
           }
           
-          // Master Fader? /bus/{id}/mix/fader
-           // (Add logic if needed for master fader sync)
+          
+          // 3. Handle Master Bus Updates (Optimistic)
+          // /bus/{id}/mix/(on|fader)
+          const busMatch = data.address.match(/\/bus\/(\d+)\/mix\/(on|fader)/);
+          if (busMatch) {
+              const [_, busIdStr, param] = busMatch;
+              const busId = parseInt(busIdStr).toString();
+              const busKey = 'bus' + busId;
+              
+              if (!x32State[busKey]) x32State[busKey] = {};
+              
+              // Map param
+              // fader -> level
+              // on -> mute (inverted logic? No, state usually stores 'on' or 'mute')
+              // Line 556 init says 'mute: false'.
+              // Line 24 in MusicianMix: currentMute ? 1 : 0 sent to /on.
+              // So if val is 1 (On), mute is false. if val is 0, mute is true.
+              
+              if (param === 'fader') {
+                   x32State[busKey].level = val;
+                   io.emit('x32_update', { id: busKey, type: 'bus', param: 'level', value: val });
+              } else if (param === 'on') {
+                   const isMuted = (val === 0);
+                   x32State[busKey].on = val; // Store 'on' explicitly if consumed strictly
+                   x32State[busKey].mute = isMuted; // Store 'mute' for legacy
+                   io.emit('x32_update', { id: busKey, type: 'bus', param: 'on', value: val });
+              }
+              
+              saveState();
+          }
 
       } catch (e) {
           console.error("❌ OSC Bridge Error:", e);

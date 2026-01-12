@@ -74,23 +74,18 @@ const MusicianMix = ({ socket, x32State, user }) => {
             }}>
                  {/* MASTER BUS FADER - Always First */}
                  {(() => {
-                    // Need to fetch Master Data. 
-                    // Usually this is bus master fader.
-                    // Bus ID = mixBusId.
-                    // Address: /bus/{id}/mix/fader
-                    // Data might be in x32State.buses[mixBusId] ?
-                    // But our state structure is flat or channels only?
-                    // Let's assume we might need to fetch it or rely on optimistic first.
-                    // Let's look for "bus" state if available, otherwise just control it.
+                    // Fetch Master Bus Data
+                    const busKey = 'bus' + mixBusId;
+                    const busData = x32State && x32State[busKey] ? x32State[busKey] : { level: 0, on: 0 };
                     
-                    // Note: The previous handleMasterLevel used /bus/{id}/mix/*
-                    
-                    // We need a way to get the current Master Value if possible.
-                    // If not in state, it might default to 0 until we get an update.
-                    
-                    // Quick check on State Keys...
-                    // Assuming state.buses exists? Or maybe we just use local state for now?
-                    // Let's use 0 or safe default.
+                    // State Mapping:
+                    // X32 'on': 1 = Active/Unmuted, 0 = Muted
+                    // We want 'isMuted' which is opposite of 'on'
+                    // Safety check: if busData.on is undefined, assume Unmuted (1)
+                    const isOn = busData.on !== undefined ? busData.on : 1; 
+                    const isMuted = isOn === 0;
+
+                    const level = busData.level !== undefined ? busData.level : 0;
                     
                     return (
                         <div style={{
@@ -100,11 +95,11 @@ const MusicianMix = ({ socket, x32State, user }) => {
                         }}>
                              <FaderStrip 
                                 label="MASTER"
-                                color="#ffaa00" // Orange for Master
-                                value={0.75} // Placeholder default, ideally fetch from state
-                                isMuted={false}
+                                color="#ffaa00"
+                                value={level}
+                                isMuted={isMuted}
                                 onChange={handleMasterLevel}
-                                onMuteToggle={() => handleMasterMute(false)} 
+                                onMuteToggle={() => handleMasterMute(isMuted)} 
                             />
                         </div>
                     );
