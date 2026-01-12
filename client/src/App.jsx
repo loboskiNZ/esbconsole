@@ -2235,16 +2235,7 @@ function AppContent() {
       {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
        {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
 
-       {/* DEBUG: SOCKET STATUS BANNER (REMOVE LATER) */}
-       <div style={{
-          position: 'fixed', top: '130px', left: '50%', transform: 'translateX(-50%)',
-          background: socket.connected ? 'rgba(0,100,0,0.8)' : 'rgba(100,0,0,0.8)',
-          color: 'white', padding: '5px 10px', borderRadius: '4px', zIndex: 999999,
-          pointerEvents: 'none', fontSize: '0.8em', border: '1px solid white'
-       }}>
-          DEBUG: Socket {socket.connected ? 'CONNECTED' : 'DISCONNECTED'} | ID: {socket.id || '...'}
-          {syncProgress && <span> | SYNC: Step {syncProgress.step}</span>}
-       </div>
+
 
        {/* SCENE LOADING OVERLAY */}
        {syncProgress && <SceneLoadingOverlay progress={syncProgress} onClose={() => setSyncProgress(null)} />}

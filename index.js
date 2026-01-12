@@ -11,6 +11,9 @@ const authManager = require('./authManager');
 const setlistManager = require('./setlistManager');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
 
 // GLOBAL ERROR HANDLER
 process.on('uncaughtException', (err) => {
@@ -1947,6 +1950,189 @@ app.post('/api/setlist/update', (req, res) => {
     const result = setlistManager.updateSetlist(id, updates);
     res.json(result);
 });
+
+// --- NEW SETLIST ROUTES ---
+app.post('/api/setlist/song', (req, res) => {
+    const song = req.body;
+    // If ID exists and song exists, update. Else create.
+    // song object from frontend might contain { id:..., title:... }
+    if (song.id && setlistManager.data.songs[song.id]) {
+        res.json({ song: setlistManager.updateSong(song.id, song) });
+    } else {
+        res.json({ song: setlistManager.createSong(song) });
+    }
+});
+
+app.delete('/api/setlist/song/:id', (req, res) => {
+    const { id } = req.params;
+    setlistManager.deleteSong(id);
+    res.json({ success: true });
+});
+
+app.post('/api/setlist/order', (req, res) => {
+   const { setlistId, order } = req.body;
+   setlistManager.updateSetlistOrder(setlistId, order);
+   res.json({ success: true });
+});
+
+app.post('/api/setlist/bus-name', (req, res) => {
+    const { busId, name } = req.body;
+    setlistManager.setBusName(busId, name);
+    res.json({ success: true });
+});
+
+// CHART UPLOAD
+const upload = multer({ dest: 'uploads/' });
+app.post('/api/upload-chart', upload.single('chart'), (req, res) => {
+    if (!req.file) return res.json({ success: false, error: "No file uploaded" });
+    res.json({ success: true, file: req.file });
+});
+
+app.post('/api/setlist/export-docx', (req, res) => {
+    const { setlistId } = req.body;
+    try {
+        // 1. Get Data
+        const data = setlistManager.getAll();
+        const setlist = data.setlists[setlistId || 'default'];
+        if (!setlist) return res.status(404).json({ error: "Setlist not found" });
+
+        // 2. Prepare Template Data
+        const songs = setlist.songOrder.map((id, idx) => {
+            const s = data.songs[id];
+            if (!s) return null;
+            return {
+                idx: idx + 1,
+                index: idx + 1, // Redundant fallback
+                i: idx + 1,
+                num: idx + 1,
+                title: s.title,
+                artist: s.artist,
+                bpm: s.bpm,
+                notes: s.notes || ''
+            };
+        }).filter(s => !!s);
+
+        // 3. Load Template
+        const templatePath = path.resolve(__dirname, 'templates', 'setlist_template.docx');
+        if (!fs.existsSync(templatePath)) {
+            // Fallback to creating a simple text buffer if template missing?
+            // Or try the other one 'ESB Playlist template.docx' (assuming rename?)
+            // Let's rely on setlist_template.docx as seen in list_dir
+            return res.status(500).json({ error: "Template file 'setlist_template.docx' not found." });
+        }
+
+        const content = fs.readFileSync(templatePath, 'binary');
+        const zip = new PizZip(content);
+        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+        // 4. Render
+        doc.render({
+            setlistName: setlist.name,
+            songs: songs,
+            date: new Date().toLocaleDateString()
+        });
+
+        // 5. Output
+        const buf = doc.getZip().generate({ type: 'nodebuffer' });
+        
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename=Setlist.docx`);
+        res.send(buf);
+
+    } catch (e) {
+        console.error("Export Error:", e);
+        res.status(500).json({ error: "Generation Failed: " + e.message });
+    }
+});
+
+const PDFDocument = require('pdfkit');
+
+// PDF Export (Server-Side Conversion via LibreOffice)
+const { exec } = require('child_process');
+
+app.post('/api/setlist/export-pdf', (req, res) => {
+    const { setlistId } = req.body;
+    const tempId = Date.now();
+    const tempDocx = path.join(__dirname, 'uploads', `temp_${tempId}.docx`);
+    const outputDir = path.join(__dirname, 'uploads');
+    const tempPdf = path.join(__dirname, 'uploads', `temp_${tempId}.pdf`);
+
+    try {
+        // 1. Get Data & Template
+        const data = setlistManager.getAll();
+        const setlist = data.setlists[setlistId || 'default'];
+        if (!setlist) return res.status(404).json({ error: "Setlist not found" });
+
+        const songs = setlist.songOrder.map((id, idx) => {
+            const s = data.songs[id];
+            if (!s) return null;
+            return {
+                idx: idx + 1,
+                index: idx + 1, // Redundant fallback
+                i: idx + 1,
+                num: idx + 1,
+                title: s.title,
+                artist: s.artist,
+                bpm: s.bpm,
+                notes: s.notes || ''
+            };
+        }).filter(s => !!s);
+
+        const templatePath = path.resolve(__dirname, 'templates', 'setlist_template.docx');
+        if (!fs.existsSync(templatePath)) return res.status(500).json({ error: "Template not found" });
+
+        // 2. Generate DOCX
+        const content = fs.readFileSync(templatePath, 'binary');
+        const zip = new PizZip(content);
+        const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+        doc.render({
+            setlistName: setlist.name,
+            songs: songs,
+            date: new Date().toLocaleDateString()
+        });
+
+        const buf = doc.getZip().generate({ type: 'nodebuffer' });
+        fs.writeFileSync(tempDocx, buf);
+
+        // 3. Convert to PDF using LibreOffice (soffice)
+        // Command: soffice --headless --convert-to pdf --outdir <dir> <file>
+        const cmd = `soffice --headless --convert-to pdf --outdir "${outputDir}" "${tempDocx}"`;
+        console.log(`Processing PDF: ${cmd}`);
+
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                console.error("LibreOffice Error:", error);
+                return res.status(500).json({ error: "PDF Conversion failed" });
+            }
+
+            // 4. Send File
+            if (fs.existsSync(tempPdf)) {
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `attachment; filename=Setlist.pdf`);
+                const stream = fs.createReadStream(tempPdf);
+                stream.pipe(res);
+                
+                // Cleanup after finish
+                stream.on('end', () => {
+                    fs.unlinkSync(tempDocx);
+                    fs.unlinkSync(tempPdf);
+                });
+            } else {
+                 console.error("PDF File not found after conversion");
+                 res.status(500).json({ error: "PDF File creation failed" });
+            }
+        });
+
+    } catch (e) {
+        console.error("PDF Export Logic Error:", e);
+        res.status(500).json({ error: "Internal Server Error: " + e.message });
+        // Try cleanup
+        if (fs.existsSync(tempDocx)) fs.unlinkSync(tempDocx);
+    }
+});
+
+// --------------------------
 
 // ... (Other Setlist routes can be added later as needed)
 

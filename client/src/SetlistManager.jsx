@@ -6,6 +6,7 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State }) 
     const [data, setData] = useState(null);
     const [selectedSongId, setSelectedSongId] = useState(null);
     const [newSongTitle, setNewSongTitle] = useState('');
+    const [dragOverIndex, setDragOverIndex] = useState(null);
 
     useEffect(() => {
         fetchData();
@@ -263,31 +264,94 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State }) 
                             <div style={{marginTop:'20px', borderTop:'1px solid #333', paddingTop:'20px'}}>
                                 <h3 style={{margin:'0 0 10px 0'}}>Cues</h3>
                                 <div style={{display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'10px'}}>
-                                    {(selectedSong.cues || []).map((cue, idx) => (
-                                        <div key={idx} style={{
-                                            background:'#222', padding:'10px', borderRadius:'4px', border:'1px solid #333',
-                                            position:'relative'
-                                        }}>
-                                            <div style={{fontWeight:'bold'}}>{cue.name}</div>
-                                            <div style={{fontSize:'0.8em', color:'#888'}}>{cue.type}</div>
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if(!confirm(`Delete cue "${cue.name}"?`)) return;
-                                                    const newCues = [...(selectedSong.cues || [])];
-                                                    newCues.splice(idx, 1);
-                                                    handleUpdateSong(selectedSong.id, { cues: newCues });
-                                                }}
-                                                style={{
-                                                    position:'absolute', top:'5px', right:'5px',
-                                                    background:'none', border:'none', color:'#800', 
-                                                    cursor:'pointer', fontWeight:'bold'
-                                                }}
-                                            >×</button>
+                                    {(selectedSong.cues || []).map((cue, idx) => {
+                                        const isDragOver = dragOverIndex === idx;
+                                        return (
+                                        <div 
+                                            key={idx}
+                                            draggable
+                                            onDragStart={(e) => {
+                                                e.dataTransfer.setData('text/plain', String(idx));
+                                                e.dataTransfer.effectAllowed = 'move';
+                                            }}
+                                            onDragOver={(e) => {
+                                                e.preventDefault(); 
+                                                e.dataTransfer.dropEffect = 'move';
+                                                if (dragOverIndex !== idx) setDragOverIndex(idx);
+                                            }}
+                                            onDragLeave={() => {
+                                                // Optional: Debounce this if it flickers, but for now relying on Enter/Over of other items
+                                            }}
+                                            onDragEnd={() => setDragOverIndex(null)}
+                                            onDrop={(e) => {
+                                                e.preventDefault();
+                                                setDragOverIndex(null);
+                                                const sourceIdxStr = e.dataTransfer.getData('text/plain');
+                                                
+                                                if (!sourceIdxStr) return;
+                                                const sourceIdx = parseInt(sourceIdxStr);
+                                                
+                                                if (isNaN(sourceIdx) || sourceIdx === idx) return;
+
+                                                const newCues = [...selectedSong.cues];
+                                                const [movedCue] = newCues.splice(sourceIdx, 1);
+                                                newCues.splice(idx, 0, movedCue);
+                                                
+                                                handleUpdateSong(selectedSong.id, { cues: newCues });
+                                            }}
+                                            style={{
+                                                background: isDragOver ? '#334444' : '#222', 
+                                                padding:'10px', borderRadius:'4px', 
+                                                border: isDragOver ? '2px dashed #00ffff' : '1px solid #333',
+                                                display:'flex', flexDirection:'column', gap:'5px', cursor: 'grab',
+                                                transform: isDragOver ? 'scale(0.98)' : 'scale(1)',
+                                                transition: 'all 0.1s ease'
+                                            }}
+                                        >
+                                            {/* HEADER: NAME INPUT & DELETE */}
+                                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                                <div style={{display:'flex', alignItems:'center', gap:'5px', flex:1}}>
+                                                    <span style={{color: isDragOver ? '#00ffff' : '#555', fontSize:'1.2em', cursor:'grab'}}>☰</span>
+                                                    <input 
+                                                        key={cue.name} 
+                                                        defaultValue={cue.name}
+                                                        onBlur={(e) => {
+                                                            const newName = e.target.value;
+                                                            if(newName !== cue.name) {
+                                                                const newCues = [...selectedSong.cues];
+                                                                newCues[idx] = { ...newCues[idx], name: newName };
+                                                                handleUpdateSong(selectedSong.id, { cues: newCues });
+                                                            }
+                                                        }}
+                                                        onKeyDown={(e) => e.stopPropagation()} 
+                                                        onMouseDown={(e) => e.stopPropagation()} 
+                                                        style={{
+                                                            background:'transparent', border:'none', borderBottom:'1px solid #444',
+                                                            color:'white', fontWeight:'bold', width:'100%', marginRight:'10px'
+                                                        }}
+                                                    />
+                                                </div>
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if(!confirm(`Delete cue "${cue.name}"?`)) return;
+                                                        const newCues = [...(selectedSong.cues || [])];
+                                                        newCues.splice(idx, 1);
+                                                        handleUpdateSong(selectedSong.id, { cues: newCues });
+                                                    }}
+                                                    style={{background:'none', border:'none', color:'#800', cursor:'pointer', fontWeight:'bold'}}
+                                                >×</button>
+                                            </div>
+
+                                            {/* FOOTER: TYPE */}
+                                            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+                                                <div style={{fontSize:'0.8em', color:'#666'}}>{cue.type}</div>
+                                            </div>
                                         </div>
-                                    ))}
+                                    );
+                                    })}
                                     
-                                    {/* Add Cue Button (Placeholder) */}
+                                    {/* Add Cue Button */}
                                     <button 
                                         onClick={() => {
                                             const name = prompt("Cue Name:");

@@ -32,17 +32,42 @@
           "data": ""
         },
         {
-          "name": "chorus",
+          "name": "chorus 1",
           "type": "preset",
           "data": ""
         },
         {
-          "name": "verse",
+          "name": "verse1",
           "type": "preset",
           "data": ""
         },
         {
-          "name": "outro",
+          "name": "Chorus2",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "verse2",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "chorus3",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "bridge",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "pregones",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "outro  chorus",
           "type": "preset",
           "data": ""
         }
