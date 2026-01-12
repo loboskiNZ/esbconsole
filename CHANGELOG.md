@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.9.0 (Current)
+## v2.9.1 (Current)
 **Date:** 2026-01-13
 
 ### New Features (Musician UI)

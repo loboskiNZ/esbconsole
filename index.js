@@ -2527,7 +2527,11 @@ io.on('connection', (socket) => {
 
 
 
-// --- SPA FALLBACK ---
+// --- API: GROUPS ---
+app.get('/api/groups', (req, res) => {
+    res.json(SOLO_GROUPS);
+});
+
 // --- SPA FALLBACK ---
 app.use((req, res) => {
     res.sendFile(path.join(__dirname, 'client/dist/index.html'));

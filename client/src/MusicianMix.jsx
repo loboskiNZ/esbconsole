@@ -5,6 +5,17 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
     // Show all 32 channels + Aux if needed. For now 1-32.
     const channels = Array.from({length: 32}, (_, i) => String(i + 1));
     const mixBusId = user?.mixBusId || 1; // Default to 1 if missing safely
+    
+    // Admin Groups Map
+    const [adminGroups, setAdminGroups] = React.useState({});
+    
+    React.useEffect(() => {
+        // Fetch Admin Groups (SOLO_GROUPS)
+        fetch('/api/groups')
+            .then(res => res.json())
+            .then(data => setAdminGroups(data))
+            .catch(err => console.error("Failed to load groups", err));
+    }, []);
 
     // --- OSC HELPERS ---
     const sendOsc = (address, value) => {
@@ -151,15 +162,47 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
                          const isGroupUnmuted = memberMutes.some(on => on === 1);
                          
                          // Determine Label
-                         // If all memebers share a scribble strip name commonality? 
-                         // Or just count? e.g. "4 Channels".
-                         // Better: "Drums" if Red? X32 doesn't name colors.
-                         // Let's use first member name? Or just "Group". 
-                         // "Group" is weak. 
-                         // Let's try to find common name? "Drums I", "Drums II" -> "Drums"?
-                         // Simplest: "X chans" + Color swatch.
-                         // Or just list first 2 names...
-                         const groupLabel = `${group.members.length} Chs`;
+                         let groupLabel = `${group.members.length} Chs`;
+                         
+                         // 1. Check Admin Groups (Exact Match or Subset?)
+                         // SOLO_GROUPS e.g. { drums: ['1'...'8'] }
+                         // We have current group members e.g. ['2','3','4'...].
+                         // If we find a key where members are part of the set, use it.
+                         // OR if the majority of the members belong to a group?
+                         // Let's look for a key where most members belong.
+                         
+                         let bestMatch = null;
+                         Object.entries(adminGroups).forEach(([name, ids]) => {
+                             // Check overlap
+                             const overlap = group.members.filter(id => ids.includes(id));
+                             if (overlap.length > 0 && overlap.length >= group.members.length * 0.5) {
+                                 // If >50% of this color group belongs to named group, use it.
+                                 bestMatch = name;
+                             }
+                         });
+                         
+                         if (bestMatch) {
+                             groupLabel = bestMatch.toUpperCase();
+                         } else {
+                             // 2. Fallback Heuristic: Longest Common Prefix
+                             const names = group.members.map(chId => {
+                                 const d = getChannelData(chId);
+                                 return d && d.name ? d.name.trim() : `Ch ${chId}`;
+                             });
+                             
+                             if (names.length > 0) {
+                                 groupLabel = names[0];
+                                 if (names.length > 1) {
+                                     const sorted = [...names].sort();
+                                     const first = sorted[0];
+                                     const last = sorted[sorted.length - 1];
+                                     let i = 0;
+                                     while (i < first.length && first.charAt(i) === last.charAt(i)) i++;
+                                     const prefix = first.substring(0, i).trim();
+                                     if (prefix.length >= 3) groupLabel = prefix.replace(/[-_0-9]*$/, '').trim() || prefix;
+                                 }
+                             }
+                         }
 
                          return (
                              <div key={group.id} style={{
