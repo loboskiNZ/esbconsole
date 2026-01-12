@@ -8,6 +8,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
     
     // Admin Groups Map
     const [adminGroups, setAdminGroups] = React.useState({});
+    const [lastOscCmd, setLastOscCmd] = React.useState("");
     
     React.useEffect(() => {
         // Fetch Admin Groups (SOLO_GROUPS)
@@ -20,6 +21,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
     // --- OSC HELPERS ---
     const sendOsc = (address, value) => {
         if (!socket) return;
+        setLastOscCmd(`${address}  [${typeof value}:${Number(value).toFixed(2)}]`);
         socket.emit('osc', { address, args: [value] });
     };
 
@@ -69,6 +71,15 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
         }}>
             
             {/* NO Header - Handled by Layout or removed as requested */}
+
+            {/* DEBUG: Last OSC Command */}
+            <div style={{
+                position: 'fixed', bottom: 0, left: 0, right: 0, 
+                background: 'rgba(50,0,0,0.8)', color: 'yellow', 
+                fontSize: '10px', padding: '2px', pointerEvents: 'none', zIndex: 9999
+            }}>
+                DEBUG OSC: {lastOscCmd || "None"}
+            </div>
 
             {/* 3. SCROLLABLE FADER AREA */}
             <div style={{

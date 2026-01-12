@@ -2456,6 +2456,11 @@ io.on('connection', (socket) => {
           // Check removed: 'restore' works without it, so we trust osc.send()
           const message = new OSC.Message(data.address, ...data.args);
           osc.send(message);
+          
+          // DEBUG: Log specific channel sends to see if they are firing
+          if (data.address.includes('/mix/')) {
+              console.log(`[OSC OUT] ${data.address} -> ${data.args}`);
+          }
           // }
 
           // 2. Parse & Update Internal State (Optimistic Server-Side)

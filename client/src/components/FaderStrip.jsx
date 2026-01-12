@@ -91,6 +91,9 @@ const FaderStrip = ({
                 ref={trackRef}
                 // Start Listeners
                 onTouchStart={(e) => {
+                    // CRITICAL: Prevent browser scroll immediately on touch
+                    // This allows the Fader to claim the event stream
+                    if (e.cancelable) e.preventDefault();
                     setIsDragging(true);
                     handleMove(e.touches[0].clientY);
                 }}
@@ -102,7 +105,7 @@ const FaderStrip = ({
                     flex: 1, width: '40px', background: '#1a1a1a', borderRadius: '20px',
                     position: 'relative', overflow: 'hidden', cursor: 'pointer',
                     boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)',
-                    touchAction: 'pan-x'
+                    touchAction: 'none' // Track should NEVER trigger scroll
                 }}
             >
                 {/* Fill Level */}
