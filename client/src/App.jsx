@@ -660,6 +660,18 @@ function AppContent() {
                     const master = prev.master ? {...prev.master} : {level:0, mute:false};
                     master[data.param] = data.value;
                     return { ...prev, master: master };
+
+                } else if (data.type === 'bus') {
+                    // Handle Bus Master Updates (e.g. bus1.level, bus1.on)
+                    const busState = prev[data.id] || {};
+                    // Logic to handle 'on' -> 'mute' if needed, generally simple mapping:
+                    return { 
+                        ...prev, 
+                        [data.id]: { 
+                            ...busState, 
+                            [data.param]: data.value 
+                        } 
+                    };
                 }
 
                 if (data.type === 'masterEqBand') {
