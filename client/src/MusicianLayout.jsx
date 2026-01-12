@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Sliders, ListMusic, FileText, LogOut, User } from 'lucide-react';
+import { Sliders, ListMusic, FileText, LogOut, Save } from 'lucide-react';
 
-const MusicianLayout = ({ children, user, onLogout, activeTab, onTabChange }) => {
+const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChange }) => {
     // Navigation Items
     const mixLabel = user && user.mixBusId ? `Bus ${user.mixBusId}` : 'Mix';
     
     const navItems = [
         { id: 'monitors', icon: <Sliders size={24} />, label: mixLabel },
         { id: 'setlist', icon: <ListMusic size={24} />, label: 'Setlist' },
+        { id: 'save', icon: <Save size={24} />, label: 'Save', action: onSave }, // New Save Action
         { id: 'charts', icon: <FileText size={24} />, label: 'Charts' },
         { id: 'logout', icon: <LogOut size={24} />, label: 'Logout', action: onLogout }
     ];

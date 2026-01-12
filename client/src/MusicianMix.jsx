@@ -48,7 +48,7 @@ const MusicianMix = ({ socket, x32State, user }) => {
 
     return (
         <div style={{
-            height: '100%', // Changed from 100dvh to fill parent Layout container
+            height: '100%', 
             display: 'flex', 
             flexDirection: 'column', 
             background: '#121212', 

@@ -1,6 +1,18 @@
 # Changelog
 
-## v2.8.2 (Current)
+## v2.8.3 (Current)
+**Date:** 2026-01-13
+
+### New Features (Musician UI)
+*   **Welcome Overlay**: Added splash screen with rotating logo and "Restoring Mix..." feedback on login.
+*   **Mix Restoration**: Automatically sends saved monitor mix (levels/mutes) to the console upon login.
+*   **Save Mix Button**: Added "Save" icon to bottom navigation. Persists current mix to local device for future restoration.
+
+### Bug Fixes
+*   **Fader Control**: Fixed an issue where Musician App faders would not control the console because of a strict "OSC Status" check.
+*   **Splash Crash**: Removed `backdrop-filter` blur to prevent crashes on iPad/Safari.
+
+## v2.8.2
 **Date:** 2026-01-13
 
 ### Stability Fixes

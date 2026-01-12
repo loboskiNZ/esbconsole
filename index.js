@@ -2398,6 +2398,30 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('restore_musician_mix', ({ mixData, mixBusId }) => {
+        console.log(`🎚️ Restoring Mix for Bus ${mixBusId}...`);
+        if (!mixData || !mixBusId) return;
+        
+        const busStr = String(mixBusId).padStart(2, '0');
+        
+        Object.entries(mixData).forEach(([chId, settings]) => {
+            const chStr = String(chId).padStart(2, '0');
+            
+            // 1. Level
+            if (settings.level !== undefined) {
+                const addr = `/ch/${chStr}/mix/${busStr}/level`;
+                osc.send(new OSC.Message(addr, parseFloat(settings.level)));
+            }
+            
+            // 2. Mute/On (X32: 1 = On, 0 = Off)
+            // Our Saved State: 'on' (1 or 0)
+            if (settings.on !== undefined) {
+                const addr = `/ch/${chStr}/mix/${busStr}/on`;
+                osc.send(new OSC.Message(addr, parseInt(settings.on)));
+            }
+        });
+    });
+
     // --- SEND INITIAL STATE ---
     // Flatten channels Map/Object if needed, but x32State is an object here
     // Send full state so client isn't blank
@@ -2428,10 +2452,11 @@ io.on('connection', (socket) => {
           const val = data.args[0];
 
           // 1. Forward to Hardware
-          if (osc && osc.status() === OSC.STATUS.OPEN) {
-              const message = new OSC.Message(data.address, ...data.args);
-              osc.send(message);
-          }
+          // if (osc && osc.status() === OSC.STATUS.OPEN) { 
+          // Check removed: 'restore' works without it, so we trust osc.send()
+          const message = new OSC.Message(data.address, ...data.args);
+          osc.send(message);
+          // }
 
           // 2. Parse & Update Internal State (Optimistic Server-Side)
           // /ch/{id}/mix/{bus}/level
