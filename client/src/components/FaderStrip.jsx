@@ -22,44 +22,46 @@ const FaderStrip = ({
 
     const percentage = Math.max(0, Math.min(100, (internalValue || 0) * 100));
 
-    const handleTouch = (e) => {
+    const handlePointerDown = (e) => {
         if (!trackRef.current) return;
         
-        // CRITICAL: Prevent browser scroll/zoom while dragging fader
-        if(e.cancelable && (e.type === 'touchmove' || e.type === 'touchstart')) {
-            e.preventDefault();
-        }
-
+        // Capture pointer to track dragging even if it leaves the element
+        e.target.setPointerCapture(e.pointerId);
+        
         setIsDragging(true);
-        
-        const rect = trackRef.current.getBoundingClientRect();
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        // Calculate relative position (Bottom is 0%, Top is 100%)
-        const relativeY = clientY - rect.top;
-        const h = rect.height;
-        let newPct = 1 - (relativeY / h);
-        
-        // Clamp
-        if (newPct < 0) newPct = 0;
-        if (newPct > 1) newPct = 1;
-
-        // Optimistic Update
-        setInternalValue(newPct);
-        
-        // Propagate
-        onChange(newPct);
+        updateValueFromPointer(e);
     };
 
-    const handleEnd = () => {
+    const handlePointerMove = (e) => {
+        if (!isDragging) return;
+        updateValueFromPointer(e);
+    };
+
+    const handlePointerUp = (e) => {
         setIsDragging(false);
+        e.target.releasePointerCapture(e.pointerId);
+    };
+
+    const updateValueFromPointer = (e) => {
+         if (!trackRef.current) return;
+         const rect = trackRef.current.getBoundingClientRect();
+         // clientY is standard in PointerEvent
+         const relativeY = e.clientY - rect.top;
+         const h = rect.height;
+         let newPct = 1 - (relativeY / h);
+         
+         if (newPct < 0) newPct = 0;
+         if (newPct > 1) newPct = 1;
+
+         setInternalValue(newPct);
+         onChange(newPct);
     };
 
     return (
         <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', 
             height: '100%', width: '100%', minWidth: '60px',
-            touchAction: 'none' // Crucial for fader drag without scrolling page
+            touchAction: 'none' // Crucial: Disables browser scrolling on this element
         }}>
             {/* Label Box */}
             <div style={{
@@ -76,17 +78,15 @@ const FaderStrip = ({
             <div 
                 className="fader-track"
                 ref={trackRef}
-                onTouchStart={handleTouch}
-                onTouchMove={handleTouch}
-                onTouchEnd={handleEnd}
-                onMouseDown={(e) => { setIsDragging(true); handleTouch(e); }}
-                onMouseMove={(e) => { if(isDragging || e.buttons===1) handleTouch(e); }} 
-                onMouseUp={() => { setIsDragging(false); handleEnd(); }}
-                onMouseLeave={() => { setIsDragging(false); handleEnd(); }}
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
                 style={{
                     flex: 1, width: '40px', background: '#1a1a1a', borderRadius: '20px',
                     position: 'relative', overflow: 'hidden', cursor: 'pointer',
-                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)'
+                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)',
+                    touchAction: 'none' // Double ensure on the interactive element
                 }}
             >
                 {/* Fill Level */}
