@@ -8,7 +8,6 @@ import MonitorsOverlay from './MonitorsOverlay';
 import SafesOverlay from './SafesOverlay';
 import MusicianApp from './MusicianApp';
 import SceneLoadingOverlay from './components/SceneLoadingOverlay';
-import { INSTRUMENT_PRESETS } from './presets';
 import './index.css';
 
 const socket = io('/', { path: '/socket.io' });
@@ -603,6 +602,9 @@ function AppContent() {
   const [inputMeters, setInputMeters] = useState(Array(32).fill(0));
   const [toast, setToast] = useState(null); // { msg, type }
   const [syncProgress, setSyncProgress] = useState(null); // { step, label, detail }
+  const [presets, setPresets] = useState({}); // Dynamic Presets
+  const [showSavePresetModal, setShowSavePresetModal] = useState(false);
+  const [newPresetName, setNewPresetName] = useState("");
 
   // Load initial config & scenes
   useEffect(() => {
@@ -618,6 +620,10 @@ function AppContent() {
         }
       })
       .catch(err => console.error("Failed to load config", err));
+      
+    axios.get('/api/presets')
+      .then(res => setPresets(res.data))
+      .catch(e => console.error("Failed to load presets", e)); 
   }, []); // Add dependency array to close this useEffect properly
 
     // Check initial solo status
@@ -1159,18 +1165,24 @@ function AppContent() {
                                 background:'#222', borderRadius:'12px', border:'1px solid #333', 
                                 padding:'20px'
                             }}>
-                                <h3 style={{marginTop:0, color:'#888', fontSize:'0.9em', borderBottom:'1px solid #444', paddingBottom:'10px', letterSpacing:'1px', marginBottom:'15px'}}>
+                                <h3 style={{marginTop:0, color:'#888', fontSize:'0.9em', borderBottom:'1px solid #444', paddingBottom:'10px', letterSpacing:'1px', marginBottom:'15px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                                     QUICK PRESETS
+                                    <button 
+                                        onClick={() => { setNewPresetName(""); setShowSavePresetModal(true); }}
+                                        style={{background:'#444', border:'none', color:'white', padding:'4px 10px', borderRadius:'4px', cursor:'pointer', fontSize:'0.8em'}}
+                                    >
+                                        + SAVE
+                                    </button>
                                 </h3>
                                 <div style={{
                                     display:'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap:'10px', 
                                     maxHeight:'200px', overflowY:'auto'
                                 }}>
-                                    {Object.keys(INSTRUMENT_PRESETS).map(key => (
+                                    {Object.keys(presets).map(key => (
                                         <button
                                             key={key}
                                             onClick={() => {
-                                                const p = INSTRUMENT_PRESETS[key];
+                                                const p = presets[key];
                                                 const id = overlay.channelId;
                                                 // Batch apply logic
                                                 if(p.hpf!==undefined) axios.post('/api/set-param',{channelId:id,type:'hpf',value:p.hpf});
@@ -2295,7 +2307,7 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.10.1</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.11.0</div>
       </div>
       
       {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
@@ -2304,6 +2316,89 @@ function AppContent() {
       {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
        {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
        {showSafes ? <SafesOverlay onClose={() => setShowSafes(false)} /> : null}
+
+       {/* SAVE PRESET MODAL */}
+       {showSavePresetModal && (
+           <div style={{
+               position:'fixed', top:0, left:0, width:'100vw', height:'100vh', 
+               background:'rgba(0,0,0,0.8)', zIndex:3000, display:'flex', justifyContent:'center', alignItems:'center'
+           }}>
+               <div style={{
+                   background:'#222', padding:'20px', borderRadius:'8px', width:'300px', border:'1px solid #555'
+               }}>
+                   <h3 style={{marginTop:0, color:'white'}}>Save Preset</h3>
+                   <input 
+                       type="text" 
+                       value={newPresetName} 
+                       onChange={e => setNewPresetName(e.target.value)}
+                       placeholder="Preset Name"
+                       style={{width:'100%', padding:'8px', marginBottom:'10px', background:'#333', color:'white', border:'1px solid #555'}}
+                   />
+                   
+                   <div style={{marginBottom:'10px', fontSize:'0.8em', color:'#888'}}>Or update existing:</div>
+                   <select 
+                       onChange={e => { if(e.target.value) setNewPresetName(e.target.value); }}
+                       style={{width:'100%', padding:'8px', marginBottom:'15px', background:'#333', color:'white', border:'1px solid #555'}}
+                       value=""
+                   >
+                       <option value="">-- Select Preset --</option>
+                       {Object.keys(presets).sort().map(k => (
+                           <option key={k} value={k}>{k}</option>
+                       ))}
+                   </select>
+                   
+                   {presets[newPresetName] && <div style={{color:'orange', marginBottom:'10px', fontSize:'0.9em'}}>⚠️ Will overwrite existing preset!</div>}
+                   
+                   <div style={{display:'flex', justifyContent:'flex-end', gap:'10px'}}>
+                       <button onClick={() => setShowSavePresetModal(false)} style={{padding:'8px 15px', background:'transparent', color:'#aaa', border:'1px solid #555', borderRadius:'4px', cursor:'pointer'}}>Cancel</button>
+                       <button 
+                           onClick={() => {
+                               if(!newPresetName) return;
+                               // Capture Data - FIX: Map flat x32State props to nested preset object
+                               const ch = x32State[overlay.channelId];
+                               if(!ch) return;
+                               const data = {
+                                   hpf: ch.hpf, 
+                                   hpfFreq: ch.hpfFreq,
+                                   gate: { 
+                                       on: ch.gate, 
+                                       thr: ch.gateThr, 
+                                       attack: ch.gateAttack, 
+                                       hold: ch.gateHold, 
+                                       release: ch.gateRelease 
+                                   },
+                                   dyn: { 
+                                       on: ch.dyn, 
+                                       thr: ch.dynThr, 
+                                       ratio: ch.dynRatio, 
+                                       attack: ch.dynAttack, 
+                                       release: ch.dynRelease, 
+                                       hold: ch.dynHold 
+                                   },
+                                   eq: ch.eqBands ? Object.entries(ch.eqBands).reduce((acc, [b, v]) => ({...acc, [b]: v}), {}) : undefined,
+                                   preamp: ch.preampGain
+                               };
+                               
+                               axios.post('/api/presets', { name: newPresetName, data, overwrite: true })
+                                   .then(res => {
+                                       setPresets(res.data.presets);
+                                       setShowSavePresetModal(false);
+                                       setToast({ msg: `Preset "${newPresetName}" Saved`, type: 'success' });
+                                       setTimeout(() => setToast(null), 3000);
+                                   })
+                                   .catch(e => {
+                                       console.error(e);
+                                       alert("Failed to save preset");
+                                   });
+                           }}
+                           style={{padding:'8px 15px', background:'#007bff', color:'white', border:'none', borderRadius:'4px', cursor:'pointer'}}
+                       >
+                           Save
+                       </button>
+                   </div>
+               </div>
+           </div>
+       )}
 
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.11.0] - 2026-01-13
+### Added
+- **Dynamic Channel Presets**: 
+    - Replaced hardcoded presets with a server-managed `presets.json` file.
+    - Added API endpoints (`GET`, `POST`, `DELETE`) for managing presets.
+    - Added **"+ SAVE"** button to the Quick Presets UI to capture current channel settings (EQ, Gate, Dynamics, Preamp).
+    - Added Overwrite protection with a dropdown to easily update existing presets.
+- **Migration**: Existing hardcoded presets are automatically migrated to `presets.json` on first startup.
+
 ## [2.10.1] - 2026-01-13
 ### Fixed
 - **Channel Safes**: Fixed an issue where the Admin UI "Ghost State" (internal representation) was overwriting "Safe" channels during scene load. The server now correctly filters out safe channels from the loaded scene data before applying check-updates, ensuring both the console and the UI reflect the valid hardware state.

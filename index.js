@@ -42,8 +42,208 @@ try {
 // We will assign x32State.manualSafes later or now? x32State needs to be defined first.
 // Moved x32State definition UP or just do it after definition.
 
+// --- PRESETS ---
+const PRESETS_FILE = path.join(__dirname, 'presets.json');
+const DEFAULT_PRESETS = {
+    'Kick (Out)': {
+        hpf: false, 
+        eq: {
+            1: { type: 2, f: 0.20, g: 0.65, q: 0.4 }, 
+            2: { type: 0, f: 0.55, g: 0.35, q: 0.6 }, 
+            3: { type: 0, f: 0.82, g: 0.60, q: 0.5 }, 
+            4: { type: 5, f: 0.95, g: 0.5, q: 0.5 }   
+        },
+        gate: { on: true, thr: 0.35, attack: 0.05, hold: 0.1, release: 0.2 },
+        dyn: { on: true, thr: 0.4, ratio: 0.15, attack: 0.05, release: 0.3 } 
+    },
+    'Snare': {
+        hpf: true, hpfFreq: 0.4, 
+        eq: {
+            1: { type: 1, f: 0.45, g: 0.60, q: 0.5 }, 
+            2: { type: 0, f: 0.60, g: 0.40, q: 0.7 }, 
+            3: { type: 0, f: 0.85, g: 0.65, q: 0.5 }, 
+            4: { type: 4, f: 0.95, g: 0.6, q: 0.5 }   
+        },
+        gate: { on: true, thr: 0.3, attack: 0.0, hold: 0.05, release: 0.15 },
+        dyn: { on: true, thr: 0.35, ratio: 0.15, attack: 0.0, release: 0.2 }
+    },
+    'Rack Tom': {
+        hpf: true, hpfFreq: 0.45, 
+        eq: {
+            1: { type: 2, f: 0.40, g: 0.6, q: 0.5 }, 
+            2: { type: 0, f: 0.60, g: 0.3, q: 0.8 }, 
+            3: { type: 0, f: 0.80, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.9, g: 0.5, q: 0.5 }
+        },
+        gate: { on: true, thr: 0.4, attack: 0.05, hold: 0.1, release: 0.3 },
+        dyn: { on: true, thr: 0.4, ratio: 0.2, attack: 0.1, release: 0.3 }
+    },
+    'Floor Tom': {
+        hpf: true, hpfFreq: 0.35, 
+        eq: {
+            1: { type: 2, f: 0.35, g: 0.65, q: 0.5 }, 
+            2: { type: 0, f: 0.55, g: 0.3, q: 0.8 }, 
+            3: { type: 0, f: 0.78, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.9, g: 0.5, q: 0.5 }
+        },
+        gate: { on: true, thr: 0.4, attack: 0.05, hold: 0.1, release: 0.4 },
+        dyn: { on: true, thr: 0.4, ratio: 0.2, attack: 0.1, release: 0.3 }
+    },
+    'Overheads': {
+        hpf: true, hpfFreq: 0.65, 
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.5, q: 0.5 }, 
+            2: { type: 0, f: 0.7, g: 0.45, q: 0.5 }, 
+            3: { type: 0, f: 0.9, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.98, g: 0.65, q: 0.5 } 
+        },
+        gate: { on: false },
+        dyn: { on: true, thr: 0.6, ratio: 0.1, attack: 0.2, release: 0.5 }
+    },
+    'Bass Gtr': {
+        hpf: true, hpfFreq: 0.3, 
+        eq: {
+            1: { type: 2, f: 0.35, g: 0.6, q: 0.5 }, 
+            2: { type: 0, f: 0.55, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.70, g: 0.55, q: 0.5 }, 
+            4: { type: 5, f: 0.9, g: 0.5, q: 0.5 }   
+        },
+        dyn: { on: true, thr: 0.3, ratio: 0.2, attack: 0.2, release: 0.4 } 
+    },
+    'E. Guitar': {
+        hpf: true, hpfFreq: 0.45, 
+        eq: {
+            1: { type: 1, f: 0.45, g: 0.5, q: 0.5 }, 
+            2: { type: 0, f: 0.60, g: 0.45, q: 0.5 }, 
+            3: { type: 0, f: 0.78, g: 0.6, q: 0.6 }, 
+            4: { type: 5, f: 0.9, g: 0.5, q: 0.5 }   
+        },
+        dyn: { on: true, thr: 0.5, ratio: 0.1, attack: 0.1, release: 0.3 }
+    },
+    'Ac. Guitar': {
+        hpf: true, hpfFreq: 0.5, 
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.45, q: 0.5 }, 
+            2: { type: 0, f: 0.65, g: 0.4, q: 0.7 }, 
+            3: { type: 0, f: 0.85, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.95, g: 0.65, q: 0.5 } 
+        },
+        dyn: { on: true, thr: 0.45, ratio: 0.15, attack: 0.1, release: 0.4 }
+    },
+    'Ukelele': {
+        hpf: true, hpfFreq: 0.55, 
+        eq: {
+            1: { type: 1, f: 0.55, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.7, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.85, g: 0.6, q: 0.5 },
+            4: { type: 4, f: 0.95, g: 0.6, q: 0.5 }
+        },
+        dyn: { on: true, thr: 0.5, ratio: 0.1, attack: 0.1, release: 0.3 }
+    },
+    'Male Vox': {
+        hpf: true, hpfFreq: 0.45, 
+        eq: {
+            1: { type: 1, f: 0.45, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.58, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.82, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.95, g: 0.55, q: 0.5 } 
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.15, attack: 0.1, release: 0.4 }
+    },
+    'Female Vox': {
+        hpf: true, hpfFreq: 0.5, 
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.6, g: 0.45, q: 0.6 }, 
+            3: { type: 0, f: 0.85, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.96, g: 0.6, q: 0.5 } 
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.15, attack: 0.1, release: 0.4 }
+    },
+    'Trumpet': {
+        hpf: true, hpfFreq: 0.5, 
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.65, g: 0.45, q: 0.6 }, 
+            3: { type: 0, f: 0.85, g: 0.6, q: 0.5 },
+            4: { type: 4, f: 0.95, g: 0.6, q: 0.5 }
+        },
+        dyn: { on: true, thr: 0.3, ratio: 0.3, attack: 0.05, release: 0.2 } 
+    },
+    'Alto Sax': {
+        hpf: true, hpfFreq: 0.5, 
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.65, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.8, g: 0.6, q: 0.5 },
+            4: { type: 4, f: 0.95, g: 0.5, q: 0.5 }
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.2, attack: 0.1, release: 0.3 }
+    },
+    'Tenor Sax': {
+        hpf: true, hpfFreq: 0.45, 
+        eq: {
+            1: { type: 1, f: 0.45, g: 0.55, q: 0.5 }, 
+            2: { type: 0, f: 0.6, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.8, g: 0.6, q: 0.5 },
+            4: { type: 4, f: 0.95, g: 0.5, q: 0.5 }
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.2, attack: 0.1, release: 0.3 }
+    },
+    'Trombone': {
+        hpf: true, hpfFreq: 0.4, 
+        eq: {
+            1: { type: 1, f: 0.4, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.55, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.75, g: 0.6, q: 0.5 }, 
+            4: { type: 5, f: 0.9, g: 0.5, q: 0.5 }   
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.2, attack: 0.1, release: 0.3 }
+    },
+    'Sousaphone': {
+        hpf: true, hpfFreq: 0.25, 
+        eq: {
+            1: { type: 2, f: 0.35, g: 0.65, q: 0.5 }, 
+            2: { type: 0, f: 0.5, g: 0.4, q: 0.6 }, 
+            3: { type: 0, f: 0.7, g: 0.55, q: 0.5 }, 
+            4: { type: 5, f: 0.85, g: 0.5, q: 0.5 } 
+        },
+        dyn: { on: true, thr: 0.25, ratio: 0.4, attack: 0.05, release: 0.4 } 
+    },
+    'Conga': {
+        hpf: true, hpfFreq: 0.5,
+        eq: {
+            1: { type: 1, f: 0.5, g: 0.55, q: 0.5 }, 
+            2: { type: 0, f: 0.65, g: 0.4, q: 0.8 }, 
+            3: { type: 0, f: 0.85, g: 0.6, q: 0.5 }, 
+            4: { type: 4, f: 0.95, g: 0.5, q: 0.5 }
+        },
+        dyn: { on: true, thr: 0.4, ratio: 0.15, attack: 0.05, release: 0.2 }
+    },
+    'Cowbell': {
+        hpf: true, hpfFreq: 0.6,
+        eq: {
+            1: { type: 1, f: 0.6, g: 0.5, q: 0.5 },
+            2: { type: 0, f: 0.7, g: 0.3, q: 0.8 }, 
+            3: { type: 0, f: 0.8, g: 0.6, q: 0.5 }, 
+            4: { type: 5, f: 0.95, g: 0.5, q: 0.5 }
+        }
+    }
+};
 
-// --- SOLO GROUPS DEFINITION ---
+let presetsData = {};
+try {
+    if (!fs.existsSync(PRESETS_FILE)) {
+        console.log("📝 presets.json missing, creating defaults...");
+        fs.writeFileSync(PRESETS_FILE, JSON.stringify(DEFAULT_PRESETS, null, 2));
+        presetsData = DEFAULT_PRESETS;
+    } else {
+        presetsData = JSON.parse(fs.readFileSync(PRESETS_FILE, 'utf8'));
+    }
+} catch(e) {
+    console.error("❌ Failed to load presets:", e);
+    presetsData = DEFAULT_PRESETS; // Fallback
+}
 const SOLO_GROUPS = {
     drums: ['1','2','3','4','5','6','7','8'],
     bass: ['9'],
@@ -2139,6 +2339,39 @@ app.get('/api/sharepoint/config', (req, res) => {
 });
 
 // MANUAL SAFES API
+// --- PRESETS API ---
+app.get('/api/presets', (req, res) => {
+    res.json(presetsData);
+});
+
+app.post('/api/presets', (req, res) => {
+    const { name, data, overwrite } = req.body;
+    if (!name || !data) return res.status(400).json({ error: "Name and Data required" });
+    
+    if (presetsData[name] && !overwrite) {
+        return res.status(409).json({ error: "Preset already exists", exists: true });
+    }
+    
+    presetsData[name] = data;
+    // Persist
+    fs.writeFile(PRESETS_FILE, JSON.stringify(presetsData, null, 2), (err) => {
+        if(err) console.error("Failed to save presets", err);
+    });
+    
+    res.json({ success: true, presets: presetsData });
+});
+
+app.delete('/api/presets/:name', (req, res) => {
+    const { name } = req.params;
+    if (presetsData[name]) {
+        delete presetsData[name];
+        fs.writeFile(PRESETS_FILE, JSON.stringify(presetsData, null, 2), (err) => {
+            if(err) console.error("Failed to save presets", err);
+        });
+    }
+    res.json({ success: true, presets: presetsData });
+});
+
 app.get('/api/config/safes', (req, res) => {
     res.json(musiciansData.manualSafes || []);
 });
