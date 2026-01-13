@@ -7,6 +7,7 @@ import axios from 'axios';
 
 import MusicianMix from './MusicianMix';
 import MusicianSetlist from './MusicianSetlist';
+import MusicianCharts from './MusicianCharts';
 import WelcomeSplash from './components/WelcomeSplash';
 
 const MusicianApp = ({ socket, x32State }) => {
@@ -110,6 +111,57 @@ const MusicianApp = ({ socket, x32State }) => {
         setShowSplash(false);
     }, []);
 
+    // --- SCREEN WAKE LOCK ---
+    useEffect(() => {
+        // Only attempt if musician is logged in
+        if (!musician) return;
+
+        let wakeLock = null;
+
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('✅ Screen Wake Lock active');
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Screen Wake Lock released');
+                    });
+                } catch (err) {
+                    console.error(`❌ Wake Lock Error: ${err.name}, ${err.message}`);
+                }
+            }
+        };
+
+        // Initial Request
+        requestWakeLock();
+
+        // Re-request on visibility change (if lost due to tab switch)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+             document.removeEventListener('visibilitychange', handleVisibilityChange);
+             if (wakeLock) wakeLock.release().catch(e => console.error(e));
+        };
+    }, [musician]);
+
+    // Global Active Part Listener (for Sync)
+    const [activePart, setActivePart] = useState(null);
+    useEffect(() => {
+        if (!socket) return;
+        const onActivePart = (data) => {
+            console.log("🔥 [MusicianApp] Active Part:", data);
+            setActivePart(data);
+        };
+        socket.on('active_part', onActivePart);
+        return () => socket.off('active_part', onActivePart);
+    }, [socket]);
+
     if (!musician) {
         return <LoginScreen onLoginSuccess={handleLogin} />;
     }
@@ -146,14 +198,17 @@ const MusicianApp = ({ socket, x32State }) => {
                             user={musician}
                             setlist={setlist}
                             socket={socket}
+                            // Pass activePart if we want to centralize logic later
                          />
                      )}
                  
                  {activeView === 'charts' && (
-                    <div style={{padding:'20px', color:'#888', textAlign:'center', marginTop:'50px'}}>
-                        <h3>Charts View</h3>
-                        <p>Access charts via the Setlist tab by clicking on a song.</p>
-                    </div>
+                    <MusicianCharts
+                        user={musician}
+                        setlist={setlist}
+                        socket={socket}
+                        activePart={activePart} // Syncs with Admin
+                    />
                  )}
             </MusicianLayout>
         </ErrorBoundary>

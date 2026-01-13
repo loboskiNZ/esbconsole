@@ -169,18 +169,22 @@ const MasterStrip = ({ state, onOpen }) => {
     
     const renderMeter = (val) => (
         <div style={{
-            width: '8px', height: '100%', 
-            background: 'linear-gradient(to top, #0f0 0%, #0f0 62%, #fc0 63%, #fc0 75%, #f00 76%, #f00 100%)',
-            borderRadius: '2px', position: 'relative', overflow: 'hidden',
-            border: '1px solid #333'
-        }}>
-            {/* The "Curtain" - Black overlay that shrinks as signal grows */}
-            <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0,
-                height: `${Math.max(0, 100 - (val * 100))}%`,
-                background: '#1a1a1a', // Dark gray "off" state
-                transition: 'height 50ms linear'
-            }}></div>
+             width: '8px', height: '100%', 
+             // Gradient Stops adjusted for Sqrt Scaling:
+             // -18dB (0.125) -> Sqrt(0.125) = 0.35 (35%) -> Yellow
+             // 0dB (1.0) -> Sqrt(1.0) = 1.0 (100%) -> Red
+             background: 'linear-gradient(to top, #0f0 0%, #0f0 35%, #fc0 36%, #fc0 90%, #f00 91%, #f00 100%)',
+             borderRadius: '2px', position: 'relative', overflow: 'hidden',
+             border: '1px solid #333'
+         }}>
+             {/* The "Curtain" - Black overlay that shrinks as signal grows */}
+             <div style={{
+                 position: 'absolute', top: 0, left: 0, right: 0,
+                 // Sqrt Scaling for "Twice as high" feel
+                 height: `${Math.max(0, 100 - (Math.pow(val, 0.5) * 100))}%`,
+                 background: '#1a1a1a', // Dark gray "off" state
+                 transition: 'height 50ms linear'
+             }}></div>
             
             {/* Optional Segment Lines */}
             <div style={{
@@ -322,12 +326,26 @@ const RTAVisualizer = () => {
         const h = cvs.height;
         ctx.clearRect(0, 0, w, h);
         
-        const numBands = 31;
+        const numBands = data.length > 0 ? data.length : 31;
         const barW = w / numBands;
         const gap = 2; 
         
         data.forEach((val, i) => {
-             const barH = Math.max(0, val * h);
+             // Convert Linear to Log (dB)
+             // val is likely 0.0 - 1.0 linear amplitude
+             // dB = 20 * log10(val)
+             // Floor at -90dB
+             let db = val > 0.00001 ? 20 * Math.log10(val) : -90;
+             if (db < -90) db = -90;
+             
+             // Normalize -90dB..0dB to 0..1 height
+             // Height = (db - floor) / (ceiling - floor)
+             // Height = (db + 90) / 90
+             
+             let norm = (db + 90) / 90;
+             if (norm < 0) norm = 0;
+             
+             const barH = Math.max(0, norm * h);
              const x = i * barW;
              const y = h - barH;
              
@@ -2058,7 +2076,10 @@ function AppContent() {
                          {/* Background VU Meter (Curtain Style) */}
                          <div style={{
                              position:'absolute', bottom:0, width:'40px', height: '100%',
-                             background: 'linear-gradient(to top, #0f0 0%, #0f0 62%, #fc0 63%, #fc0 75%, #f00 76%, #f00 100%)',
+                             // Gradient Stops adjusted for Sqrt Scaling:
+                             // -18dB (0.125) -> Sqrt(0.125) = 0.35 (35%) -> Yellow
+                             // 0dB (1.0) -> Sqrt(1.0) = 1.0 (100%) -> Red
+                             background: 'linear-gradient(to top, #0f0 0%, #0f0 35%, #fc0 36%, #fc0 90%, #f00 91%, #f00 100%)',
                              opacity: 0.8, 
                              zIndex: 0,
                              pointerEvents: 'none',
@@ -2068,7 +2089,8 @@ function AppContent() {
                              {/* Curtain Mask */}
                              <div style={{
                                  position: 'absolute', top: 0, left: 0, right: 0,
-                                 height: `${Math.max(0, 100 - ((inputMeters[parseInt(ch.id)-1] || 0) * 100))}%`,
+                                 // Sqrt Scaling for "Twice as high" feel without clipping max range
+                                 height: `${Math.max(0, 100 - (Math.pow((inputMeters[parseInt(ch.id)-1] || 0), 0.5) * 100))}%`,
                                  background: '#242424', 
                                  transition: 'height 50ms linear'
                              }}></div>

@@ -18,12 +18,67 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
             .catch(err => console.error("Failed to load groups", err));
     }, []);
 
+    // --- THROTTLING HELPER ---
+    // Simple custom throttle to block sends more frequent than limit
+    const useRefThrottle = (callback, delay) => {
+        const lastRun = React.useRef(0);
+        const timeout = React.useRef(null);
+
+        return (...args) => {
+            const now = Date.now();
+            if (now - lastRun.current >= delay) {
+                callback(...args);
+                lastRun.current = now;
+            } else {
+                // Optional: Trailing edge (ensure last value is sent)
+                if (timeout.current) clearTimeout(timeout.current);
+                timeout.current = setTimeout(() => {
+                    callback(...args);
+                    lastRun.current = Date.now();
+                }, delay - (now - lastRun.current));
+            }
+        };
+    };
+
     // --- OSC HELPERS ---
-    const sendOsc = (address, value) => {
+    // Raw Send
+    const sendOscRaw = (address, value) => {
         if (!socket) return;
         setLastOscCmd(`${address}  [${typeof value}:${Number(value).toFixed(2)}]`);
         socket.emit('osc', { address, args: [value] });
     };
+
+    // Throttled Send (100ms) - For Single Faders
+    const sendOsc = useRefThrottle(sendOscRaw, 75); // Slightly faster for single
+
+    // Throttled Group Handler (100ms) - For Group Faders
+    // We throttle the *Event*, but inside we send RAW updates for all members
+    // This ensures we won't drop members 2..N due to throttling
+    const handleGroupCalculatedMove = useRefThrottle((val, scalingData) => {
+        // scalingData = { members: [id, ...], maxLevel: 0.5, needsScaling: true/false }
+        const { members, maxLevel } = scalingData;
+        
+        let scale = 0;
+        if (maxLevel > 0.001) scale = val / maxLevel;
+
+        members.forEach(chId => {
+            const data = getChannelData(chId);
+            const mixKey = user.mixBusId.toString();
+            const send = data?.mixSends?.[mixKey] || {};
+            const current = send.level !== undefined ? send.level : 0;
+            
+            let next;
+            if (maxLevel <= 0.001) {
+                 next = val; 
+            } else {
+                 next = Math.min(1, Math.max(0, current * scale));
+            }
+            // Use RAW send to avoid dropping packets in this loop
+            const chStr = chId.toString().padStart(2, '0');
+            const busStr = mixBusId.toString().padStart(2, '0');
+            sendOscRaw(`/ch/${chStr}/mix/${busStr}/level`, next);
+        });
+    }, 100);
 
     const handleLevelChange = (chId, val) => {
         const chStr = chId.toString().padStart(2, '0');
@@ -37,7 +92,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
         const busStr = mixBusId.toString().padStart(2, '0');
         const address = `/ch/${chStr}/mix/${busStr}/on`;
         const newVal = currentMute ? 1 : 0; // Toggle logic (1=On/Unmuted)
-        sendOsc(address, newVal);
+        sendOscRaw(address, newVal);
     };
 
     const getChannelData = (chId) => {
@@ -56,7 +111,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
 
     const handleMasterMute = (currentMute) => {
          const busStr = mixBusId.toString().padStart(2, '0');
-         sendOsc(`/bus/${busStr}/mix/on`, currentMute ? 1 : 0);
+         sendOscRaw(`/bus/${busStr}/mix/on`, currentMute ? 1 : 0);
     };
 
     return (
@@ -72,14 +127,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
             
             {/* NO Header - Handled by Layout or removed as requested */}
 
-            {/* DEBUG: Last OSC Command */}
-            <div style={{
-                position: 'fixed', bottom: 0, left: 0, right: 0, 
-                background: 'rgba(50,0,0,0.8)', color: 'yellow', 
-                fontSize: '10px', padding: '2px', pointerEvents: 'none', zIndex: 9999
-            }}>
-                DEBUG OSC: {lastOscCmd || "None"}
-            </div>
+            {/* NO Header - Handled by Layout or removed as requested */}
 
             {/* 3. SCROLLABLE FADER AREA */}
             <div style={{
@@ -226,40 +274,10 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
                                      value={maxLevel}
                                      isMuted={!isGroupUnmuted}
                                      onChange={(val) => {
-                                         // Proportional or Max-Lock? 
-                                         // Max-Lock: simplest for MVP.
-                                         // If dragging group fader, set ALL members to this level relative to their own?
-                                         // Or just set ALL to this level?
-                                         // User said "control all of them at same time".
-                                         // VCA behavior (Scaling) is best.
-                                         // Ratio = val / currentMax.
-                                         // If currentMax is 0, add Delta?
-                                         
-                                         // COMPLEXITY: Stateless scaling is hard.
-                                         // Let's implement ABSOLUTE SET for now as fallback, 
-                                         // OR simple Delta if we had previous value.
-                                         // But we don't have 'prevVal'.
-                                         // Let's try: Calculate scale factor from *current* maxLevel.
-                                         
-                                         let scale = 0;
-                                         if (maxLevel > 0.001) {
-                                             scale = val / maxLevel;
-                                         }
-                                         
-                                         group.members.forEach(chId => {
-                                             const d = getChannelData(chId);
-                                             const send = d?.mixSends?.[user.mixBusId.toString()] || {};
-                                             const current = send.level !== undefined ? send.level : 0;
-                                             
-                                             let next;
-                                             if (maxLevel <= 0.001) {
-                                                 // Raising from silence: Set all to target val (Absolute)
-                                                 next = val; 
-                                             } else {
-                                                 // Scaling
-                                                 next = Math.min(1, Math.max(0, current * scale));
-                                             }
-                                             handleLevelChange(chId, next);
+                                         // Pass data to throttled handler
+                                         handleGroupCalculatedMove(val, {
+                                             members: group.members,
+                                             maxLevel: maxLevel
                                          });
                                      }}
                                      onMuteToggle={() => {
@@ -270,7 +288,7 @@ const MusicianMix = ({ socket, x32State, user, isGroupMode }) => {
                                          group.members.forEach(chId => {
                                              const chStr = chId.toString().padStart(2, '0');
                                              const busStr = mixBusId.toString().padStart(2, '0');
-                                             sendOsc(`/ch/${chStr}/mix/${busStr}/on`, targetOn);
+                                             sendOscRaw(`/ch/${chStr}/mix/${busStr}/on`, targetOn);
                                          });
                                      }}
                                  />

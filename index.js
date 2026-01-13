@@ -71,6 +71,7 @@ const io = socketIo(server, { cors: { origin: '*' } });
 // Middleware - MUST BE BEFORE ROUTES
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client/dist')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const PORT = 3000;
 const X32_PORT = 10023;
@@ -1359,14 +1360,28 @@ function startMeterPolling() {
     // We only call this after connectOSC creates a NEW object.
     
     // Setup Listeners
-    osc.on('/meters/6', message => { // Main L/R
+    osc.on('/meters/5', message => { // Main Outputs / Mix Buses / Matrix (28 Floats)
         if (message.args.length > 0 && message.args[0] instanceof Uint8Array) {
              const blob = message.args[0];
-             // FIX: Respect byteOffset to avoid reading garbage memory
              const floatView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength);
+             
+             // DEBUG: Dump all 28 floats to find Main L/R - ALWAYS LOG
+             /*
+             const f = [];
+             const count = Math.floor(blob.byteLength / 4);
+             for(let i=0; i<count; i++) {
+                 try { f.push(floatView.getFloat32(i*4, true).toFixed(3)); } catch(e) {}
+             }
+             // console.log(`[METER 5 DUMP] ${f.join(', ')}`);
+             */
+
+             // Log Analysis shows signal at indices 25 and 26.
+             // Implies 12-byte header shifting standard L/R (22/23) by +3.
              try {
-                const l = floatView.getFloat32(0, true);
-                const r = floatView.getFloat32(4, true);
+                const count = Math.floor(blob.byteLength / 4);
+                // L at Index 25 (Offset 100), R at Index 26 (Offset 104)
+                const l = count > 25 ? floatView.getFloat32(100, true) : 0;
+                const r = count > 26 ? floatView.getFloat32(104, true) : 0;
                 io.emit('meters_master', { l, r });
              } catch(e){}
         }
@@ -1375,15 +1390,34 @@ function startMeterPolling() {
     osc.on('/meters/1', message => { // Inputs 1-32
         if (message.args.length > 0 && message.args[0] instanceof Uint8Array) {
              const blob = message.args[0];
-             // FIX: Respect byteOffset
              const floatView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength);
+             
+             // Meter 1 (388 bytes) appears to have a 4-byte Header (Float 0)
+             // Real Channel 1 is at Float 1 (Offset 4)
+             
              const levels = [];
              for(let i=0; i<32; i++) {
                  try {
-                    levels.push(floatView.getFloat32(i*4, true));
+                    // Start at offset 4 (4 + i*4) to skip header
+                    levels.push(floatView.getFloat32(4 + (i*4), true));
                  } catch(e) { levels.push(0); }
              }
              io.emit('meters_inputs', levels);
+        }
+    });
+
+    osc.on('/meters/4', message => { // RTA (High Res / Meter 4)
+        if (message.args.length > 0 && message.args[0] instanceof Uint8Array) {
+             const blob = message.args[0];
+             const floatView = new DataView(blob.buffer, blob.byteOffset, blob.byteLength);
+             const rta = [];
+             const count = Math.floor(blob.byteLength / 4);
+             for(let i=0; i<count; i++) {
+                 try {
+                    rta.push(floatView.getFloat32(i*4, true));
+                 } catch(e) { rta.push(0); }
+             }
+             io.emit('rta_data', rta);
         }
     });
 
@@ -1392,14 +1426,14 @@ function startMeterPolling() {
         try {
             osc.send(new OSC.Message('/meters', '/meters/6')); 
             osc.send(new OSC.Message('/meters', '/meters/1'));
+            osc.send(new OSC.Message('/meters', '/meters/5')); // Outputs
         } catch (e) { /* ignore */ }
         
-        // --- SIMULATION (ACTIVE) ---
-        // Generate Main L/R from noise if 0
-        // Generate RTA from noise
-        // const rta = Array(31).fill(0).map((_,i) => Math.random() * 0.8 * (1 - i/31));
-        const rta = Array(31).fill(0); // Silence for now
+        // --- RTA DISABLED (User Request) ---
+        // X32 RTA is internal/unanalyzable via OSC meters currently.
+        const rta = Array(31).fill(0); 
         io.emit('rta_data', rta);
+        // RTA handled by live meters now.
 
         // Input Simulation DISABLED
         // io.emit('meters_inputs', Array(32).fill(0));
@@ -1926,9 +1960,37 @@ app.post('/api/charts/upload', uploadChart.single('chart'), (req, res) => {
     res.json({ success: true, path: req.file.path });
 });
 
+// NEW: Upload and Assign in one go (for Musicians)
+app.post('/api/charts/assign', uploadChart.single('chart'), (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+        
+        const { songId, inputChannel, monitorBus } = req.body;
+        if (!songId || !inputChannel) {
+             return res.status(400).json({ error: "Missing songId or inputChannel" });
+        }
+
+        const assignment = {
+            inputChannel: Number(inputChannel),
+            monitorBus: monitorBus ? Number(monitorBus) : null,
+            file: req.file // Multer file object containing path, etc.
+        };
+
+        const result = setlistManager.addChartAssignment(songId, assignment);
+        if (result) {
+            res.json({ success: true, assignment });
+        } else {
+            res.status(500).json({ error: "Failed to add assignment" });
+        }
+    } catch (e) {
+        console.error("Chart Assignment Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 app.get('/api/charts/:songId/:role', (req, res) => {
     const { songId, role } = req.params;
-    const { busId } = req.query; // New: Support legacy lookup via Bus ID
+    const { busId, channelId } = req.query; // New: Support legacy lookup via Bus ID or Channel ID
     
     const safeRole = role.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const songDir = path.join(chartsDir, songId);
@@ -1948,12 +2010,16 @@ app.get('/api/charts/:songId/:role', (req, res) => {
     }
 
     // 2. Try LEGACY System (setlists.json -> song.chartAssignments)
-    if (busId) {
+    // 2. Try LEGACY System (setlists.json -> song.chartAssignments)
+    if (busId || channelId) {
         // We need to look up the song in setlistManager
         const song = setlistManager.data.songs[songId];
         if (song && song.chartAssignments) {
-            // Find assignment for this bus
-            const assignment = song.chartAssignments.find(a => String(a.monitorBus) === String(busId));
+            // Find assignment for this bus OR channel
+            let assignment = null;
+            if (busId) assignment = song.chartAssignments.find(a => String(a.monitorBus) === String(busId));
+            if (!assignment && channelId) assignment = song.chartAssignments.find(a => String(a.inputChannel) === String(channelId));
+
             if (assignment && assignment.file && assignment.file.path) {
                 if (assignment.file.filename === 'noChart.txt' || assignment.file.path.endsWith('noChart.txt')) {
                     // Skip legacy placeholder
@@ -2458,11 +2524,6 @@ io.on('connection', (socket) => {
           const args = data.args.map(a => Number(a));
           const message = new OSC.Message(data.address, ...args);
           osc.send(message);
-          
-          // DEBUG: Log specific channel sends to see if they are firing
-          if (data.address.includes('/mix/')) {
-              console.log(`[OSC OUT] ${data.address} -> ${data.args}`);
-          }
           // }
 
           // 2. Parse & Update Internal State (Optimistic Server-Side)

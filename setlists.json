@@ -431,6 +431,20 @@
             "path": "uploads/351bb9ace9a113ba6398eca759aeebf3",
             "size": 104409
           }
+        },
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella - Trumpet in Bb.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/trumpet.pdf",
+            "size": 121165
+          }
         }
       ]
     },
@@ -563,6 +577,20 @@
             "path": "uploads/702c31e16d4a3533e1bcee47d1af1fc3",
             "size": 73639
           }
+        },
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Nube Blanca TRUMPET.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048199423",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048199423/trumpet.pdf",
+            "size": 52623
+          }
         }
       ]
     },
@@ -644,7 +672,127 @@
         }
       ],
       "charts": {},
-      "notes": "Lead singer: Nathan\nChange second solo with band presentation (TBC)"
+      "notes": "Lead singer: Nathan\nChange second solo with band presentation (TBC)",
+      "chartAssignments": [
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (GUITAR).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048286266",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048286266/trumpet.pdf",
+            "size": 134864
+          }
+        },
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (TRUMPET).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048286266",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048286266/trumpet.pdf",
+            "size": 146391
+          }
+        },
+        {
+          "id": 1768266721511,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (BASS).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "a23c7d22a9b19da93ce5eb0191efd717",
+            "path": "uploads/a23c7d22a9b19da93ce5eb0191efd717",
+            "size": 102990
+          }
+        },
+        {
+          "id": 1768266779165,
+          "inputChannel": "10",
+          "monitorBus": "10",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (GUITAR).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "6627179b9d9aecc7e62981a2efaaf07e",
+            "path": "uploads/6627179b9d9aecc7e62981a2efaaf07e",
+            "size": 134864
+          }
+        },
+        {
+          "id": 1768266804817,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (PIANO).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "629ea57493626d0cd830f3e0c62f9824",
+            "path": "uploads/629ea57493626d0cd830f3e0c62f9824",
+            "size": 142287
+          }
+        },
+        {
+          "id": 1768266836488,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (BASS).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "29f4fa6facfbe11904738738bd6a538b",
+            "path": "uploads/29f4fa6facfbe11904738738bd6a538b",
+            "size": 102990
+          }
+        },
+        {
+          "id": 1768266864362,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (TROMBONE).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "adb743e1807bf73c12ad126f3d39f771",
+            "path": "uploads/adb743e1807bf73c12ad126f3d39f771",
+            "size": 131257
+          }
+        },
+        {
+          "id": 1768266902681,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Surfing & Surfing (ALTO).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "caff9056f40eff039610729fa8bbef98",
+            "path": "uploads/caff9056f40eff039610729fa8bbef98",
+            "size": 133211
+          }
+        }
+      ]
     },
     "1768048296047": {
       "title": "Electronic Love",
@@ -709,7 +857,68 @@
         }
       ],
       "charts": {},
-      "notes": "Lead singer: Alan\nvoice solo: Claire\n\nChorus:\n\nall night electronic love \nFell your electronic love (X6)\n\ntill the sunshine (x4)"
+      "notes": "Lead singer: Alan\nvoice solo: Claire\n\nChorus:\n\nall night electronic love \nFell your electronic love (X6)\n\ntill the sunshine (x4)",
+      "chartAssignments": [
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Trumpet in Bb.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048296047",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048296047/trumpet.pdf",
+            "size": 73655
+          }
+        },
+        {
+          "id": 1768266225256,
+          "inputChannel": "10",
+          "monitorBus": "10",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Electric Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "2b47e9e94a8ec2149771b818449eb28e",
+            "path": "uploads/2b47e9e94a8ec2149771b818449eb28e",
+            "size": 61052
+          }
+        },
+        {
+          "id": 1768266266346,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "aa2207039827e3fa219d05da785f9e6e",
+            "path": "uploads/aa2207039827e3fa219d05da785f9e6e",
+            "size": 76286
+          }
+        },
+        {
+          "id": 1768266364510,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "ee776e66422fdda5f103ae010ff4e0c0",
+            "path": "uploads/ee776e66422fdda5f103ae010ff4e0c0",
+            "size": 76286
+          }
+        }
+      ]
     },
     "1768048342381": {
       "title": "Mi Sueno",
@@ -819,7 +1028,23 @@
         }
       ],
       "charts": {},
-      "notes": "Lead singer: Ed \nMix with: High\n\nchorus: \nEl reggaeton de otepoti (x4)\nmuevelo, muevelo muevelo pa allaaaaaahhhh!\n\nmight want a sax solo to mix the two songs."
+      "notes": "Lead singer: Ed \nMix with: High\n\nchorus: \nEl reggaeton de otepoti (x4)\nmuevelo, muevelo muevelo pa allaaaaaahhhh!\n\nmight want a sax solo to mix the two songs.",
+      "chartAssignments": [
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Reggaeton De Otepoti (TRUMPET).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048373749",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048373749/trumpet.pdf",
+            "size": 36881
+          }
+        }
+      ]
     },
     "1768048404215": {
       "title": "La guarandinga",
@@ -926,7 +1151,7 @@
     "13": "12",
     "14": "12",
     "15": "12",
-    "16": "12",
+    "16": 12,
     "17": "1",
     "18": "2",
     "19": "3",
