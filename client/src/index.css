@@ -108,7 +108,79 @@ button:focus-visible {
 input[type=range] {
   -webkit-appearance: none;
   background: transparent;
+  width: 100%; /* Full width */
+  height: 40px; /* IMPORTANT: Hit Area for Thumb */
+  margin: 10px 0;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
 }
 input[type=range]::-webkit-slider-runnable-track {
   background: transparent;
+}
+input[type=range]:focus {
+  outline: none;
+}
+
+/* NEON SLIDERS */
+/* Common Track */
+input[type=range].neonslider-red::-webkit-slider-runnable-track,
+input[type=range].neonslider-blue::-webkit-slider-runnable-track,
+input[type=range].neonslider-purple::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 6px;
+    cursor: pointer;
+    border-radius: 3px;
+    border: 1px solid #333;
+}
+
+/* RED (Echo) */
+input[type=range].neonslider-red::-webkit-slider-runnable-track {
+    background: #400;
+    box-shadow: 0 0 5px #f00 inset;
+}
+input[type=range].neonslider-red::-webkit-slider-thumb {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    background: #f00;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -12px; /* Center on track */
+    box-shadow: 0 0 10px #f00;
+    border: 2px solid white;
+}
+
+/* BLUE (Space) */
+input[type=range].neonslider-blue::-webkit-slider-runnable-track {
+    background: #004;
+    box-shadow: 0 0 5px #0ff inset;
+}
+input[type=range].neonslider-blue::-webkit-slider-thumb {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    background: #0ff;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -12px;
+    box-shadow: 0 0 10px #0ff;
+    border: 2px solid white;
+}
+
+/* PURPLE (Doubler) */
+input[type=range].neonslider-purple::-webkit-slider-runnable-track {
+    background: #202;
+    box-shadow: 0 0 5px #f0f inset;
+}
+input[type=range].neonslider-purple::-webkit-slider-thumb {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+    background: #f0f;
+    cursor: pointer;
+    -webkit-appearance: none;
+    margin-top: -12px;
+    box-shadow: 0 0 10px #f0f;
+    border: 2px solid white;
 }

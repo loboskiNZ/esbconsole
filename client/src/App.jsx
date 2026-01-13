@@ -6,6 +6,7 @@ import SharePointBrowser from './SharePointBrowser';
 import MusiciansManager from './MusiciansManager';
 import MonitorsOverlay from './MonitorsOverlay';
 import SafesOverlay from './SafesOverlay';
+import DubOverlay from './components/DubOverlay';
 import MusicianApp from './MusicianApp';
 import SceneLoadingOverlay from './components/SceneLoadingOverlay';
 import './index.css';
@@ -28,96 +29,9 @@ class ErrorBoundary extends React.Component {
 }
 
 // --- OVERLAYS ---
-const SendsOverlay = ({ channelId, state, onClose }) => {
-    // We assume Bus 13 is the DUB DELAY
-    const DUB_BUS = 13;
-    const sendState = state.mixSends && state.mixSends[DUB_BUS] ? state.mixSends[DUB_BUS] : { level: 0, on: 0 };
-    
-    // Helper to send level
-    const setSendLevel = (val) => {
-         axios.post('/api/osc', { address: `/ch/${channelId}/mix/${DUB_BUS < 10 ? '0'+DUB_BUS : DUB_BUS}/level`, args: [val] });
-    };
+// --- OVERLAYS ---
+// SendsOverlay replaced by DubOverlay via import
 
-    return (
-        <div style={{
-            position:'fixed', top:0, left:0, width:'100vw', height:'100vh', 
-            background:'rgba(0,0,0,0.85)', zIndex:2000, display:'flex', justifyContent:'center', alignItems:'center'
-        }}>
-            <div style={{
-                width:'80%', maxWidth:'500px', background:'#222', border:'1px solid #555', 
-                borderRadius:'8px', padding:'20px', display:'flex', flexDirection:'column', gap:'20px'
-            }}>
-                <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1px solid #444', paddingBottom:'10px'}}>
-                    <h2 style={{margin:0, color:'white'}}>SENDS - {channelId}</h2>
-                    <button onClick={onClose} style={{background:'transparent', border:'none', color:'white', fontSize:'1.5em', cursor:'pointer'}}>✕</button>
-                </div>
-                
-                {/* DUB THROW SECTION */}
-                <div style={{background:'#333', padding:'20px', borderRadius:'8px', display:'flex', flexDirection:'column', alignItems:'center', gap:'10px'}}>
-                    <h3 style={{margin:0, color:'#aaa'}}>DUB THROW (Bus 13)</h3>
-                    
-                    <button 
-                        onMouseDown={() => setSendLevel(0.75)} // ~0dB
-                        onMouseUp={() => setSendLevel(0)}     // -inf
-                        onMouseLeave={() => setSendLevel(0)}  // Safety
-                        onTouchStart={() => setSendLevel(0.75)}
-                        onTouchEnd={() => setSendLevel(0)}
-                        style={{
-                            width:'120px', height:'120px', borderRadius:'50%', 
-                            background: 'radial-gradient(circle, #ff0055 0%, #990033 100%)',
-                            border: '4px solid #ff55aa',
-                            color: 'white', fontWeight:'bold', fontSize:'1.5em',
-                            boxShadow: '0 0 20px #ff0055',
-                            cursor: 'pointer', outline:'none'
-                        }}
-                    >
-                        THROW
-                    </button>
-                    <div style={{color:'#666', fontSize:'0.8em'}}>Press & Hold to Send</div>
-                </div>
-
-                {/* OTHER SENDS GRID */}
-                <div style={{
-                    display:'grid', gridTemplateColumns:'repeat(8, 1fr)', gap:'10px', 
-                    width:'100%', overflowY:'auto', padding:'10px', background:'#222', borderRadius:'8px'
-                }}>
-                    {[...Array(16)].map((_, i) => {
-                        const bus = i+1;
-                        if(bus === DUB_BUS) return null; // Skip Dub bus (handled above)
-                        
-                        const sVal = state.mixSends && state.mixSends[bus] ? state.mixSends[bus].level : 0;
-                        
-                        return (
-                            <div key={bus} style={{
-                                background:'#111', padding:'5px', textAlign:'center', borderRadius:'4px', 
-                                display:'flex', flexDirection:'column', alignItems:'center', height:'140px'
-                            }}>
-                                <div style={{fontSize:'0.7em', color:'#888', marginBottom:'5px'}}>Bus {bus}</div>
-                                <input 
-                                    type="range" min="0" max="1" step="0.01"
-                                    value={sVal || 0}
-                                    onChange={(e) => {
-                                        const val = parseFloat(e.target.value);
-                                        // Update Local Optimistically
-                                        /* We rely on parent state update via socket, but for smooth drag we might need local state? 
-                                           For now, direct send. Broadcast will update UI. */
-                                        axios.post('/api/osc', { address: `/ch/${channelId}/mix/${bus < 10 ? '0'+bus : bus}/level`, args: [val] });
-                                    }}
-                                    style={{
-                                        writingMode: 'bt-lr', WebkitAppearance: 'slider-vertical',
-                                        width: '20px', flex:1, accentColor: bus > 12 ? '#00bbff' : '#00ff00' // FX Buses blue
-                                    }}
-                                />
-                                <div style={{fontSize:'0.6em', color:'#666', marginTop:'2px'}}>{Math.round((sVal||0)*100)}%</div>
-                            </div>
-                        )
-                    })}
-                </div>
-
-            </div>
-        </div>
-    );
-};
 
 // Helper for dB conversion
 const floatToDB = (f) => {
@@ -2275,7 +2189,7 @@ function AppContent() {
          <EQOverlay channelId={overlay.id} state={x32State[overlay.id] || {}} onClose={() => setOverlay(null)} />
       )}
       {overlay && overlay.type === 'SENDS' && (
-         <SendsOverlay channelId={overlay.id} state={x32State[overlay.id] || {}} onClose={() => setOverlay(null)} />
+         <DubOverlay channelId={overlay.id} channelType='ch' x32State={x32State} onClose={() => setOverlay(null)} />
       )}
 
       
@@ -2308,13 +2222,13 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.11.0</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.12.0</div>
       </div>
       
       {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
       {showMusicians ? <MusiciansManager onClose={() => setShowMusicians(false)} /> : null}
       {showMonitors ? <MonitorsOverlay config={config} x32State={x32State} onClose={() => setShowMonitors(false)} /> : null}
-      {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
+      {showSetlist ? <SetlistManager socket={socket} config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
        {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
        {showSafes ? <SafesOverlay onClose={() => setShowSafes(false)} /> : null}
 

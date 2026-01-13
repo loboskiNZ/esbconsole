@@ -907,6 +907,16 @@ function parseX32Path(address) {
         if (parts[3] === 'gain') return { id: String(ch), type: 'preampGain' };
         if (parts[3] === 'phantom') return { id: String(ch), type: 'phantom' };
     }
+
+    // FX HANDLING
+    // /fx/1/par/1 <val>
+    if (parts[1] === 'fx') {
+        const slot = parseInt(parts[2], 10); // 1-8
+        if (!isNaN(slot) && parts[3] === 'par') {
+            const param = parseInt(parts[4], 10);
+            return { id: 'fx', slot: slot, param: param, type: 'fxParam' };
+        }
+    }
     
     // SAFE HANDLING
     if (parts[1] === 'config' && parts[2] === 'safe') {
@@ -1285,7 +1295,10 @@ const DIVISIONS = {
     '1/16': 0.25
 };
 
+let delaySyncEnabled = true;
+
 function updateDelayTime() {
+    if (!delaySyncEnabled) return;
     if (currentBpm < 30 || currentBpm > 300) return;
     
     // 1 beat (1/4 note) in ms
@@ -1378,6 +1391,12 @@ if (foundInputName) {
             if (lighting[action.fn]) lighting[action.fn]();
             io.emit('scene_change', action.evt);
         }
+    });
+
+    // LISTENER: MIDI PROGRAM CHANGE
+    input.on('program', (msg) => {
+        console.log(`🎹 MIDI Program Change: ${msg.number}`);
+        setlistManager.setActiveIndex(msg.number);
     });
 
 } else {
@@ -1477,6 +1496,20 @@ if (midiOutput && foundName) {
                         break;
                     case 75: console.log('🎹 MIDI 75: Vox'); toggleSolo(SOLO_GROUPS.vox, 'vox'); break;
                     case 76: console.log('🎹 MIDI 76: Horns'); toggleSolo(SOLO_GROUPS.horns, 'horns'); break;
+                }
+            }
+        });
+
+        // SETLIST CUE CONTROL via CC
+        midiInput.on('cc', (msg) => {
+            // CC 16 (General Purpose 1) -> Select Cue Index (Active Song)
+            if (msg.controller === 16) {
+                const cueIdx = msg.value;
+                console.log(`🎹 MIDI CC 16 (Cue Select): ${cueIdx}`);
+                
+                const currentSongId = setlistManager.runtime.activeSongId;
+                if (currentSongId) {
+                     setlistManager.setActivePart(currentSongId, cueIdx);
                 }
             }
         });
@@ -2576,6 +2609,44 @@ app.post('/api/setlist/bus-name', (req, res) => {
     res.json({ success: true });
 });
 
+app.post('/api/osc', (req, res) => {
+    const { address, args } = req.body;
+    
+    if (!address) return res.status(400).json({ error: "Address required" });
+
+    // --- INTERCEPT: Setlist Automation ---
+    if (address.startsWith('/setlist/')) {
+        const val = Array.isArray(args) ? args[0] : args;
+        const index = parseInt(val);
+        
+        console.log(`🎹 OSC Setlist Command: ${address} [${index}]`);
+
+        if (address === '/setlist/select') {
+            setlistManager.setActiveIndex(index);
+        } else if (address === '/setlist/flash') {
+            setlistManager.flashCue(index);
+        }
+        
+        return res.json({ success: true, handled: true });
+    }
+    
+    // DEBUG: Log OSC Out
+    // console.log(`📤 OSC OUT: ${address}`, args); 
+
+    try {
+        // OSC.Message constructor expects (address, arg1, arg2...) 
+        // passing an array [val] directly might be treated as a Blob or Array type tag
+        // We must spread if it is an array
+        const msgArgs = Array.isArray(args) ? args : [args];
+        const message = new OSC.Message(address, ...msgArgs);
+        osc.send(message);
+        res.json({ success: true });
+    } catch(e) {
+        console.error("OSC Send Error", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // CHART UPLOAD
 const upload = multer({ dest: 'uploads/' });
 app.post('/api/upload-chart', upload.single('chart'), (req, res) => {
@@ -2794,6 +2865,9 @@ app.post('/api/musicians', (req, res) => {
     });
 });
 
+// --- SOCKET IO ---
+setlistManager.init(io);
+
 io.on('connection', (socket) => {
   console.log('⚡ Client Connected:', socket.id);
   socket.on('disconnect', () => {
@@ -2909,6 +2983,16 @@ io.on('connection', (socket) => {
               const [_, busIdStr, param] = busMatch;
               const busId = parseInt(busIdStr).toString();
               const busKey = 'bus' + busId;
+            if (res.type === 'phantom') {
+                if (!x32State[res.id]) x32State[res.id] = {};
+                x32State[res.id].phantom = (args[0] === 1);
+            }
+            
+            if (res.type === 'fxParam') {
+                if (!x32State.fx) x32State.fx = {};
+                if (!x32State.fx[res.slot]) x32State.fx[res.slot] = {};
+                x32State.fx[res.slot][res.param] = args[0];
+            }
               
               if (!x32State[busKey]) x32State[busKey] = {};
               

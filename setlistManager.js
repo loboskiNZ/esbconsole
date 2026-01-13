@@ -11,10 +11,21 @@ class SetlistManager {
                 default: { id: 'default', name: 'Default Set', songOrder: [] }
             },
             songs: {},
-            musicianRouting: {}, // { "inputChannelId": "monitorBusId" }
-            busNames: {} // { "busId": "My Group Name" }
+            musicianRouting: {}, 
+            busNames: {} 
         };
+        // Runtime State (Not Saved)
+        this.runtime = {
+            activeSongId: null,
+            flashIndex: null
+        };
+        this.io = null; // Socket IO instance
         this.load();
+    }
+
+    // Dependency Injection for Socket.IO
+    init(io) {
+        this.io = io;
     }
 
     load() {
@@ -129,6 +140,68 @@ class SetlistManager {
         this.data.busNames[String(busId)] = name;
         this.save();
         return this.data.busNames;
+    }
+
+    // --- AUTOMATION & RUNTIME ---
+
+    // Select Song by ID
+    setActiveSong(songId) {
+        // Validation
+        if (songId && !this.data.songs[songId]) return false;
+        
+        this.runtime.activeSongId = songId;
+        
+        // Broadcast
+        if (this.io) {
+            this.io.emit('setlist_active', { songId: this.runtime.activeSongId });
+            console.log(`🎵 Setlist Active Song: ${songId || 'None'}`);
+        }
+        return true;
+    }
+
+    // Select Specific Part (Cue)
+    setActivePart(songId, partIndex) {
+        if (!this.data.songs[songId]) return false;
+        
+        const partName = this.data.songs[songId].parts && this.data.songs[songId].parts[partIndex] 
+            ? this.data.songs[songId].parts[partIndex].name 
+            : `Cue ${partIndex + 1}`;
+
+        const payload = {
+            songId,
+            partIndex,
+            partName
+        };
+
+        // Broadcast to 'active_part' channel which clients already listen to
+        if (this.io) {
+            this.io.emit('active_part', payload);
+            console.log(`🎵 Setlist Active Part: ${songId} / ${partName}`);
+        }
+        return true;
+    }
+
+    // Select Song by Index (for MIDI PC)
+    // Uses the currently active setlist's order
+    setActiveIndex(index) {
+        const setlist = this.data.setlists[this.data.activeSetlistId];
+        if (!setlist || !setlist.songOrder) return false;
+        
+        // Safety wrap? Or clamp?
+        // PC 0 = Index 0
+        if (index < 0 || index >= setlist.songOrder.length) return false;
+        
+        const songId = setlist.songOrder[index];
+        return this.setActiveSong(songId);
+    }
+
+    // Flash a Cue (for UI Warning)
+    flashCue(forceIndex = null) {
+        // If index provided, flash that. If null, maybe flash "Next"?
+        // For now, simple implementation: Broadcast Flash Event
+        if (this.io) {
+            this.io.emit('setlist_flash', { index: forceIndex });
+        }
     }
 }
 

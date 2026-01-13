@@ -140,3 +140,54 @@ These tuning tips were originally embedded in the system's core configuration. T
 - **Sax (Alto/Tenor)**: *Remove Squawk.* Cut ~600Hz. Boost Reed/Body.
 - **Trombone**: *Bite.* Cut Mud, Boost 750Hz.
 - **Sousaphone**: *Heavy Compression.* Low Boost. Ratio 4:1.
+
+---
+
+## 6. Ableton Live Integration (Setlist Automation)
+
+This system allows your Ableton Live set to automatically "drive" the Setlist. When you launch a Scene in Ableton, the X32 Controller can automatically jump to the corresponding song.
+
+### Setup Guide (Ableton Live 12)
+
+The most reliable method in Live 12 is to use a dedicated **MIDI Control Track**.
+
+1.  **Create a MIDI Track**:
+    *   Name it **"X32 Control"**.
+    *   **MIDI To**: Select the MIDI Port connected to the X32 Server (e.g., "IAC Driver Bus 1" or "USB MIDI").
+    *   **Channel**: Ch. 1 (or match your server setting).
+
+2.  **Create Setup Clips**:
+    *   In the Scene for **Song 1**, double-click an empty slot on this track to create a MIDI Clip.
+    *   Open the **Clip View** (bottom panel).
+    *   Go to the **"Pgm Change"** settings (often in the "Note" or "Launch" box depending on view).
+        *   **Bank**: -
+        *   **Sub**: -
+        *   **Pgm**: Set to **1** (Sends MIDI PC 0).
+    *   *Rename the Clip to "Song 1" for clarity.*
+
+3.  **Repeat**:
+    *   Copy/Paste this clip to the next Scene.
+    *   Change **Pgm** to **2** (for Song 2), etc.
+
+4.  **Operation**:
+    *   When you launch the Scene, the Clip launches, sending the message.
+    *   **Pro Tip**: Ensure the clips obey "Legato" or have no quantization if you want instant switching.
+
+3.  **Operation**:
+    *   Launch the Scene.
+    *   The X32 Controller (Admin & Musician Views) will instantly jump to that song, scrolling it into view.
+
+### Advanced: Cue Selection (MIDI CC)
+
+To select a specific **Cue** (Intro, Verse, etc.) within the active song:
+1.  Use the same **"X32 Control"** MIDI Track.
+2.  Create a MIDI Clip.
+3.  Go to the **Envelopes** Tab (Live 11/12) or Clip View.
+4.  Select **MIDI Ctrl** -> **16**.
+5.  Set the Value to the **Cue Index** (0 = 1st Cue, 1 = 2nd Cue).
+    *   *Tip: Use the Envelope breakpoint to set the value for the whole clip.*
+
+### Advanced: Flash Cues (OSC)
+If you use Max for Live or an OSC-capable tool (like TouchOSC), you can send cues to "Flash" the UI yellow for visual warning.
+*   **Address**: `/setlist/flash`
+*   **Argument**: The song/cue index (Integer).

@@ -3129,22 +3129,22 @@
     "color": 3
   },
   "bus12": {
-    "level": 0.4633431136608124,
+    "level": 0.4633152173913043,
     "mute": false,
     "name": "Horns",
-    "color": 2
+    "color": "#00FF00"
   },
   "bus13": {
     "level": 0,
     "mute": false,
     "name": "FX 1",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus14": {
     "level": 0,
     "mute": false,
     "name": "FX 2",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus15": {
     "level": 0,
@@ -3220,8 +3220,7 @@
         "3": 0.068,
         "4": 0.071
       }
-    },
-    "fxParam": 0
+    }
   },
   "undefined": {
     "preampGain": 0.54,

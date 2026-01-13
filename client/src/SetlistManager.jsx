@@ -2,15 +2,43 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export default function SetlistManager({ onClose, onUpdate, config, x32State }) {
+export default function SetlistManager({ onClose, onUpdate, config, x32State, socket }) {
     const [data, setData] = useState(null);
     const [selectedSongId, setSelectedSongId] = useState(null);
     const [newSongTitle, setNewSongTitle] = useState('');
     const [dragOverIndex, setDragOverIndex] = useState(null);
+    const [flashIndex, setFlashIndex] = useState(null); // For "Next Cue" warning
 
     useEffect(() => {
         fetchData();
-    }, []);
+
+        if (socket) {
+            const handleActive = (d) => {
+                // d.songId
+                if (d.songId) {
+                    setSelectedSongId(d.songId);
+                    // Scroll into view
+                    const el = document.getElementById(`song-row-${d.songId}`);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            };
+
+            const handleFlash = (d) => {
+                // d.index (Index in the list)
+                setFlashIndex(d.index);
+                // Auto-clear after 500ms
+                setTimeout(() => setFlashIndex(null), 500);
+            };  
+
+            socket.on('setlist_active', handleActive);
+            socket.on('setlist_flash', handleFlash);
+
+            return () => {
+                socket.off('setlist_active', handleActive);
+                socket.off('setlist_flash', handleFlash);
+            };
+        }
+    }, [socket]);
 
     const fetchData = () => {
         axios.get('/api/setlist/data').then(res => {
@@ -197,13 +225,18 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State }) 
                             const song = data.songs[songId];
                             if(!song) return null;
                             const isSelected = selectedSongId === songId;
+                            const isFlashing = flashIndex === idx;
+                            
                             return (
                                 <div key={songId} 
+                                    id={`song-row-${songId}`}
                                     onClick={() => setSelectedSongId(songId)}
                                     style={{
                                         padding: '10px', borderBottom: '1px solid #222',
-                                        background: isSelected ? '#333' : 'transparent',
-                                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px'
+                                        background: isFlashing ? '#ffff00' : (isSelected ? '#333' : 'transparent'), // Flash Yellow
+                                        color: isFlashing ? 'black' : (isSelected ? 'white' : '#ccc'),
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px',
+                                        transition: 'background 0.1s'
                                     }}
                                 >
                                     <div style={{color:'#666', fontSize:'0.8em', width:'20px'}}>{idx + 1}</div>

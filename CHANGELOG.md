@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.12.0] - 2026-01-14
+### Added
+- **Ableton Auto-Setlist**:
+    - **Automation**: Fully implemented MIDI Control for Setlist Navigation.
+    - **Song Select**: Via standard MIDI Program Change messages.
+    - **Cue Select**: Via MIDI CC 16 (Envelope) messages.
+    - **Backwards Compatibility**: Supports both OSC and MIDI protocols.
+- **Musician UI**:
+    - **"Up Next" Display**: Added a context-aware header indicator showing the **Next Cue** (Green) or **Next Song** (Grey).
+    - **Visual Feedback**: Active song/cue is highlighted in yellow when triggered by automation.
+
 ## [2.11.2] - 2026-01-14
 - **Performance Optimizations**:
     - **MIDI Clock**: Drastically reduced CPU usage by only listening to the primary MIDI Input (IAC/Ableton) instead of all available ports.

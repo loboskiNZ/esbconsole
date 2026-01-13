@@ -152,34 +152,62 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
     const songRefs = useRef({});
 
     // Listen for Active Part & Auto-Scroll
+    const [flashIndex, setFlashIndex] = useState(null); // Automation Flash
+    
+    // Listen for Active Part & Setlist Automation
     useEffect(() => {
         if (!socket) return;
+        
+        // 1. Manual/Internal Cue Trigger
         const onActivePart = (data) => {
             console.log("🔥 [MusicianSetlist] RECEIVED active_part:", data);
-            // alert("DEBUG: Received Cue " + JSON.stringify(data)); // Un-comment if console is hidden
             setActivePart(data);
+            handleSongSelection(data.songId);
+        };
+
+        // 2. Automation: Song Select (MIDI/OSC)
+        const onSetlistActive = (data) => {
+             // data.songId
+             handleSongSelection(data.songId);
+        };
+
+        // 3. Automation: Flash Cue (OSC)
+        const onSetlistFlash = (data) => {
+            // data.index (Index in sorted list)
+            setFlashIndex(data.index);
+            // Auto-clear
+            setTimeout(() => setFlashIndex(null), 500);
+        };
+        
+        // Helper to sync view
+        const handleSongSelection = (sId) => {
+            if (!sId) return;
             
-            // Sync State
-            if (isMobile && data.songId) {
-                 setExpandedSong(data.songId);
-            } else if (!isMobile && data.songId) {
-                 setSelectedSongId(data.songId);
+            // Update State
+            if (isMobile) {
+                 setExpandedSong(sId);
+            } else {
+                 setSelectedSongId(sId);
             }
 
-            // Auto-Scroll Logic
-            if (data.songId) {
-                // Wait for render cycle (state update) then scroll
-                setTimeout(() => {
-                    const el = songRefs.current[data.songId];
-                    if (el) {
-                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
+            // Auto-Scroll
+            setTimeout(() => {
+                const el = songRefs.current[sId];
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         };
         
         socket.on('active_part', onActivePart);
-        return () => socket.off('active_part', onActivePart);
+        socket.on('setlist_active', onSetlistActive);
+        socket.on('setlist_flash', onSetlistFlash);
+        
+        return () => {
+            socket.off('active_part', onActivePart);
+            socket.off('setlist_active', onSetlistActive);
+            socket.off('setlist_flash', onSetlistFlash);
+        };
     }, [socket, isMobile]);
 
 
@@ -238,14 +266,50 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
     if (!isMobile) {
         // Fix: songs is an array, not an object/map. Use .find() 
         // AND handle type mismatch (String vs Number)
-        const selectedSong = songs.find(s => String(s.id) === String(selectedSongId)) || sortedSongs[0];
+        const selectedIndex = sortedSongs.findIndex(s => String(s.id) === String(selectedSongId));
+        const selectedSong = sortedSongs[selectedIndex] || sortedSongs[0];
         
+        // Calculate "Up Next"
+        let nextLabel = null;
+        let nextType = null; // 'CUE' or 'SONG'
+
+        // 1. Try Next Cue in Active Song (if we are playing it)
+        if (activePart && String(activePart.songId) === String(selectedSong.id)) {
+            const currentPartIdx = activePart.partIndex;
+            if (currentPartIdx !== undefined && selectedSong.parts && selectedSong.parts[currentPartIdx + 1]) {
+                nextLabel = selectedSong.parts[currentPartIdx + 1].name;
+                nextType = 'CUE';
+            }
+        }
+
+        // 2. If no next cue, try Next Song
+        if (!nextLabel) {
+            const nextSong = sortedSongs[selectedIndex + 1];
+            if (nextSong) {
+                nextLabel = nextSong.title;
+                nextType = 'SONG';
+            }
+        }
+
         return (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow:'hidden' }}>
                 {/* Global Header */}
-                <div style={{ padding: '20px 30px', borderBottom: '1px solid #333', background: '#111' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.5em' }}>{effectiveSetlist?.name || 'Setlist'}</h2>
-                    <div style={{ fontSize: '0.9em', color: '#666' }}>{sortedSongs.length} Songs</div>
+                <div style={{ padding: '20px 30px', borderBottom: '1px solid #333', background: '#111', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                    <div>
+                        <h2 style={{ margin: 0, fontSize: '1.5em' }}>{effectiveSetlist?.name || 'Setlist'}</h2>
+                        <div style={{ fontSize: '0.9em', color: '#666' }}>{sortedSongs.length} Songs</div>
+                    </div>
+                    {/* NEXT INDICATOR */}
+                    {nextLabel && (
+                        <div style={{textAlign:'right', opacity:0.8}}>
+                            <div style={{fontSize:'0.8em', color: nextType === 'CUE' ? '#00bb00' : '#888', textTransform:'uppercase', letterSpacing:'1px', fontWeight:'bold'}}>
+                                {nextType === 'CUE' ? 'Next Cue' : 'Up Next'}
+                            </div>
+                            <div style={{fontSize:'1.2em', color:'#fff', fontWeight:'bold'}}>
+                                {nextLabel}
+                            </div>
+                        </div>
+                    )}
                 </div>
                 
                 <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -253,6 +317,8 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
                     <div style={{ width: '350px', background: '#1a1a1a', borderRight: '1px solid #333', overflowY: 'auto' }}>
                         {sortedSongs.map((song, index) => {
                             const isSelected = selectedSongId && String(selectedSongId) === String(song.id);
+                            const isFlashing = flashIndex === index;
+                            
                             return (
                                 <div 
                                     key={song.id} 
@@ -260,9 +326,9 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
                                     onClick={() => setSelectedSongId(song.id)}
                                     style={{
                                         padding: '12px', borderBottom: '1px solid #333', cursor: 'pointer',
-                                        background: isSelected ? '#1ea1f2' : 'transparent',
-                                        color: isSelected ? 'white' : '#ccc',
-                                        transition: 'background 0.2s',
+                                        background: isFlashing ? '#ffff00' : (isSelected ? '#1ea1f2' : 'transparent'),
+                                        color: isFlashing ? 'black' : (isSelected ? 'white' : '#ccc'),
+                                        transition: 'background 0.1s',
                                         fontWeight: isSelected ? 'bold' : 'normal'
                                     }}
                                 >
@@ -319,13 +385,18 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {sortedSongs.map((song, index) => {
                     const isExpanded = expandedSong && String(expandedSong) === String(song.id);
+                    const isFlashing = flashIndex === index;
+
                     return (
                     <div 
                         key={song.id} 
                         ref={el => songRefs.current[song.id] = el} 
                         style={{
-                            background: '#1a1a1a', borderRadius: '8px', overflow: 'hidden',
-                            border: isExpanded ? '1px solid #0088ff' : '1px solid #333'
+                            background: isFlashing ? '#ffff00' : '#1a1a1a', 
+                            color: isFlashing ? 'black' : 'white',
+                            borderRadius: '8px', overflow: 'hidden',
+                            border: isExpanded ? '1px solid #0088ff' : '1px solid #333',
+                            transition: 'background 0.1s'
                         }}
                     >
                         {/* Header */}
