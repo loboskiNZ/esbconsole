@@ -14,6 +14,10 @@ const fs = require('fs');
 const multer = require('multer');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+const { performStartupBackup } = require('./backup_system');
+
+// --- AUTOMATED BACKUP ---
+performStartupBackup();
 
 // GLOBAL ERROR HANDLER
 process.on('uncaughtException', (err) => {
@@ -1146,8 +1150,9 @@ const COLOR_MAP = {
 };
 
 function getX32ColorID(hex) {
-    if (!hex) return 0;
-    const h = hex.toLowerCase();
+    if (hex === undefined || hex === null) return 0;
+    if (typeof hex === 'number') return hex;
+    const h = String(hex).toLowerCase();
     return COLOR_MAP[h] || 7; // Default to White
 }
 

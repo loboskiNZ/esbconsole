@@ -322,6 +322,7 @@
     "preamp": 0.4444444477558136
   },
   "Ac. Guitar": {
+    "description": "Cut Body Boom & Feedback, Add Sparkle",
     "hpf": true,
     "hpfFreq": 0.5,
     "eq": {
@@ -359,6 +360,7 @@
     }
   },
   "Ukelele": {
+    "description": "Cut Plastic Sound",
     "hpf": true,
     "hpfFreq": 0.55,
     "eq": {
@@ -442,6 +444,7 @@
     "preamp": 0.5
   },
   "Female Vox": {
+    "description": "Warmth/Mud Balance, Presence ~4kHz",
     "hpf": true,
     "hpfFreq": 0.5,
     "eq": {
@@ -571,6 +574,7 @@
     "preamp": 0.5
   },
   "Tenor Sax": {
+    "description": "Body/Honk Balance",
     "hpf": true,
     "hpfFreq": 0.45,
     "eq": {
@@ -654,7 +658,7 @@
     "preamp": 0.5
   },
   "Sousaphone": {
-    "hpf": false,
+    "hpf": true,
     "hpfFreq": 0.25,
     "gate": {
       "on": false,
@@ -700,6 +704,7 @@
     "preamp": 0.5
   },
   "Conga": {
+    "description": "Ring/Slap Control",
     "hpf": true,
     "hpfFreq": 0.5,
     "eq": {
@@ -737,6 +742,7 @@
     }
   },
   "Cowbell": {
+    "description": "Clank/Attack",
     "hpf": true,
     "hpfFreq": 0.6,
     "eq": {
@@ -765,52 +771,6 @@
         "q": 0.5
       }
     }
-  },
-  "Electronic": {
-    "hpf": false,
-    "hpfFreq": 0,
-    "gate": {
-      "on": false,
-      "thr": 0.5,
-      "attack": 0,
-      "hold": 0,
-      "release": 0
-    },
-    "dyn": {
-      "on": false,
-      "thr": 0.5,
-      "ratio": 0,
-      "attack": 0,
-      "release": 0,
-      "hold": 0
-    },
-    "eq": {
-      "1": {
-        "f": 0.26499998569488525,
-        "g": 0.5,
-        "q": 0.4647887349128723,
-        "type": 2
-      },
-      "2": {
-        "f": 0.4650000035762787,
-        "g": 0.5,
-        "q": 0.4647887349128723,
-        "type": 2
-      },
-      "3": {
-        "f": 0.6650000214576721,
-        "g": 0.5,
-        "q": 0.4647887349128723,
-        "type": 2
-      },
-      "4": {
-        "f": 0.8999999761581421,
-        "g": 0.5,
-        "q": 0.4647887349128723,
-        "type": 4
-      }
-    },
-    "preamp": 0.5
   },
   "HiHat": {
     "hpf": true,
@@ -858,6 +818,52 @@
     },
     "preamp": 0.3194444477558136
   },
+  "Floor Tom2": {
+    "hpf": true,
+    "hpfFreq": 0.5899999737739563,
+    "gate": {
+      "on": true,
+      "thr": 0.5625,
+      "attack": 0.0833333358168602,
+      "hold": 0.7200000286102295,
+      "release": 0.5600000023841858
+    },
+    "dyn": {
+      "on": true,
+      "thr": 0.5,
+      "ratio": 5,
+      "attack": 0.1,
+      "release": 0.3,
+      "hold": 0
+    },
+    "eq": {
+      "1": {
+        "f": 0.2800000011920929,
+        "g": 0.36666667461395264,
+        "q": 0.5,
+        "type": 2
+      },
+      "2": {
+        "f": 0.5899999737739563,
+        "g": 0.3166666626930237,
+        "q": 0.8,
+        "type": 2
+      },
+      "3": {
+        "f": 0.8,
+        "g": 0.4833333194255829,
+        "q": 0.5,
+        "type": 2
+      },
+      "4": {
+        "f": 0.9,
+        "g": 0.5,
+        "q": 0.5,
+        "type": 4
+      }
+    },
+    "preamp": 0.3888888955116272
+  },
   "Rack Tom2": {
     "hpf": true,
     "hpfFreq": 0.5899999737739563,
@@ -903,5 +909,51 @@
       }
     },
     "preamp": 0.3888888955116272
+  },
+  "electronics": {
+    "hpf": false,
+    "hpfFreq": 0,
+    "gate": {
+      "on": false,
+      "thr": 0.5,
+      "attack": 0,
+      "hold": 0,
+      "release": 0
+    },
+    "dyn": {
+      "on": false,
+      "thr": 0.5,
+      "ratio": 0,
+      "attack": 0,
+      "release": 0,
+      "hold": 0
+    },
+    "eq": {
+      "1": {
+        "f": 0.26499998569488525,
+        "g": 0.5,
+        "q": 0.4647887349128723,
+        "type": 2
+      },
+      "2": {
+        "f": 0.4650000035762787,
+        "g": 0.5,
+        "q": 0.4647887349128723,
+        "type": 2
+      },
+      "3": {
+        "f": 0.6650000214576721,
+        "g": 0.5,
+        "q": 0.4647887349128723,
+        "type": 2
+      },
+      "4": {
+        "f": 0.8999999761581421,
+        "g": 0.5,
+        "q": 0.4647887349128723,
+        "type": 4
+      }
+    },
+    "preamp": 0.5
   }
 }

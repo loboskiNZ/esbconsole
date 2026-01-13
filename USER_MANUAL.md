@@ -109,3 +109,34 @@ This system specializes in **Live Dub Mixing**.
 ---
 
 *This system was built with ❤️ for Ed and The Shadow Boys.*
+
+---
+
+## 5. Pro Tips: Tuning Guide (Restored)
+
+These tuning tips were originally embedded in the system's core configuration. They provide the philosophy behind each "Quick Preset."
+
+### Drums
+- **Kick (Out)**: *Let the low end breathe.* Boost ~60Hz, Cut ~400Hz (Mud), Boost ~4kHz (Click). Gate hard.
+- **Snare**: *Body Boost & Crack.* Boost ~200Hz, Cut Boxiness, Add Air ~5kHz.
+- **Rack Tom**: *Reduce Ring.* Cut ~500Hz, Add Attack ~3kHz.
+- **Floor Tom**: *Control the Boom.* Cut ~550Hz to remove boxiness.
+- **Overheads**: *Cymbals Only.* HPF at 400Hz to remove drum bleed. Boost Air.
+- **Conga**: *Ring/Slap Control.* Cut 650Hz (Ring), Boost 850Hz (Slap).
+- **Cowbell**: *Pure Attack.* Boost 800Hz.
+
+### Instruments
+- **Bass Gtr**: *Definition is key.* Cut Mud at ~300Hz, Boost Definition at ~800Hz. Compress 4:1.
+- **E. Guitar**: *Cut the Fizz.* HPF at 100Hz, Cut Mud. Boost Bite at 2.5kHz. High Cut at 6kHz (Fizz).
+- **Ac. Guitar**: *Sparkle & Control.* Cut Body Boom, Cut Feedback range (~650Hz). Add Sparkle.
+- **Ukelele**: *Remove "Plastic" sound.* Cut ~700Hz.
+
+### Vocals
+- **Male Vox**: *Presence & Clarity.* Cut Mud ~300Hz. Boost Presence ~3kHz.
+- **Female Vox**: *Warmth not Mud.* Balance 600Hz. Boost Air ~4kHz.
+
+### Horns
+- **Trumpet**: *Remove Honk.* Cut ~650Hz. Add Brightness.
+- **Sax (Alto/Tenor)**: *Remove Squawk.* Cut ~600Hz. Boost Reed/Body.
+- **Trombone**: *Bite.* Cut Mud, Boost 750Hz.
+- **Sousaphone**: *Heavy Compression.* Low Boost. Ratio 4:1.

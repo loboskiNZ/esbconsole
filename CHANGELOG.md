@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.11.1] - 2026-01-14
+- **Resilience & Backups**:
+    - Added **Automated Startup Backup**: Creating a timestamped snapshot of `presets.json`, `scenes/`, and config files to `backups/` on every boot.
+    - Added `backup_system.js` module.
+    - Created `DATA_PERSISTENCE.md` guide for architecture reference.
+- **Fixes**:
+    - **Scene Loading**: Fixed crash when loading scenes with legacy numeric color IDs (e.g. `5` vs `#FF00FF`).
+    - **Presets**: Restored original "Pro Tips" (descriptions) to `presets.json`.
+    - **FX Injection**: Patched `thieves_alley.json` to restore correct FX Types (Vintage Room, Plate, Delay, Combinator).
+
 ## [2.11.0] - 2026-01-13
 ### Added
 - **Dynamic Channel Presets**: 

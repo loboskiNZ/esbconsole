@@ -136,3 +136,12 @@
 [2026-01-13T09:03:59.386Z] ✅ Sync Complete
 [2026-01-13T09:05:24.809Z] 📡 Emitting sync_start to 2 clients. Name: thieves_alley
 [2026-01-13T09:05:35.745Z] ✅ Sync Complete
+[2026-01-13T10:36:48.224Z] 📡 Emitting sync_start to 2 clients. Name: thieves_alley
+[2026-01-13T10:36:48.398Z] 🔥 SYNC FAILED: hex.toLowerCase is not a function
+TypeError: hex.toLowerCase is not a function
+    at getX32ColorID (/Volumes/WORKER/machines/x32-controller/index.js:1150:19)
+    at /Volumes/WORKER/machines/x32-controller/index.js:441:79
+[2026-01-13T10:41:13.869Z] 📡 Emitting sync_start to 2 clients. Name: thieves_alley
+[2026-01-13T10:41:25.058Z] ✅ Sync Complete
+[2026-01-13T11:27:50.357Z] 📡 Emitting sync_start to 2 clients. Name: thieves_alley
+[2026-01-13T11:28:01.503Z] ✅ Sync Complete

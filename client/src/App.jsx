@@ -1181,6 +1181,7 @@ function AppContent() {
                                     {Object.keys(presets).map(key => (
                                         <button
                                             key={key}
+                                            title={presets[key].description}
                                             onClick={() => {
                                                 const p = presets[key];
                                                 const id = overlay.channelId;
