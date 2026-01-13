@@ -48,7 +48,7 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
              if (match) {
                  // Return the Safe API URL
                  // Timestamp to bust cache on re-upload
-                 return `/api/charts/${currentSong.id}/${role}?busId=${busIdFromUser}&channelId=${channelIdFromUser}&t=${Date.now()}`;
+                 return `/api/charts/${currentSong.id}/${role}?busId=${busIdFromUser}&channelId=${channelIdFromUser}&t=${Date.now()}#view=FitH&zoom=page-width`;
              }
         }
         
@@ -214,17 +214,31 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
                     </button>
 
                     <button
-                        onClick={() => setAutoSync(!autoSync)}
+                        onClick={() => {
+                            if (!autoSync) {
+                                // Re-enable Sync AND Jump to current
+                                setAutoSync(true);
+                                if (activePart && activePart.songId) {
+                                    const idx = playlist.findIndex(s => String(s.id) === String(activePart.songId));
+                                    if (idx !== -1) setCurrentIndex(idx);
+                                }
+                            } else {
+                                // Toggle Off
+                                setAutoSync(false);
+                            }
+                        }}
                         style={{
-                            background: autoSync ? 'rgba(0, 200, 0, 0.2)' : 'transparent',
-                            border: autoSync ? '1px solid #00bb00' : '1px solid #444',
-                            color: autoSync ? '#00ff00' : '#888',
+                            background: autoSync ? 'rgba(0, 200, 0, 0.2)' : '#e6b800', // Green vs Amber
+                            border: autoSync ? '1px solid #00bb00' : '1px solid #ffcc00',
+                            color: autoSync ? '#00ff00' : 'black',
+                            fontWeight: !autoSync ? 'bold' : 'normal',
                             padding: '6px 12px', borderRadius: '4px', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9em'
+                            display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9em',
+                            transition: 'all 0.2s'
                         }}
                     >
-                        {autoSync ? <Wifi size={16}/> : <Lock size={16}/>}
-                        {autoSync ? "SYNC ON" : "SYNC OFF"}
+                        {autoSync ? <Wifi size={16}/> : <Wifi size={16} style={{animation:'pulse 2s infinite'}}/>} 
+                        {autoSync ? "Synced" : "Sync to Band"}
                     </button>
 
                     <button 
@@ -244,12 +258,19 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
             {/* VIEWER */}
             <div style={{flex: 1, position: 'relative', overflow: 'hidden', background: '#222'}}>
                 {currentChartUrl ? (
-                    <iframe 
-                        key={currentChartUrl} // Force re-render on change
-                        src={currentChartUrl}
+                    <object 
+                        key={currentChartUrl} 
+                        data={currentChartUrl}
+                        type="application/pdf"
                         style={{width: '100%', height: '100%', border: 'none', background: 'white'}}
-                        title="Chart Viewer"
-                    />
+                    >
+                        {/* Fallback */}
+                        <iframe 
+                            src={currentChartUrl}
+                            style={{width: '100%', height: '100%', border: 'none'}}
+                            title="Chart Viewer"
+                        />
+                    </object>
                 ) : (
                     <div style={{
                         height: '100%', display: 'flex', flexDirection: 'column', 

@@ -5,6 +5,7 @@ import SetlistManager from './SetlistManager';
 import SharePointBrowser from './SharePointBrowser';
 import MusiciansManager from './MusiciansManager';
 import MonitorsOverlay from './MonitorsOverlay';
+import SafesOverlay from './SafesOverlay';
 import MusicianApp from './MusicianApp';
 import SceneLoadingOverlay from './components/SceneLoadingOverlay';
 import { INSTRUMENT_PRESETS } from './presets';
@@ -593,6 +594,7 @@ function AppContent() {
   const [showMusicians, setShowMusicians] = useState(false);
   const [showMonitors, setShowMonitors] = useState(false);
   const [showVisualizer, setShowVisualizer] = useState(false);
+  const [showSafes, setShowSafes] = useState(false);
   const [midiMsg, setMidiMsg] = useState(null);
   const [x32State, setX32State] = useState({});
   const [overlay, setOverlay] = useState(null); // { channelId, type, title }
@@ -2279,10 +2281,21 @@ function AppContent() {
               >
                   OPEN VISUALIZER 💡
               </button>
+              <button 
+                  onClick={() => setShowSafes(true)}
+                  style={{
+                      background: '#444', color: '#fff', border: '1px solid #666',
+                      padding: '2px 10px', borderRadius: '4px', cursor: 'pointer',
+                      fontSize: '0.8em', marginRight: '10px'
+                  }}
+              >
+                  SAFES 🛡️
+              </button>
          </div>
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.10.1</div>
       </div>
       
       {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
@@ -2290,6 +2303,7 @@ function AppContent() {
       {showMonitors ? <MonitorsOverlay config={config} x32State={x32State} onClose={() => setShowMonitors(false)} /> : null}
       {showSetlist ? <SetlistManager config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
        {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
+       {showSafes ? <SafesOverlay onClose={() => setShowSafes(false)} /> : null}
 
 
 

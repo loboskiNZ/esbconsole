@@ -33,10 +33,15 @@ let musiciansData = { musicians: [], sharepoint: {} };
 try {
     if (fs.existsSync('./musicians.json')) {
         musiciansData = JSON.parse(fs.readFileSync('./musicians.json', 'utf8'));
+        if (!musiciansData.manualSafes) musiciansData.manualSafes = []; // Init if missing
     }
 } catch (e) {
     console.error("Failed to load musicians.json", e);
 }
+// Sync Init
+// We will assign x32State.manualSafes later or now? x32State needs to be defined first.
+// Moved x32State definition UP or just do it after definition.
+
 
 // --- SOLO GROUPS DEFINITION ---
 const SOLO_GROUPS = {
@@ -82,6 +87,8 @@ const STATE_FILE = path.join(__dirname, 'x32_state.json');
 // --- Interfaces ---
 
 const x32State = {}; 
+x32State.manualSafes = musiciansData.manualSafes || [];
+
 
 // Persistence Helpers
 function saveState() {
@@ -169,7 +176,27 @@ app.post('/api/scenes/load', (req, res) => {
         try {
             const loadedState = JSON.parse(data);
             
-            // 1. Update Internal State
+            // --- SAFE GUARD ---
+            // Before merging, remove any keys that are marked as SAFE.
+            // This ensures x32State retains the CURRENT (Hardware) value for these channels.
+            const safeMask = x32State.safes && x32State.safes.chanSafe ? x32State.safes.chanSafe : 0;
+            const isSafe = (id) => {
+                 const num = parseInt(id);
+                 if (isNaN(num) || num < 1 || num > 32) return false;
+                 // Hardware Safe (Bitmask) OR Software Safe (Manual List)
+                 const isManual = musiciansData.manualSafes && musiciansData.manualSafes.includes(String(num));
+                 if (isManual || (safeMask & (1 << (num - 1)))) return true;
+                 return false;
+            };
+
+            Object.keys(loadedState).forEach(key => {
+                 if (isSafe(key)) {
+                     console.log(`🛡️ Preserving Current State for Safe Channel ${key}`);
+                     delete loadedState[key];
+                 }
+            });
+
+            // 1. Update Internal State (Only Unsafe Channels Change)
             Object.assign(x32State, loadedState);
             saveState(); // Persist as "current" state
             
@@ -198,6 +225,8 @@ app.post('/api/scenes/load', (req, res) => {
                 // --- STEP 1: NAMES & COLORS ---
                 io.emit('sync_progress', { step: 1, label: "Loading Names & Colors..." });
                 for (const [chId, ch] of channels) {
+                    if (isSafe(chId)) continue; // SKIP REDUNDANT SYNC
+                    
                     const messages = [];
                     let addr;
                     // Name
@@ -321,7 +350,15 @@ app.post('/api/scenes/load', (req, res) => {
 
                 // --- STEP 2: CHANNEL SETTINGS (Gain, EQ, Dyn, Gate, Pan) ---
                 io.emit('sync_progress', { step: 2, label: "Loading Channel Settings..." });
+                
+                // (isSafe defined above)
+
                 for (const [chId, ch] of channels) {
+                     if (isSafe(chId)) {
+                         console.log(`🛡️ Skipping Safe Channel ${chId} (Step 2)`);
+                         continue;
+                     }
+
                      const messages = [];
                      // Gain/Preamp
                      let addr = getX32Address(chId, 'preamp');
@@ -382,6 +419,8 @@ app.post('/api/scenes/load', (req, res) => {
                 // --- STEP 3: EFFECTS (Mix Sends) ---
                 io.emit('sync_progress', { step: 3, label: "Loading Mix Sends..." });
                 for (const [chId, ch] of channels) {
+                    if (isSafe(chId)) continue; // SKIP SAFE
+
                     const messages = [];
                     // Mix Sends
                     if (ch.mixSends) {
@@ -423,6 +462,8 @@ app.post('/api/scenes/load', (req, res) => {
                 // --- STEP 4: MUTES & LEVELS ---
                 io.emit('sync_progress', { step: 4, label: "Loading Faders & Mutes..." });
                 for (const [chId, ch] of channels) {
+                    if (isSafe(chId)) continue; // SKIP SAFE
+
                     const messages = [];
                     let addr;
                     // Fader
@@ -450,6 +491,11 @@ app.post('/api/scenes/load', (req, res) => {
                 ];
 
                 for (const [chId, ch] of channels) {
+                     if (isSafe(chId)) {
+                         io.emit('verify_progress', { detail: `Skipping Safe Channel ${chId}...` });
+                         continue;
+                     }
+
                      io.emit('verify_progress', { detail: `Verifying Channel ${chId}...` });
                      
                      // 1. Check Standard Params
@@ -594,6 +640,22 @@ osc.on('open', () => {
             osc.send(new OSC.Message('/xremote'));
         } catch(e) { /* ignore */ }
     }, 9000);
+
+    // POLL FOR BUS NAMES & CONFIG (Startup)
+     setTimeout(() => {
+        console.log("📥 Fetching Bus Configs & Safes...");
+        osc.send(new OSC.Message('/config/safe/ch')); // Request Safes
+   
+        for(let i=1; i<=16; i++) {
+           const id = String(i).padStart(2, '0');
+           try {
+               osc.send(new OSC.Message(`/bus/${id}/config/name`));
+               osc.send(new OSC.Message(`/bus/${id}/config/color`));
+               osc.send(new OSC.Message(`/bus/${id}/mix/fader`));
+               osc.send(new OSC.Message(`/bus/${id}/mix/on`));
+           } catch(e) { console.error("Bus Fetch Error", e); }
+        }
+     }, 2000);
 });
 osc.open();
 
@@ -642,6 +704,11 @@ function parseX32Path(address) {
         if (parts[3] === 'phantom') return { id: String(ch), type: 'phantom' };
     }
     
+    // SAFE HANDLING
+    if (parts[1] === 'config' && parts[2] === 'safe') {
+        if (parts[3] === 'ch') return { id: 'safes', type: 'chanSafe' };
+    }
+    
     if (parts[1] === 'main' && parts[2] === 'st') {
         if (parts[3] === 'mix') {
              if (parts[4] === 'on') return { id: 'master', type: 'mute' };
@@ -663,6 +730,7 @@ function parseX32Path(address) {
         if (parts[3] === 'mix') {
              if (parts[4] === 'on') return { id: String(id), type: 'mute' };
              if (parts[4] === 'fader') return { id: String(id), type: 'level' };
+             if (parts[4] === 'pan') return { id: String(id), type: 'pan' };
              
              // Mix Sends: /ch/XX/mix/BUS/level or on
              const bus = parts[4];
@@ -728,6 +796,12 @@ function parseX32Path(address) {
 // Generic Listener
 osc.on('/*', message => {
     const info = parseX32Path(message.address);
+    
+    // DEBUG SAFES
+    if (message.address.includes('safe')) {
+        console.log(`🕵️ OSC SAFE RECEIVED: ${message.address} args=${JSON.stringify(message.args)} Parsed=${JSON.stringify(info)}`);
+    }
+
     if (!info) return;
     
     let value = message.args[0];
@@ -739,6 +813,14 @@ osc.on('/*', message => {
     }
     
     // Update State
+    if (info.id === 'safes') {
+        if (!x32State.safes) x32State.safes = {};
+        x32State.safes[info.type] = value;
+        console.log(`🛡️ Safes Updated: ${info.type} = ${value} (Binary: ${value.toString(2)})`);
+        saveState();
+        return;
+    }
+
     if (x32State[info.id]) {
         if (info.type === 'eqParam') {
             // Updating a specific band param
@@ -772,26 +854,8 @@ osc.on('/*', message => {
 
 
 
-try {
-  osc.open(); 
-  console.log(`📡 OSC Interface ready (Target: ${X32_IP}:${X32_PORT}, Listening on 10023)`);
-  
-  // POLL FOR BUS NAMES & CONFIG (Startup)
-  setTimeout(() => {
-     console.log("📥 Fetching Bus Configs...");
-     for(let i=1; i<=16; i++) {
-        const id = String(i).padStart(2, '0');
-        try {
-            osc.send(new OSC.Message(`/bus/${id}/config/name`));
-            osc.send(new OSC.Message(`/bus/${id}/config/color`));
-            osc.send(new OSC.Message(`/bus/${id}/mix/fader`));
-            osc.send(new OSC.Message(`/bus/${id}/mix/on`));
-        } catch(e) { console.error("Bus Fetch Error", e); }
-     }
-  }, 2000); 
-} catch (err) {
-  console.error('❌ OSC Error:', err.message);
-}
+// MOVED TO msg 'open' event
+
 
 function getX32Address(channelId, type, extra) {
     if (channelId === 'master') {
@@ -2050,6 +2114,16 @@ app.get('/api/solo-status', (req, res) => {
     res.json({ activeIds: list });
 });
 
+app.get('/api/debug-safes', (req, res) => {
+    console.log("🕵️ Manual Safe Request Triggered (Probing...)");
+    osc.send(new OSC.Message('/config/safe/ch'));
+    osc.send(new OSC.Message('/config/safe/inputs'));
+    osc.send(new OSC.Message('/config/safe'));
+    osc.send(new OSC.Message('/safe/ch'));
+    osc.send(new OSC.Message('/prefs/safe/ch'));
+    res.json({ safes: x32State.safes || null });
+});
+
 // ... imports
 
 // ... existing code ...
@@ -2062,6 +2136,24 @@ app.get('/api/solo-status', (req, res) => {
 // Routes:
 app.get('/api/sharepoint/config', (req, res) => {
     res.json(musiciansData.sharepoint || {});
+});
+
+// MANUAL SAFES API
+app.get('/api/config/safes', (req, res) => {
+    res.json(musiciansData.manualSafes || []);
+});
+
+app.post('/api/config/safes', (req, res) => {
+    const list = req.body.safes;
+    if (!Array.isArray(list)) return res.status(400).json({error: "Expected array"});
+    
+    musiciansData.manualSafes = list.map(String); // Ensure strings
+    x32State.manualSafes = musiciansData.manualSafes; // Sync
+    
+    fs.writeFile('./musicians.json', JSON.stringify(musiciansData, null, 2), (err) => {
+         if (err) return res.status(500).json({ error: "Save failed" });
+         res.json({ success: true, safes: musiciansData.manualSafes });
+    });
 });
 
 app.post('/api/sharepoint/config', (req, res) => {
