@@ -3150,13 +3150,13 @@
     "level": 0,
     "mute": false,
     "name": "FX 3",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus16": {
     "level": 0,
     "mute": false,
     "name": "FX 4",
-    "color": 5
+    "color": "#FF00FF"
   },
   "master": {
     "mute": true,

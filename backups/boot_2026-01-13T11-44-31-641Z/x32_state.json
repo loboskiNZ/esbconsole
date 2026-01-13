@@ -3126,7 +3126,7 @@
     "mute": false,
     "level": 0,
     "name": "Bus 11",
-    "color": 3
+    "color": "#FFFF00"
   },
   "bus12": {
     "level": 0.4633152173913043,
@@ -3150,16 +3150,16 @@
     "level": 0,
     "mute": false,
     "name": "FX 3",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus16": {
     "level": 0,
     "mute": false,
     "name": "FX 4",
-    "color": 5
+    "color": "#FF00FF"
   },
   "master": {
-    "mute": true,
+    "mute": false,
     "level": 0.735,
     "hcut": false,
     "dynGain": 0.5

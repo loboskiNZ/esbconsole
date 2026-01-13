@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.11.2] - 2026-01-14
+- **Performance Optimizations**:
+    - **MIDI Clock**: Drastically reduced CPU usage by only listening to the primary MIDI Input (IAC/Ableton) instead of all available ports.
+    - **Meter Polling**: Relaxed polling rate from 50ms to 150ms to reduce event loop load alongside Ableton.
+    - **Cleanup**: Removed redundant RTA data broadcasting.
+- **Features**:
+    - **Mute-Masking**: Muted channels now display as 0 (-inf) on all meters (Main/Overview/Monitor) for immediate visual feedback.
+
 ## [2.11.1] - 2026-01-14
 - **Resilience & Backups**:
     - Added **Automated Startup Backup**: Creating a timestamped snapshot of `presets.json`, `scenes/`, and config files to `backups/` on every boot.

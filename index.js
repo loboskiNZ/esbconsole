@@ -1308,9 +1308,18 @@ function updateDelayTime() {
 }
 
 // Listen to all inputs for Clock
+// Listen to MIDI Clock and Notes
 const midiInputs = easymidi.getInputs();
-midiInputs.forEach(inputName => {
-    const input = new easymidi.Input(inputName);
+console.log('🎹 All MIDI Inputs:', midiInputs);
+
+// Auto-select a likely candidate for Clock/Notes (Same logic as Output)
+const targetParamsInput = ['IAC', 'Ableton', 'Bus 1'];
+const foundInputName = midiInputs.find(name => targetParamsInput.some(t => name.includes(t))) || midiInputs[0];
+
+if (foundInputName) {
+    console.log(`🎹 Connecting MIDI Input to: "${foundInputName}"`);
+    const input = new easymidi.Input(foundInputName);
+    
     input.on('clock', () => {
         clockTicks++;
         
@@ -1328,7 +1337,7 @@ midiInputs.forEach(inputName => {
             if (duration > 0) {
                 const bpm = 60000 / duration;
                 lighting.pulse(); // Trigger beat flash
-                // Simple smoothing (only update if significant change to avoid jitter)
+                // Simple smoothing
                 if (Math.abs(bpm - currentBpm) > 1.5) {
                     currentBpm = bpm;
                     io.emit('bpm_update', { bpm: Math.round(currentBpm) });
@@ -1340,8 +1349,6 @@ midiInputs.forEach(inputName => {
 
     // LISTENER: MIDI NOTES
     input.on('noteon', (msg) => {
-        // console.log(`🎹 Note On: ${msg.note} Vel: ${msg.velocity} Ch: ${msg.channel}`);
-        
         // Broadcast to Frontend
         io.emit('midi_msg', { 
             note: msg.note, 
@@ -1370,11 +1377,12 @@ midiInputs.forEach(inputName => {
             const action = map[msg.note];
             if (lighting[action.fn]) lighting[action.fn]();
             io.emit('scene_change', action.evt);
-            // console.log(`🎹 Triggered Scene: ${action.evt} (Note ${msg.note})`);
         }
     });
-    console.log(`🎹 Listening for Clock on: ${inputName}`);
-});
+
+} else {
+    console.log('⚠️ No MIDI Inputs found.');
+}
 
 
 // 2. MIDI Interface (Ableton)
@@ -1667,8 +1675,15 @@ function startMeterPolling() {
              const levels = [];
              for(let i=0; i<32; i++) {
                  try {
-                    // Start at offset 4 (4 + i*4) to skip header
-                    levels.push(floatView.getFloat32(4 + (i*4), true));
+                    const chId = String(i+1);
+                    // Check Mute State (x32State uses logical 'mute' = true/false)
+                    // If muted, force meter to 0.
+                    if (x32State[chId] && x32State[chId].mute) {
+                        levels.push(0);
+                    } else {
+                        // Start at offset 4 (4 + i*4) to skip header
+                        levels.push(floatView.getFloat32(4 + (i*4), true));
+                    }
                  } catch(e) { levels.push(0); }
              }
              io.emit('meters_inputs', levels);
@@ -1692,22 +1707,23 @@ function startMeterPolling() {
 
     meterInterval = setInterval(() => {
         // Request Meter Data for Main L/R and Inputs
+        // Relaxed to 150ms (approx 6-7 fps) to save CPU for Ableton
         try {
             osc.send(new OSC.Message('/meters', '/meters/6')); 
             osc.send(new OSC.Message('/meters', '/meters/1'));
             osc.send(new OSC.Message('/meters', '/meters/5')); // Outputs
         } catch (e) { /* ignore */ }
         
-        // --- RTA DISABLED (User Request) ---
-        // X32 RTA is internal/unanalyzable via OSC meters currently.
-        const rta = Array(31).fill(0); 
-        io.emit('rta_data', rta);
+        // --- RTA DISABLED ---
+        // Removed empty emission to save CPU
+        // const rta = Array(31).fill(0); 
+        // io.emit('rta_data', rta);
         // RTA handled by live meters now.
 
         // Input Simulation DISABLED
         // io.emit('meters_inputs', Array(32).fill(0));
 
-    }, 50);
+    }, 150);
 }
 
 

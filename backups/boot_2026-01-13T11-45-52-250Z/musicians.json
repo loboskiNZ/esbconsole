@@ -1,0 +1,157 @@
+{
+  "musicians": [
+    {
+      "id": "mk96kye8na28umt2w2",
+      "name": "Ed Lobo",
+      "role": "Machines",
+      "email": "ed@loboski.nz",
+      "mixBusId": 1,
+      "linkedChannels": [
+        9,
+        17,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ]
+    },
+    {
+      "id": "mk96n7bo1erl10qx5w8",
+      "name": "Nathan Hill",
+      "role": "Singer",
+      "email": "nathan.hill@nzsafetyblackwoods.co.nz",
+      "mixBusId": 2,
+      "linkedChannels": [
+        18
+      ]
+    },
+    {
+      "id": "mk96nscv54so8b88ss4",
+      "name": "Alex Ramsey",
+      "role": "Drummer",
+      "email": "alex@unitedmachinists.co.nz",
+      "mixBusId": 7,
+      "linkedChannels": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": "mk96qpzyk03gidjc8wr",
+      "name": "Chris Brett",
+      "role": "Guitarrist",
+      "email": "chrishrbrett@gmail.com",
+      "mixBusId": 10,
+      "linkedChannels": [
+        10
+      ]
+    },
+    {
+      "id": "mk96s6qfahvj4kjpeon",
+      "name": "Peter Kesha",
+      "role": "Keyboard",
+      "email": "peterkeshamusic@xtra.co.nz",
+      "mixBusId": 9,
+      "linkedChannels": [
+        11,
+        12
+      ]
+    },
+    {
+      "id": "mk9mb9ctzomhp6nfdy",
+      "name": "Alan Gray",
+      "role": "Singer",
+      "email": "alannedgray@gmail.com",
+      "mixBusId": 4,
+      "linkedChannels": [
+        20
+      ]
+    },
+    {
+      "id": "mk9mcy3d89a5wvaqjww",
+      "name": "Hyram Ballard",
+      "role": "Cuatro",
+      "email": "twangtown@gmail.com",
+      "mixBusId": 5,
+      "linkedChannels": [
+        21
+      ]
+    },
+    {
+      "id": "mk9mednmnjqc883na7",
+      "name": "Davina Gilbert",
+      "role": "Singer",
+      "email": "rockstardee@yahoo.co.nz",
+      "mixBusId": 6,
+      "linkedChannels": [
+        22
+      ]
+    },
+    {
+      "id": "mk9mgait0t8e1s9a8qic",
+      "name": "Nikhil Rawat",
+      "role": "Sous",
+      "email": "NZcroc816@gmail.com",
+      "mixBusId": 8,
+      "linkedChannels": [
+        13
+      ]
+    },
+    {
+      "id": "mk9miysrfmgoxh0wp48",
+      "name": "Peter Clayman",
+      "role": "Trombone",
+      "email": "peter.claman@gmail.com",
+      "mixBusId": 12,
+      "linkedChannels": [
+        14
+      ]
+    },
+    {
+      "id": "mk9mkza86x0ya3zbyff",
+      "name": "Emma Mckinlay",
+      "role": "Alto sax",
+      "email": "emma.mcklynch@gmail.com",
+      "mixBusId": 12,
+      "linkedChannels": [
+        15
+      ]
+    },
+    {
+      "id": "mk9mn5y688ux7eljck9",
+      "name": "Mike Gaches",
+      "role": "Trumpet",
+      "email": "gachesmike@gmail.com",
+      "mixBusId": 12,
+      "linkedChannels": [
+        16
+      ]
+    },
+    {
+      "id": "mk9moawgoiirjagzqlb",
+      "name": "Claire Hones",
+      "role": "Singer",
+      "email": "claire.l.hones@gmail.com",
+      "mixBusId": 3,
+      "linkedChannels": [
+        19
+      ]
+    }
+  ],
+  "sharepoint": {
+    "siteId": "",
+    "driveId": "",
+    "folderId": "01RI4564YCB74UVRSNKBBIJ56PUFUF5IV6"
+  },
+  "manualSafes": []
+}
