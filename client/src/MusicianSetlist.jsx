@@ -296,7 +296,7 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
                 {/* Global Header */}
                 <div style={{ padding: '20px 30px', borderBottom: '1px solid #333', background: '#111', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.5em' }}>{effectiveSetlist?.name || 'Setlist'}</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.5em' }}>{effectiveSetlist?.name || 'Setlist'} <span style={{fontSize:'0.6em', opacity:0.5}}>({user?.name})</span></h2>
                         <div style={{ fontSize: '0.9em', color: '#666' }}>{sortedSongs.length} Songs</div>
                     </div>
                     {/* NEXT INDICATOR */}
@@ -380,7 +380,7 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
     // LAYOUT 2: ACCORDION (Mobile)
     return (
         <div style={{ padding: '20px', paddingBottom: '100px', color: 'white', overflowY: 'auto' }}>
-            <h2 style={{ marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>Setlist</h2>
+            <h2 style={{ marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>Setlist ({user?.name || 'Musician'})</h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {sortedSongs.map((song, index) => {
