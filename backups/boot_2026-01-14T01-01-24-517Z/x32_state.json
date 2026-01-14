@@ -1154,7 +1154,7 @@
     "name": "Keys 2",
     "mixSends": {
       "1": {
-        "level": 0.4437499940395355
+        "level": 0.26875001192092896
       },
       "2": {
         "level": 0.4749999940395355
@@ -3126,25 +3126,25 @@
     "mute": false,
     "level": 0,
     "name": "Bus 11",
-    "color": "#FFFF00"
+    "color": 3
   },
   "bus12": {
-    "level": 0.4633152173913043,
+    "level": 0.4633431136608124,
     "mute": false,
     "name": "Horns",
-    "color": "#00FF00"
+    "color": 2
   },
   "bus13": {
     "level": 0,
     "mute": false,
     "name": "FX 1",
-    "color": "#FF00FF"
+    "color": 5
   },
   "bus14": {
     "level": 0,
     "mute": false,
     "name": "FX 2",
-    "color": "#FF00FF"
+    "color": 5
   },
   "bus15": {
     "level": 0,
@@ -3220,7 +3220,8 @@
         "3": 0.068,
         "4": 0.071
       }
-    }
+    },
+    "fxParam": 0
   },
   "undefined": {
     "preampGain": 0.54,

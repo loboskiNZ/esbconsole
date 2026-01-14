@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.12.1] - 2026-01-14
+### Improved
+- **Musician Experience**:
+    - **Header**: Added Musician's Name to the Setlist header for better personalization.
+    - **Navigation**: Reordered menu to **Monitors | Setlist | Charts | Save | Logout** for better ergonomics.
+    - **Persistence**: The app now remembers your active view (Monitors/Setlist/etc) and Group Mode toggle across page refreshes and logins.
+
+
 ## [2.12.0] - 2026-01-14
 ### Added
 - **Ableton Auto-Setlist**:

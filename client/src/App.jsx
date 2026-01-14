@@ -2222,7 +2222,7 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.12.0</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.12.1</div>
       </div>
       
       {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
