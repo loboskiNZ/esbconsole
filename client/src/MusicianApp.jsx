@@ -12,8 +12,8 @@ import WelcomeSplash from './components/WelcomeSplash';
 
 const MusicianApp = ({ socket, x32State }) => {
     const [musician, setMusician] = useState(null);
-    const [activeView, setActiveView] = useState('monitors');
-    const [isGroupMode, setIsGroupMode] = useState(false); // NEW: Group Mode State
+    const [activeView, setActiveView] = useState(() => localStorage.getItem('musician_last_view') || 'monitors');
+    const [isGroupMode, setIsGroupMode] = useState(() => localStorage.getItem('musician_group_mode') === 'true'); 
     const [setlist, setSetlist] = useState(null);
     const [showSplash, setShowSplash] = useState(false);
 
@@ -36,6 +36,16 @@ const MusicianApp = ({ socket, x32State }) => {
             .catch(err => console.error("Failed to fetch setlist", err));
 
     }, []);
+
+    // PERSIST VIEW STATE
+    useEffect(() => {
+        localStorage.setItem('musician_last_view', activeView);
+    }, [activeView]);
+
+    // PERSIST GROUP MODE
+    useEffect(() => {
+        localStorage.setItem('musician_group_mode', isGroupMode);
+    }, [isGroupMode]);
 
     const handleLogin = (user) => {
         setMusician(user);
