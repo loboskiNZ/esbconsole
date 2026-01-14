@@ -30,8 +30,8 @@ const MusicianLayout = ({ children, user, onLogout, onSave, activeTab, onTabChan
     const navItems = [
         { id: 'monitors', icon: isGroupMode ? <Sliders size={24} color="#00e5ff"/> : <Sliders size={24} />, label: mixLabel, action: () => handleTabClick('monitors') },
         { id: 'setlist', icon: <ListMusic size={24} />, label: 'Setlist' },
-        { id: 'save', icon: <Save size={24} />, label: 'Save', action: onSave }, 
         { id: 'charts', icon: <FileText size={24} />, label: 'Charts' },
+        { id: 'save', icon: <Save size={24} />, label: 'Save', action: onSave }, 
         { id: 'logout', icon: <LogOut size={24} />, label: 'Logout', action: onLogout }
     ];
 
