@@ -233,10 +233,21 @@ class SetlistManager {
     // Uses the currently active setlist's order
     setActiveIndex(index) {
         const setlist = this.data.setlists[this.data.activeSetlistId];
-        if (!setlist || !setlist.songOrder) return false;
+        if (!setlist) return false;
+        if (!setlist.songOrder) setlist.songOrder = [];
         
-        // Safety wrap? Or clamp?
-        // PC 0 = Index 0
+        // --- LEARN MODE: Autonomous Setlist Growth ---
+        if (this.runtime.learnMode && index >= setlist.songOrder.length) {
+            console.log(`🧠 Learn Mode: Expanding Setlist to index ${index}`);
+            // Fill gaps if needed (e.g., PC 10 received when only 2 songs exist)
+            while (setlist.songOrder.length <= index) {
+                const newSongId = `song_learn_${Date.now()}_${setlist.songOrder.length}`;
+                this.createSong({ id: newSongId, title: `Learned Song ${setlist.songOrder.length + 1}` });
+                setlist.songOrder.push(newSongId);
+            }
+            this.save();
+        }
+
         if (index < 0 || index >= setlist.songOrder.length) return false;
         
         const songId = setlist.songOrder[index];

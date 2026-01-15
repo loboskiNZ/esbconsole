@@ -197,13 +197,24 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                             {abletonTime ? abletonTime.formatted : 'WAITING...'}
                         </div>
                         {abletonTime && (
-                             <button 
-                                onClick={() => socket.emit('osc', { address: '/live/scene', args: [0] })}
-                                style={{
-                                    background:'#444', border:'none', color:'#ccc', fontSize:'0.7em', 
-                                    padding:'2px 6px', borderRadius:'4px', cursor:'pointer', marginLeft:'5px'
-                                }}
-                             >SYNC</button>
+                             <div style={{display:'flex', gap:'5px', marginLeft:'5px'}}>
+                                 <button 
+                                    onClick={() => socket.emit('osc', { address: '/live/scene', args: [0] })}
+                                    title="Reset to Bar 1"
+                                    style={{
+                                        background:'#444', border:'none', color:'#ccc', fontSize:'0.7em', 
+                                        padding:'2px 8px', borderRadius:'4px', cursor:'pointer'
+                                    }}
+                                 >SYNC</button>
+                                 <button 
+                                    onClick={() => socket.emit('reset_to_global')}
+                                    title="Reset to Global Project Time"
+                                    style={{
+                                        background:'#aa6600', border:'none', color:'white', fontSize:'0.7em', 
+                                        padding:'2px 8px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold'
+                                    }}
+                                 >GLOBAL</button>
+                             </div>
                         )}
                     </div>
                 </div>

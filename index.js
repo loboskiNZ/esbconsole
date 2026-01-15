@@ -955,6 +955,31 @@ osc.on('/live/scene', handleAbletonScene);
 osc.on('/live/signature_num', handleAbletonConfig);
 osc.on('/live/signature_den', handleAbletonConfig);
 osc.on('/live/scene_duration', handleAbletonConfig);
+osc.on('/live/scene_name', (msg) => {
+    const name = msg.args[0];
+    if (!name || !setlistManager.runtime.learnMode) return;
+
+    const currentSongId = setlistManager.runtime.activeSongId;
+    const currentPartIdx = setlistManager.runtime.activePartIndex;
+
+    if (currentSongId && currentPartIdx !== null) {
+        const song = setlistManager.data.songs[currentSongId];
+        if (song && song.cues) {
+            const newCues = [...song.cues];
+            if (newCues[currentPartIdx] && newCues[currentPartIdx].name.startsWith("Cue ")) {
+                console.log(`🧠 Learn Mode: Auto-Naming Cue -> "${name}"`);
+                newCues[currentPartIdx] = { ...newCues[currentPartIdx], name: name };
+                
+                let songUpdate = { cues: newCues };
+                if (currentPartIdx === 0 && song.title && (song.title.startsWith("Learned Song") || song.title.startsWith("New Song"))) {
+                    console.log(`🧠 Learn Mode: Auto-Naming Song -> "${name}"`);
+                    songUpdate.title = name;
+                }
+                setlistManager.updateSong(currentSongId, songUpdate);
+            }
+        }
+    }
+});
 // Global catch-all for debugging
 osc.on('*', (message) => {
     if (!message.address.includes('/x32/') && !message.address.includes('/ch/') && !message.address.includes('/meters')) {
@@ -3019,6 +3044,12 @@ io.on('connection', (socket) => {
 
   socket.on('toggle_learn_mode', (data) => {
       setlistManager.setLearnMode(data.enabled);
+  });
+
+  socket.on('reset_to_global', () => {
+      console.log('🚨 EMERGENCY: Resetting counter to GLOBAL time');
+      sceneStartBeats = 0;
+      broadcastAbletonTime(true);
   });
 
   socket.on('disconnect', () => {
