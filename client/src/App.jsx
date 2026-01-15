@@ -501,13 +501,10 @@ function AppContent() {
   const [activePartIndex, setActivePartIndex] = useState(null);
   const [status, setStatus] = useState({ x32: 'connected', midi: 'pending', dmx: 'ready' });
 
-  const [showDMX, setShowDMX] = useState(false);
-  const [showSharePoint, setShowSharePoint] = useState(false);
-  const [showSetlist, setShowSetlist] = useState(false);
-  const [showMusicians, setShowMusicians] = useState(false);
-  const [showMonitors, setShowMonitors] = useState(false);
-  const [showVisualizer, setShowVisualizer] = useState(false);
-  const [showSafes, setShowSafes] = useState(false);
+  const [activeView, setActiveView] = useState(() => {
+      const saved = localStorage.getItem('adminActiveView');
+      return (saved && saved !== 'null') ? saved : null;
+  });
   const [midiMsg, setMidiMsg] = useState(null);
   const [x32State, setX32State] = useState({});
   const [overlay, setOverlay] = useState(null); // { channelId, type, title }
@@ -519,6 +516,12 @@ function AppContent() {
   const [presets, setPresets] = useState({}); // Dynamic Presets
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [newPresetName, setNewPresetName] = useState("");
+
+  // Persist view state
+  useEffect(() => {
+      if (activeView) localStorage.setItem('adminActiveView', activeView);
+      else localStorage.removeItem('adminActiveView');
+  }, [activeView]);
 
   // Load initial config & scenes
   useEffect(() => {
@@ -571,7 +574,11 @@ function AppContent() {
              window.midiTimeout = setTimeout(() => setMidiMsg(null), 1500);
         };
 
-        const onMeters = (data) => setInputMeters(data);
+        const onMeters = (data) => {
+             // 🧠 MEMORY OPTIMIZATION: Suspend meter processing if we are in an overlay view
+             if (activeView !== null) return;
+             setInputMeters(data);
+        };
 
         const onInitState = (fullState) => {
              console.log("📥 Received Initial X32 State:", Object.keys(fullState).length, "channels");
@@ -695,7 +702,7 @@ function AppContent() {
             socket.off('verify_progress', onVerifyProgress);
             socket.off('sync_complete', onSyncComplete);
         };
-    }, []); // Run Once on Mount
+    }, [activeView]); // Re-run when activeView changes to ensure onMeters has correct closure
 
   const handleTrigger = async (partName, partIndex) => {
     if (!selectedSongId) return;
@@ -813,25 +820,25 @@ function AppContent() {
                     
                     {/* TITLE ROW */}
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.6.0</span></h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.13.1</span></h1>
                     </div>
                     
                     {/* NAVIGATION ROW (Under Title) */}
                     <div style={{display:'flex', gap:'5px', marginTop:'5px'}}>
-                         <button onClick={() => setShowSharePoint(true)} style={{
-                            background: showSharePoint ? '#0078d4' : '#222', color: showSharePoint ? '#fff' : '#0078d4',
+                         <button onClick={() => setActiveView(prev => prev === 'files' ? null : 'files')} style={{
+                            background: activeView === 'files' ? '#0078d4' : '#222', color: activeView === 'files' ? '#fff' : '#0078d4',
                             border: '1px solid #005a9e', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
                             fontWeight: 'bold', fontSize:'0.8em'
                         }}>FILES</button>
                         
-                        <button onClick={() => setShowMusicians(true)} style={{
-                            background: showMusicians ? '#ffaa00' : '#222', color: showMusicians ? '#000' : '#ffaa00',
+                        <button onClick={() => setActiveView(prev => prev === 'musicians' ? null : 'musicians')} style={{
+                            background: activeView === 'musicians' ? '#ffaa00' : '#222', color: activeView === 'musicians' ? '#000' : '#ffaa00',
                             border: '1px solid #c80', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
                             fontWeight: 'bold', fontSize:'0.8em'
                         }}>MUSICIANS</button>
 
-                        <button onClick={() => setShowMonitors(true)} style={{
-                            background: showMonitors ? '#0088ff' : '#222', color: showMonitors ? '#fff' : '#0088ff',
+                        <button onClick={() => setActiveView(prev => prev === 'monitors' ? null : 'monitors')} style={{
+                            background: activeView === 'monitors' ? '#0088ff' : '#222', color: activeView === 'monitors' ? '#fff' : '#0088ff',
                             border: '1px solid #0055aa', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer',
                             fontWeight: 'bold', fontSize:'0.8em'
                         }}>MONITORS</button>
@@ -858,9 +865,9 @@ function AppContent() {
                 </div>
             </div>
 
-            {/* CENTER: RTA VISUALIZER */}
+            {/* CENTER: RTA VISUALIZER (Offloaded when overlay is active) */}
             <div style={{flex:1, height:'100%', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden'}}>
-                 <RTAVisualizer socket={socket} />
+                 {activeView === null && <RTAVisualizer socket={socket} />}
             </div>
 
             {/* RIGHT: Master Controls & Scenes */}
@@ -1752,7 +1759,9 @@ function AppContent() {
 
 
 
-            {/* 2. SUB-HEADER: PERFORMANCE CONTROLS */}
+            {/* 🧠 MEMORY OPTIMIZATION: Entire Console Body is offloaded when an overlay is active */}
+            {activeView === null && (
+                <>
             <div style={{
                 position:'fixed', top:'120px', left:0, right:0, height:'60px', zIndex:990,
                 background:'#151515', borderBottom:'1px solid #333',
@@ -1774,10 +1783,10 @@ function AppContent() {
                         ))}
                     </select>
                      <button 
-                        onClick={() => setShowSetlist(true)}
+                        onClick={() => setActiveView(prev => prev === 'setlist' ? null : 'setlist')}
                         style={{
-                            background: showSetlist ? '#ffaa00' : '#222', 
-                            color: showSetlist ? 'black' : '#ffaa00',
+                            background: activeView === 'setlist' ? '#ffaa00' : '#222', 
+                            color: activeView === 'setlist' ? 'black' : '#ffaa00',
                             border: '1px solid #c80', 
                             borderRadius: '4px',
                             padding: '5px 10px',
@@ -2175,6 +2184,8 @@ function AppContent() {
                 </div>
 
             </div>
+            </>
+            )}
 
 
 
@@ -2199,9 +2210,11 @@ function AppContent() {
       <div className="status-bar">
          <div style={{flex:1}}>
               <button 
-                  onClick={() => setShowVisualizer(true)}
+                  onClick={() => setActiveView(prev => prev === 'dmx' ? null : 'dmx')}
                   style={{
-                      background: '#444', color: '#fff', border: '1px solid #666',
+                      background: activeView === 'dmx' ? '#ffaa00' : '#444', 
+                      color: activeView === 'dmx' ? '#000' : '#fff', 
+                      border: '1px solid #666',
                       padding: '2px 10px', borderRadius: '4px', cursor: 'pointer',
                       fontSize: '0.8em', marginRight: '10px'
                   }}
@@ -2209,9 +2222,11 @@ function AppContent() {
                   OPEN VISUALIZER 💡
               </button>
               <button 
-                  onClick={() => setShowSafes(true)}
+                  onClick={() => setActiveView(prev => prev === 'safes' ? null : 'safes')}
                   style={{
-                      background: '#444', color: '#fff', border: '1px solid #666',
+                      background: activeView === 'safes' ? '#ffaa00' : '#444', 
+                      color: activeView === 'safes' ? '#000' : '#fff', 
+                      border: '1px solid #666',
                       padding: '2px 10px', borderRadius: '4px', cursor: 'pointer',
                       fontSize: '0.8em', marginRight: '10px'
                   }}
@@ -2222,15 +2237,15 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.12.1</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.13.1</div>
       </div>
       
-      {showSharePoint ? <SharePointBrowser onClose={() => setShowSharePoint(false)} /> : null}
-      {showMusicians ? <MusiciansManager onClose={() => setShowMusicians(false)} /> : null}
-      {showMonitors ? <MonitorsOverlay config={config} x32State={x32State} onClose={() => setShowMonitors(false)} /> : null}
-      {showSetlist ? <SetlistManager socket={socket} config={config} x32State={x32State} onClose={() => setShowSetlist(false)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} /> : null}
-       {showVisualizer ? <DMXVisualizer socket={socket} onClose={() => setShowVisualizer(false)} /> : null}
-       {showSafes ? <SafesOverlay onClose={() => setShowSafes(false)} /> : null}
+      {activeView === 'files' && <SharePointBrowser onClose={() => setActiveView(null)} />}
+      {activeView === 'musicians' && <MusiciansManager onClose={() => setActiveView(null)} />}
+      {activeView === 'monitors' && <MonitorsOverlay config={config} x32State={x32State} onClose={() => setActiveView(null)} />}
+      {activeView === 'setlist' && <SetlistManager socket={socket} config={config} x32State={x32State} onClose={() => setActiveView(null)} onUpdate={() => { axios.get('/api/config').then(res => setConfig(res.data)); }} />}
+      {activeView === 'dmx' && <DMXVisualizer socket={socket} onClose={() => setActiveView(null)} />}
+      {activeView === 'safes' && <SafesOverlay onClose={() => setActiveView(null)} />}
 
        {/* SAVE PRESET MODAL */}
        {showSavePresetModal && (

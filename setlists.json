@@ -1277,7 +1277,23 @@
           "data": ""
         }
       ],
-      "charts": {}
+      "charts": {},
+      "chartAssignments": [
+        {
+          "inputChannel": 16,
+          "monitorBus": 12,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Trumpet in Bb.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768438486355",
+            "filename": "trumpet.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768438486355/trumpet.pdf",
+            "size": 18221
+          }
+        }
+      ]
     }
   },
   "musicianRouting": {

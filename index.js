@@ -3263,5 +3263,5 @@ app.use((req, res) => {
 
 server.listen(PORT, () => {
   const protocol = server instanceof https.Server ? 'https' : 'http';
-  console.log(`🌟 Controller v2.13.0 running at ${protocol}://localhost:${PORT}`);
+  console.log(`🌟 Controller v2.13.1 running at ${protocol}://localhost:${PORT}`);
 });

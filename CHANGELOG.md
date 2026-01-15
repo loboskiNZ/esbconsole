@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.13.1] - 2026-01-15
+### Added
+- **Browser Memory Optimization**:
+    - **View Offloading**: The heavy 32-channel mixer console now completely unmounts when management overlays (Files, Setlist) are active, reclaiming significant memory.
+    - **Meter Suspension**: Throttled high-frequency VU meter updates while overlays are open to reduce CPU pressure.
+    - **View Persistence**: The app now remembers the active view across refreshes, avoiding mixer reloads.
+- **Bugfixes**:
+    - **Musician Chart Viewer**: Resolved a bug where the inline chart viewer in the setlist failed to resolve roles or upload new files correctly.
+
 ## [2.13.0] - 2026-01-15
 ### Added
 - **Autonomous Shadow Learning (Final)**:

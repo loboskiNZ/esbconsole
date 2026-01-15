@@ -229,31 +229,41 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
 
     // Handlers
     const handleViewChart = (songId) => {
-         // Determine URL. Assuming /api/charts/:songId/default for now or derived.
-         // Actually, let's just assume we can fetch it or we assume a standard path.
-         // For now, let's point to the API that serves it.
-         // If we don't know the file extension, we might need to check.
-         // But for the viewer, let's assume we try a common one or the API handles it.
-         // Revised: We'll use a generic "file existence" check or just try to load.
-         // Let's assume user role 'musician' for now.
-         setViewingChart({ url: `/api/charts/${songId}/musician`, songId });
+         const role = user.role ? user.role.replace(/[^a-z0-9]/gi, '_') : 'musician';
+         const busId = user.mixBusId;
+         const chId = user.linkedChannels?.[0];
+         
+         const url = `/api/charts/${songId}/${role}?busId=${busId}&channelId=${chId}&t=${Date.now()}`;
+         setViewingChart({ url, songId });
     };
 
     const handleUpload = async (e, songId) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        const inputChannel = user.linkedChannels?.[0];
+        if (!inputChannel) {
+            alert("Error: You have no linked channels.");
+            return;
+        }
+
         const formData = new FormData();
-        formData.append('file', file);
         formData.append('songId', songId);
-        formData.append('role', 'musician'); // Hardcoded role for now
+        formData.append('inputChannel', inputChannel);
+        formData.append('monitorBus', user.mixBusId);
+        
+        // Pass 'role' for filename generation
+        const uploadRole = user.role || `channel_${inputChannel}`;
+        formData.append('role', uploadRole);
+        
+        formData.append('chart', file); // Use 'chart' field name to match backend
 
         try {
-            await axios.post('/api/upload-chart', formData, {
+            await axios.post('/api/charts/assign', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             // Refresh chart view
-            setViewingChart({ url: `/api/charts/${songId}/musician?t=${Date.now()}`, songId });
+            handleViewChart(songId);
         } catch (err) {
             console.error("Upload failed", err);
             alert("Failed to upload chart");
