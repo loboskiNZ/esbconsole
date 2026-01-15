@@ -867,11 +867,29 @@ const broadcastAbletonTime = (force = false) => {
     // NEW: Get duration (Y) from Setlist Manager metadata
     let totalBars = 0;
     const activePart = setlistManager.getActivePartMetadata();
+    
     if (activePart && activePart.bars > 0) {
         totalBars = activePart.bars;
     } else if (sceneDurationBeats > 0) {
         // Fallback to Ableton's reported duration if metadata is missing
         totalBars = Math.ceil(sceneDurationBeats / signature_num);
+        
+        // --- SHADOW LEARNING ---
+        // If in Learn Mode and we just calculated a valid duration, save it to metadata
+        if (setlistManager.runtime.learnMode && totalBars > 0 && activePart && activePart.bars === 0) {
+             console.log(`🧠 Learn Mode: Auto-Populating Bars (${totalBars}) for current Cue`);
+             const currentSongId = setlistManager.runtime.activeSongId;
+             const currentPartIdx = setlistManager.runtime.activePartIndex;
+             if (currentSongId && currentPartIdx !== null) {
+                 const song = setlistManager.data.songs[currentSongId];
+                 if (song && song.cues) {
+                     const newCues = [...song.cues];
+                     newCues[currentPartIdx] = { ...newCues[currentPartIdx], bars: totalBars };
+                     // We use updateSong which handles the broadcast and persistence
+                     setlistManager.updateSong(currentSongId, { cues: newCues });
+                 }
+             }
+        }
     }
 
     io.emit('ableton_time', { 
