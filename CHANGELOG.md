@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.2] - 2026-01-15
+### Added
+- **Musician Proactive Cues**:
+    - **Visual Count-in**: Implemented a beat-synced countdown (e.g. 8...7...6...) that appears exactly 2 bars before a cue ends.
+    - **Rhythmic Pulse**: The "Next Cue" now pulses Amber in time with Ableton's heartbeat to provide a peripheral visual warning.
+    - **Dynamic Calculation**: The count-in automatically adapts to the song's Time Signature (4/4, 6/8, etc.) received from Ableton.
+
 ## [2.13.1] - 2026-01-15
 ### Added
 - **Browser Memory Optimization**:

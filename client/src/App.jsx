@@ -820,7 +820,7 @@ function AppContent() {
                     
                     {/* TITLE ROW */}
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.13.1</span></h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.13.2</span></h1>
                     </div>
                     
                     {/* NAVIGATION ROW (Under Title) */}
@@ -2237,7 +2237,7 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.13.1</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.13.2</div>
       </div>
       
       {activeView === 'files' && <SharePointBrowser onClose={() => setActiveView(null)} />}

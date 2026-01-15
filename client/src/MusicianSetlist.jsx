@@ -1,6 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, X, ChevronDown, ChevronRight, Music } from 'lucide-react';
+import { FileText, Upload, X, ChevronDown, ChevronRight, Music, Clock } from 'lucide-react';
 import axios from 'axios';
+
+const PulseStyle = () => (
+    <style>{`
+        @keyframes pulse-amber {
+            0% { background-color: rgba(255, 170, 0, 0.1); box-shadow: 0 0 5px rgba(255, 170, 0, 0.2); }
+            50% { background-color: rgba(255, 170, 0, 0.4); box-shadow: 0 0 15px rgba(255, 170, 0, 0.6); }
+            100% { background-color: rgba(255, 170, 0, 0.1); box-shadow: 0 0 5px rgba(255, 170, 0, 0.2); }
+        }
+        .pulse-warning {
+            animation: pulse-amber 0.5s infinite;
+            border: 1px solid #ffaa00 !important;
+            color: #ffaa00 !important;
+        }
+    `}</style>
+);
 
 // Responsive Helper
 const useIsMobile = () => {
@@ -274,6 +289,7 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
 
     // Listen for Ableton Time
     const [abletonTime, setAbletonTime] = useState(null);
+    const [approachState, setApproachState] = useState({ isApproaching: false, beatsRemaining: null });
 
     useEffect(() => {
         if (!socket) return;
@@ -284,6 +300,7 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
              
              if (relativeBar === undefined) return;
 
+             // 1. Basic State
              setAbletonTime({
                  bar: relativeBar,
                  beat: relativeBeat,
@@ -292,6 +309,22 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
                  formatted: totalBars > 0 ? `Bar ${relativeBar} of ${totalBars}` : `Bar ${relativeBar}.${relativeBeat}`,
                  isDownbeat: relativeBeat === 1
              });
+
+             // 2. Proactive Cue Logic (2-Bar Warning)
+             if (totalBars > 0 && relativeBar > (totalBars - 2)) {
+                 // We are in the last 2 bars (e.g. Bar 7 or 8 of 8)
+                 const sigNum = signature?.num || 4;
+                 const globalBeatInSong = ((relativeBar - 1) * sigNum) + relativeBeat;
+                 const totalBeatsInSong = totalBars * sigNum;
+                 const remaining = totalBeatsInSong - globalBeatInSong + 1; // +1 because we are ON the current beat
+                 
+                 setApproachState({ 
+                     isApproaching: true, 
+                     beatsRemaining: remaining > 0 ? remaining : 0 
+                 });
+             } else {
+                 setApproachState({ isApproaching: false, beatsRemaining: null });
+             }
         };
 
         socket.on('ableton_time', onAbletonTime);
@@ -332,6 +365,7 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
 
         return (
             <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow:'hidden' }}>
+                <PulseStyle />
                 {/* Global Header */}
                 <div style={{ padding: '20px 30px', borderBottom: '1px solid #333', background: '#111', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
                     <div>
@@ -359,12 +393,33 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
 
                     {/* NEXT INDICATOR */}
                     {nextLabel && (
-                        <div style={{textAlign:'right', opacity:0.8}}>
-                            <div style={{fontSize:'0.8em', color: nextType === 'CUE' ? '#00bb00' : '#888', textTransform:'uppercase', letterSpacing:'1px', fontWeight:'bold'}}>
+                        <div className={approachState.isApproaching ? "pulse-warning" : ""} style={{
+                            textAlign: 'right', opacity: 0.8,
+                            padding: '5px 10px', borderRadius: '6px',
+                            transition: 'all 0.1s'
+                        }}>
+                            <div style={{
+                                fontSize: '0.8em', 
+                                color: approachState.isApproaching ? '#ffaa00' : (nextType === 'CUE' ? '#00bb00' : '#888'), 
+                                textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 'bold',
+                                display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px'
+                            }}>
+                                {approachState.isApproaching && <Clock size={14} />}
                                 {nextType === 'CUE' ? 'Next Cue' : 'Up Next'}
                             </div>
-                            <div style={{fontSize:'1.2em', color:'#fff', fontWeight:'bold'}}>
-                                {nextLabel}
+                            
+                            <div style={{display:'flex', alignItems:'baseline', justifyContent:'flex-end', gap:'10px'}}>
+                                <div style={{fontSize: '1.2em', color: '#fff', fontWeight: 'bold'}}>
+                                    {nextLabel}
+                                </div>
+                                {approachState.isApproaching && (
+                                    <div style={{
+                                        fontSize: '1.5em', fontWeight: 'bold', color: '#ffaa00',
+                                        fontFamily: 'monospace'
+                                    }}>
+                                        {approachState.beatsRemaining}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
