@@ -30,47 +30,66 @@
         {
           "name": "Intro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 13
         },
         {
           "name": "chorus1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "verse1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "Chorus2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "verse2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "chorus3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "bridge",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 4
         },
         {
           "name": "pregones",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "outro  chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
+        },
+        {
+          "name": "Cue 10",
+          "type": "auto",
+          "bars": 7
+        },
+        {
+          "name": "Cue 11",
+          "type": "auto",
+          "bars": 2
         }
       ],
       "charts": {},
@@ -307,62 +326,74 @@
         {
           "name": "Intro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 12
         },
         {
           "name": "Verse1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Chorus1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 4
         },
         {
           "name": "Verse2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Chorus2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Verse3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "Chorus3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Verse4",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "La luna",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Bridge",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "Pregones",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 4
         },
         {
           "name": "Outro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 10
         }
       ],
       "charts": {},
@@ -483,57 +514,68 @@
         {
           "name": "Intro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "chorus1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 20
         },
         {
           "name": "verse1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
-          "name": "bridge",
+          "name": "chorus2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 4
         },
         {
-          "name": "pregones",
+          "name": "verse2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "chorus3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "verse3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "chorus4",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 4
         },
         {
           "name": "verse4",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "chorus 5",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 12
         },
         {
           "name": "claps",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 1
         },
         {
           "name": "piano",
@@ -543,17 +585,20 @@
         {
           "name": "build",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 8
         },
         {
           "name": "pregones",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 20
         },
         {
           "name": "outro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 11
         }
       ],
       "charts": {},

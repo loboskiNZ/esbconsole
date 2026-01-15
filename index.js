@@ -843,15 +843,57 @@ let sceneStartBeats = 0; // The Global Beats when the current scene started
 let sceneDurationBeats = 0; // Length of current scene in beats (from M4L)
 let signature_num = 4;
 let signature_den = 4;
+let lastCueStartBeats = 0; // The Global Beats when the previous cue started (for measurement)
+let lastCueSongId = null;
+let lastCuePartIdx = null;
+
+const handleCueChange = (songId, partIdx) => {
+    // 🧠 Guard: Only process if the cue or song actually changed
+    // This prevents redundant MIDI CC messages from resetting the clock mid-cue.
+    if (songId === lastCueSongId && partIdx === lastCuePartIdx) {
+        // Redundant trigger (Ableton MIDI chatter) - Ignore silently to keep UI clean
+        // We do NOT broadcast a warning here as it's common in MIDI workflows.
+        broadcastAbletonTime(true);
+        return;
+    }
+
+    // 🧠 SHADOW LEARNING: Measurement Engine
+    // MEGA TRACE: Log all variables for debugging
+    console.log(`📏 MEGA TRACE: Song=${songId}, Cue=${partIdx}, LearnMode=${setlistManager.runtime.learnMode}, LastStart=${lastCueStartBeats}, LastSong=${lastCueSongId}, LastPart=${lastCuePartIdx}, CurrentBeats=${lastAbletonGlobalBeats}`);
+
+    if (setlistManager.runtime.learnMode && lastCueStartBeats >= 0 && lastCueSongId && lastCuePartIdx !== null) {
+        const durationBeats = lastAbletonGlobalBeats - lastCueStartBeats;
+        const measuredBars = Math.round(durationBeats / signature_num);
+        
+        console.log(`📏 Measurement Success: Delta=${durationBeats}, Bars=${measuredBars}, Signum=${signature_num}`);
+
+        if (measuredBars > 0) {
+            setlistManager.recordLearnedBars(lastCueSongId, lastCuePartIdx, measuredBars);
+        } else {
+            console.log(`📏 Measurement Skipped: measuredBars <= 0`);
+        }
+    } else {
+        console.log(`📏 Measurement Logic Skipped: Condition not met.`);
+    }
+
+    // Record the NEW start point
+    lastCueStartBeats = lastAbletonGlobalBeats;
+    lastCueSongId = songId;
+    lastCuePartIdx = partIdx;
+
+    // Apply the change
+    setlistManager.setActivePart(songId, partIdx);
+    
+    // Sync the counter
+    sceneStartBeats = lastAbletonGlobalBeats;
+    console.log(`🎬 Cue Sync: ${songId} #[${partIdx}] at Beat ${sceneStartBeats}`);
+    broadcastAbletonTime(true);
+};
 
 const resetSceneCounter = () => {
-    // If we're mid-beat, we probably want to sync to the NEXT downbeat
-    // or just use the current total beats if we are confident.
-    // Ableton's /live/beat is 0-indexed total beats.
+    // Force reset counter to current total transport time
     sceneStartBeats = lastAbletonGlobalBeats;
-    console.log(`🎬 Scene Counter Reset: Start Beats ${sceneStartBeats}`);
-    
-    // Force immediate broadcast
+    console.log(`🎬 GLOBAL Reset: Start Beats ${sceneStartBeats}`);
     broadcastAbletonTime(true);
 };
 
@@ -871,25 +913,8 @@ const broadcastAbletonTime = (force = false) => {
     if (activePart && activePart.bars > 0) {
         totalBars = activePart.bars;
     } else if (sceneDurationBeats > 0) {
-        // Fallback to Ableton's reported duration if metadata is missing
+        // Fallback to Ableton's reported duration
         totalBars = Math.ceil(sceneDurationBeats / signature_num);
-        
-        // --- SHADOW LEARNING ---
-        // If in Learn Mode and we just calculated a valid duration, save it to metadata
-        if (setlistManager.runtime.learnMode && totalBars > 0 && activePart && activePart.bars === 0) {
-             console.log(`🧠 Learn Mode: Auto-Populating Bars (${totalBars}) for current Cue`);
-             const currentSongId = setlistManager.runtime.activeSongId;
-             const currentPartIdx = setlistManager.runtime.activePartIndex;
-             if (currentSongId && currentPartIdx !== null) {
-                 const song = setlistManager.data.songs[currentSongId];
-                 if (song && song.cues) {
-                     const newCues = [...song.cues];
-                     newCues[currentPartIdx] = { ...newCues[currentPartIdx], bars: totalBars };
-                     // We use updateSong which handles the broadcast and persistence
-                     setlistManager.updateSong(currentSongId, { cues: newCues });
-                 }
-             }
-        }
     }
 
     io.emit('ableton_time', { 
@@ -913,7 +938,7 @@ const handleAbletonTime = (message) => {
     let val = parseFloat(message.args[0]);
     if (isNaN(val)) return;
 
-    if (message.address === '/live/beat' || message.address === '/live/time') {
+    if (message.address === '/live/beat' || message.address === '/live/time' || message.address === '/live/beat_count') {
         lastAbletonGlobalBeats = val;
     } else if (message.address === '/live/bar') {
         // If they send Bar, convert to Beats based on current signature
@@ -926,7 +951,8 @@ const handleAbletonTime = (message) => {
 const handleAbletonScene = (message) => {
     const sceneIndex = message.args[0];
     if (sceneIndex >= 0) {
-        console.log(`🎬 Ableton Scene Fired: ${sceneIndex}`);
+        console.log(`🎬 Ableton Manual Reset (Scene ${sceneIndex})`);
+        // Only reset global count if manually requested via /live/scene (the red button)
         resetSceneCounter();
     }
 };
@@ -950,6 +976,7 @@ const handleAbletonConfig = (message) => {
 
 osc.on('/live/beat', handleAbletonTime);
 osc.on('/live/time', handleAbletonTime);
+osc.on('/live/beat_count', handleAbletonTime);
 osc.on('/live/bar', handleAbletonTime);
 osc.on('/live/scene', handleAbletonScene);
 osc.on('/live/signature_num', handleAbletonConfig);
@@ -1551,11 +1578,15 @@ if (foundInputName) {
         }
     });
 
-    // LISTENER: MIDI PROGRAM CHANGE
+    // LISTENER: MIDI PROGRAM CHANGE (Song Select)
     input.on('program', (msg) => {
-        console.log(`🎹 MIDI Program Change: ${msg.number}`);
+        console.log(`🎹 MIDI PC (Song ${msg.number + 1})`);
         setlistManager.setActiveIndex(msg.number);
-        resetSceneCounter(); // Sync counter on song change
+        
+        // After setActiveIndex, we know the new activeSongId and activePartIndex (usually 0)
+        const songId = setlistManager.runtime.activeSongId;
+        const partIdx = setlistManager.runtime.activePartIndex || 0;
+        if (songId) handleCueChange(songId, partIdx);
     });
 
 } else {
@@ -1679,8 +1710,7 @@ if (midiOutput && foundName) {
                 
                 const currentSongId = setlistManager.runtime.activeSongId;
                 if (currentSongId) {
-                     setlistManager.setActivePart(currentSongId, cueIdx);
-                     resetSceneCounter(); // Sync counter on cue change
+                    handleCueChange(currentSongId, cueIdx);
                 }
             }
         });
@@ -3041,9 +3071,23 @@ setlistManager.init(io);
 
 io.on('connection', (socket) => {
   console.log('⚡ Client Connected:', socket.id);
+  setlistManager.broadcastLearnStatus(); // Send initial buffer status
 
   socket.on('toggle_learn_mode', (data) => {
+      // 🧠 SHADOW LEARNING: Final Cue Sync
+      // Record the duration of the very last cue before turning learn mode off.
+      if (!data.enabled && setlistManager.runtime.learnMode && lastCueStartBeats >= 0) {
+          const durationBeats = lastAbletonGlobalBeats - lastCueStartBeats;
+          const measuredBars = Math.round(durationBeats / signature_num);
+          if (measuredBars > 0 && lastCueSongId && lastCuePartIdx !== null) {
+              setlistManager.recordLearnedBars(lastCueSongId, lastCuePartIdx, measuredBars);
+          }
+      }
       setlistManager.setLearnMode(data.enabled);
+  });
+
+  socket.on('commit_learn', () => {
+      setlistManager.applyLearnedBars();
   });
 
   socket.on('reset_to_global', () => {
@@ -3219,5 +3263,5 @@ app.use((req, res) => {
 
 server.listen(PORT, () => {
   const protocol = server instanceof https.Server ? 'https' : 'http';
-  console.log(`🌟 Controller v2.12.2 running at ${protocol}://localhost:${PORT}`);
+  console.log(`🌟 Controller v2.13.0 running at ${protocol}://localhost:${PORT}`);
 });

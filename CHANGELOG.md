@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.13.0] - 2026-01-15
+### Added
+- **Autonomous Shadow Learning (Final)**:
+    - **Buffered Measurement Engine**: Cue durations are now collected in a memory buffer during performance, ensuring mathematical precision regardless of network latency.
+    - **Silent Intelligence**: Implemented a "Duplicate Guard" that silently ignores redundant MIDI triggers (Ableton chatter) without resetting the measurement clock.
+    - **Commit Workflow**: Added a visible "LEARNED CUES" status badge and a manual **[COMMIT ALL]** button to the Admin UI header.
+    - **Final Cue Capture**: The server now automatically records the duration of the very last cue when LEARN MODE is toggled OFF.
+- **UI Refinement**:
+    - **Collapsible Assignments**: The "BAND ASSIGNMENTS" section can now be collapsed horizontally, giving the Cues and Setlist full screen width for complex shows.
+
 ## [2.12.2] - 2026-01-15
 ### Added
 - **UI-Sync Engine**:

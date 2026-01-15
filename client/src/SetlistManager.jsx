@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 
 export default function SetlistManager({ onClose, onUpdate, config, x32State, socket }) {
     const [data, setData] = useState(null);
@@ -10,6 +10,9 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
     const [flashIndex, setFlashIndex] = useState(null); // For "Next Cue" warning
     const [abletonTime, setAbletonTime] = useState(null);
     const [learnMode, setLearnMode] = useState(false);
+    const [assignmentsCollapsed, setAssignmentsCollapsed] = useState(true);
+    const [warning, setWarning] = useState(null);
+    const [learnStatus, setLearnStatus] = useState({ hasData: false, songCount: 0, totalCues: 0 });
 
     useEffect(() => {
         fetchData();
@@ -35,6 +38,15 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
             socket.on('setlist_active', handleActive);
             socket.on('setlist_flash', handleFlash);
             socket.on('learn_mode_changed', (d) => setLearnMode(d.enabled));
+            
+            socket.on('setlist_warning', (d) => {
+                setWarning(d.message);
+                setTimeout(() => setWarning(null), 3000);
+            });
+
+            socket.on('learn_status', (d) => {
+                setLearnStatus(d);
+            });
 
             const onAbletonTime = (data) => {
                 const { relativeBar, relativeBeat, totalBars } = data;
@@ -46,10 +58,24 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
             };
             socket.on('ableton_time', onAbletonTime);
 
+            socket.on('song_updated', (d) => {
+                setData(prev => {
+                    if (!prev) return prev;
+                    return {
+                        ...prev,
+                        songs: {
+                            ...prev.songs,
+                            [d.id]: d.song
+                        }
+                    };
+                });
+            });
+
             return () => {
                 socket.off('setlist_active', handleActive);
                 socket.off('setlist_flash', handleFlash);
                 socket.off('ableton_time', onAbletonTime);
+                socket.off('song_updated');
             };
         }
     }, [socket]);
@@ -217,6 +243,32 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                              </div>
                         )}
                     </div>
+
+                    {/* COMMIT LEARNED DATA */}
+                    {learnStatus.hasData && (
+                        <div style={{
+                            display:'flex', alignItems:'center', gap:'10px', 
+                            background:'#004400', padding:'4px 12px', borderRadius:'20px',
+                            border:'1px solid #00ff00'
+                        }}>
+                            <span style={{fontSize:'0.75em', fontWeight:'bold', color:'#00ff00'}}>
+                                LEARNED: {learnStatus.totalCues} CUES ({learnStatus.songCount} SONGS)
+                            </span>
+                            <button 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if(confirm(`Commit ${learnStatus.totalCues} cue durations to setlist?`)) {
+                                        socket.emit('commit_learn');
+                                    }
+                                }}
+                                style={{
+                                    background:'#00cc00', color:'black', border:'none', 
+                                    padding:'2px 10px', borderRadius:'4px', cursor:'pointer',
+                                    fontSize:'0.75em', fontWeight:'bold'
+                                }}
+                            >COMMIT ALL</button>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{display:'flex', gap:'10px'}}>
@@ -276,6 +328,17 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                     }}>CLOSE</button>
                 </div>
             </div>
+
+            {/* WARNING BANNER */}
+            {warning && (
+                <div style={{
+                    background: '#aa6600', color: 'white', padding: '10px 20px', 
+                    textAlign: 'center', fontSize: '0.9em', fontWeight: 'bold',
+                    borderBottom: '1px solid #ffaa00'
+                }}>
+                    ⚠️ {warning}
+                </div>
+            )}
 
             {/* BODY */}
             <div style={{flex: 1, display: 'flex', overflow: 'hidden'}}>
@@ -516,11 +579,49 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                     )}
                 </div>
 
-                             {/* RIGHT: CHART & MUSICIAN ASSIGNMENTS */}
-                <div style={{width: '600px', padding: '20px', overflowY: 'auto', background:'#2a2a2a'}}>
+                {/* RIGHT: CHART & MUSICIAN ASSIGNMENTS */}
+                <div style={{
+                    width: assignmentsCollapsed ? '40px' : '600px', 
+                    transition: 'width 0.2s ease-in-out',
+                    padding: assignmentsCollapsed ? '10px 5px' : '20px', 
+                    overflowX: 'hidden',
+                    overflowY: 'auto', 
+                    background:'#2a2a2a',
+                    borderLeft: '1px solid #333',
+                    display:'flex',
+                    flexDirection:'column'
+                }}>
                     {selectedSongId ? (
                         <>
-                            <h3 style={{marginTop:0, borderBottom:'1px solid #444', paddingBottom:'5px'}}>BAND ASSIGNMENTS</h3>
+                            <div 
+                                onClick={() => setAssignmentsCollapsed(!assignmentsCollapsed)}
+                                style={{
+                                    display:'flex', 
+                                    flexDirection: assignmentsCollapsed ? 'column' : 'row',
+                                    alignItems:'center', 
+                                    justifyContent:'space-between', 
+                                    cursor:'pointer', 
+                                    borderBottom: assignmentsCollapsed ? 'none' : '1px solid #444', 
+                                    paddingBottom: assignmentsCollapsed ? '0' : '5px',
+                                    marginBottom: assignmentsCollapsed ? '10px' : '15px',
+                                    gap: '10px'
+                                }}
+                                title={assignmentsCollapsed ? "Expand Assignments" : "Collapse Assignments"}
+                            >
+                                <h3 style={{
+                                    margin:0, 
+                                    fontSize: assignmentsCollapsed ? '0.7em' : '1.17em',
+                                    writingMode: assignmentsCollapsed ? 'vertical-rl' : 'horizontal-tb',
+                                    whiteSpace: 'nowrap',
+                                    color: '#888'
+                                }}>
+                                    {assignmentsCollapsed ? 'ASSIGNMENTS' : 'BAND ASSIGNMENTS'}
+                                </h3>
+                                {assignmentsCollapsed ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+                            </div>
+                            
+                            {!assignmentsCollapsed && (
+                                <div style={{opacity: 1, transition: 'opacity 0.2s'}}>
                             
                             {/* NEW ASSIGNMENT FORM */}
                             <div style={{background:'#222', padding:'15px', borderRadius:'8px', marginBottom:'20px', border:'1px solid #444'}}>
@@ -753,20 +854,19 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                                         </div>
                                     );
                                 })}
-                                {(!selectedSong.chartAssignments || selectedSong.chartAssignments.length === 0) && (
-                                    <div style={{textAlign:'center', color:'#555', padding:'20px'}}>No assignments yet.</div>
-                                )}
                             </div>
-                        </>
-                    ) : (
-                        <div style={{display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color:'#666'}}>
-                            Select a song to manage assignments
                         </div>
                     )}
+                </>
+            ) : (
+                <div style={{display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color:'#666'}}>
+                    Select a song to manage assignments
                 </div>
-            </div>
+            )}
         </div>
-    );
-};
+      </div>
+    </div>
+  );
+}
 
 

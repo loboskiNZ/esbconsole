@@ -19,7 +19,8 @@ class SetlistManager {
             activeSongId: null,
             activePartIndex: null,
             learnMode: false,
-            flashIndex: null
+            flashIndex: null,
+            learnedBuffer: {} // { songId: { partIdx: bars } }
         };
         this.io = null; // Socket IO instance
         this.load();
@@ -85,6 +86,7 @@ class SetlistManager {
         }
         
         this.save();
+        if (this.io) this.io.emit('song_updated', { id, song: this.data.songs[id] });
         return this.data.songs[id];
     }
 
@@ -172,7 +174,64 @@ class SetlistManager {
     setLearnMode(enabled) {
         this.runtime.learnMode = !!enabled;
         console.log(`🧠 Learn Mode is now: ${this.runtime.learnMode ? 'ON' : 'OFF'}`);
-        if (this.io) this.io.emit('learn_mode_changed', { enabled: this.runtime.learnMode });
+        
+        if (this.io) {
+            this.io.emit('learn_mode_changed', { enabled: this.runtime.learnMode });
+            this.broadcastLearnStatus(); // Refresh status on toggle
+        }
+    }
+
+    recordLearnedBars(songId, partIdx, bars) {
+        if (!this.runtime.learnedBuffer[songId]) this.runtime.learnedBuffer[songId] = {};
+        this.runtime.learnedBuffer[songId][partIdx] = bars;
+        console.log(`🧠 Buffered Learning: ${songId} #[${partIdx}] -> ${bars} bars`);
+        this.broadcastLearnStatus();
+    }
+
+    broadcastLearnStatus() {
+        if (!this.io) return;
+        const songCount = Object.keys(this.runtime.learnedBuffer).length;
+        let totalCues = 0;
+        Object.values(this.runtime.learnedBuffer).forEach(songBuf => {
+            totalCues += Object.keys(songBuf).length;
+        });
+        this.io.emit('learn_status', { 
+            hasData: songCount > 0,
+            songCount,
+            totalCues 
+        });
+    }
+
+    applyLearnedBars() {
+        const songsInPool = Object.keys(this.runtime.learnedBuffer);
+        if (songsInPool.length === 0) return;
+
+        console.log(`🧠 Committing Buffered Learning for ${songsInPool.length} songs...`);
+        
+        for (const [songId, cuesMap] of Object.entries(this.runtime.learnedBuffer)) {
+            const song = this.data.songs[songId];
+            if (!song || !song.cues) continue;
+
+            let songUpdated = false;
+            const newCues = [...song.cues];
+            
+            for (const [partIdx, bars] of Object.entries(cuesMap)) {
+                const idx = parseInt(partIdx);
+                // OVERWRITE: As requested, learning now replaces existing data
+                if (newCues[idx]) {
+                    newCues[idx] = { ...newCues[idx], bars };
+                    songUpdated = true;
+                }
+            }
+            
+            if (songUpdated) {
+                console.log(`✅ Learned ${songId} - Applying data.`);
+                this.updateSong(songId, { cues: newCues });
+            }
+        }
+        
+        // Clear buffer after commit
+        this.runtime.learnedBuffer = {};
     }
 
     getActivePartMetadata() {
