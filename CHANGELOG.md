@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.13.3] - 2026-01-15 (BETA START)
+### Added
+- **Chart Snippets (Beta)**:
+    - Initialized beta phase for "Digital Scissors" feature.
+    - Preparing to implement PDF rendering and cropping tools.
+
 ## [2.13.2] - 2026-01-15
 ### Added
 - **Musician Proactive Cues**:
