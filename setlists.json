@@ -8,6 +8,7 @@
         "1768048124047",
         "1768048187008",
         "1768048199423",
+        "1768438486355",
         "1768048250223",
         "1768048286266",
         "1768048404215",
@@ -309,22 +310,47 @@
           "data": ""
         },
         {
-          "name": "Verse",
+          "name": "Verse1",
           "type": "preset",
           "data": ""
         },
         {
-          "name": "Chorus",
+          "name": "Chorus1",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Verse2",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Chorus2",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Verse3",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Chorus3",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Verse4",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "La luna",
           "type": "preset",
           "data": ""
         },
         {
           "name": "Bridge",
-          "type": "preset",
-          "data": ""
-        },
-        {
-          "name": "Improv",
           "type": "preset",
           "data": ""
         },
@@ -449,9 +475,9 @@
       ]
     },
     "1768048199423": {
-      "title": "Nube Blanca - Seeing red",
+      "title": "Nube Blanca",
       "artist": "Ed and the Shadow Boys",
-      "bpm": 120,
+      "bpm": 110,
       "id": "1768048199423",
       "cues": [
         {
@@ -460,17 +486,62 @@
           "data": ""
         },
         {
-          "name": "verse",
+          "name": "chorus1",
           "type": "preset",
           "data": ""
         },
         {
-          "name": "chorus",
+          "name": "verse1",
           "type": "preset",
           "data": ""
         },
         {
           "name": "bridge",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "pregones",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "chorus3",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "verse3",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "chorus4",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "verse4",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "chorus 5",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "claps",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "piano",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "build",
           "type": "preset",
           "data": ""
         },
@@ -1133,6 +1204,35 @@
       "cues": [],
       "charts": {},
       "notes": "la morena: not there yet, \n\nchorus:\nmira esa morena como baila tan bonita\ncuando la veo el 'ambre se me quita (x2)"
+    },
+    "1768438486355": {
+      "title": "seeing red",
+      "artist": "my babny",
+      "bpm": 120,
+      "id": "1768438486355",
+      "cues": [
+        {
+          "name": "Intro",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Verse",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Bridge",
+          "type": "preset",
+          "data": ""
+        },
+        {
+          "name": "Chorus",
+          "type": "preset",
+          "data": ""
+        }
+      ],
+      "charts": {}
     }
   },
   "musicianRouting": {

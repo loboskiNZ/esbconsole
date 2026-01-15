@@ -17,6 +17,8 @@ class SetlistManager {
         // Runtime State (Not Saved)
         this.runtime = {
             activeSongId: null,
+            activePartIndex: null,
+            learnMode: false,
             flashIndex: null
         };
         this.io = null; // Socket IO instance
@@ -146,10 +148,18 @@ class SetlistManager {
 
     // Select Song by ID
     setActiveSong(songId) {
-        // Validation
-        if (songId && !this.data.songs[songId]) return false;
+        // Auto-Learn if missing
+        if (songId && !this.data.songs[songId]) {
+            if (this.runtime.learnMode) {
+                console.log(`🧠 Learn Mode: Creating Song ${songId}`);
+                this.createSong({ id: songId, title: `New Song ${songId}` });
+            } else {
+                return false;
+            }
+        }
         
         this.runtime.activeSongId = songId;
+        this.runtime.activePartIndex = 0; // Reset to first part on song change
         
         // Broadcast
         if (this.io) {
@@ -159,24 +169,62 @@ class SetlistManager {
         return true;
     }
 
+    setLearnMode(enabled) {
+        this.runtime.learnMode = !!enabled;
+        console.log(`🧠 Learn Mode is now: ${this.runtime.learnMode ? 'ON' : 'OFF'}`);
+        if (this.io) this.io.emit('learn_mode_changed', { enabled: this.runtime.learnMode });
+    }
+
+    getActivePartMetadata() {
+        const song = this.data.songs[this.runtime.activeSongId];
+        if (!song || this.runtime.activePartIndex === null) return null;
+        
+        const part = song.cues && song.cues[this.runtime.activePartIndex];
+        return part || null;
+    }
+
     // Select Specific Part (Cue)
     setActivePart(songId, partIndex) {
-        if (!this.data.songs[songId]) return false;
-        
-        const partName = this.data.songs[songId].parts && this.data.songs[songId].parts[partIndex] 
-            ? this.data.songs[songId].parts[partIndex].name 
-            : `Cue ${partIndex + 1}`;
+        // Ensure song is active
+        if (this.runtime.activeSongId !== songId) {
+            this.setActiveSong(songId);
+        }
+
+        const song = this.data.songs[songId];
+        if (!song) return false;
+
+        // Auto-Learn Cue if missing
+        if (!song.cues) song.cues = [];
+        if (partIndex >= song.cues.length) {
+            if (this.runtime.learnMode) {
+                console.log(`🧠 Learn Mode: Creating Cue ${partIndex + 1} for Song ${songId}`);
+                const newCues = [...song.cues];
+                // Fill gaps
+                while (newCues.length <= partIndex) {
+                    newCues.push({ name: `Cue ${newCues.length + 1}`, type: 'auto', bars: 0 });
+                }
+                this.updateSong(songId, { cues: newCues });
+            } else {
+                return false;
+            }
+        }
+
+        const part = song.cues[partIndex];
+        const partName = part ? part.name : `Cue ${partIndex + 1}`;
+
+        this.runtime.activePartIndex = partIndex;
 
         const payload = {
             songId,
             partIndex,
-            partName
+            partName,
+            bars: part ? part.bars : 0
         };
 
-        // Broadcast to 'active_part' channel which clients already listen to
+        // Broadcast to 'active_part' channel
         if (this.io) {
             this.io.emit('active_part', payload);
-            console.log(`🎵 Setlist Active Part: ${songId} / ${partName}`);
+            console.log(`🎵 Setlist Active Part: ${songId} / ${partName} (${payload.bars} bars)`);
         }
         return true;
     }

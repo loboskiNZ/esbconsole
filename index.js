@@ -773,7 +773,7 @@ app.post('/api/scenes/load', (req, res) => {
     });
 });
 
-// Static Files lasth default empty state
+// Static Files last default empty state
 for (let i = 1; i <= 32; i++) {
     x32State[String(i)] = { 
         level: 0, 
@@ -833,6 +833,118 @@ const osc = new OSC({
         open: { host: '0.0.0.0', port: 10023 }
     })
 });
+
+// --- ABLETON BAR/BEAT LISTENER ---
+// --- ABLETON BAR/BEAT LISTENER ---
+let lastBeatBroadcast = 0;
+const BEAT_BROADCAST_INTERVAL = 100; // ms
+let lastAbletonGlobalBeats = 0; // Store last received Global Beats
+let sceneStartBeats = 0; // The Global Beats when the current scene started
+let sceneDurationBeats = 0; // Length of current scene in beats (from M4L)
+let signature_num = 4;
+let signature_den = 4;
+
+const resetSceneCounter = () => {
+    // If we're mid-beat, we probably want to sync to the NEXT downbeat
+    // or just use the current total beats if we are confident.
+    // Ableton's /live/beat is 0-indexed total beats.
+    sceneStartBeats = lastAbletonGlobalBeats;
+    console.log(`🎬 Scene Counter Reset: Start Beats ${sceneStartBeats}`);
+    
+    // Force immediate broadcast
+    broadcastAbletonTime(true);
+};
+
+const broadcastAbletonTime = (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastBeatBroadcast < BEAT_BROADCAST_INTERVAL) return;
+
+    // Calculate Relative
+    const relativeBeats = Math.max(0, lastAbletonGlobalBeats - sceneStartBeats);
+    const relBar = Math.floor(relativeBeats / signature_num) + 1;
+    const relBeat = (Math.floor(relativeBeats) % signature_num) + 1;
+    
+    // NEW: Get duration (Y) from Setlist Manager metadata
+    let totalBars = 0;
+    const activePart = setlistManager.getActivePartMetadata();
+    if (activePart && activePart.bars > 0) {
+        totalBars = activePart.bars;
+    } else if (sceneDurationBeats > 0) {
+        // Fallback to Ableton's reported duration if metadata is missing
+        totalBars = Math.ceil(sceneDurationBeats / signature_num);
+    }
+
+    io.emit('ableton_time', { 
+        value: lastAbletonGlobalBeats, 
+        relativeBar: relBar,
+        relativeBeat: relBeat,
+        totalBars: totalBars,
+        signature: { num: signature_num, den: signature_den },
+        formatted: `Bar ${relBar}.${relBeat}` + (totalBars > 0 ? ` of ${totalBars}` : ''),
+        isDownbeat: relBeat === 1,
+        timestamp: now,
+        forceReset: force
+    });
+    lastBeatBroadcast = now;
+};
+
+const handleAbletonTime = (message) => {
+    // DEBUG: Print EVERY incoming /live/ message
+    console.log(`📩 RECEIVED: ${message.address} [${message.args}]`);
+
+    let val = parseFloat(message.args[0]);
+    if (isNaN(val)) return;
+
+    if (message.address === '/live/beat' || message.address === '/live/time') {
+        lastAbletonGlobalBeats = val;
+    } else if (message.address === '/live/bar') {
+        // If they send Bar, convert to Beats based on current signature
+        lastAbletonGlobalBeats = (val - 1) * signature_num; 
+    }
+
+    broadcastAbletonTime();
+};
+
+const handleAbletonScene = (message) => {
+    const sceneIndex = message.args[0];
+    if (sceneIndex >= 0) {
+        console.log(`🎬 Ableton Scene Fired: ${sceneIndex}`);
+        resetSceneCounter();
+    }
+};
+
+const handleAbletonConfig = (message) => {
+    const val = parseInt(message.args[0]);
+    if (isNaN(val)) return;
+
+    if (message.address === '/live/signature_num') {
+        signature_num = val;
+        console.log(`📐 Time Signature Num: ${signature_num}`);
+    } else if (message.address === '/live/signature_den') {
+        signature_den = val;
+        console.log(`📐 Time Signature Den: ${signature_den}`);
+    } else if (message.address === '/live/scene_duration') {
+        sceneDurationBeats = parseFloat(message.args[0]);
+        console.log(`🕒 Scene Duration: ${sceneDurationBeats} beats`);
+    }
+    broadcastAbletonTime(true);
+};
+
+osc.on('/live/beat', handleAbletonTime);
+osc.on('/live/time', handleAbletonTime);
+osc.on('/live/bar', handleAbletonTime);
+osc.on('/live/scene', handleAbletonScene);
+osc.on('/live/signature_num', handleAbletonConfig);
+osc.on('/live/signature_den', handleAbletonConfig);
+osc.on('/live/scene_duration', handleAbletonConfig);
+// Global catch-all for debugging
+osc.on('*', (message) => {
+    if (!message.address.includes('/x32/') && !message.address.includes('/ch/') && !message.address.includes('/meters')) {
+        console.log(`📡 ANY OSC: ${message.address} [${message.args}]`);
+    }
+});
+// ---------------------------------
+
 
 osc.on('open', () => {
     console.log('✅ OSC Port Open');
@@ -1390,6 +1502,9 @@ if (foundInputName) {
             const action = map[msg.note];
             if (lighting[action.fn]) lighting[action.fn]();
             io.emit('scene_change', action.evt);
+            
+            // Trigger Relative Bar Reset
+            if (typeof resetSceneCounter === 'function') resetSceneCounter();
         }
     });
 
@@ -1397,6 +1512,7 @@ if (foundInputName) {
     input.on('program', (msg) => {
         console.log(`🎹 MIDI Program Change: ${msg.number}`);
         setlistManager.setActiveIndex(msg.number);
+        resetSceneCounter(); // Sync counter on song change
     });
 
 } else {
@@ -1459,6 +1575,17 @@ console.log('💡 DMX Lighting Engine Initialized (Silent Mode)');
 //     //     dmxUpdateTimeout = setTimeout(dispatch, 50 - timeSinceLast);
 //     // }
 // });
+    // NOTE: DMX broadcasting is disabled for now.
+    
+    // ----------- ABLETON OSC HANDLERS -----------
+    // (Moved to dedicated listeners)
+    // --------------------------------------------
+
+    // Handle Setlist Commands (Existing)
+    if (typeof address !== 'undefined' && address === '/setlist/select') {
+        // ...
+    }
+
 
 // 4. MIDI Input (Control Listener)
 // Reuse the found MIDI device name from above if possible
@@ -1473,17 +1600,17 @@ if (midiOutput && foundName) {
             if (msg.velocity > 0) {
                 console.log(`🎹 Trigger: ${msg.note}`);
                 switch(msg.note) {
-                    case 10: lighting.play('hell'); break;
-                    case 11: lighting.play('sunshine'); break;
-                    case 12: lighting.play('madness'); break;
-                    case 13: lighting.play('aqua'); break;
-                    case 14: lighting.play('rasta'); break;
-                    case 15: lighting.play('focus'); break;
-                    case 16: lighting.play('focusLeft'); break;
-                    case 17: lighting.play('focusRight'); break;
-                    case 18: lighting.play('police'); break;
-                    case 36: lighting.blackout(); break;
-                    case 0: lighting.blackout(); break;
+                    case 10: lighting.play('hell'); resetSceneCounter(); break;
+                    case 11: lighting.play('sunshine'); resetSceneCounter(); break;
+                    case 12: lighting.play('madness'); resetSceneCounter(); break;
+                    case 13: lighting.play('aqua'); resetSceneCounter(); break;
+                    case 14: lighting.play('rasta'); resetSceneCounter(); break;
+                    case 15: lighting.play('focus'); resetSceneCounter(); break;
+                    case 16: lighting.play('focusLeft'); resetSceneCounter(); break;
+                    case 17: lighting.play('focusRight'); resetSceneCounter(); break;
+                    case 18: lighting.play('police'); resetSceneCounter(); break;
+                    case 36: lighting.blackout(); resetSceneCounter(); break;
+                    case 0: lighting.blackout(); resetSceneCounter(); break;
                     
                     // SOLOS
                     case 70: console.log('🎹 MIDI 70: Drums'); toggleSolo(SOLO_GROUPS.drums, 'drums'); break;
@@ -1510,6 +1637,7 @@ if (midiOutput && foundName) {
                 const currentSongId = setlistManager.runtime.activeSongId;
                 if (currentSongId) {
                      setlistManager.setActivePart(currentSongId, cueIdx);
+                     resetSceneCounter(); // Sync counter on cue change
                 }
             }
         });
@@ -2870,6 +2998,11 @@ setlistManager.init(io);
 
 io.on('connection', (socket) => {
   console.log('⚡ Client Connected:', socket.id);
+
+  socket.on('toggle_learn_mode', (data) => {
+      setlistManager.setLearnMode(data.enabled);
+  });
+
   socket.on('disconnect', () => {
         console.log('🔌 Client Disconnected:', socket.id);
     });
@@ -3037,5 +3170,5 @@ app.use((req, res) => {
 
 server.listen(PORT, () => {
   const protocol = server instanceof https.Server ? 'https' : 'http';
-  console.log(`🌟 Controller Server running at ${protocol}://localhost:${PORT}`);
+  console.log(`🌟 Controller v2.12.2 running at ${protocol}://localhost:${PORT}`);
 });

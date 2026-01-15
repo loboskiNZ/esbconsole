@@ -262,6 +262,35 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
 
     // ... (rest of logic preserved implicitly by removal of this block)
 
+    // Listen for Ableton Time
+    const [abletonTime, setAbletonTime] = useState(null);
+
+    useEffect(() => {
+        if (!socket) return;
+        
+        const onAbletonTime = (data) => {
+             // New Payload: data.relativeBar, data.relativeBeat, data.totalBars, data.signature
+             const { relativeBar, relativeBeat, totalBars, signature } = data;
+             
+             if (relativeBar === undefined) return;
+
+             setAbletonTime({
+                 bar: relativeBar,
+                 beat: relativeBeat,
+                 totalBars: totalBars,
+                 signature: signature,
+                 formatted: totalBars > 0 ? `Bar ${relativeBar} of ${totalBars}` : `Bar ${relativeBar}.${relativeBeat}`,
+                 isDownbeat: relativeBeat === 1
+             });
+        };
+
+        socket.on('ableton_time', onAbletonTime);
+        return () => {
+            socket.off('ableton_time', onAbletonTime);
+        };
+    }, [socket]);
+
+
     // LAYOUT 1: SPLIT VIEW (Desktop/Landscape)
     if (!isMobile) {
         // Fix: songs is an array, not an object/map. Use .find() 
@@ -299,6 +328,25 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
                         <h2 style={{ margin: 0, fontSize: '1.5em' }}>{effectiveSetlist?.name || 'Setlist'} <span style={{fontSize:'0.6em', opacity:0.5}}>({user?.name})</span></h2>
                         <div style={{ fontSize: '0.9em', color: '#666' }}>{sortedSongs.length} Songs</div>
                     </div>
+                    
+                    {/* ABLETON BAR COUNT (CENTER) */}
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        minWidth: '160px', padding: '5px 15px', borderRadius: '8px',
+                        background: (abletonTime && abletonTime.isDownbeat) ? '#222' : 'transparent',
+                        border: (abletonTime && abletonTime.isDownbeat) ? '1px solid #444' : '1px solid transparent',
+                        opacity: abletonTime ? 1 : 0.4
+                    }}>
+                         <div style={{fontSize:'0.8em', color:'#666', textTransform:'uppercase'}}>Ableton Status</div>
+                         <div style={{
+                             fontSize:'1.8em', fontFamily:'monospace', fontWeight:'bold',
+                             color: (abletonTime && abletonTime.isDownbeat) ? '#00ff00' : '#ccc',
+                             whiteSpace: 'nowrap'
+                         }}>
+                             {abletonTime ? abletonTime.formatted : 'WAITING...'}
+                         </div>
+                    </div>
+
                     {/* NEXT INDICATOR */}
                     {nextLabel && (
                         <div style={{textAlign:'right', opacity:0.8}}>
@@ -380,7 +428,17 @@ const MusicianSetlist = ({ user, setlist, socket }) => {
     // LAYOUT 2: ACCORDION (Mobile)
     return (
         <div style={{ padding: '20px', paddingBottom: '100px', color: 'white', overflowY: 'auto' }}>
-            <h2 style={{ marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>Setlist ({user?.name || 'Musician'})</h2>
+             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '20px', borderBottom: '1px solid #333', paddingBottom: '10px' }}>
+                <h2 style={{ margin:0 }}>Setlist ({user?.name || 'Musician'})</h2>
+                {abletonTime && (
+                     <div style={{
+                         fontFamily: 'monospace', fontWeight: 'bold', fontSize: '1.2em',
+                         color: abletonTime.isDownbeat ? '#00ff00' : '#888'
+                     }}>
+                         {abletonTime.formatted}
+                     </div>
+                )}
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {sortedSongs.map((song, index) => {

@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.12.2] - 2026-01-15
+### Added
+- **UI-Sync Engine**:
+    - **Relative Reset**: Every cue/song trigger (MIDI or UI) now perfectly resets the counter to Bar 1.
+    - **Metadata-Driven**: Added "Bars" input to the Admin UI to manually configure song part lengths (Y in 'Bar X of Y').
+    - **SYNC Button**: Added a manual sync button to the Admin title for mid-song realignment.
+- **Learn Mode (The Shadows)**:
+    - **Auto-Registration**: Added a "LEARN" toggle. When ON, the server automatically creates placeholder songs/cues for any unknown MIDI or OSC triggers.
+    - **Workflow**: Allows "The Shadows" to learn the song structure in real-time during rehearsal.
+
 ## [2.12.1] - 2026-01-14
 ### Improved
 - **Musician Experience**:

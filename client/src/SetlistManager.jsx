@@ -8,6 +8,8 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
     const [newSongTitle, setNewSongTitle] = useState('');
     const [dragOverIndex, setDragOverIndex] = useState(null);
     const [flashIndex, setFlashIndex] = useState(null); // For "Next Cue" warning
+    const [abletonTime, setAbletonTime] = useState(null);
+    const [learnMode, setLearnMode] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -32,10 +34,22 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
 
             socket.on('setlist_active', handleActive);
             socket.on('setlist_flash', handleFlash);
+            socket.on('learn_mode_changed', (d) => setLearnMode(d.enabled));
+
+            const onAbletonTime = (data) => {
+                const { relativeBar, relativeBeat, totalBars } = data;
+                if (relativeBar === undefined) return;
+                setAbletonTime({
+                    formatted: totalBars > 0 ? `Bar ${relativeBar} of ${totalBars}` : `Bar ${relativeBar}.${relativeBeat}`,
+                    isDownbeat: relativeBeat === 1
+                });
+            };
+            socket.on('ableton_time', onAbletonTime);
 
             return () => {
                 socket.off('setlist_active', handleActive);
                 socket.off('setlist_flash', handleFlash);
+                socket.off('ableton_time', onAbletonTime);
             };
         }
     }, [socket]);
@@ -131,13 +145,9 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                         value={activeSetlist.name}
                         onChange={(e) => {
                             const newName = e.target.value;
-                            // Optimistic update local state if needed, but for now we'll push to server
-                            // However, since activeSetlist is derived from 'data', we need to update data.
                             const newData = { ...data };
                             newData.setlists.default.name = newName;
                             setData(newData);
-                            
-                            // Debounce or just send? For simplicity, send on blur usually better, but here we can just fire.
                             axios.post('/api/setlist/update', { id: 'default', updates: { name: newName } }); 
                         }}
                         style={{
@@ -146,6 +156,58 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                         }}
                     />
                 </div>
+                
+                {/* ABLETON BAR COUNT */}
+                <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
+                    {/* LEARN MODE TOGGLE */}
+                    <div 
+                        onClick={() => {
+                            const newState = !learnMode;
+                            setLearnMode(newState);
+                            socket.emit('toggle_learn_mode', { enabled: newState });
+                        }}
+                        style={{
+                            display:'flex', alignItems:'center', gap:'8px', cursor:'pointer',
+                            padding:'4px 12px', borderRadius:'20px', 
+                            background: learnMode ? '#aa0000' : '#333',
+                            border: '1px solid #444',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <div style={{
+                            width:'10px', height:'10px', borderRadius:'50%', 
+                            background: learnMode ? '#ff0000' : '#444',
+                            boxShadow: learnMode ? '0 0 10px #ff0000' : 'none'
+                        }} />
+                        <span style={{fontSize:'0.8em', fontWeight:'bold', color: learnMode ? 'white' : '#888'}}>
+                            {learnMode ? 'LEARN ON' : 'LEARN OFF'}
+                        </span>
+                    </div>
+
+                    <div style={{
+                        display:'flex', alignItems:'center', gap:'10px', background:'#333', padding:'4px 12px', 
+                        borderRadius:'20px', border: (abletonTime && abletonTime.isDownbeat) ? '1px solid #00ff00' : '1px solid #444',
+                        opacity: abletonTime ? 1 : 0.4
+                    }}>
+                        <div style={{fontSize:'0.7em', color:'#888'}}>ABLETON:</div>
+                        <div style={{
+                            fontSize:'1.1em', fontFamily:'monospace', fontWeight:'bold', 
+                            color: (abletonTime && abletonTime.isDownbeat) ? '#00ff00' : '#ccc'
+                        }}>
+                            {abletonTime ? abletonTime.formatted : 'WAITING...'}
+                        </div>
+                        {abletonTime && (
+                             <button 
+                                onClick={() => socket.emit('osc', { address: '/live/scene', args: [0] })}
+                                style={{
+                                    background:'#444', border:'none', color:'#ccc', fontSize:'0.7em', 
+                                    padding:'2px 6px', borderRadius:'4px', cursor:'pointer', marginLeft:'5px'
+                                }}
+                             >SYNC</button>
+                        )}
+                    </div>
+                </div>
+
                 <div style={{display:'flex', gap:'10px'}}>
                     <button onClick={() => {
                         const safeName = (activeSetlist.name || 'Setlist').replace(/[^a-z0-9\s-_]/gi, '').trim();
@@ -376,9 +438,31 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
                                                 >×</button>
                                             </div>
 
-                                            {/* FOOTER: TYPE */}
+                                            {/* FOOTER: TYPE & BARS */}
                                             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                                                 <div style={{fontSize:'0.8em', color:'#666'}}>{cue.type}</div>
+                                                <div style={{display:'flex', alignItems:'center', gap:'5px', marginTop:'5px'}}>
+                                                    <span style={{fontSize:'0.75em', color:'#555', fontWeight:'bold'}}>BARS:</span>
+                                                    <input 
+                                                        type="number"
+                                                        defaultValue={cue.bars || 0}
+                                                        onBlur={(e) => {
+                                                            const val = parseInt(e.target.value);
+                                                            if (val !== cue.bars) {
+                                                                const newCues = [...selectedSong.cues];
+                                                                newCues[idx] = { ...newCues[idx], bars: val };
+                                                                handleUpdateSong(selectedSong.id, { cues: newCues });
+                                                            }
+                                                        }}
+                                                        onKeyDown={(e) => e.stopPropagation()}
+                                                        onMouseDown={(e) => e.stopPropagation()}
+                                                        style={{
+                                                            width:'45px', background:'#111', border:'1px solid #444', 
+                                                            color:'#00ff00', fontSize:'0.85em', textAlign:'center',
+                                                            borderRadius:'3px', padding:'2px'
+                                                        }}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     );
