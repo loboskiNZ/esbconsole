@@ -15,6 +15,7 @@ const multer = require('multer');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
 const { performStartupBackup } = require('./backup_system');
+const { organizeSharePoint } = require('./sharePointOrganizor');
 
 // --- AUTOMATED BACKUP ---
 performStartupBackup();
@@ -278,7 +279,7 @@ try {
 const io = socketIo(server, { cors: { origin: '*' } });
 
 // Middleware - MUST BE BEFORE ROUTES
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'client/dist')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -910,6 +911,14 @@ const broadcastAbletonTime = (force = false) => {
     let totalBars = 0;
     const activePart = setlistManager.getActivePartMetadata();
     
+    // Get BPM from Active Song
+    let currentTempo = 120;
+    const currentSongId = setlistManager.runtime.activeSongId;
+    if (currentSongId && setlistManager.data.songs[currentSongId]) {
+        const s = setlistManager.data.songs[currentSongId];
+        if (s.bpm) currentTempo = parseInt(s.bpm);
+    }
+    
     if (activePart && activePart.bars > 0) {
         totalBars = activePart.bars;
     } else if (sceneDurationBeats > 0) {
@@ -923,6 +932,7 @@ const broadcastAbletonTime = (force = false) => {
         relativeBeat: relBeat,
         totalBars: totalBars,
         signature: { num: signature_num, den: signature_den },
+        tempo: currentTempo, // Send to client for lookahead calc
         formatted: `Bar ${relBar}.${relBeat}` + (totalBars > 0 ? ` of ${totalBars}` : ''),
         isDownbeat: relBeat === 1,
         timestamp: now,
@@ -2459,14 +2469,14 @@ const chartStorage = multer.diskStorage({
     destination: (req, file, cb) => {
         const { songId } = req.body;
         // Create song subdir if needed
-        const songDir = path.join(chartsDir, songId);
+        const songDir = path.join(chartsDir, String(songId || 'unknown'));
         if (!fs.existsSync(songDir)) fs.mkdirSync(songDir, { recursive: true });
         cb(null, songDir);
     },
     filename: (req, file, cb) => {
         const { role } = req.body; // e.g. "Drummer", "Bass"
         // Sanitize role filename
-        const safeRole = role.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        const safeRole = (role || 'default').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         // Keep original extension or force PDF/Img? Let's keep original for now.
         const ext = path.extname(file.originalname);
         cb(null, `${safeRole}${ext}`);
@@ -2505,6 +2515,110 @@ app.post('/api/charts/assign', uploadChart.single('chart'), (req, res) => {
         console.error("Chart Assignment Error:", e);
         res.status(500).json({ error: e.message });
     }
+});
+
+// NEW: Snippet Upload (Base64)
+app.post('/api/charts/snippet', express.json({ limit: '50mb' }), (req, res) => {
+    try {
+        const { songId, cueIndex, role, imageData } = req.body;
+        if (!songId || cueIndex === undefined || !imageData) {
+            return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        // 1. Prepare Directory: charts/snippets/:songId/:role/
+        const safeRole = role ? role.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'default';
+        const snippetDir = path.join(chartsDir, 'snippets', songId, safeRole);
+        
+        if (!fs.existsSync(snippetDir)) fs.mkdirSync(snippetDir, { recursive: true });
+
+        // 2. Decode Base64 and Save File
+        // imageData = "data:image/png;base64,iVBOR..."
+        const base64Data = imageData.replace(/^data:image\/\w+;base64,/, "");
+        const filename = `cue_${cueIndex}.png`;
+        const filePath = path.join(snippetDir, filename);
+        
+        fs.writeFileSync(filePath, base64Data, 'base64');
+        
+        // 3. Register with Manager
+        const publicPath = `/api/charts/snippets/${songId}/${safeRole}/${filename}`;
+        setlistManager.addChartSnippet(songId, cueIndex, {
+            path: publicPath,
+            role: safeRole,
+            timestamp: Date.now()
+        });
+
+        console.log(`✂️ Snippet Saved: ${filePath}`);
+        res.json({ success: true, path: publicPath });
+
+    } catch (e) {
+        console.error("Snippet Save Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// NEW: Snippet Copy (Duplicate Image & Logic)
+app.post('/api/charts/snippet/copy', express.json(), (req, res) => {
+    try {
+        const { songId, sourcePartIndex, targetPartIndex, role } = req.body;
+        
+        if (!songId || sourcePartIndex === undefined || targetPartIndex === undefined) {
+             return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        const result = setlistManager.copyChartSnippet(songId, sourcePartIndex, targetPartIndex, role);
+        
+        if (result.error) {
+            return res.status(400).json(result);
+        }
+
+        console.log(`📋 Snippet Copied: Song ${songId} | Cue ${sourcePartIndex} -> ${targetPartIndex}`);
+        res.json(result); // { success: true, path: ... }
+    
+    } catch (e) {
+        console.error("Snippet Copy Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// NEW: Snippet Delete
+app.delete('/api/charts/snippet', express.json(), (req, res) => {
+    try {
+        const { songId, cueIndex, role } = req.body;
+        
+        if (!songId || cueIndex === undefined) {
+             return res.status(400).json({ error: "Missing required fields" });
+        }
+
+        const result = setlistManager.deleteChartSnippet(songId, cueIndex, role);
+        
+        if (result.error) {
+            return res.status(400).json(result);
+        }
+
+        console.log(`🗑️ Snippet Deleted: Song ${songId} | Cue ${cueIndex}`);
+        res.json(result); // { success: true }
+
+    } catch (e) {
+        console.error("Snippet Delete Error:", e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// NEW: Serve Snippets
+app.get('/api/charts/snippets/:songId/:role/:filename', (req, res) => {
+    const { songId, role, filename } = req.params;
+    const safeRole = role.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filePath = path.join(chartsDir, 'snippets', songId, safeRole, filename);
+    
+    // DEBUG: Diagnose Broken Snippets
+    if (!fs.existsSync(filePath)) {
+        console.error(`❌ Snippet Not Found: ${filePath}`);
+        return res.status(404).send('Not found');
+    }
+
+    res.sendFile(filePath, (err) => {
+        if (err) console.error("Error sending snippet:", err);
+    });
 });
 
 app.get('/api/charts/:songId/:role', (req, res) => {
@@ -2762,6 +2876,23 @@ app.post('/api/sharepoint/folder', async (req, res) => {
     } catch (e) {
         console.error("Create Folder Error", e);
         fs.appendFileSync('crash.log', `[${new Date().toISOString()}] CREATE FOLDER ERROR: ${e.message}\n`);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/sharepoint/organize', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if(!token) return res.status(401).json({error: "No token"});
+        
+        const { setlistId } = req.body;
+        
+        // Pass global configs
+        const result = await organizeSharePoint(token, setlistId, musiciansData, musiciansData.sharepoint);
+        
+        res.json(result);
+    } catch (e) {
+        console.error("SharePoint Organize Error", e);
         res.status(500).json({ error: e.message });
     }
 });

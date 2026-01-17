@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, FileText, Wifi, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Wifi, Lock, Scissors } from 'lucide-react';
+import SnippetMaker from './SnippetMaker';
 
 const MusicianCharts = ({ user, setlist, socket, activePart }) => {
     // 1. Flatten Setlist to workable Playlist
@@ -22,6 +23,7 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
     // 2. State
     const [currentIndex, setCurrentIndex] = useState(0);
     const [autoSync, setAutoSync] = useState(true);
+    const [showSnipper, setShowSnipper] = useState(false);
 
     // 3. Current Song & Chart Resolution
     const currentSong = playlist[currentIndex];
@@ -47,8 +49,9 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
 
              if (match) {
                  // Return the Safe API URL
-                 // Timestamp to bust cache on re-upload
-                 return `/api/charts/${currentSong.id}/${role}?busId=${busIdFromUser}&channelId=${channelIdFromUser}&t=${Date.now()}#view=FitH&zoom=page-width`;
+                 // Timestamp to bust cache on re-upload (use match.id if available, effectively stable unless reassigned)
+                 const cacheBuster = match.id || Date.now();
+                 return `/api/charts/${currentSong.id}/${role}?busId=${busIdFromUser}&channelId=${channelIdFromUser}&t=${cacheBuster}#view=FitH&zoom=page-width`;
              }
         }
         
@@ -213,6 +216,22 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
                         <FileText size={14}/> Replace
                     </button>
 
+                    {/* SNIPPET BUTTON */}
+                    {currentChartUrl && (
+                        <button
+                            onClick={() => setShowSnipper(!showSnipper)}
+                            style={{
+                                background: showSnipper ? '#ffaa00' : '#333', 
+                                border: '1px solid #444', 
+                                color: showSnipper ? 'black' : '#ccc',
+                                padding: '6px 12px', borderRadius: '4px', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8em'
+                            }}
+                        >
+                            <Scissors size={14}/> Snip
+                        </button>
+                    )}
+
                     <button
                         onClick={() => {
                             if (!autoSync) {
@@ -257,7 +276,20 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
 
             {/* VIEWER */}
             <div style={{flex: 1, position: 'relative', overflow: 'hidden', background: '#222'}}>
-                {currentChartUrl ? (
+                {showSnipper && currentChartUrl ? (
+                     <SnippetMaker 
+                        key={currentChartUrl.split('?')[0]} 
+                        fileUrl={currentChartUrl} // Pass full URL 
+                        song={currentSong} 
+                        user={user} 
+                        onClose={() => setShowSnipper(false)} 
+                        onSave={() => {
+                            // User Request: Stay in snippet view after save
+                            // setShowSnipper(false);
+                        }}
+                        targetId={currentSong.id}
+                     />
+                ) : currentChartUrl ? (
                     <object 
                         key={currentChartUrl} 
                         data={currentChartUrl}

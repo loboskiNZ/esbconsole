@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.14.0] - 2026-01-17
+### Added
+- **SharePoint Chart Organization**:
+    - **One-Click Export**: Added "Export Charts" button to the SharePoint Browser.
+    - **Automated Organization**: Automatically creates folders for the active Setlist and its Musicians.
+    - **Smart Renaming**: Uploads and renames charts to `[Order]_[SongName]_[Role].pdf` format for streamlined tablet usage.
+    - **Graph Integration**: Leverages Microsoft Graph API for direct folder creation and file uploads.
+
 ## [2.13.3] - 2026-01-15 (BETA START)
 ### Added
 - **Chart Snippets (Beta)**:

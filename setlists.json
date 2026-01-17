@@ -31,65 +31,215 @@
           "name": "Intro",
           "type": "preset",
           "data": "",
-          "bars": 13
+          "bars": 13,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1768521141822
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_0.png",
+              "role": "machines",
+              "timestamp": 1768536275294
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_0.png",
+            "role": "trumpet",
+            "timestamp": 1768521141822
+          }
         },
         {
           "name": "chorus1",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_1.png",
+              "role": "trumpet",
+              "timestamp": 1768521219821
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_1.png",
+              "role": "machines",
+              "timestamp": 1768536268280
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_1.png",
+            "role": "trumpet",
+            "timestamp": 1768521219821
+          }
         },
         {
           "name": "verse1",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_2.png",
+              "role": "trumpet",
+              "timestamp": 1768521191673
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_2.png",
+              "role": "machines",
+              "timestamp": 1768536083242
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_2.png",
+            "role": "trumpet",
+            "timestamp": 1768521191673
+          }
         },
         {
           "name": "Chorus2",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_3_1768528712861.png",
+              "role": "trumpet",
+              "timestamp": 1768528712861
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_3.png",
+              "role": "machines",
+              "timestamp": 1768536072980
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/machines/cue_3.png",
+            "role": "machines",
+            "timestamp": 1768534290706
+          }
         },
         {
           "name": "verse2",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_4_1768529741650.png",
+              "role": "trumpet",
+              "timestamp": 1768529741650
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_4.png",
+              "role": "machines",
+              "timestamp": 1768536481772
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/machines/cue_4.png",
+            "role": "machines",
+            "timestamp": 1768534303187
+          }
         },
         {
           "name": "chorus3",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_5_1768528805588.png",
+              "role": "trumpet",
+              "timestamp": 1768528805588
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_5.png",
+              "role": "machines",
+              "timestamp": 1768536504818
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_5_1768528805588.png",
+            "role": "trumpet",
+            "timestamp": 1768528805588
+          }
         },
         {
           "name": "bridge",
           "type": "preset",
           "data": "",
-          "bars": 4
+          "bars": 4,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_6.png",
+              "role": "trumpet",
+              "timestamp": 1768521301631
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_6.png",
+            "role": "trumpet",
+            "timestamp": 1768521301631
+          }
         },
         {
           "name": "pregones",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_7.png",
+              "role": "trumpet",
+              "timestamp": 1768521377056
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048124047/machines/cue_7.png",
+              "role": "machines",
+              "timestamp": 1768536541886
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_7.png",
+            "role": "trumpet",
+            "timestamp": 1768521377056
+          }
         },
         {
           "name": "outro  chorus",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/cue_8.png",
+              "role": "trumpet",
+              "timestamp": 1768521425912
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/cue_8.png",
+            "role": "trumpet",
+            "timestamp": 1768521425912
+          }
         },
         {
           "name": "Cue 10",
           "type": "auto",
-          "bars": 7
-        },
-        {
-          "name": "Cue 11",
-          "type": "auto",
-          "bars": 2
+          "bars": 7,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_9_1768530453796.png",
+              "role": "trumpet",
+              "timestamp": 1768530453796
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048124047/trumpet/1768048124047_trumpet_9_1768530453796.png",
+            "role": "trumpet",
+            "timestamp": 1768530453796
+          }
         }
       ],
       "charts": {},
@@ -313,6 +463,62 @@
             "path": "uploads/noChart.txt",
             "originalname": "noChart.txt"
           }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "callejero lyrics.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047/machines.pdf",
+            "size": 16537
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv2.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv3.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047/machines.pdf",
+            "size": 55636
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "callejero lyrics.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048124047/machines.pdf",
+            "size": 16537
+          }
         }
       ],
       "notes": "Key: A\nLead singer: Ed"
@@ -327,49 +533,185 @@
           "name": "Intro",
           "type": "preset",
           "data": "",
-          "bars": 12
+          "bars": 12,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1768553041599
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_0.png",
+              "role": "machines",
+              "timestamp": 1768552999765
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_0.png",
+            "role": "trumpet",
+            "timestamp": 1768531378306
+          }
         },
         {
           "name": "Verse1",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_1.png",
+              "role": "trumpet",
+              "timestamp": 1768531147622
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_1.png",
+              "role": "machines",
+              "timestamp": 1768542593787
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_1.png",
+            "role": "trumpet",
+            "timestamp": 1768531147622
+          }
         },
         {
           "name": "Chorus1",
           "type": "preset",
           "data": "",
-          "bars": 4
+          "bars": 4,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_2.png",
+              "role": "trumpet",
+              "timestamp": 1768531286895
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_2.png",
+              "role": "machines",
+              "timestamp": 1768541783345
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_2.png",
+            "role": "trumpet",
+            "timestamp": 1768531286895
+          }
         },
         {
           "name": "Verse2",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_3.png",
+              "role": "trumpet",
+              "timestamp": 1768531359205
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_3.png",
+              "role": "machines",
+              "timestamp": 1768541989148
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_3.png",
+            "role": "trumpet",
+            "timestamp": 1768531359205
+          }
         },
         {
           "name": "Chorus2",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_4.png",
+              "role": "trumpet",
+              "timestamp": 1768531442240
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_4.png",
+              "role": "machines",
+              "timestamp": 1768537397762
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_4.png",
+            "role": "trumpet",
+            "timestamp": 1768531442240
+          }
         },
         {
           "name": "Verse3",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_5.png",
+              "role": "trumpet",
+              "timestamp": 1768531576629
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_5.png",
+              "role": "machines",
+              "timestamp": 1768542581732
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_5.png",
+            "role": "trumpet",
+            "timestamp": 1768531576629
+          }
         },
         {
           "name": "Chorus3",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_6.png",
+              "role": "trumpet",
+              "timestamp": 1768531623643
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_6.png",
+              "role": "machines",
+              "timestamp": 1768542738891
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_6.png",
+            "role": "trumpet",
+            "timestamp": 1768531623643
+          }
         },
         {
           "name": "Verse4",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_7.png",
+              "role": "trumpet",
+              "timestamp": 1768531844509
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_7.png",
+              "role": "machines",
+              "timestamp": 1768537478755
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_7.png",
+            "role": "trumpet",
+            "timestamp": 1768531844509
+          }
         },
         {
           "name": "La luna",
@@ -381,19 +723,70 @@
           "name": "Bridge",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_9.png",
+              "role": "trumpet",
+              "timestamp": 1768531893014
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_9.png",
+              "role": "machines",
+              "timestamp": 1768542141694
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_9.png",
+            "role": "trumpet",
+            "timestamp": 1768531893014
+          }
         },
         {
           "name": "Pregones",
           "type": "preset",
           "data": "",
-          "bars": 4
+          "bars": 4,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_10.png",
+              "role": "trumpet",
+              "timestamp": 1768531943702
+            },
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_10.png",
+              "role": "machines",
+              "timestamp": 1768542151909
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_10.png",
+            "role": "trumpet",
+            "timestamp": 1768531943702
+          }
         },
         {
           "name": "Outro",
           "type": "preset",
           "data": "",
-          "bars": 10
+          "bars": 10,
+          "visualSnippets": {
+            "machines": {
+              "path": "/api/charts/snippets/1768048187008/machines/cue_11.png",
+              "role": "machines",
+              "timestamp": 1768550723044
+            },
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048187008/trumpet/cue_11.png",
+              "role": "trumpet",
+              "timestamp": 1768552959674
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048187008/trumpet/cue_11.png",
+            "role": "trumpet",
+            "timestamp": 1768531966389
+          }
         }
       ],
       "charts": {},
@@ -502,6 +895,104 @@
             "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/trumpet.pdf",
             "size": 121165
           }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyrics.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyrics.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyrics.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv2.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv2.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv2.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 51785
+          }
+        },
+        {
+          "inputChannel": 9,
+          "monitorBus": 1,
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Ella Lyricsv3.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008",
+            "filename": "machines.pdf",
+            "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048187008/machines.pdf",
+            "size": 55636
+          }
         }
       ]
     },
@@ -515,7 +1006,19 @@
           "name": "Intro",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048199423/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1768532034478
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048199423/trumpet/cue_0.png",
+            "role": "trumpet",
+            "timestamp": 1768532034478
+          }
         },
         {
           "name": "chorus1",
@@ -527,25 +1030,73 @@
           "name": "verse1",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048199423/trumpet/cue_2.png",
+              "role": "trumpet",
+              "timestamp": 1768532077011
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048199423/trumpet/cue_2.png",
+            "role": "trumpet",
+            "timestamp": 1768532077011
+          }
         },
         {
           "name": "chorus2",
           "type": "preset",
           "data": "",
-          "bars": 4
+          "bars": 4,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048199423/trumpet/cue_3.png",
+              "role": "trumpet",
+              "timestamp": 1768532106766
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048199423/trumpet/cue_3.png",
+            "role": "trumpet",
+            "timestamp": 1768532106766
+          }
         },
         {
           "name": "verse2",
           "type": "preset",
           "data": "",
-          "bars": 8
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048199423/trumpet/cue_4.png",
+              "role": "trumpet",
+              "timestamp": 1768532139263
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048199423/trumpet/cue_4.png",
+            "role": "trumpet",
+            "timestamp": 1768532139263
+          }
         },
         {
           "name": "chorus3",
           "type": "preset",
           "data": "",
-          "bars": 16
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048199423/trumpet/cue_5.png",
+              "role": "trumpet",
+              "timestamp": 1768532156078
+            }
+          },
+          "visualSnippet": {
+            "path": "/api/charts/snippets/1768048199423/trumpet/cue_5.png",
+            "role": "trumpet",
+            "timestamp": 1768532156078
+          }
         },
         {
           "name": "verse3",
@@ -739,7 +1290,23 @@
         {
           "name": "outro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 1
+        },
+        {
+          "name": "Cue 6",
+          "type": "auto",
+          "bars": 1
+        },
+        {
+          "name": "Cue 7",
+          "type": "auto",
+          "bars": 1
+        },
+        {
+          "name": "Cue 8",
+          "type": "auto",
+          "bars": 0
         }
       ],
       "charts": {},
@@ -754,37 +1321,51 @@
         {
           "name": "intro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/1768048286266/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1768540234527
+            }
+          },
+          "bars": 8
         },
         {
-          "name": "verse",
+          "name": "Chorus1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 32
         },
         {
           "name": "solo",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 16
         },
         {
           "name": "chanting",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 10
         },
         {
           "name": "drop",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 40
         },
         {
           "name": "chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 13
         },
         {
           "name": "outro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 86
         }
       ],
       "charts": {},
@@ -1033,6 +1614,51 @@
             "path": "uploads/ee776e66422fdda5f103ae010ff4e0c0",
             "size": 76286
           }
+        },
+        {
+          "id": 1768556130622,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Alto Saxophone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "a87e5572d492b6f98ac02f19c6002c4d",
+            "path": "uploads/a87e5572d492b6f98ac02f19c6002c4d",
+            "size": 60911
+          }
+        },
+        {
+          "id": 1768556159768,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Piano.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "da700ca25ffc4295a7bd81d2adc6e4ca",
+            "path": "uploads/da700ca25ffc4295a7bd81d2adc6e4ca",
+            "size": 89356
+          }
+        },
+        {
+          "id": 1768556196077,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Trombone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "2a188dbc8d52bbeec9aaf125f99ceaf9",
+            "path": "uploads/2a188dbc8d52bbeec9aaf125f99ceaf9",
+            "size": 61155
+          }
         }
       ]
     },
@@ -1100,47 +1726,56 @@
         {
           "name": "intro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 6
         },
         {
           "name": "chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 12
         },
         {
           "name": "verse1",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 6
         },
         {
           "name": "chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 6
         },
         {
           "name": "verse2",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 6
         },
         {
           "name": "chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 6
         },
         {
           "name": "verse 3",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 12
         },
         {
           "name": "chorus",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 18
         },
         {
           "name": "outro",
           "type": "preset",
-          "data": ""
+          "data": "",
+          "bars": 13
         }
       ],
       "charts": {},
@@ -1158,6 +1793,96 @@
             "filename": "trumpet.pdf",
             "path": "/Volumes/WORKER/machines/x32-controller/charts/1768048373749/trumpet.pdf",
             "size": 36881
+          }
+        },
+        {
+          "id": 1768556327689,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Alto Saxophone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "2ecd981df62631f922ee12c92439b3c5",
+            "path": "uploads/2ecd981df62631f922ee12c92439b3c5",
+            "size": 60911
+          }
+        },
+        {
+          "id": 1768556424209,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "aa1eff5191c9125c8611f8e7fed33422",
+            "path": "uploads/aa1eff5191c9125c8611f8e7fed33422",
+            "size": 76286
+          }
+        },
+        {
+          "id": 1768556449950,
+          "inputChannel": "10",
+          "monitorBus": "10",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Electric Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "8fd10eaeb990fd825c7fc2794378eae0",
+            "path": "uploads/8fd10eaeb990fd825c7fc2794378eae0",
+            "size": 61052
+          }
+        },
+        {
+          "id": 1768556499939,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Piano.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "726e614b94f975c5f46b9342f4080c95",
+            "path": "uploads/726e614b94f975c5f46b9342f4080c95",
+            "size": 89356
+          }
+        },
+        {
+          "id": 1768556519981,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "fcb4fa5d3ab77266a2d38cddbac0c784",
+            "path": "uploads/fcb4fa5d3ab77266a2d38cddbac0c784",
+            "size": 76286
+          }
+        },
+        {
+          "id": 1768556603775,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Band electronic love - Trombone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "c90ed36b59d7cda2b2274183f6384a11",
+            "path": "uploads/c90ed36b59d7cda2b2274183f6384a11",
+            "size": 61155
           }
         }
       ]
@@ -1291,6 +2016,81 @@
             "filename": "trumpet.pdf",
             "path": "/Volumes/WORKER/machines/x32-controller/charts/1768438486355/trumpet.pdf",
             "size": 18221
+          }
+        },
+        {
+          "id": 1768555573530,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Alto Saxophone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "e83cfb3c5b5dbd0e69be650f7f69d066",
+            "path": "uploads/e83cfb3c5b5dbd0e69be650f7f69d066",
+            "size": 20663
+          }
+        },
+        {
+          "id": 1768555658810,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "0a69a4b77ca585d8ebf3ccb3ec2542c0",
+            "path": "uploads/0a69a4b77ca585d8ebf3ccb3ec2542c0",
+            "size": 17812
+          }
+        },
+        {
+          "id": 1768555688693,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Keyboard.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "ab141e93ba2c997abefa13b06b9e3ecc",
+            "path": "uploads/ab141e93ba2c997abefa13b06b9e3ecc",
+            "size": 21383
+          }
+        },
+        {
+          "id": 1768555723180,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Trombone.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "edb7482d78ea52c03bd438f3098b8fc6",
+            "path": "uploads/edb7482d78ea52c03bd438f3098b8fc6",
+            "size": 17481
+          }
+        },
+        {
+          "id": 1768555819448,
+          "inputChannel": "13",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Seeing red - Bass Guitar.pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "5ae55117636dd3affbd70f1d6192dfe1",
+            "path": "uploads/5ae55117636dd3affbd70f1d6192dfe1",
+            "size": 17812
           }
         }
       ]

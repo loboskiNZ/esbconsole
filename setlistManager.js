@@ -138,6 +138,157 @@ class SetlistManager {
         this.save();
         return true;
     }
+
+    addChartSnippet(songId, cueIndex, snippetData) {
+        if (!this.data.songs[songId]) return false;
+        const song = this.data.songs[songId];
+        
+        if (!song.cues || !song.cues[cueIndex]) return false;
+        
+        const cue = song.cues[cueIndex];
+        
+        // Ensure role-based container exists
+        if (!cue.visualSnippets) cue.visualSnippets = {};
+        
+        const roleKey = snippetData.role || 'default';
+        cue.visualSnippets[roleKey] = snippetData; // { path: '...', role: '...' }
+        
+        // FIX: Do not overwrite legacy fallback with role-specific data.
+        // This prevents "Trumpet" snippets from becoming the default for "Voice" users.
+        // cue.visualSnippet = snippetData; 
+        
+        this.save();
+        if (this.io) {
+            this.io.emit('song_updated', { id: songId, song: this.data.songs[songId] });
+            // Also emit generic update since setlist data effectively changed
+            this.io.emit('setlist_updated', this.data.setlists); 
+        }
+        return true;
+    }
+
+    copyChartSnippet(songId, sourceIndex, targetIndex, role) {
+        const song = this.data.songs[songId];
+        if (!song || !song.cues) return { error: 'Song/Cues not found' };
+
+        const sourceCue = song.cues[sourceIndex];
+        const targetCue = song.cues[targetIndex];
+        
+        if (!sourceCue || !targetCue) return { error: 'Invalid Cue Index' };
+
+        const roleKey = role || 'default';
+        const sourceSnippet = sourceCue.visualSnippets?.[roleKey] || sourceCue.visualSnippet;
+
+        if (!sourceSnippet || !sourceSnippet.path) return { error: 'Source has no snippet' };
+
+        // 1. Resolve Path
+        // The path in JSON is a URL path: /api/charts/snippets/<songId>/<role>/<filename>
+        // We need to resolve this to the physical path: <project_root>/charts/snippets/<songId>/<role>/<filename>
+        
+        let validSourcePath = null;
+        if (sourceSnippet.path.startsWith('/api/charts/')) {
+            // Strip '/api/' from the start -> 'charts/snippets/...'
+            const relativePhysicalPath = sourceSnippet.path.replace(/^\/api\//, '');
+            validSourcePath = path.join(process.cwd(), relativePhysicalPath);
+        } else {
+            // Fallback for legacy or unexpected paths (try resolving as is)
+            const p = sourceSnippet.path.startsWith('/') ? sourceSnippet.path.slice(1) : sourceSnippet.path;
+            validSourcePath = path.resolve(process.cwd(), p);
+        }
+
+        if (!fs.existsSync(validSourcePath)) {
+            console.error(`❌ Snippet Copy Failed: Source File Not Found at ${validSourcePath}`);
+            return { error: 'Source file missing on disk' };
+        }
+
+        // 2. Generate New Target Path
+        const ext = path.extname(validSourcePath);
+        const timestamp = Date.now();
+        const targetDir = path.dirname(validSourcePath); // Keep same directory (song/role)
+        const newFilename = `${songId}_${roleKey}_${targetIndex}_${timestamp}${ext}`;
+        const absoluteTargetPath = path.join(targetDir, newFilename);
+
+        // 3. Copy File
+        try {
+            fs.copyFileSync(validSourcePath, absoluteTargetPath);
+        } catch (err) {
+            console.error("File Copy Error:", err);
+            return { error: 'File copy failed' };
+        }
+
+        // 4. Update Target Metadata
+        // Reconstruct URL path
+        // url path was '/charts/snippets/...'
+        const urlDir = path.dirname(sourceSnippet.path);
+        const newUrlPath = `${urlDir}/${newFilename}`;
+
+        const newSnippetData = {
+            path: newUrlPath,
+            role: roleKey,
+            timestamp: timestamp
+        };
+
+        if (!targetCue.visualSnippets) targetCue.visualSnippets = {};
+        targetCue.visualSnippets[roleKey] = newSnippetData;
+        
+        // Fallback
+        targetCue.visualSnippet = newSnippetData;
+
+        // 5. Save & Emit
+        this.save();
+        if (this.io) {
+            this.io.emit('song_updated', { id: songId, song: this.data.songs[songId] });
+            this.io.emit('setlist_updated', this.data.setlists); 
+        }
+
+        return { success: true, path: newUrlPath };
+    }
+
+    deleteChartSnippet(songId, cueIndex, role) {
+        if (!this.data.songs[songId]) return { error: 'Song not found' };
+        const song = this.data.songs[songId];
+        
+        if (!song.cues || !song.cues[cueIndex]) return { error: 'Cue not found' };
+        const cue = song.cues[cueIndex];
+
+        const roleKey = role ? role.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'default';
+
+        if (!cue.visualSnippets || !cue.visualSnippets[roleKey]) {
+            return { error: 'No snippet to delete' };
+        }
+
+        const snippet = cue.visualSnippets[roleKey];
+        
+        // 1. Delete File (Best Effort)
+        try {
+            // Reconstruct physical path from URL path
+            // URL: /api/charts/snippets/songId/role/filename
+            // PATH: charts/snippets/songId/role/filename
+            const urlParts = snippet.path.split('/');
+            const filename = urlParts[urlParts.length - 1]; // e.g. cue_1.png
+            
+            const chartsDir = path.join(process.cwd(), 'charts');
+            // Assuming role matches safeRole in path
+            const filePath = path.join(chartsDir, 'snippets', songId, roleKey, filename);
+
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        } catch (e) {
+            console.error("Delete Snippet File Error:", e);
+        }
+
+        // 2. Update Metadata
+        delete cue.visualSnippets[roleKey];
+        
+        // Save & Notify
+        this.save();
+        if (this.io) {
+            this.io.emit('song_updated', { id: songId, song: this.data.songs[songId] });
+            this.io.emit('setlist_updated', this.data.setlists); 
+        }
+
+        return { success: true };
+    }
     
     setBusName(busId, name) {
         if (!this.data.busNames) this.data.busNames = {};

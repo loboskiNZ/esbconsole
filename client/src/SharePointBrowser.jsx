@@ -17,6 +17,7 @@ const SharePointBrowser = ({ onClose }) => {
     
     const [downloadingFileId, setDownloadingFileId] = useState(null);
     const [setlistName, setSetlistName] = useState(null);
+    const [exporting, setExporting] = useState(false);
 
     // Fetch Setlist Name
     useEffect(() => {
@@ -201,6 +202,30 @@ const SharePointBrowser = ({ onClose }) => {
         }
     };
 
+    const handleExport = async () => {
+        if (!confirm(`Are you sure you want to export all charts for "${setlistName}" to SharePoint?\nThis will create folders and upload files.`)) return;
+        
+        setExporting(true);
+        try {
+            const token = await getToken();
+            const res = await axios.post('/api/sharepoint/organize', {}, {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            
+            console.log("Export Result:", res.data);
+            const log = res.data.log || [];
+            alert(`Export Complete!\n${log.length} operations processed.\nCheck console for details.`);
+            
+            // Refresh view
+            fetchFiles(currentPath);
+        } catch (e) {
+            console.error(e);
+            alert("Export Failed: " + (e.response?.data?.error || e.message));
+        } finally {
+            setExporting(false);
+        }
+    };
+
     return (
         <div style={{
             position:'fixed', top:'10%', left:'10%', width:'80%', height:'80%', 
@@ -263,7 +288,7 @@ const SharePointBrowser = ({ onClose }) => {
                 ) : (
                     <>
                         {/* Breadcrumb / Nav */}
-                        <div style={{marginBottom:'15px', display:'flex', gap:'10px', alignItems:'center'}}>
+                         <div style={{marginBottom:'15px', display:'flex', gap:'10px', alignItems:'center'}}>
                             <button disabled={!currentPath} onClick={handleBack} style={{
                                 background: currentPath ? '#333' : '#111', color: currentPath ? '#fff' : '#444',
                                 border:'none', padding:'5px 10px', borderRadius:'4px', cursor: currentPath ? 'pointer' : 'default'
@@ -281,6 +306,15 @@ const SharePointBrowser = ({ onClose }) => {
                                     Set as Home 🏠
                                 </button>
                             )}
+
+                            {/* EXPORT BUTTON */}
+                            <button onClick={handleExport} disabled={exporting} style={{
+                                background: exporting ? '#555' : '#9c27b0', color: '#fff', border:'none', 
+                                padding:'5px 10px', borderRadius:'4px', cursor: exporting ? 'wait' : 'pointer',
+                                marginLeft: '10px'
+                            }}>
+                                {exporting ? 'Exporting...' : 'Export Charts 🚀'}
+                            </button>
                             
                             {/* Setlist Folder Shortcut */}
                             {setlistName && !loading && (

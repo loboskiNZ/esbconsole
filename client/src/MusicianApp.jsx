@@ -32,7 +32,11 @@ const MusicianApp = ({ socket, x32State }) => {
         
         // Fetch Setlist
         axios.get('/api/setlist')
-            .then(res => setSetlist(res.data))
+            .then(res => {
+                console.log("🔥 [MusicianApp] Setlist Fetched:", res.data);
+                console.log("🔥 [MusicianApp] Song IDs:", res.data.songs ? res.data.songs.map(s => s.id) : "No Songs");
+                setSetlist(res.data);
+            })
             .catch(err => console.error("Failed to fetch setlist", err));
 
     }, []);
@@ -168,8 +172,25 @@ const MusicianApp = ({ socket, x32State }) => {
             console.log("🔥 [MusicianApp] Active Part:", data);
             setActivePart(data);
         };
+        
+        // Listen for Song Updates (e.g. Snippets added)
+        const onSongUpdated = ({ id, song }) => {
+            console.log("🎵 [MusicianApp] Song Updated:", song.title);
+            setSetlist(prev => {
+                if (!prev || !prev.songs) return prev;
+                // Replace the updated song in the list
+                const newSongs = prev.songs.map(s => s.id === id ? song : s);
+                return { ...prev, songs: newSongs };
+            });
+        };
+
         socket.on('active_part', onActivePart);
-        return () => socket.off('active_part', onActivePart);
+        socket.on('song_updated', onSongUpdated);
+        
+        return () => {
+             socket.off('active_part', onActivePart);
+             socket.off('song_updated', onSongUpdated);
+        };
     }, [socket]);
 
     if (!musician) {
