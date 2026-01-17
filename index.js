@@ -2897,6 +2897,26 @@ app.post('/api/sharepoint/organize', async (req, res) => {
     }
 });
 
+// --- EMAIL CHARTS ENDPOINT (GRAPH API) ---
+const emailManager = require('./emailManager');
+app.post('/api/musician/email-charts', async (req, res) => {
+    try {
+        const { musicianId, setlistId } = req.body;
+        if (!musicianId) return res.status(400).json({ error: "Missing musicianId" });
+
+        const musician = musiciansData.musicians.find(m => m.id === musicianId);
+        if (!musician) return res.status(404).json({ error: "Musician not found" });
+
+        console.log(`📧 Sending charts to ${musician.name} (${musician.email})...`);
+        const result = await emailManager.sendChartsEmail(musician, setlistId);
+        
+        res.json({ success: true, count: result.count, message: `Sent ${result.count} charts to ${musician.email}` });
+    } catch (error) {
+        console.error("Email API Error:", error);
+        res.status(500).json({ error: error.message || "Failed to send email" });
+    }
+});
+
 // --- MUSICIANS API ---
 // musiciansData is defined in Globals
 

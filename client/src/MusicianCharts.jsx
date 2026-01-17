@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ChevronLeft, ChevronRight, FileText, Wifi, Lock, Scissors } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Wifi, Lock, Scissors, Mail } from 'lucide-react';
 import SnippetMaker from './SnippetMaker';
 
 const MusicianCharts = ({ user, setlist, socket, activePart }) => {
@@ -24,6 +24,7 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [autoSync, setAutoSync] = useState(true);
     const [showSnipper, setShowSnipper] = useState(false);
+    const [emailing, setEmailing] = useState(false);
 
     // 3. Current Song & Chart Resolution
     const currentSong = playlist[currentIndex];
@@ -203,7 +204,41 @@ const MusicianCharts = ({ user, setlist, socket, activePart }) => {
                     </div>
                 </div>
 
+                
+                {/* RIGHT CONTROL GROUP */}
                 <div style={{display:'flex', gap:'15px', alignItems:'center'}}>
+                    <button
+                        onClick={async () => {
+                            if (!confirm(`Email all charts for "${setlist?.setlists?.[setlist.activeSetlistId]?.name || 'Current Setlist'}" to ${user.email}?`)) return;
+                            setEmailing(true);
+                            try {
+                                const res = await fetch('/api/musician/email-charts', {
+                                    method: 'POST',
+                                    headers: {'Content-Type': 'application/json'},
+                                    body: JSON.stringify({
+                                        musicianId: user.id,
+                                        setlistId: setlist.activeSetlistId
+                                    })
+                                });
+                                const json = await res.json();
+                                if (json.success) alert(json.message);
+                                else alert("Email failed: " + json.error);
+                            } catch (e) {
+                                alert("Error sending email");
+                            } finally {
+                                setEmailing(false);
+                            }
+                        }}
+                        disabled={emailing}
+                        style={{
+                            background: emailing ? '#555' : '#444', 
+                            border: '1px solid #666', color: '#eee',
+                            padding: '6px 12px', borderRadius: '4px', cursor: emailing ? 'wait' : 'pointer',
+                            display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8em'
+                        }}
+                    >
+                        <Mail size={14}/> {emailing ? 'Sending...' : 'Email Me'}
+                    </button>
                     {/* UPLOAD BUTTON (Small) */}
                     <button
                         onClick={handleCheckAndUpload}

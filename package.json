@@ -1,6 +1,6 @@
 {
   "name": "x32-controller",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "dmx": "^0.25.1",
     "docxtemplater": "^3.67.6",
+    "dotenv": "^17.2.3",
     "easymidi": "^3.1.0",
     "express": "^5.2.1",
     "isomorphic-fetch": "^3.0.0",
