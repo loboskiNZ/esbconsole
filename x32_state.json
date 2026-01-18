@@ -1,6 +1,6 @@
 {
   "1": {
-    "level": 0.6471163034439087,
+    "level": 0.64,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -3160,7 +3160,7 @@
   },
   "master": {
     "mute": false,
-    "level": 0.8611925840377808,
+    "level": 0.52,
     "hcut": false,
     "dynGain": 0.5
   },

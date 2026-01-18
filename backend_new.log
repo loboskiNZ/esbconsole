@@ -1,0 +1,262 @@
+📄 Setlists Loaded
+🛡️  Performing Startup Backup to: /Volumes/WORKER/machines/x32-controller/backups/boot_2026-01-17T11-30-16-461Z
+🧹 Cleaning old backup: boot_2026-01-16T09-15-17-001Z
+🔒 HTTPS Enabled
+📂 State Loaded from Disk
+🔌 Connecting to X32 at 10.0.0.202:10023...
+🎹 All MIDI Inputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+🎹 Connecting MIDI Input to: "IAC Driver Bus 1"
+🎹 Available MIDI Outputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+✅ MIDI Output connected to: "IAC Driver Bus 1"
+--- SERVER RESTART DEBUG ---
+💡 DMX Lighting Engine Initialized (Silent Mode)
+🎹 MIDI Input connected to: "IAC Driver Bus 1"
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+✅ OSC Port Open
+🌟 Controller v2.13.3 running at https://localhost:3000
+⚡ Client Connected: 8Lo4DyUyhUw63m_BAAAB
+📤 Sending Full State to 8Lo4DyUyhUw63m_BAAAB (0 chans)
+📥 Fetching Bus Configs & Safes...
+📡 ANY OSC: /bus/01/config/name [Vox Ed]
+📡 ANY OSC: /bus/01/config/color [4]
+📡 ANY OSC: /bus/01/mix/fader [0.7272727489471436]
+📡 ANY OSC: /bus/01/mix/on [1]
+📡 ANY OSC: /bus/02/config/name [Vox Nathan]
+📡 ANY OSC: /bus/02/config/color [4]
+📡 ANY OSC: /bus/02/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/02/mix/on [1]
+📡 ANY OSC: /bus/03/config/name [Vox Claire]
+📡 ANY OSC: /bus/03/config/color [4]
+📡 ANY OSC: /bus/03/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/03/mix/on [1]
+📡 ANY OSC: /bus/04/config/name [Vox Alan]
+📡 ANY OSC: /bus/04/config/color [4]
+📡 ANY OSC: /bus/04/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/04/mix/on [1]
+📡 ANY OSC: /bus/05/config/name [Vox Hyram]
+📡 ANY OSC: /bus/05/config/color [4]
+📡 ANY OSC: /bus/05/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/05/mix/on [0]
+📡 ANY OSC: /bus/06/config/name [Vox Davina]
+📡 ANY OSC: /bus/06/config/color [4]
+📡 ANY OSC: /bus/06/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/06/mix/on [1]
+📡 ANY OSC: /bus/07/config/name [Drums]
+📡 ANY OSC: /bus/07/config/color [6]
+📡 ANY OSC: /bus/07/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/07/mix/on [1]
+📡 ANY OSC: /bus/08/config/name [Bass]
+📡 ANY OSC: /bus/08/config/color [5]
+📡 ANY OSC: /bus/08/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/08/mix/on [1]
+📡 ANY OSC: /bus/09/config/name [Keys]
+📡 ANY OSC: /bus/09/config/color [3]
+📡 ANY OSC: /bus/09/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/09/mix/on [1]
+📡 ANY OSC: /bus/10/config/name [Gat]
+📡 ANY OSC: /bus/10/config/color [1]
+📡 ANY OSC: /bus/10/mix/fader [0.6246334314346313]
+📡 ANY OSC: /bus/10/mix/on [1]
+📡 ANY OSC: /bus/11/config/name [Bus 11]
+📡 ANY OSC: /bus/11/config/color [3]
+📡 ANY OSC: /bus/11/mix/fader [0]
+⚡ Client Connected: g1uF3oBETRIMD8FdAAAD
+📤 Sending Full State to g1uF3oBETRIMD8FdAAAD (0 chans)
+🔌 Client Disconnected: 8Lo4DyUyhUw63m_BAAAB
+⚡ Client Connected: RoCQgKkSFGib7-DFAAAF
+📤 Sending Full State to RoCQgKkSFGib7-DFAAAF (0 chans)
+🔌 Client Disconnected: RoCQgKkSFGib7-DFAAAF
+⚡ Client Connected: U1tccQwrHowe8nw8AAAH
+📤 Sending Full State to U1tccQwrHowe8nw8AAAH (0 chans)
+🔌 Client Disconnected: U1tccQwrHowe8nw8AAAH
+⚡ Client Connected: BUJXTRhq1Scfkn8vAAAJ
+📤 Sending Full State to BUJXTRhq1Scfkn8vAAAJ (0 chans)
+🔌 Client Disconnected: BUJXTRhq1Scfkn8vAAAJ
+⚡ Client Connected: UrkVEAbZE3nqNMmGAAAL
+📤 Sending Full State to UrkVEAbZE3nqNMmGAAAL (0 chans)
+🔌 Client Disconnected: UrkVEAbZE3nqNMmGAAAL
+⚡ Client Connected: XDPHvaydKwkmabWYAAAN
+📤 Sending Full State to XDPHvaydKwkmabWYAAAN (0 chans)
+🔌 Client Disconnected: XDPHvaydKwkmabWYAAAN
+⚡ Client Connected: 2JuJS9LeBtDhHUS7AAAP
+📤 Sending Full State to 2JuJS9LeBtDhHUS7AAAP (0 chans)
+🔌 Client Disconnected: 2JuJS9LeBtDhHUS7AAAP
+⚡ Client Connected: tE-2mJwRV0ahVZFRAAAR
+📤 Sending Full State to tE-2mJwRV0ahVZFRAAAR (0 chans)
+🔌 Client Disconnected: tE-2mJwRV0ahVZFRAAAR
+⚡ Client Connected: w5etVxHAtCGBhGBXAAAT
+📤 Sending Full State to w5etVxHAtCGBhGBXAAAT (0 chans)
+🔌 Client Disconnected: w5etVxHAtCGBhGBXAAAT
+⚡ Client Connected: d276UQ3UqVgJaR1hAAAW
+📤 Sending Full State to d276UQ3UqVgJaR1hAAAW (0 chans)
+🔌 Client Disconnected: g1uF3oBETRIMD8FdAAAD
+⚡ Client Connected: 5uf5Bl6g4ec3mN1EAAAY
+📤 Sending Full State to 5uf5Bl6g4ec3mN1EAAAY (0 chans)
+🔌 Client Disconnected: 5uf5Bl6g4ec3mN1EAAAY
+⚡ Client Connected: JtX0gdVZTOq1pGEDAAAd
+📤 Sending Full State to JtX0gdVZTOq1pGEDAAAd (0 chans)
+🔌 Client Disconnected: JtX0gdVZTOq1pGEDAAAd
+⚡ Client Connected: odFDEe_iE1JdvuZOAAAp
+📤 Sending Full State to odFDEe_iE1JdvuZOAAAp (0 chans)
+🔌 Client Disconnected: odFDEe_iE1JdvuZOAAAp
+⚡ Client Connected: ELKJkKczygpcaUPHAABC
+📤 Sending Full State to ELKJkKczygpcaUPHAABC (0 chans)
+🔌 Client Disconnected: ELKJkKczygpcaUPHAABC
+⚡ Client Connected: 9xHTxsBQddJcIJANAABN
+📤 Sending Full State to 9xHTxsBQddJcIJANAABN (0 chans)
+🔌 Client Disconnected: d276UQ3UqVgJaR1hAAAW
+⚡ Client Connected: foObWY5DR3BL5_Y4AABT
+📤 Sending Full State to foObWY5DR3BL5_Y4AABT (0 chans)
+🔌 Client Disconnected: foObWY5DR3BL5_Y4AABT
+⚡ Client Connected: 1Wr1JFpiw4NEKoMtAABV
+📤 Sending Full State to 1Wr1JFpiw4NEKoMtAABV (0 chans)
+🔌 Client Disconnected: 1Wr1JFpiw4NEKoMtAABV
+⚡ Client Connected: Nf2iMyT7gRh4lLFLAABX
+🔌 Client Disconnected: Nf2iMyT7gRh4lLFLAABX
+🔌 Client Disconnected: 9xHTxsBQddJcIJANAABN
+⚡ Client Connected: YgF-w7TZWY-Ij_x0AABZ
+📤 Sending Full State to YgF-w7TZWY-Ij_x0AABZ (0 chans)
+⚡ Client Connected: QUHXw5qRKFQy4eVuAABc
+📤 Sending Full State to QUHXw5qRKFQy4eVuAABc (0 chans)
+🔌 Client Disconnected: QUHXw5qRKFQy4eVuAABc
+⚡ Client Connected: -Br1ePPFTh37O9osAABg
+📤 Sending Full State to -Br1ePPFTh37O9osAABg (0 chans)
+🔌 Client Disconnected: -Br1ePPFTh37O9osAABg
+⚡ Client Connected: zJQSzvDRzrliiScYAABj
+📤 Sending Full State to zJQSzvDRzrliiScYAABj (0 chans)
+🔌 Client Disconnected: YgF-w7TZWY-Ij_x0AABZ
+⚡ Client Connected: NAS0Ogq9YXx_o5s2AABp
+📤 Sending Full State to NAS0Ogq9YXx_o5s2AABp (0 chans)
+🔌 Client Disconnected: NAS0Ogq9YXx_o5s2AABp
+⚡ Client Connected: ahwJkBnYJLF2mC7uAABu
+📤 Sending Full State to ahwJkBnYJLF2mC7uAABu (0 chans)
+🔌 Client Disconnected: ahwJkBnYJLF2mC7uAABu
+⚡ Client Connected: Binw4JaHjXawhRuNAAB7
+📤 Sending Full State to Binw4JaHjXawhRuNAAB7 (0 chans)
+🔌 Client Disconnected: Binw4JaHjXawhRuNAAB7
+⚡ Client Connected: w2_G65guA8k0NkWhAAB-
+📤 Sending Full State to w2_G65guA8k0NkWhAAB- (0 chans)
+🔌 Client Disconnected: w2_G65guA8k0NkWhAAB-
+⚡ Client Connected: YNkR12U1koChYQZ_AACS
+📤 Sending Full State to YNkR12U1koChYQZ_AACS (0 chans)
+🔌 Client Disconnected: YNkR12U1koChYQZ_AACS
+⚡ Client Connected: JnMB7_pglG6eFXSoAACY
+📤 Sending Full State to JnMB7_pglG6eFXSoAACY (0 chans)
+🔌 Client Disconnected: JnMB7_pglG6eFXSoAACY
+⚡ Client Connected: 6yp81ZVhqC-MjW83AACg
+📤 Sending Full State to 6yp81ZVhqC-MjW83AACg (0 chans)
+🔌 Client Disconnected: 6yp81ZVhqC-MjW83AACg
+⚡ Client Connected: l4LBAhq3kDbic9FQAAC4
+📤 Sending Full State to l4LBAhq3kDbic9FQAAC4 (0 chans)
+🔌 Client Disconnected: l4LBAhq3kDbic9FQAAC4
+⚡ Client Connected: -pJ0RFCFoggkHFA4AAC9
+📤 Sending Full State to -pJ0RFCFoggkHFA4AAC9 (0 chans)
+🔌 Client Disconnected: -pJ0RFCFoggkHFA4AAC9
+⚡ Client Connected: 8M6gVv9FiJxeghmcAADB
+📤 Sending Full State to 8M6gVv9FiJxeghmcAADB (0 chans)
+🔌 Client Disconnected: 8M6gVv9FiJxeghmcAADB
+⚡ Client Connected: SNW4GKECmHXC9pQ_AADI
+📤 Sending Full State to SNW4GKECmHXC9pQ_AADI (0 chans)
+🔌 Client Disconnected: SNW4GKECmHXC9pQ_AADI
+⚡ Client Connected: oDa7TwF0eevdwYtQAADc
+📤 Sending Full State to oDa7TwF0eevdwYtQAADc (0 chans)
+🔌 Client Disconnected: oDa7TwF0eevdwYtQAADc
+⚡ Client Connected: eWTQfhmR58Fqy3ALAADn
+📤 Sending Full State to eWTQfhmR58Fqy3ALAADn (0 chans)
+🔌 Client Disconnected: eWTQfhmR58Fqy3ALAADn
+⚡ Client Connected: cX44STi_mYjQcPaEAADq
+📤 Sending Full State to cX44STi_mYjQcPaEAADq (0 chans)
+🔌 Client Disconnected: cX44STi_mYjQcPaEAADq
+⚡ Client Connected: 4bFs5x396fJfnpG1AADu
+📤 Sending Full State to 4bFs5x396fJfnpG1AADu (0 chans)
+🔌 Client Disconnected: 4bFs5x396fJfnpG1AADu
+⚡ Client Connected: nV8mlAgAT9eRv_0PAADz
+📤 Sending Full State to nV8mlAgAT9eRv_0PAADz (0 chans)
+🔌 Client Disconnected: nV8mlAgAT9eRv_0PAADz
+⚡ Client Connected: wPAlUyHkUrp-EeucAAD7
+📤 Sending Full State to wPAlUyHkUrp-EeucAAD7 (0 chans)
+🔌 Client Disconnected: wPAlUyHkUrp-EeucAAD7
+⚡ Client Connected: 2ezX3cbzXTu7XmT-AAEN
+📤 Sending Full State to 2ezX3cbzXTu7XmT-AAEN (0 chans)
+🔌 Client Disconnected: 2ezX3cbzXTu7XmT-AAEN
+⚡ Client Connected: wkh58UJ18XN132BjAAEf
+📤 Sending Full State to wkh58UJ18XN132BjAAEf (0 chans)
+🔌 Client Disconnected: wkh58UJ18XN132BjAAEf
+⚡ Client Connected: V5t5o8fjom2EaXF3AAEx
+📤 Sending Full State to V5t5o8fjom2EaXF3AAEx (0 chans)
+🔌 Client Disconnected: V5t5o8fjom2EaXF3AAEx
+⚡ Client Connected: oxWPWF8kmzUbQJ3pAAFB
+📤 Sending Full State to oxWPWF8kmzUbQJ3pAAFB (0 chans)
+🔌 Client Disconnected: oxWPWF8kmzUbQJ3pAAFB
+⚡ Client Connected: fecF3CsgkGX-1sWPAAFX
+📤 Sending Full State to fecF3CsgkGX-1sWPAAFX (0 chans)
+🔌 Client Disconnected: fecF3CsgkGX-1sWPAAFX
+⚡ Client Connected: _T26jLXtTfoha1YFAAFt
+📤 Sending Full State to _T26jLXtTfoha1YFAAFt (0 chans)
+🔌 Client Disconnected: _T26jLXtTfoha1YFAAFt
+⚡ Client Connected: bIlfLUORgsmXmoVVAAFv
+📤 Sending Full State to bIlfLUORgsmXmoVVAAFv (0 chans)
+🔌 Client Disconnected: bIlfLUORgsmXmoVVAAFv
+⚡ Client Connected: sjwrUG5WhcnGmMr8AAFy
+📤 Sending Full State to sjwrUG5WhcnGmMr8AAFy (0 chans)
+🔌 Client Disconnected: sjwrUG5WhcnGmMr8AAFy
+⚡ Client Connected: 3eZHfW23tc_GRBu9AAF3
+📤 Sending Full State to 3eZHfW23tc_GRBu9AAF3 (0 chans)
+🔌 Client Disconnected: 3eZHfW23tc_GRBu9AAF3
+⚡ Client Connected: 1O9APekLIgesmRzJAAF6
+📤 Sending Full State to 1O9APekLIgesmRzJAAF6 (0 chans)
+🔌 Client Disconnected: 1O9APekLIgesmRzJAAF6
+⚡ Client Connected: B5bOL1-f47jqAoyzAAF-
+📤 Sending Full State to B5bOL1-f47jqAoyzAAF- (0 chans)
+🔌 Client Disconnected: B5bOL1-f47jqAoyzAAF-
+⚡ Client Connected: yMrV34OmUh6gHSZaAAGD
+📤 Sending Full State to yMrV34OmUh6gHSZaAAGD (0 chans)
+🔌 Client Disconnected: yMrV34OmUh6gHSZaAAGD
+⚡ Client Connected: J90Cp-cIt9BW4SoJAAGG
+📤 Sending Full State to J90Cp-cIt9BW4SoJAAGG (0 chans)
+🔌 Client Disconnected: J90Cp-cIt9BW4SoJAAGG
+⚡ Client Connected: Bz6KBemNHebkMWvKAAGM
+📤 Sending Full State to Bz6KBemNHebkMWvKAAGM (0 chans)
+🔌 Client Disconnected: Bz6KBemNHebkMWvKAAGM
+⚡ Client Connected: RVocbyJZE0tl75wIAAGi
+📤 Sending Full State to RVocbyJZE0tl75wIAAGi (0 chans)
+🔌 Client Disconnected: zJQSzvDRzrliiScYAABj
+⚡ Client Connected: miEFvhYFAQGlNCU7AAGl
+📤 Sending Full State to miEFvhYFAQGlNCU7AAGl (0 chans)
+🔌 Client Disconnected: RVocbyJZE0tl75wIAAGi
+⚡ Client Connected: dBNoiSKxpx-CsHT0AAGn
+📤 Sending Full State to dBNoiSKxpx-CsHT0AAGn (0 chans)
+🔌 Client Disconnected: miEFvhYFAQGlNCU7AAGl
+⚡ Client Connected: 3nyVHNnDej1FejRlAAGq
+📤 Sending Full State to 3nyVHNnDej1FejRlAAGq (0 chans)
+🔌 Client Disconnected: dBNoiSKxpx-CsHT0AAGn
+⚡ Client Connected: 5H8iyU8Dqe1K7TqcAAG1
+📤 Sending Full State to 5H8iyU8Dqe1K7TqcAAG1 (0 chans)
+🔌 Client Disconnected: 5H8iyU8Dqe1K7TqcAAG1
+⚡ Client Connected: 88Hvi9ta0f8dD0C9AAHC
+📤 Sending Full State to 88Hvi9ta0f8dD0C9AAHC (0 chans)
+🔌 Client Disconnected: 88Hvi9ta0f8dD0C9AAHC
+⚡ Client Connected: zaB-TFXgouw2RGC0AAHF
+📤 Sending Full State to zaB-TFXgouw2RGC0AAHF (0 chans)
+🔌 Client Disconnected: zaB-TFXgouw2RGC0AAHF
+⚡ Client Connected: DOS8m3YG8qY33H45AAHK
+📤 Sending Full State to DOS8m3YG8qY33H45AAHK (0 chans)
+🔌 Client Disconnected: DOS8m3YG8qY33H45AAHK
+⚡ Client Connected: 8L2pqfZaLxbGsPSFAAHY
+📤 Sending Full State to 8L2pqfZaLxbGsPSFAAHY (0 chans)
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🔌 Client Disconnected: 8L2pqfZaLxbGsPSFAAHY
+🎹 MIDI CC 16 (Cue Select): 2
+⚡ Client Connected: Vjs2nYD-TyNe4wEHAAHd
+📤 Sending Full State to Vjs2nYD-TyNe4wEHAAHd (0 chans)
+🎹 MIDI CC 16 (Cue Select): 2
+🎹 MIDI CC 16 (Cue Select): 2
+🔌 Client Disconnected: 3nyVHNnDej1FejRlAAGq

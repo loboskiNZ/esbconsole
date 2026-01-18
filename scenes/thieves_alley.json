@@ -1,6 +1,6 @@
 {
   "1": {
-    "level": 0.6471163034439087,
+    "level": 0.64,
     "mute": true,
     "gate": true,
     "dyn": true,
@@ -459,7 +459,7 @@
     "name": "Rack Tom 2",
     "mixSends": {
       "1": {
-        "level": 0.425
+        "level": 0.42746426763251155
       },
       "2": {
         "level": 0.465
@@ -1058,7 +1058,7 @@
     "link": true,
     "mixSends": {
       "1": {
-        "level": 0.44999998807907104
+        "level": 0.26875001192092896
       },
       "2": {
         "level": 0.48124998807907104
@@ -1154,7 +1154,7 @@
     "name": "Keys 2",
     "mixSends": {
       "1": {
-        "level": 0.4437499940395355
+        "level": 0.44999998807907104
       },
       "2": {
         "level": 0.4749999940395355
@@ -3126,41 +3126,41 @@
     "mute": false,
     "level": 0,
     "name": "Bus 11",
-    "color": "#FFFF00"
+    "color": 3
   },
   "bus12": {
-    "level": 0.4633152173913043,
+    "level": 0.4633431136608124,
     "mute": false,
     "name": "Horns",
-    "color": "#00FF00"
+    "color": 2
   },
   "bus13": {
     "level": 0,
     "mute": false,
     "name": "FX 1",
-    "color": "#FF00FF"
+    "color": 5
   },
   "bus14": {
     "level": 0,
     "mute": false,
     "name": "FX 2",
-    "color": "#FF00FF"
+    "color": 5
   },
   "bus15": {
     "level": 0,
     "mute": false,
     "name": "FX 3",
-    "color": "#FF00FF"
+    "color": 5
   },
   "bus16": {
     "level": 0,
     "mute": false,
     "name": "FX 4",
-    "color": "#FF00FF"
+    "color": 5
   },
   "master": {
     "mute": false,
-    "level": 0.8611925840377808,
+    "level": 0.52,
     "hcut": false,
     "dynGain": 0.5
   },
@@ -3195,9 +3195,9 @@
     "4": {
       "type": 16,
       "params": {
-        "1": 0.0,
-        "2": 1.0, 
-        "3": 0.0
+        "1": 0,
+        "2": 1,
+        "3": 0
       }
     },
     "5": {
@@ -3220,7 +3220,8 @@
         "3": 0.068,
         "4": 0.071
       }
-    }
+    },
+    "fxParam": 0
   },
   "undefined": {
     "preampGain": 0.54,
@@ -3232,6 +3233,6 @@
     "phantom": false
   },
   "systemConfig": {
-    "musicianPassword": "otokia"
+    "musicianPassword": "O3GQ1YKQ"
   }
 }

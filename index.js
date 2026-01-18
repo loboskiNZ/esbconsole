@@ -2989,8 +2989,12 @@ app.post('/api/osc', (req, res) => {
         // OSC.Message constructor expects (address, arg1, arg2...) 
         // passing an array [val] directly might be treated as a Blob or Array type tag
         // We must spread if it is an array
-        const msgArgs = Array.isArray(args) ? args : [args];
+        let msgArgs = Array.isArray(args) ? args : [args];
         const message = new OSC.Message(address, ...msgArgs);
+        
+        // DEBUG: Check types
+        console.log(`📤 OSC SEND: ${address} | Args:`, JSON.stringify(message.args));
+        
         osc.send(message);
         res.json({ success: true });
     } catch(e) {
@@ -3197,6 +3201,93 @@ app.post('/api/system/password', (req, res) => {
 app.get('/api/system/password', (req, res) => {
     const pass = (x32State.systemConfig && x32State.systemConfig.musicianPassword) || 'otokia';
     res.json({ password: pass });
+});
+
+// --- ADMIN SECURITY & HEALTH ---
+
+// --- ADMIN SECURITY & HEALTH ---
+
+// const emailManager = require('./emailManager'); // Already required globally
+
+// 1. ADMIN UNLOCK (Simple Password Check)
+app.post('/api/admin/unlock', (req, res) => {
+    let { password } = req.body;
+    password = password ? password.trim() : '';
+    const sysPass = (x32State.systemConfig && x32State.systemConfig.musicianPassword) || 'otokia';
+    
+    console.log(`🔐 ADMIN UNLOCK DEBUG: Received (Trimmed): "${password}" | Expected: "${sysPass}" | Match: ${password === sysPass}`);
+
+    if (password === sysPass) {
+        res.json({ success: true });
+    } else {
+        res.json({ success: false, error: 'Invalid Password' });
+    }
+});
+
+// NEW: Change Password
+app.post('/api/admin/change-password', (req, res) => {
+    let { password } = req.body;
+    if (!password || !password.trim()) return res.json({ success: false, error: "Password cannot be empty" });
+    
+    password = password.trim();
+    
+    if (!x32State.systemConfig) x32State.systemConfig = {};
+    x32State.systemConfig.musicianPassword = password;
+    
+    saveState();
+    console.log(`🔐 Admin Password Updated to: "${password}"`);
+    
+    res.json({ success: true });
+});
+
+// 2. SYSTEM HEALTH CHECK
+app.get('/api/system/health', (req, res) => {
+    // X32 Status
+    const x32Status = (osc && osc.status() === OSC.STATUS.OPEN);
+    
+    // Ableton Status (Heartbeat within last 5s)
+    const now = Date.now(); // Global beat listener updates `lastBeatBroadcast`? 
+    // Wait, `lastBeatBroadcast` variable at line 840 isn't exported?
+    // It's in global scope of index.js, so we can access it.
+    // Check if defined.
+    // NOTE: lastBeatBroadcast is defined in index.js scope.
+    const abletonActive = (now - lastBeatBroadcast) < 5000;
+
+    res.json({
+        api: true,
+        x32: x32Status,
+        abletonActive: abletonActive,
+        x32Ip: X32_IP
+    });
+});
+
+// 3. ADMIN PASSWORD RESET (Triggered by Verified O365 User)
+app.post('/api/auth/reset-password', async (req, res) => {
+    const { email } = req.body;
+    
+    // Safety Check: Verify Email matches Admin
+    if (!email || email.toLowerCase() !== 'ed@loboski.nz') {
+        return res.status(403).json({ success: false, error: "Unauthorized Email" });
+    }
+
+    // Generate Random Password
+    const newPass = Math.random().toString(36).slice(-8).toUpperCase();
+    
+    // Update System Config
+    if (!x32State.systemConfig) x32State.systemConfig = {};
+    x32State.systemConfig.musicianPassword = newPass; // "musicianPassword" acts as System Admin Pass currently
+    saveState();
+    
+    console.log(`🔐 Password Reset for ${email}. New Pass: ${newPass}`);
+
+    // Send Email
+    try {
+        await emailManager.sendPasswordReset(email, newPass);
+        res.json({ success: true });
+    } catch (e) {
+        console.error("Failed to send reset email:", e);
+        res.status(500).json({ success: false, error: "Email failed" });
+    }
 });
 
 // --- ENDPOINTS ---
@@ -3414,5 +3505,5 @@ app.use((req, res) => {
 
 server.listen(PORT, () => {
   const protocol = server instanceof https.Server ? 'https' : 'http';
-  console.log(`🌟 Controller v2.13.3 running at ${protocol}://localhost:${PORT}`);
+  console.log(`🌟 Controller v2.15.1 running at ${protocol}://localhost:${PORT}`);
 });

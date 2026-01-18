@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import AdminLoginOverlay from './AdminLoginOverlay';
 import SetlistManager from './SetlistManager';
 import SharePointBrowser from './SharePointBrowser';
 import MusiciansManager from './MusiciansManager';
@@ -516,6 +517,20 @@ function AppContent() {
   const [presets, setPresets] = useState({}); // Dynamic Presets
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [newPresetName, setNewPresetName] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+      // Persist login across refreshes
+      return localStorage.getItem('adminAuth') === 'true';
+  });
+
+  // Sync Auth to LocalStorage
+  useEffect(() => {
+      if (isAuthenticated) localStorage.setItem('adminAuth', 'true');
+      else localStorage.removeItem('adminAuth');
+  }, [isAuthenticated]);
+
+  // if (!isAuthenticated) {
+  //     return <AdminLoginOverlay onLogin={() => setIsAuthenticated(true)} />;
+  // }
 
   // Persist view state
   useEffect(() => {
@@ -803,7 +818,9 @@ function AppContent() {
 
 
 
-  return (
+  return !isAuthenticated ? (
+      <AdminLoginOverlay onLogin={() => setIsAuthenticated(true)} />
+  ) : (
     <div className="app-container">
       <SystemMonitor socket={socket} />
 
@@ -820,7 +837,7 @@ function AppContent() {
                     
                     {/* TITLE ROW */}
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.15.0</span></h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.15.1</span></h1>
                     </div>
                     
                     {/* NAVIGATION ROW (Under Title) */}
@@ -872,6 +889,37 @@ function AppContent() {
 
             {/* RIGHT: Master Controls & Scenes */}
              <div style={{display:'flex', gap:'15px', alignItems:'center', height:'100%'}}>
+                 <button 
+                    onClick={async () => {
+                        const newPass = prompt("Enter new Admin Password:");
+                        if (newPass) {
+                            try {
+                                const res = await axios.post('/api/admin/change-password', { password: newPass });
+                                if (res.data.success) alert("Password Updated!");
+                                else alert("Error: " + res.data.error);
+                            } catch(e) {
+                                alert("Failed to update password");
+                            }
+                        }
+                    }} 
+                    style={{
+                        background:'#222', border:'1px solid #444', color:'#888', 
+                        padding:'5px 10px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold', fontSize:'0.7em', height: '40px'
+                    }}
+                 >
+                    PASS
+                 </button>
+
+                 <button 
+                    onClick={() => setIsAuthenticated(false)}  
+                    style={{
+                        background:'#222', border:'1px solid #444', color:'#666', 
+                        padding:'5px 10px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold', fontSize:'0.7em', height: '40px'
+                    }}
+                    title="Lock Console"
+                >
+                    LOCK
+                </button>
                  
                  {/* MIDI DISPLAY */}
                  <div style={{
@@ -2237,7 +2285,7 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.13.3</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.15.1</div>
       </div>
       
       {activeView === 'files' && <SharePointBrowser onClose={() => setActiveView(null)} />}
@@ -2349,7 +2397,7 @@ function AppContent() {
               {toast.type === 'info' && <span className="spinner">↻</span>}
               {toast.msg}
           </div>
-      )}
+       )}
     </div>
   );
 }

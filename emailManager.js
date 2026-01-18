@@ -168,4 +168,47 @@ async function sendChartsEmail(musician, setlistId) {
     }
 }
 
-module.exports = { sendChartsEmail };
+/**
+ * Sends a password reset email to the admin.
+ * @param {string} targetEmail - The email to send the new password to.
+ * @param {string} newPassword - The new system password.
+ */
+async function sendPasswordReset(targetEmail, newPassword) {
+    // 1. Auth
+    const token = await serverAuthManager.getAppToken();
+    const client = Client.init({
+        authProvider: (done) => done(null, token)
+    });
+
+    // 2. Compose Email
+    const mail = {
+        message: {
+            subject: `ACTION REQUIRED: Console Password Reset`,
+            body: {
+                contentType: "HTML",
+                content: `
+                    <h3>Password Reset Request</h3>
+                    <p>The Admin Console password has been reset.</p>
+                    <p><strong>New Password:</strong> <span style="font-family:monospace; font-size:1.2em; background:#eee; padding:2px 5px;">${newPassword}</span></p>
+                    <p>Please log in and optionally change this password in the System Settings.</p>
+                    <p><em>If you did not request this, please secure your system immediately.</em></p>
+                `
+            },
+            toRecipients: [
+                { emailAddress: { address: targetEmail } }
+            ]
+        },
+        saveToSentItems: false
+    };
+
+    // 3. Send
+    // Send FROM the admin email to ensure it looks legitimate and is in the tenant
+    const senderEmail = "ed@loboski.nz"; 
+    
+    console.log(`Sending Password Reset email to ${targetEmail} from ${senderEmail}...`);
+    
+    await client.api(`/users/${senderEmail}/sendMail`).post(mail);
+    return { success: true };
+}
+
+module.exports = { sendChartsEmail, sendPasswordReset };
