@@ -1,7 +1,7 @@
 {
   "name": "client",
   "private": true,
-  "version": "2.15.1",
+  "version": "2.15.2",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,11 +17,13 @@
     "@dnd-kit/utilities": "^3.2.2",
     "axios": "^1.13.2",
     "classnames": "^2.5.1",
+    "html2canvas": "^1.4.1",
     "lucide-react": "^0.562.0",
     "pdfjs-dist": "^5.4.530",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
     "react-image-crop": "^11.0.10",
     "socket.io-client": "^4.8.3"
   },

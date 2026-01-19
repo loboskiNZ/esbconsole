@@ -601,7 +601,7 @@
     }
   },
   "7": {
-    "level": 0.49462366104125977,
+    "level": 0.46,
     "mute": true,
     "gate": false,
     "dyn": true,
@@ -1058,7 +1058,7 @@
     "link": true,
     "mixSends": {
       "1": {
-        "level": 0.26875001192092896
+        "level": 0.44999998807907104
       },
       "2": {
         "level": 0.48124998807907104
@@ -1154,7 +1154,7 @@
     "name": "Keys 2",
     "mixSends": {
       "1": {
-        "level": 0.44999998807907104
+        "level": 0.4437499940395355
       },
       "2": {
         "level": 0.4749999940395355
@@ -2080,7 +2080,7 @@
     "dynAttack": 0.1,
     "dynHold": 0,
     "dynRelease": 0.4,
-    "color": "#0000FF",
+    "color": "#FF0000",
     "labelColor": "white",
     "eqBands": {
       "1": {
@@ -2108,7 +2108,7 @@
         "type": 2
       }
     },
-    "name": "Vox Davina",
+    "name": "Cuatro",
     "mixSends": {
       "2": {
         "level": 0.6000000238418579
@@ -3064,24 +3064,24 @@
   "manualSafes": [],
   "bus1": {
     "level": 0.7272727489471436,
-    "mute": false,
+    "mute": true,
     "name": "Vox Ed",
     "color": 4
   },
   "bus2": {
     "level": 0.7546432018280029,
-    "mute": false,
+    "mute": true,
     "name": "Vox Nathan",
     "color": 4
   },
   "bus3": {
-    "mute": false,
+    "mute": true,
     "level": 0.759530782699585,
     "name": "Vox Claire",
     "color": 4
   },
   "bus4": {
-    "mute": false,
+    "mute": true,
     "level": 0.7653958797454834,
     "name": "Vox Alan",
     "color": 4
@@ -3093,44 +3093,44 @@
     "color": 4
   },
   "bus6": {
-    "mute": false,
-    "level": 0.759530782699585,
+    "mute": true,
+    "level": 0.7751710414886475,
     "name": "Vox Davina",
     "color": 4
   },
   "bus7": {
-    "mute": false,
+    "mute": true,
     "level": 0.7546432018280029,
     "name": "Drums",
     "color": 6
   },
   "bus8": {
-    "mute": false,
+    "mute": true,
     "level": 0.759530782699585,
     "name": "Bass",
     "color": 5
   },
   "bus9": {
-    "mute": false,
+    "mute": true,
     "level": 0.759530782699585,
     "name": "Keys",
     "color": 3
   },
   "bus10": {
-    "mute": false,
-    "level": 0.6246334314346313,
+    "mute": true,
+    "level": 0.7546432018280029,
     "name": "Gat",
     "color": 1
   },
   "bus11": {
-    "mute": false,
+    "mute": true,
     "level": 0,
     "name": "Bus 11",
     "color": 3
   },
   "bus12": {
-    "level": 0.4633431136608124,
-    "mute": false,
+    "level": 0.7702834606170654,
+    "mute": true,
     "name": "Horns",
     "color": 2
   },
@@ -3144,19 +3144,19 @@
     "level": 0,
     "mute": false,
     "name": "FX 2",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus15": {
     "level": 0,
     "mute": false,
     "name": "FX 3",
-    "color": 5
+    "color": "#FF00FF"
   },
   "bus16": {
     "level": 0,
     "mute": false,
     "name": "FX 4",
-    "color": 5
+    "color": "#FF00FF"
   },
   "master": {
     "mute": false,
@@ -3234,5 +3234,535 @@
   },
   "systemConfig": {
     "musicianPassword": "otokia"
+  },
+  "stagePlot": {
+    "width": 8,
+    "depth": 6,
+    "items": [
+      {
+        "id": "1768715461836",
+        "type": "laptop",
+        "x": 550.36328125,
+        "y": 440.9765625,
+        "channelIds": [
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ],
+        "customLabel": "Machines",
+        "icon": "laptop",
+        "linkedMusicianId": "mk96kye8na28umt2w2",
+        "scale": 1.5
+      },
+      {
+        "id": "1768715473669",
+        "type": "drum",
+        "x": 599.21484375,
+        "y": 122.59765625,
+        "channelIds": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "customLabel": "Drums",
+        "icon": "drum",
+        "linkedMusicianId": "mk96nscv54so8b88ss4",
+        "scale": 2.2
+      },
+      {
+        "id": "1768715521350",
+        "type": "amp",
+        "x": 997.61328125,
+        "y": 211.65625,
+        "channelIds": [
+          10
+        ],
+        "customLabel": "Gat Amp",
+        "icon": "amp",
+        "linkedMusicianId": "mk96qpzyk03gidjc8wr",
+        "scale": 1.2
+      },
+      {
+        "id": "1768715608795",
+        "type": "keyboard",
+        "x": 127.6015625,
+        "y": 231.47265625,
+        "channelIds": [
+          11,
+          12
+        ],
+        "customLabel": "Keyboard",
+        "icon": "keyboard",
+        "linkedMusicianId": "mk96s6qfahvj4kjpeon",
+        "scale": 1.5
+      },
+      {
+        "id": "1768715636940",
+        "type": "sax",
+        "x": 931.87109375,
+        "y": 529.3671875,
+        "channelIds": [
+          15
+        ],
+        "customLabel": "Emma Mckinlay",
+        "icon": "sax",
+        "linkedMusicianId": "mk9mkza86x0ya3zbyff"
+      },
+      {
+        "id": "1768715645866",
+        "type": "trombone",
+        "x": 851.6953125,
+        "y": 532.4453125,
+        "channelIds": [
+          14
+        ],
+        "customLabel": "Trombone",
+        "icon": "trombone",
+        "linkedMusicianId": "mk9miysrfmgoxh0wp48"
+      },
+      {
+        "id": "1768715692286",
+        "type": "mic",
+        "x": 389.28515625,
+        "y": 562.484375,
+        "channelIds": [
+          18
+        ],
+        "customLabel": "Nathan Hill",
+        "icon": "mic",
+        "linkedMusicianId": "mk96n7bo1erl10qx5w8"
+      },
+      {
+        "id": "1768715697974",
+        "type": "mic",
+        "x": 311.78515625,
+        "y": 592.34765625,
+        "channelIds": [
+          19
+        ],
+        "customLabel": "Claire Hones",
+        "icon": "mic",
+        "linkedMusicianId": "mk9moawgoiirjagzqlb"
+      },
+      {
+        "id": "1768715700915",
+        "type": "mic",
+        "x": 216.921875,
+        "y": 596.78125,
+        "channelIds": [
+          21
+        ],
+        "customLabel": "Hyram Ballard",
+        "icon": "mic",
+        "linkedMusicianId": "mk9mcy3d89a5wvaqjww"
+      },
+      {
+        "id": "1768715703449",
+        "type": "mic",
+        "x": 625.453125,
+        "y": 394.5625,
+        "channelIds": [
+          17
+        ],
+        "customLabel": "Ed Lobo",
+        "icon": "mic",
+        "linkedMusicianId": "mk96kye8na28umt2w2"
+      },
+      {
+        "id": "1768715709999",
+        "type": "mic",
+        "x": 122.4921875,
+        "y": 570.6328125,
+        "channelIds": [
+          20
+        ],
+        "customLabel": "Alan Gray",
+        "icon": "mic",
+        "linkedMusicianId": "mk9mb9ctzomhp6nfdy"
+      },
+      {
+        "id": "1768715953091",
+        "type": "guitar",
+        "x": 341.47265625,
+        "y": 197.1484375,
+        "channelIds": [
+          10
+        ],
+        "customLabel": "guitar",
+        "icon": "guitar",
+        "linkedMusicianId": "mk96qpzyk03gidjc8wr",
+        "scale": 1.6
+      },
+      {
+        "id": "1768715979174",
+        "type": "trumpet",
+        "x": 1024.5625,
+        "y": 524.89453125,
+        "channelIds": [
+          16
+        ],
+        "customLabel": "trumpet",
+        "icon": "trumpet",
+        "linkedMusicianId": "mk9mn5y688ux7eljck9"
+      },
+      {
+        "id": "1768717225938",
+        "type": "guitar",
+        "x": 211.64453125,
+        "y": 538.15234375,
+        "channelIds": [
+          22
+        ],
+        "customLabel": "Cuatro",
+        "icon": "guitar",
+        "scale": 1,
+        "linkedMusicianId": "mk9mcy3d89a5wvaqjww"
+      },
+      {
+        "id": "1768724110739",
+        "type": "monitor",
+        "x": 949.64453125,
+        "y": 718.2265625,
+        "channelIds": [],
+        "customLabel": "Monitor",
+        "icon": "monitor",
+        "scale": 1.9
+      },
+      {
+        "id": "1768724138968",
+        "type": "iem",
+        "x": 690.64453125,
+        "y": 349.22265625,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768724720764",
+        "type": "sousaphone",
+        "x": 1113.09765625,
+        "y": 521.26171875,
+        "channelIds": [
+          13
+        ],
+        "customLabel": "Sousaphone",
+        "icon": "sousaphone",
+        "scale": 1,
+        "linkedMusicianId": "mk9mgait0t8e1s9a8qic"
+      },
+      {
+        "id": "1768724858980",
+        "type": "monitor",
+        "x": 99.83203125,
+        "y": 334.9375,
+        "channelIds": [],
+        "customLabel": "Monitor",
+        "icon": "monitor",
+        "scale": 1.7
+      },
+      {
+        "id": "1768724922722",
+        "type": "amp",
+        "x": 332.74609375,
+        "y": 124.19921875,
+        "channelIds": [
+          10
+        ],
+        "customLabel": "Amp",
+        "icon": "amp",
+        "scale": 1,
+        "linkedMusicianId": "mk96qpzyk03gidjc8wr"
+      },
+      {
+        "id": "1768724949101",
+        "type": "iem",
+        "x": 407.71875,
+        "y": 147.75,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768724953243",
+        "type": "iem",
+        "x": 591.265625,
+        "y": 35.3359375,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768724962322",
+        "type": "iem",
+        "x": 86.07421875,
+        "y": 522.9921875,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768724978255",
+        "type": "iem",
+        "x": 304.34375,
+        "y": 535.5703125,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768724983280",
+        "type": "iem",
+        "x": 234.0625,
+        "y": 488.98046875,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768725007788",
+        "type": "iem",
+        "x": 398.81640625,
+        "y": 505.5546875,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768725016735",
+        "type": "iem",
+        "x": 932.7734375,
+        "y": 477.52734375,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768725037497",
+        "type": "iem",
+        "x": 851.234375,
+        "y": 484.1875,
+        "channelIds": [],
+        "customLabel": "IEM",
+        "icon": "headphones",
+        "scale": 1
+      },
+      {
+        "id": "1768725048701",
+        "type": "monitor",
+        "x": 214.88671875,
+        "y": 690.82421875,
+        "channelIds": [],
+        "customLabel": "Monitor",
+        "icon": "monitor",
+        "scale": 1
+      },
+      {
+        "id": "1768725056730",
+        "type": "monitor",
+        "x": 568.91796875,
+        "y": 590.21484375,
+        "channelIds": [],
+        "customLabel": "Monitor",
+        "icon": "monitor",
+        "scale": 1
+      }
+    ]
+  },
+  "inputList": {
+    "ch1": {
+      "label": "",
+      "stand": "short",
+      "mic": "E902"
+    },
+    "ch17": {
+      "mic": "SM58"
+    },
+    "ch18": {
+      "mic": "SM58"
+    },
+    "ch19": {
+      "mic": "SM58"
+    },
+    "ch20": {
+      "mic": "SM58"
+    },
+    "ch21": {
+      "mic": "SM58"
+    },
+    "ch22": {
+      "mic": "Jack ",
+      "di": true
+    },
+    "ch23": {
+      "mic": "XLR"
+    },
+    "ch10": {
+      "di": false,
+      "mic": "SM57",
+      "stand": "short"
+    },
+    "ch11": {
+      "mic": "Jack",
+      "di": true
+    },
+    "ch12": {
+      "mic": "Jack",
+      "di": true
+    },
+    "ch24": {
+      "mic": "XLR"
+    },
+    "ch25": {
+      "mic": "XLR"
+    },
+    "ch26": {
+      "mic": "XLR"
+    },
+    "ch27": {
+      "mic": "XLR"
+    },
+    "ch28": {
+      "mic": "XLR"
+    },
+    "ch29": {
+      "mic": "XLR"
+    },
+    "ch30": {
+      "mic": "XLR"
+    },
+    "ch31": {
+      "mic": "XLR"
+    },
+    "ch32": {
+      "mic": "XLR"
+    },
+    "ch9": {
+      "di": true,
+      "mic": "jack"
+    },
+    "ch15": {
+      "phantom": true,
+      "mic": "SM58",
+      "stand": "tall"
+    },
+    "ch13": {
+      "mic": "SM57",
+      "stand": "tall"
+    },
+    "ch2": {
+      "stand": "clip",
+      "mic": "E604"
+    },
+    "ch3": {
+      "stand": "tall",
+      "mic": "Rode M3"
+    },
+    "ch4": {
+      "stand": "clip",
+      "mic": "E604"
+    },
+    "ch5": {
+      "stand": "clip",
+      "mic": "E604"
+    },
+    "ch6": {
+      "stand": "clip",
+      "mic": "E604"
+    },
+    "ch7": {
+      "stand": "tall",
+      "mic": "R0deM5"
+    },
+    "ch8": {
+      "stand": "tall",
+      "mic": "R0deM5"
+    },
+    "ch14": {
+      "mic": "SM58",
+      "stand": "tall"
+    },
+    "ch16": {
+      "mic": "SM58",
+      "stand": "tall"
+    },
+    "bus1": {
+      "mic": "IEM"
+    },
+    "bus2": {
+      "mic": "IEM"
+    },
+    "bus3": {
+      "mic": "IEM"
+    },
+    "bus4": {
+      "mic": "IEM"
+    },
+    "bus5": {
+      "mic": "IEM"
+    },
+    "bus6": {
+      "mic": "IEM"
+    },
+    "bus7": {
+      "mic": "IEM/Monitor"
+    },
+    "bus8": {
+      "mic": "IEM"
+    },
+    "bus9": {
+      "mic": "Monitor"
+    },
+    "bus10": {
+      "mic": "IEM"
+    },
+    "bus11": {
+      "mic": "Monitors - Full stage fill"
+    },
+    "bus12": {
+      "mic": "IEM/monitors"
+    }
+  },
+  "sceneMetadata": {
+    "venue": "Bath Street Carpark, Dunedin",
+    "date": "2026-02-07",
+    "promoter": {
+      "name": "Alan Gray",
+      "email": "alannedgray@gmail.com",
+      "phone": "0212393107"
+    },
+    "sceneTech": {
+      "name": "Ed Lobo",
+      "email": "ed@loboski.nz",
+      "phone": "0279254282"
+    },
+    "stageTech": {
+      "name": "",
+      "email": "",
+      "phone": ""
+    },
+    "soundEng": {
+      "name": "Dave Bennett",
+      "email": "dave.bennett@strawberrysound.co.nz",
+      "phone": "0211088706"
+    },
+    "time": "19:00"
   }
 }

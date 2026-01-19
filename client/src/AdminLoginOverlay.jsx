@@ -215,7 +215,7 @@ const AdminLoginOverlay = ({ onLogin }) => {
 
             <div style={{marginTop: '40px', color: '#444', fontSize: '0.8em'}}>
                 <ShieldCheck size={14} style={{verticalAlign:'middle', marginRight:'5px'}}/> 
-                SECURE SESSIONS • SYSTEM v2.15.1
+                SECURE SESSIONS • SYSTEM v{__APP_VERSION__}
             </div>
             
             <style>{`

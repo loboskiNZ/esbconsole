@@ -10,6 +10,7 @@ import SafesOverlay from './SafesOverlay';
 import DubOverlay from './components/DubOverlay';
 import MusicianApp from './MusicianApp';
 import SceneLoadingOverlay from './components/SceneLoadingOverlay';
+import SceneMetadataForm from './components/SceneMetadataForm';
 import './index.css';
 
 const socket = io('/', { path: '/socket.io' });
@@ -517,6 +518,9 @@ function AppContent() {
   const [presets, setPresets] = useState({}); // Dynamic Presets
   const [showSavePresetModal, setShowSavePresetModal] = useState(false);
   const [newPresetName, setNewPresetName] = useState("");
+  const [showMetadataForm, setShowMetadataForm] = useState(false);
+  const [metadataToEdit, setMetadataToEdit] = useState(null);
+  const [pendingSceneName, setPendingSceneName] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
       // Persist login across refreshes
       return localStorage.getItem('adminAuth') === 'true';
@@ -757,18 +761,40 @@ function AppContent() {
       await axios.post('/api/set-param', { channelId, type, value: newState });
   };
 
-  const handleSaveScene = async () => {
+  /* New Metadata Save Flow */
+  const handleSaveSceneClick = () => {
     const name = prompt("Enter scene name:");
     if (!name) return;
-    try {
-      await axios.post('/api/scenes', { name });
-      setScenes(prev => [...prev, name]);
-      alert("Scene saved!");
-    } catch (err) {
-      console.error("Failed to save scene", err);
-      alert("Error saving scene");
-    }
+    setPendingSceneName(name);
+    setMetadataToEdit(null); // Ensure blank for new
+    setShowMetadataForm(true);
   };
+
+  const executeSaveScene = async (metadata) => {
+      try {
+          await axios.post('/api/scenes/save', { name: pendingSceneName, metadata });
+          // Optimistic add (though socket might update too)
+          // setScenes(...) - handled by fetch/socket usually
+          alert("Scene saved!");
+          setShowMetadataForm(false);
+          setPendingSceneName(null);
+          setMetadataToEdit(null);
+          // Refresh list
+          axios.get('/api/scenes').then(res => {
+                const list = res.data.map(item => {
+                    if (typeof item === 'string') return { name: item, metadata: {} };
+                    return item;
+                });
+                setScenes(list);
+          });
+      } catch (err) {
+          console.error(err);
+          alert("Error saving scene");
+      }
+  };
+
+  /* Legacy direct save replaced by above */
+  const handleSaveScene = handleSaveSceneClick;
 
   const handleLoadScene = async (name) => {
     if (!confirm(`Load scene "${name}"? Current settings will be overwritten.`)) return;
@@ -792,15 +818,16 @@ function AppContent() {
       }
   };
 
-  const handleOverwriteScene = async (name) => {
-      if (!confirm(`Overwrite scene "${name}" with current settings?`)) return;
-      try {
-          await axios.post('/api/scenes', { name });
-          alert("Scene updated!");
-      } catch (err) {
-          console.error("Failed to save scene", err);
-          alert("Error saving scene");
-      }
+  const handleOverwriteScene = (name) => {
+      // Find existing
+      const existing = scenes.find(s => (s.name || s) === name);
+      const meta = existing && existing.metadata ? existing.metadata : {};
+      
+      if (!confirm(`Modify/Overwrite scene "${name}"?`)) return;
+      
+      setPendingSceneName(name);
+      setMetadataToEdit(meta);
+      setShowMetadataForm(true);
   };
   
   const openOverlay = (channelId, type, title) => {
@@ -837,7 +864,7 @@ function AppContent() {
                     
                     {/* TITLE ROW */}
                     <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v2.15.1</span></h1>
+                        <h1 style={{margin:0, color:'#ff0055', fontSize:'1.5em', textShadow:'0 0 10px rgba(255,0,85,0.5)'}}>ESB Console <span style={{fontSize:'0.4em', color:'#666', verticalAlign:'middle', border:'1px solid #444', borderRadius:'4px', padding:'2px 4px'}}>v{__APP_VERSION__}</span></h1>
                     </div>
                     
                     {/* NAVIGATION ROW (Under Title) */}
@@ -951,13 +978,27 @@ function AppContent() {
                          </div>
                      </div>
                      <div style={{display:'flex', flexDirection:'column', gap:'1px', overflowY:'auto', flex:1}}>
-                          {Array.isArray(scenes) && scenes.map(s => (
-                              <div key={s} style={{display:'flex', justifyContent:'space-between', background:'#111', padding:'1px 2px', fontSize:'0.7em', alignItems:'center'}}>
-                                  <span style={{cursor:'pointer', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}} onClick={() => handleLoadScene(s)}>{s}</span>
-                                  <button onClick={() => handleOverwriteScene(s)} style={{fontSize:'0.6em', background:'#353', color:'#afa', border:'none', marginRight:'1px'}}>💾</button>
-                                  <button onClick={() => handleDeleteScene(s)} style={{fontSize:'0.6em', background:'#533', color:'#faa', border:'none'}}>✕</button>
+                          {Array.isArray(scenes) && scenes.map(s => {
+                              const name = typeof s === 'string' ? s : s.name;
+                              const meta = (typeof s === 'object' && s.metadata) ? s.metadata : {};
+                              
+                              return (
+                              <div key={name} style={{display:'flex', justifyContent:'space-between', background:'#111', padding:'4px 2px', fontSize:'0.7em', alignItems:'center', borderBottom:'1px solid #222'}}>
+                                  <div style={{display:'flex', flexDirection:'column', flex:1, cursor:'pointer', overflow:'hidden'}} onClick={() => handleLoadScene(name)}>
+                                      <span style={{whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', fontWeight:'bold', color:'white'}}>{name}</span>
+                                      {/* Simplified Date Only */}
+                                      {meta.date && (
+                                          <span style={{color:'#666', fontSize:'0.8em'}}>
+                                            {meta.date}
+                                          </span>
+                                      )}
+                                  </div>
+                                  <div style={{display:'flex'}}>
+                                    <button onClick={() => handleOverwriteScene(name)} style={{fontSize:'1em', background:'none', border:'none', marginRight:'5px', cursor:'pointer'}}>💾</button>
+                                    <button onClick={() => handleDeleteScene(name)} style={{fontSize:'1em', background:'none', color:'#d44', border:'none', cursor:'pointer'}}>✕</button>
+                                  </div>
                               </div>
-                          ))}
+                          )})}
                      </div>
                  </div>
 
@@ -2285,7 +2326,7 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v2.15.1</div>
+         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v{__APP_VERSION__}</div>
       </div>
       
       {activeView === 'files' && <SharePointBrowser onClose={() => setActiveView(null)} />}
@@ -2398,6 +2439,16 @@ function AppContent() {
               {toast.msg}
           </div>
        )}
+       {/* SCENE METADATA FORM */}
+
+        {showMetadataForm && (
+             <SceneMetadataForm 
+                 sceneName={pendingSceneName}
+                 initialData={metadataToEdit || {}}
+                 onSave={executeSaveScene}
+                 onCancel={() => { setShowMetadataForm(false); setPendingSceneName(null); setMetadataToEdit(null); }}
+             />
+        )}
     </div>
   );
 }

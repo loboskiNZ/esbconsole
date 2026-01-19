@@ -14,6 +14,8 @@ const fs = require('fs');
 const multer = require('multer');
 const PizZip = require('pizzip');
 const Docxtemplater = require('docxtemplater');
+const ImageModule = require('docxtemplater-image-module-free');
+const { exec } = require('child_process');
 const { performStartupBackup } = require('./backup_system');
 const { organizeSharePoint } = require('./sharePointOrganizor');
 
@@ -282,6 +284,7 @@ const io = socketIo(server, { cors: { origin: '*' } });
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'client/dist')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/sharepoint', express.static(path.join(__dirname, 'sharepoint')));
 
 const PORT = 3000;
 const X32_PORT = 10023;
@@ -343,25 +346,277 @@ process.on('SIGTERM', handleShutdown);
 
 // --- SCENES API ---
 
+// --- SCENES API ---
+
 app.get('/api/scenes', (req, res) => {
     const scenesDir = path.join(__dirname, 'scenes');
     if (!fs.existsSync(scenesDir)) fs.mkdirSync(scenesDir);
     
     fs.readdir(scenesDir, (err, files) => {
         if (err) return res.status(500).json({ error: err.message });
-        const scenes = files.filter(f => f.endsWith('.json')).map(f => f.replace('.json', ''));
+        const scenes = files.filter(f => f.endsWith('.json')).map(f => {
+            const name = f.replace('.json', '');
+            const filePath = path.join(scenesDir, f);
+            let mtime = new Date(0); // Default epoch
+            try {
+                const stats = fs.statSync(filePath);
+                mtime = stats.mtime;
+                
+                // Peek for metadata
+                const content = fs.readFileSync(filePath, 'utf8');
+                const data = JSON.parse(content);
+                return { name, metadata: data.sceneMetadata || {}, mtime };
+            } catch (e) {
+                return { name, metadata: {}, mtime };
+            }
+        })
+        // Sort by Newest First
+        .sort((a, b) => b.mtime - a.mtime);
+
         res.json(scenes);
     });
 });
 
+// Get User Data for specific scene (New endpoint for Rider Generation)
+app.get('/api/scenes/:name', (req, res) => {
+    const scenesDir = path.join(__dirname, 'scenes');
+    const name = req.params.name;
+    const sceneFile = path.join(scenesDir, `${name}.json`);
+    
+    if (fs.existsSync(sceneFile)) {
+        res.sendFile(sceneFile);
+    } else {
+        res.status(404).json({ error: "Scene not found" });
+    }
+});
 
+app.post('/api/rider/generate', (req, res) => {
+    console.log("🚀 Received Rider Generation Request");
+    // Accept base64 image for plot only
+    const { name, metadata, stagePlotImage } = req.body;
+    console.log(`📝 Generating rider for scene: ${name} (Stage Plot Present: ${!!stagePlotImage})`);
 
+    if (!name) return res.status(400).json({ error: "Scene name required" });
 
+    // 1. Prepare Paths
+    const scenesDir = path.join(__dirname, 'scenes');
+    const templatePath = path.join(__dirname, 'resources', 'ESB_Tech_Rider.docx');
+    const outputDir = path.join(__dirname, 'sharepoint', 'Tech_Riders');
+    const tempDir = path.join(__dirname, 'temp');
+    
+    // Log paths
+    console.log(`📂 Paths: \nTemplate: ${templatePath}\nOutput: ${outputDir}`);
+
+    if (!fs.existsSync(outputDir)) {
+        console.log("Creating output dir...");
+        fs.mkdirSync(outputDir, { recursive: true });
+    }
+    if (!fs.existsSync(tempDir)) {
+         fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    // 2. Load Scene Data for Input List
+    const sceneFile = path.join(scenesDir, `${name}.json`);
+    let inputListArray = [];
+    let outputListArray = [];
+
+    if (fs.existsSync(sceneFile)) {
+        try {
+            const sceneData = JSON.parse(fs.readFileSync(sceneFile, 'utf8'));
+            // Get Root Input List (metadata is stored at sceneData.inputList.chX)
+            const rootInputList = sceneData.inputList || {};
+            
+            // Extract channels
+            for (let i = 1; i <= 32; i++) {
+                // Correctly resolve channel data (numeric keys "1", "2")
+                let chData = sceneData[i.toString()] || sceneData[i.toString().padStart(2, '0')] || sceneData[`ch${i.toString().padStart(2, '0')}`];
+                
+                
+                // Get Root Input List (metadata is stored at sceneData.inputList.chX)
+                // const rootInputList = sceneData.inputList || {}; // Moved up
+                const listKey = `ch${i}`; // Keys are ch1, ch2... ch10 (no zero pad based on file inspection)
+                // Try fallback keys just in case
+                const meta = rootInputList[listKey] || rootInputList[`ch${i.toString().padStart(2, '0')}`] || (chData?.inputList || {});
+                
+                // Helper for checkbox bools
+                const yn = (val) => val ? 'Yes' : '-';
+                
+                // Get name from config or root or default
+                const chName = (chData?.config?.name) || (chData?.name) || `Ch ${i}`;
+                
+                // Phantom comes from HARDWARE state (chData.phantom), fallback to metadata if scene is partial
+                const hasPhantom = (chData && chData.phantom) || meta.phantom;
+
+                if (meta.mic || meta.source || (chData && (chData.name || chData.config?.name))) {
+                    const item = {
+                        ch: i,
+                        name: chName,
+                        mic: meta.mic || '',
+                        stand: (meta.stand && meta.stand !== 'no') ? meta.stand : '',
+                        phantom: yn(hasPhantom), // Use hardware state
+                        di: yn(meta.di)
+                    };
+                    inputListArray.push(item);
+                    
+                    if (item.mic || item.stand) {
+                         console.log(`🔍 [Rider] Ch ${i} Extracted: Name="${item.name}" Mic="${item.mic}" Stand="${item.stand}" (Key: ${listKey})`);
+                    }
+                }
+            }
+            console.log(`✅ Input List Array built: ${inputListArray.length} items`);
+
+            // Extract Outputs (Buses 1-16 + Matrix?)
+            for (let i = 1; i <= 16; i++) {
+                const busKey = `bus${i}`;
+                const busData = sceneData[busKey] || sceneData[`bus${i.toString().padStart(2, '0')}`];
+                
+                // User Feature: Use Input Ch X "Mic" field as Bus X "Type" (Mic)
+                // This allows them to use the existing UI to tag buses as "IEM", "Wedge", etc.
+                const linkedInputKey = `ch${i}`;
+                const linkedInputMeta = rootInputList[linkedInputKey] || rootInputList[`ch${i.toString().padStart(2, '0')}`] || {};
+                const linkedMic = linkedInputMeta.mic || '';
+
+                if (busData && busData.name) {
+                    outputListArray.push({
+                        id: `Bus ${i}`,
+                        name: busData.name,
+                        mic: linkedMic, // Maps ch1 mic -> bus1 mic
+                        notes: '' 
+                    });
+                }
+            }
+            // Add Main L/R ? 
+            // Usually rider outputs focus on Monitors/Aux sends. Main L/R is assumed.
+            console.log(`✅ Output List Array built: ${outputListArray.length} items`);
+
+        } catch (e) {
+            console.error("Error reading scene file for rider:", e);
+        }
+    } else {
+        console.warn(`⚠️ Scene file not found at ${sceneFile}`);
+    }
+
+    // 3. Prepare Data for Template
+    const meta = metadata || {};
+    const data = {
+        sceneName: name,
+        sceneDate: meta.date || 'TBD',
+        sceneTime: meta.time || 'TBD',
+        
+        // Schedule
+        loadIn: meta.loadIn || 'TBD',
+        soundCheck: meta.soundCheck || 'TBD',
+        performance: meta.performance || 'TBD',
+        packDown: meta.packDown || 'TBD',
+        
+        sceneVenue: meta.venue || 'TBD',
+        sceneContact: (meta.promoter && meta.promoter.name) ? `${meta.promoter.name} (${meta.promoter.phone || ''})` : '',
+        
+        stageTechName: meta.stageTech?.name || '',
+        stageTechPhone: meta.stageTech?.phone || '',
+        stageTechEmail: meta.stageTech?.email || '',
+        
+        stageTechEmail: meta.stageTech?.email || '',
+        
+        // Data for Loop Table
+        inputList: inputListArray,
+        outputList: outputListArray,
+        
+        // Image Tags (must match template {%tag})
+        stagePlot: stagePlotImage ? stagePlotImage.replace('data:image/png;base64,', '') : null
+    };
+
+    try {
+        console.log("📄 Loading template...");
+        // 4. Load Template
+        const content = fs.readFileSync(templatePath, 'binary');
+        const zip = new PizZip(content);
+
+        // Configure Image Module
+        const imageOpts = {};
+        imageOpts.centered = false;
+        imageOpts.getImage = function(tagValue, tagName) {
+            if (!tagValue) {
+                 console.warn(`⚠️ Warning: Tag ${tagName} has no image data.`);
+                 // Return empty buffer or small transparent png to prevent crash?
+                 // 1x1 transparent GIF
+                 return Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+            }
+            return Buffer.from(tagValue, 'base64');
+        };
+        imageOpts.getSize = function(img, tagValue, tagName) {
+            if (tagName === 'stagePlot') return [600, 400]; // W, H
+            return [200, 200];
+        };
+        const imageModule = new ImageModule(imageOpts);
+
+        const doc = new Docxtemplater(zip, {
+            paragraphLoop: true,
+            linebreaks: true,
+            modules: [imageModule]
+        });
+
+        console.log("🖋️ Rendering data...");
+        // 5. Render
+        doc.render(data);
+
+        // 6. Write DOCX
+        const buffer = doc.getZip().generate({ type: 'nodebuffer' });
+        const docxFilename = `${name.replace(/[^a-z0-9]/gi, '_')}_Rider.docx`;
+        const tempDocxPath = path.join(tempDir, docxFilename);
+        
+        console.log(`💾 Writing temp DOCX to ${tempDocxPath}`);
+        fs.writeFileSync(tempDocxPath, buffer);
+
+        // 7. Convert to PDF using LibreOffice
+        const command = `/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "${outputDir}" "${tempDocxPath}"`;
+        
+        console.log("🔄 Generating Rider PDF with command:", command);
+        
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`🔥 LibreOffice Exec Error: ${error}`);
+                console.error(`Stderr: ${stderr}`);
+                return res.status(500).json({ error: "PDF Conversion Failed", details: stderr });
+            }
+            
+            console.log("✅ PDF Generation Success!");
+            console.log("Stdout:", stdout);
+
+            const pdfFilename = docxFilename.replace('.docx', '.pdf');
+            res.json({ 
+                success: true, 
+                path: `/sharepoint/Tech_Riders/${pdfFilename}`,
+                filename: pdfFilename
+            });
+        });
+
+    } catch (e) {
+        console.error("🔥 Rider Generation Error:", e);
+        // Special handling for docxtemplater errors
+        if (e.properties && e.properties.errors) {
+            e.properties.errors.forEach(function(err) {
+                console.error("Templating Error:", err);
+            });
+        }
+        res.status(500).json({ error: e.message });
+    }
+});
 
 app.post('/api/scenes/save', (req, res) => {
-    const { name } = req.body;
-    if (!name) return res.status(400).json({ error: "Name required" });
+    const { name, metadata } = req.body;
+    console.log(`💾 Saving Scene: "${name}"`, metadata ? "(With Metadata)" : "");
     
+    if (!name) {
+        console.error("❌ Save Error: Missing Name");
+        return res.status(400).json({ error: "Name required" });
+    }
+    
+    // Update State Wrapper
+    if (metadata) {
+        x32State.sceneMetadata = metadata;
+    }
+
     const filePath = path.join(__dirname, 'scenes', `${name}.json`);
     fs.writeFile(filePath, JSON.stringify(x32State, null, 2), (err) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -3070,7 +3325,7 @@ app.post('/api/setlist/export-docx', (req, res) => {
 const PDFDocument = require('pdfkit');
 
 // PDF Export (Server-Side Conversion via LibreOffice)
-const { exec } = require('child_process');
+
 
 app.post('/api/setlist/export-pdf', (req, res) => {
     const { setlistId } = req.body;
@@ -3237,6 +3492,66 @@ app.post('/api/admin/change-password', (req, res) => {
     saveState();
     console.log(`🔐 Admin Password Updated to: "${password}"`);
     
+    res.json({ success: true });
+});
+
+// NEW: Stage Plot API
+app.get('/api/stage-plot', (req, res) => {
+    // Return saved stage plot or default structure
+    const plot = x32State.stagePlot || { 
+        width: 8, depth: 6, items: [] 
+    };
+    res.json(plot);
+});
+
+app.post('/api/stage-plot', (req, res) => {
+    const plotData = req.body;
+    
+    // Basic validation
+    if (!plotData || typeof plotData !== 'object') {
+        return res.json({ success: false, error: "Invalid Data" });
+    }
+    
+    // Save to state
+    x32State.stagePlot = plotData;
+    saveState();
+    
+    res.json({ success: true });
+});
+
+// NEW: Input List API
+app.get('/api/input-list', (req, res) => {
+    // Return saved input list or default empty object
+    const inputs = x32State.inputList || {};
+    
+    // Also return live Console Params (Names)
+    const consoleParams = {};
+    const keys = Object.keys(x32State);
+    keys.forEach(k => {
+        // Buses & Aux
+        if (k.startsWith('aux') || k.startsWith('bus')) {
+            consoleParams[k] = { name: x32State[k]?.name || k };
+        }
+    });
+
+    // Explicitly Map Channels 1-32 (stored as "1", "2" ... in x32State)
+    for(let i=1; i<=32; i++) {
+        const id = String(i);
+        if (x32State[id]) {
+            consoleParams[`ch${i}`] = { name: x32State[id].name || `Channel ${i}` };
+        }
+    }
+
+    res.json({ inputs, consoleParams });
+});
+
+app.post('/api/input-list', (req, res) => {
+    const inputData = req.body;
+    if (!inputData || typeof inputData !== 'object') {
+        return res.json({ success: false, error: "Invalid Data" });
+    }
+    x32State.inputList = inputData;
+    saveState();
     res.json({ success: true });
 });
 
@@ -3505,5 +3820,6 @@ app.use((req, res) => {
 
 server.listen(PORT, () => {
   const protocol = server instanceof https.Server ? 'https' : 'http';
-  console.log(`🌟 Controller v2.15.1 running at ${protocol}://localhost:${PORT}`);
+  const pkg = require('./package.json');
+  console.log(`🌟 Controller v${pkg.version} running at ${protocol}://localhost:${PORT}`);
 });

@@ -1,0 +1,122 @@
+📄 Setlists Loaded
+🛡️  Performing Startup Backup to: /Volumes/WORKER/machines/x32-controller/backups/boot_2026-01-18T19-59-25-456Z
+🧹 Cleaning old backup: boot_2026-01-18T08-19-19-243Z
+🔒 HTTPS Enabled
+📂 State Loaded from Disk
+🔌 Connecting to X32 at 10.0.0.202:10023...
+🎹 All MIDI Inputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+🎹 Connecting MIDI Input to: "IAC Driver Bus 1"
+🎹 Available MIDI Outputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+✅ MIDI Output connected to: "IAC Driver Bus 1"
+--- SERVER RESTART DEBUG ---
+💡 DMX Lighting Engine Initialized (Silent Mode)
+🎹 MIDI Input connected to: "IAC Driver Bus 1"
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+✅ OSC Port Open
+🌟 Controller v2.15.1 running at https://localhost:3000
+⚡ Client Connected: wtTl8mMGYoOkVvODAAAB
+📤 Sending Full State to wtTl8mMGYoOkVvODAAAB (0 chans)
+⚡ Client Connected: sd-VoaUHqJonAyikAAAD
+📤 Sending Full State to sd-VoaUHqJonAyikAAAD (0 chans)
+⚡ Client Connected: yNKg2H_Qf4gki6J0AAAF
+📤 Sending Full State to yNKg2H_Qf4gki6J0AAAF (0 chans)
+📥 Fetching Bus Configs & Safes...
+📡 ANY OSC: /bus/01/config/name [Vox Ed]
+📡 ANY OSC: /bus/01/config/color [4]
+📡 ANY OSC: /bus/01/mix/fader [0.7272727489471436]
+📡 ANY OSC: /bus/01/mix/on [0]
+📡 ANY OSC: /bus/02/config/name [Vox Nathan]
+📡 ANY OSC: /bus/02/config/color [4]
+📡 ANY OSC: /bus/02/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/02/mix/on [0]
+📡 ANY OSC: /bus/03/config/name [Vox Claire]
+📡 ANY OSC: /bus/03/config/color [4]
+📡 ANY OSC: /bus/03/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/03/mix/on [0]
+📡 ANY OSC: /bus/04/config/name [Vox Alan]
+📡 ANY OSC: /bus/04/config/color [4]
+📡 ANY OSC: /bus/04/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/04/mix/on [0]
+📡 ANY OSC: /bus/05/config/name [Vox Hyram]
+📡 ANY OSC: /bus/05/config/color [4]
+📡 ANY OSC: /bus/05/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/05/mix/on [0]
+📡 ANY OSC: /bus/06/config/name [Vox Davina]
+📡 ANY OSC: /bus/06/config/color [4]
+📡 ANY OSC: /bus/06/mix/fader [0.7751710414886475]
+📡 ANY OSC: /bus/06/mix/on [0]
+📡 ANY OSC: /bus/07/config/name [Drums]
+📡 ANY OSC: /bus/07/config/color [6]
+📡 ANY OSC: /bus/07/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/07/mix/on [0]
+📡 ANY OSC: /bus/08/config/name [Bass]
+📡 ANY OSC: /bus/08/config/color [5]
+📡 ANY OSC: /bus/08/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/08/mix/on [0]
+📡 ANY OSC: /bus/09/config/name [Keys]
+📡 ANY OSC: /bus/09/config/color [3]
+📡 ANY OSC: /bus/09/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/09/mix/on [0]
+📡 ANY OSC: /bus/10/config/name [Gat]
+📡 ANY OSC: /bus/10/config/color [1]
+📡 ANY OSC: /bus/10/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/10/mix/on [0]
+📡 ANY OSC: /bus/11/config/name [Bus 11]
+📡 ANY OSC: /bus/11/config/color [3]
+📡 ANY OSC: /bus/11/mix/fader [0]
+📡 ANY OSC: /bus/11/mix/on [0]
+📡 ANY OSC: /bus/12/config/name [Horns]
+📡 ANY OSC: /bus/12/config/color [2]
+📡 ANY OSC: /bus/12/mix/fader [0.7702834606170654]
+📡 ANY OSC: /bus/12/mix/on [0]
+📡 ANY OSC: /bus/13/config/name [FX 1]
+📡 ANY OSC: /bus/13/config/color [5]
+🔌 Client Disconnected: wtTl8mMGYoOkVvODAAAB
+⚡ Client Connected: LFz0NL742097YTjvAAAH
+📤 Sending Full State to LFz0NL742097YTjvAAAH (0 chans)
+🔌 Client Disconnected: LFz0NL742097YTjvAAAH
+⚡ Client Connected: lgaIBa9fvF5qh95KAAAJ
+📤 Sending Full State to lgaIBa9fvF5qh95KAAAJ (0 chans)
+📤 Sending Full State to lgaIBa9fvF5qh95KAAAJ (0 chans)
+📂 SharePoint List: folder=01RI4564YCB74UVRSNKBBIJ56PUFUF5IV6 drive= site=
+   -> Query: /me/drive/items/01RI4564YCB74UVRSNKBBIJ56PUFUF5IV6/children
+Graph Item 0: {
+  "@odata.etag": "\"{39796C04-DD2A-452E-855F-372EF988E8CF},2\"",
+  "id": "01RI4564YENR4TSKW5FZCYKXZXF34YR2GP",
+  "name": "2024_05_25_Brighton Club",
+  "webUrl": "https://loboski-my.sharepoint.com/personal/ed_loboski_nz/Documents/Loboski%20Farm/Ed%20and%20the%20Shadow%20Boys/gigs/2024_05_25_Brighton%20Club",
+  "folder": {
+    "childCount": 3
+  },
+  "size": 400758743
+}
+📤 Sending Full State to lgaIBa9fvF5qh95KAAAJ (0 chans)
+🚀 Received Rider Generation Request
+📝 Generating rider for scene: thieves_alley (Images present: Plot=true, Input=true)
+📂 Paths: 
+Template: /Volumes/WORKER/machines/x32-controller/resources/ESB_Tech_Rider.docx
+Output: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders
+✅ Input List extracted: 0 channels
+📄 Loading template...
+🖋️ Rendering data...
+💾 Writing temp DOCX to /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx
+🔄 Generating Rider PDF with command: /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "/Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders" "/Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx"
+✅ PDF Generation Success!
+Stdout: convert /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx as a Writer document -> /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf using filter : writer_pdf_Export
+Overwriting: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf
+
+🚀 Received Rider Generation Request
+📝 Generating rider for scene: thieves_alley (Images present: Plot=true, Input=true)
+📂 Paths: 
+Template: /Volumes/WORKER/machines/x32-controller/resources/ESB_Tech_Rider.docx
+Output: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders
+✅ Input List extracted: 0 channels
+📄 Loading template...
+🖋️ Rendering data...
+💾 Writing temp DOCX to /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx
+🔄 Generating Rider PDF with command: /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "/Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders" "/Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx"
+📤 Sending Full State to yNKg2H_Qf4gki6J0AAAF (0 chans)
+✅ PDF Generation Success!
+Stdout: convert /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx as a Writer document -> /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf using filter : writer_pdf_Export
+Overwriting: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf
+

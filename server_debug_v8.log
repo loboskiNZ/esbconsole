@@ -1,0 +1,66 @@
+📄 Setlists Loaded
+🛡️  Performing Startup Backup to: /Volumes/WORKER/machines/x32-controller/backups/boot_2026-01-19T04-16-42-746Z
+🧹 Cleaning old backup: boot_2026-01-18T08-54-51-061Z
+🔒 HTTPS Enabled
+📂 State Loaded from Disk
+🔌 Connecting to X32 at 10.0.0.202:10023...
+🎹 All MIDI Inputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+🎹 Connecting MIDI Input to: "IAC Driver Bus 1"
+🎹 Available MIDI Outputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+✅ MIDI Output connected to: "IAC Driver Bus 1"
+--- SERVER RESTART DEBUG ---
+💡 DMX Lighting Engine Initialized (Silent Mode)
+🎹 MIDI Input connected to: "IAC Driver Bus 1"
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+✅ OSC Port Open
+🌟 Controller v2.15.1 running at https://localhost:3000
+📥 Fetching Bus Configs & Safes...
+📡 ANY OSC: /bus/01/config/name [Vox Ed]
+📡 ANY OSC: /bus/01/config/color [4]
+📡 ANY OSC: /bus/01/mix/fader [0.7272727489471436]
+📡 ANY OSC: /bus/01/mix/on [0]
+📡 ANY OSC: /bus/02/config/name [Vox Nathan]
+📡 ANY OSC: /bus/02/config/color [4]
+📡 ANY OSC: /bus/02/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/02/mix/on [0]
+📡 ANY OSC: /bus/03/config/name [Vox Claire]
+📡 ANY OSC: /bus/03/config/color [4]
+📡 ANY OSC: /bus/03/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/03/mix/on [0]
+📡 ANY OSC: /bus/04/config/name [Vox Alan]
+📡 ANY OSC: /bus/04/config/color [4]
+📡 ANY OSC: /bus/04/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/04/mix/on [0]
+📡 ANY OSC: /bus/05/config/name [Vox Hyram]
+📡 ANY OSC: /bus/05/config/color [4]
+📡 ANY OSC: /bus/05/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/05/mix/on [0]
+📡 ANY OSC: /bus/06/config/name [Vox Davina]
+📡 ANY OSC: /bus/06/config/color [4]
+📡 ANY OSC: /bus/06/mix/fader [0.7751710414886475]
+📡 ANY OSC: /bus/06/mix/on [0]
+📡 ANY OSC: /bus/07/config/name [Drums]
+📡 ANY OSC: /bus/16/mix/fader [0]
+📡 ANY OSC: /bus/16/mix/on [1]
+⚡ Client Connected: uaeekdndIC2OKiDlAAAB
+📤 Sending Full State to uaeekdndIC2OKiDlAAAB (0 chans)
+🔌 Client Disconnected: uaeekdndIC2OKiDlAAAB
+⚡ Client Connected: zBaEwNK5OirQZq8eAAAD
+📤 Sending Full State to zBaEwNK5OirQZq8eAAAD (0 chans)
+🚀 Received Rider Generation Request
+📝 Generating rider for scene: thieves_alley (Stage Plot Present: true)
+📂 Paths: 
+Template: /Volumes/WORKER/machines/x32-controller/resources/ESB_Tech_Rider.docx
+Output: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders
+✅ Input List Array built: 32 items
+📄 Loading template...
+🖋️ Rendering data...
+💾 Writing temp DOCX to /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx
+🔄 Generating Rider PDF with command: /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "/Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders" "/Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx"
+✅ PDF Generation Success!
+Stdout: convert /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx as a Writer document -> /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf using filter : writer_pdf_Export
+Overwriting: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf
+
+🔌 Client Disconnected: zBaEwNK5OirQZq8eAAAD
+⚡ Client Connected: 1EmEGXKfshxRbtvgAAAF
+📤 Sending Full State to 1EmEGXKfshxRbtvgAAAF (0 chans)

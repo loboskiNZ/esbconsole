@@ -15,8 +15,8 @@
         "1768048342381",
         "1768048296047",
         "1768048373749",
-        "1768048435430",
-        "1768048444574"
+        "1768048444574",
+        "1768048435430"
       ]
     }
   },
@@ -1958,16 +1958,93 @@
       "notes": "this will continue from the end of magico amor. \n\nBV: Oh no Nayo no ne naaahhhh!!\n\npregones: Todo va a cambiar:"
     },
     "1768048435430": {
-      "title": "Mister Tesla",
-      "artist": "",
+      "title": "Ride Like the wind",
+      "artist": "Chritopher Cross",
       "bpm": 120,
       "id": "1768048435430",
       "cues": [],
       "charts": {},
-      "notes": "I still need to finish this song\n\nideally there should be a guitar solo very cool and funky"
+      "notes": "we will play this one as it is on the charts",
+      "chartAssignments": [
+        {
+          "id": 1768710426918,
+          "inputChannel": "9",
+          "monitorBus": "8",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Run With The Wind (BASS).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "8cc36156581d023a59219f806d3377b4",
+            "path": "uploads/8cc36156581d023a59219f806d3377b4",
+            "size": 67974
+          }
+        },
+        {
+          "id": 1768710463404,
+          "inputChannel": "15",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Run With The Wind (ALTO).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "673c744b941b33ff377cdc0bd66a0636",
+            "path": "uploads/673c744b941b33ff377cdc0bd66a0636",
+            "size": 40272
+          }
+        },
+        {
+          "id": 1768710492841,
+          "inputChannel": "11",
+          "monitorBus": "9",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Run With The Wind (PIANO).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "e01fe0409c5b5f7a328b8b1cae9ab7be",
+            "path": "uploads/e01fe0409c5b5f7a328b8b1cae9ab7be",
+            "size": 75327
+          }
+        },
+        {
+          "id": 1768710570418,
+          "inputChannel": "14",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Run With The Wind (TROMBONE).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "9f719d17bce0b64acb72e1bc153002f0",
+            "path": "uploads/9f719d17bce0b64acb72e1bc153002f0",
+            "size": 43350
+          }
+        },
+        {
+          "id": 1768710619643,
+          "inputChannel": "16",
+          "monitorBus": "12",
+          "file": {
+            "fieldname": "chart",
+            "originalname": "Run With The Wind (TRUMPET).pdf",
+            "encoding": "7bit",
+            "mimetype": "application/pdf",
+            "destination": "uploads/",
+            "filename": "8e32d8aa1cd611a125402d5cdfaa8ef9",
+            "path": "uploads/8e32d8aa1cd611a125402d5cdfaa8ef9",
+            "size": 42133
+          }
+        }
+      ]
     },
     "1768048444574": {
-      "title": "La Morena",
+      "title": "High",
       "artist": "",
       "bpm": 120,
       "id": "1768048444574",
@@ -2112,7 +2189,7 @@
     "13": "12",
     "14": "12",
     "15": "12",
-    "16": 12,
+    "16": "12",
     "17": "1",
     "18": "2",
     "19": "3",

@@ -1,0 +1,146 @@
+📄 Setlists Loaded
+🛡️  Performing Startup Backup to: /Volumes/WORKER/machines/x32-controller/backups/boot_2026-01-19T04-21-05-491Z
+🧹 Cleaning old backup: boot_2026-01-18T09-18-46-986Z
+🔒 HTTPS Enabled
+📂 State Loaded from Disk
+🔌 Connecting to X32 at 10.0.0.202:10023...
+🎹 All MIDI Inputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+🎹 Connecting MIDI Input to: "IAC Driver Bus 1"
+🎹 Available MIDI Outputs: [ 'IAC Driver Bus 1', 'IAC Driver Bus 2' ]
+✅ MIDI Output connected to: "IAC Driver Bus 1"
+--- SERVER RESTART DEBUG ---
+💡 DMX Lighting Engine Initialized (Silent Mode)
+🎹 MIDI Input connected to: "IAC Driver Bus 1"
+[dotenv@17.2.3] injecting env (3) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+✅ OSC Port Open
+🌟 Controller v2.15.1 running at https://localhost:3000
+⚡ Client Connected: 8uHWobXiks0--0ZpAAAB
+📤 Sending Full State to 8uHWobXiks0--0ZpAAAB (0 chans)
+📥 Fetching Bus Configs & Safes...
+📡 ANY OSC: /bus/01/config/name [Vox Ed]
+📡 ANY OSC: /bus/01/config/color [4]
+📡 ANY OSC: /bus/01/mix/fader [0.7272727489471436]
+📡 ANY OSC: /bus/01/mix/on [0]
+📡 ANY OSC: /bus/02/config/name [Vox Nathan]
+📡 ANY OSC: /bus/02/config/color [4]
+📡 ANY OSC: /bus/02/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/02/mix/on [0]
+📡 ANY OSC: /bus/03/config/name [Vox Claire]
+📡 ANY OSC: /bus/03/config/color [4]
+📡 ANY OSC: /bus/03/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/03/mix/on [0]
+📡 ANY OSC: /bus/04/config/name [Vox Alan]
+📡 ANY OSC: /bus/04/config/color [4]
+📡 ANY OSC: /bus/04/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/04/mix/on [0]
+📡 ANY OSC: /bus/05/config/name [Vox Hyram]
+📡 ANY OSC: /bus/05/config/color [4]
+📡 ANY OSC: /bus/05/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/05/mix/on [0]
+📡 ANY OSC: /bus/06/config/name [Vox Davina]
+📡 ANY OSC: /bus/06/config/color [4]
+📡 ANY OSC: /bus/06/mix/fader [0.7751710414886475]
+📡 ANY OSC: /bus/06/mix/on [0]
+📡 ANY OSC: /bus/07/config/name [Drums]
+📡 ANY OSC: /bus/07/config/color [6]
+📡 ANY OSC: /bus/16/config/name [FX 4]
+📡 ANY OSC: /bus/16/config/color [5]
+📡 ANY OSC: /bus/16/mix/fader [0]
+📡 ANY OSC: /bus/16/mix/on [1]
+🔌 Client Disconnected: 8uHWobXiks0--0ZpAAAB
+⚡ Client Connected: fufEHYEhQIeqKLHlAAAD
+📤 Sending Full State to fufEHYEhQIeqKLHlAAAD (0 chans)
+🚀 Received Rider Generation Request
+📝 Generating rider for scene: thieves_alley (Stage Plot Present: true)
+📂 Paths: 
+Template: /Volumes/WORKER/machines/x32-controller/resources/ESB_Tech_Rider.docx
+Output: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders
+🔍 [Rider] Ch 11 Extracted: Name="Keys 1" Mic="Jack" Stand="" (Key: ch11)
+🔍 [Rider] Ch 12 Extracted: Name="Keys 2" Mic="Jack" Stand="" (Key: ch12)
+🔍 [Rider] Ch 17 Extracted: Name="Vox Ed" Mic="SM58" Stand="" (Key: ch17)
+🔍 [Rider] Ch 18 Extracted: Name="Vox Nathan" Mic="SM58" Stand="" (Key: ch18)
+🔍 [Rider] Ch 19 Extracted: Name="Vox Claire" Mic="SM58" Stand="" (Key: ch19)
+🔍 [Rider] Ch 20 Extracted: Name="Vox Alan" Mic="SM58" Stand="" (Key: ch20)
+🔍 [Rider] Ch 21 Extracted: Name="Vox Hyram" Mic="SM58" Stand="" (Key: ch21)
+🔍 [Rider] Ch 22 Extracted: Name="Cuatro" Mic="Jack " Stand="" (Key: ch22)
+🔍 [Rider] Ch 23 Extracted: Name="SPD1" Mic="XLR" Stand="" (Key: ch23)
+🔍 [Rider] Ch 24 Extracted: Name="SPD2" Mic="XLR" Stand="" (Key: ch24)
+🔍 [Rider] Ch 25 Extracted: Name="ABL Drums" Mic="XLR" Stand="" (Key: ch25)
+🔍 [Rider] Ch 26 Extracted: Name="ABL Bass" Mic="XLR" Stand="" (Key: ch26)
+🔍 [Rider] Ch 27 Extracted: Name="ABL Keys" Mic="XLR" Stand="" (Key: ch27)
+🔍 [Rider] Ch 28 Extracted: Name="ABL Samples" Mic="XLR" Stand="" (Key: ch28)
+🔍 [Rider] Ch 29 Extracted: Name="ABL Horns" Mic="XLR" Stand="" (Key: ch29)
+🔍 [Rider] Ch 30 Extracted: Name="ABL Vox" Mic="XLR" Stand="" (Key: ch30)
+🔍 [Rider] Ch 31 Extracted: Name="ABL FX" Mic="XLR" Stand="" (Key: ch31)
+🔍 [Rider] Ch 32 Extracted: Name="Click" Mic="XLR" Stand="" (Key: ch32)
+✅ Input List Array built: 32 items
+📄 Loading template...
+🖋️ Rendering data...
+💾 Writing temp DOCX to /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx
+🔄 Generating Rider PDF with command: /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "/Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders" "/Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx"
+✅ PDF Generation Success!
+Stdout: convert /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx as a Writer document -> /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf using filter : writer_pdf_Export
+Overwriting: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf
+
+📤 Sending Full State to fufEHYEhQIeqKLHlAAAD (0 chans)
+📤 Sending Full State to fufEHYEhQIeqKLHlAAAD (0 chans)
+📤 Sending Full State to fufEHYEhQIeqKLHlAAAD (0 chans)
+📤 Sending Full State to fufEHYEhQIeqKLHlAAAD (0 chans)
+🚀 Received Rider Generation Request
+📝 Generating rider for scene: thieves_alley (Stage Plot Present: true)
+📂 Paths: 
+Template: /Volumes/WORKER/machines/x32-controller/resources/ESB_Tech_Rider.docx
+Output: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders
+🔍 [Rider] Ch 1 Extracted: Name="Kick" Mic="E902" Stand="short" (Key: ch1)
+🔍 [Rider] Ch 2 Extracted: Name="Snare" Mic="E604" Stand="clip" (Key: ch2)
+🔍 [Rider] Ch 3 Extracted: Name="Hat" Mic="Rode M3" Stand="tall" (Key: ch3)
+🔍 [Rider] Ch 4 Extracted: Name="Rack Tom 1" Mic="E604" Stand="clip" (Key: ch4)
+🔍 [Rider] Ch 5 Extracted: Name="Rack Tom 2" Mic="E604" Stand="clip" (Key: ch5)
+🔍 [Rider] Ch 6 Extracted: Name="Floor Tom" Mic="E604" Stand="clip" (Key: ch6)
+🔍 [Rider] Ch 7 Extracted: Name="OH1" Mic="R0deM5" Stand="tall" (Key: ch7)
+🔍 [Rider] Ch 8 Extracted: Name="OH2" Mic="R0deM5" Stand="tall" (Key: ch8)
+🔍 [Rider] Ch 9 Extracted: Name="Bass" Mic="jack" Stand="" (Key: ch9)
+🔍 [Rider] Ch 10 Extracted: Name="Gat" Mic="SM57" Stand="short" (Key: ch10)
+🔍 [Rider] Ch 11 Extracted: Name="Keys 1" Mic="Jack" Stand="" (Key: ch11)
+🔍 [Rider] Ch 12 Extracted: Name="Keys 2" Mic="Jack" Stand="" (Key: ch12)
+🔍 [Rider] Ch 13 Extracted: Name="Sous" Mic="SM57" Stand="tall" (Key: ch13)
+🔍 [Rider] Ch 14 Extracted: Name="Tromb" Mic="SM58" Stand="tall" (Key: ch14)
+🔍 [Rider] Ch 15 Extracted: Name="Sax" Mic="SM58" Stand="tall" (Key: ch15)
+🔍 [Rider] Ch 16 Extracted: Name="Trump" Mic="SM58" Stand="tall" (Key: ch16)
+🔍 [Rider] Ch 17 Extracted: Name="Vox Ed" Mic="SM58" Stand="" (Key: ch17)
+🔍 [Rider] Ch 18 Extracted: Name="Vox Nathan" Mic="SM58" Stand="" (Key: ch18)
+🔍 [Rider] Ch 19 Extracted: Name="Vox Claire" Mic="SM58" Stand="" (Key: ch19)
+🔍 [Rider] Ch 20 Extracted: Name="Vox Alan" Mic="SM58" Stand="" (Key: ch20)
+🔍 [Rider] Ch 21 Extracted: Name="Vox Hyram" Mic="SM58" Stand="" (Key: ch21)
+🔍 [Rider] Ch 22 Extracted: Name="Cuatro" Mic="Jack " Stand="" (Key: ch22)
+🔍 [Rider] Ch 23 Extracted: Name="SPD1" Mic="XLR" Stand="" (Key: ch23)
+🔍 [Rider] Ch 24 Extracted: Name="SPD2" Mic="XLR" Stand="" (Key: ch24)
+🔍 [Rider] Ch 25 Extracted: Name="ABL Drums" Mic="XLR" Stand="" (Key: ch25)
+🔍 [Rider] Ch 26 Extracted: Name="ABL Bass" Mic="XLR" Stand="" (Key: ch26)
+🔍 [Rider] Ch 27 Extracted: Name="ABL Keys" Mic="XLR" Stand="" (Key: ch27)
+🔍 [Rider] Ch 28 Extracted: Name="ABL Samples" Mic="XLR" Stand="" (Key: ch28)
+🔍 [Rider] Ch 29 Extracted: Name="ABL Horns" Mic="XLR" Stand="" (Key: ch29)
+🔍 [Rider] Ch 30 Extracted: Name="ABL Vox" Mic="XLR" Stand="" (Key: ch30)
+🔍 [Rider] Ch 31 Extracted: Name="ABL FX" Mic="XLR" Stand="" (Key: ch31)
+🔍 [Rider] Ch 32 Extracted: Name="Click" Mic="XLR" Stand="" (Key: ch32)
+✅ Input List Array built: 32 items
+📄 Loading template...
+🖋️ Rendering data...
+💾 Writing temp DOCX to /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx
+🔄 Generating Rider PDF with command: /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to pdf --outdir "/Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders" "/Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx"
+✅ PDF Generation Success!
+Stdout: convert /Volumes/WORKER/machines/x32-controller/temp/thieves_alley_Rider.docx as a Writer document -> /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf using filter : writer_pdf_Export
+Overwriting: /Volumes/WORKER/machines/x32-controller/sharepoint/Tech_Riders/thieves_alley_Rider.pdf
+
+🔌 Client Disconnected: fufEHYEhQIeqKLHlAAAD
+⚡ Client Connected: 7OCHDeeOHCGL_UXyAAAF
+📤 Sending Full State to 7OCHDeeOHCGL_UXyAAAF (0 chans)
+🔌 Client Disconnected: 7OCHDeeOHCGL_UXyAAAF
+⚡ Client Connected: --reZTs1N7y4wlBJAAAH
+📤 Sending Full State to --reZTs1N7y4wlBJAAAH (0 chans)
+📤 Sending Full State to --reZTs1N7y4wlBJAAAH (0 chans)
+📤 Sending Full State to --reZTs1N7y4wlBJAAAH (0 chans)
+🔌 Client Disconnected: --reZTs1N7y4wlBJAAAH
+⚡ Client Connected: j0DkMxBjezCoVk8eAAAJ
+📤 Sending Full State to j0DkMxBjezCoVk8eAAAJ (0 chans)
+📤 Sending Full State to j0DkMxBjezCoVk8eAAAJ (0 chans)
