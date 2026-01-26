@@ -1,10 +1,13 @@
 {
   "name": "x32-controller",
-  "version": "2.15.2",
+  "version": "2.16.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "capture:test": "node manual_generator/test_capture.js",
+    "capture:musician": "node manual_generator/capture_musician.js",
+    "capture:admin": "node manual_generator/capture_admin.js"
   },
   "keywords": [],
   "author": "",
@@ -26,5 +29,8 @@
     "pizzip": "^3.2.0",
     "socket.io": "^4.8.3",
     "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "puppeteer": "^24.35.0"
   }
 }

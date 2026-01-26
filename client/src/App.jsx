@@ -10,7 +10,10 @@ import SafesOverlay from './SafesOverlay';
 import DubOverlay from './components/DubOverlay';
 import MusicianApp from './MusicianApp';
 import SceneLoadingOverlay from './components/SceneLoadingOverlay';
+import StagePlot from './components/StagePlot';
 import SceneMetadataForm from './components/SceneMetadataForm';
+import HelpOverlay from './components/HelpOverlay';
+import classNames from 'classnames';
 import './index.css';
 
 const socket = io('/', { path: '/socket.io' });
@@ -408,8 +411,39 @@ const DMXVisualizer = ({ socket, onClose }) => {
                         <button onClick={() => socket.emit('dmx_trigger', 'focusRight')} style={{background:'#ccc', color:'#000', border:'none', padding:'5px', cursor:'pointer'}}>▶️</button>
                      </div>
                      <button onClick={() => socket.emit('dmx_trigger', 'police')} style={{background: 'linear-gradient(90deg, darkblue, darkred)', color:'#fff', border:'none', padding:'5px', cursor:'pointer'}}>POLICE 🚨</button>
-                     <button onClick={() => socket.emit('dmx_trigger', 'blackout')} style={{background:'#333', color:'#fff', border:'none', padding:'5px', cursor:'pointer'}}>OFF</button>
+                     
+                     <div style={{display:'flex', flexDirection:'column', gap:'5px', border:'1px solid #555', padding:'5px', maxHeight:'300px', overflowY:'auto'}}>
+                         <div style={{color:'#fff', fontSize:'0.7em', fontWeight:'bold'}}>MANUAL BAR DEBUG (24ch x 4)</div>
+                         {[1, 25, 49, 73].map((barAddr, barIdx) => (
+                             <div key={barAddr} style={{display:'flex', gap:'2px', alignItems:'center'}}>
+                                 <div style={{width:'40px', fontSize:'0.6em', color:'#888'}}>Bar {barIdx+1}</div>
+                                 <div style={{display:'flex', flexWrap:'wrap', gap:'1px'}}>
+                                     {Array.from({length: 48}, (_, i) => {
+                                         const chAddr = barAddr + i;
+                                         const isOn = (dmx[chAddr] || 0) > 0;
+                                         return (
+                                             <button key={i} 
+                                                 onClick={() => socket.emit('dmx_trigger', `test_toggle:${chAddr}`)}
+                                                 style={{
+                                                     width:'20px', height:'20px', fontSize:'0.5em', padding:0, cursor:'pointer',
+                                                     background: isOn ? '#0f0' : '#222',
+                                                     color: isOn ? '#000' : '#888',
+                                                     border: isOn ? '1px solid #0f0' : '1px solid #444'
+                                                 }}
+                                                 title={`Addr ${chAddr}`}
+                                             >
+                                                 {i+1}
+                                             </button>
+                                         );
+                                     })}
+                                 </div>
+                             </div>
+                         ))}
+                         <button onClick={() => socket.emit('dmx_trigger', 'test')} style={{background:'#0f0', color:'#000', border:'none', fontSize:'0.8em', padding:'2px', marginTop:'5px'}}>RESET / ENTER TEST MODE</button>
+                     </div>
 
+                     <button onClick={() => socket.emit('dmx_trigger', 'blackout')} style={{background:'#333', color:'#fff', border:'none', padding:'5px', cursor:'pointer'}}>OFF</button>
+ 
                      <button onClick={onClose} style={{background:'#f00', color:'#fff', border:'none', padding:'5px 15px', marginLeft:'10px'}}>CLOSE</button>
                 </div>
             </div>
@@ -469,14 +503,25 @@ const DMXVisualizer = ({ socket, onClose }) => {
                       {[1, 25, 49, 73].map((barAddr, i) => (
                           <div key={barAddr} style={{
                               display:'flex', width:'22%', height:'30px', background:'#222',
-                              border: '1px solid #444', overflow:'hidden'
+                              border: '1px solid #444', overflow:'hidden', position:'relative'
                           }}>
+                               {/* Address Label */}
+                               <div style={{position:'absolute', top:'-20px', left:0, fontSize:'0.7em', color:'#666'}}>Addr: {barAddr}</div>
+                               
                                {Array(8).fill(0).map((_, seg) => {
                                    const c = getRGB(barAddr + (seg * 3));
                                    return <div key={seg} style={{flex:1, background:c, boxShadow:`0 0 10px ${c}`}} />
                                })}
                           </div>
                       ))}
+                 </div>
+                 
+                 {/* PATCH INFO */}
+                 <div style={{position:'absolute', bottom:'5px', right:'10px', color:'#555', fontSize:'0.7em', textAlign:'right'}}>
+                     <div>Patch:</div>
+                     <div>Bars (24ch): 1, 25, 49, 73</div>
+                     <div>Movers (13ch): 100, 113, 126</div>
+                     <div>Washes (4ch): 150, 154, 158, 162</div>
                  </div>
             </div>
         </div>
@@ -520,6 +565,7 @@ function AppContent() {
   const [newPresetName, setNewPresetName] = useState("");
   const [showMetadataForm, setShowMetadataForm] = useState(false);
   const [metadataToEdit, setMetadataToEdit] = useState(null);
+  const [showHelp, setShowHelp] = useState(false);
   const [pendingSceneName, setPendingSceneName] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
       // Persist login across refreshes
@@ -562,15 +608,22 @@ function AppContent() {
       .catch(e => console.error("Failed to load presets", e)); 
   }, []); // Add dependency array to close this useEffect properly
 
-    // Check initial solo status
-    axios.get('/api/solo-status').then(res => setSoloIds(res.data.activeIds || []));
+    // --- POLLING: Solo Status & Scenes ---
+    useEffect(() => {
+        const poll = () => {
+            axios.get('/api/solo-status').then(res => setSoloIds(res.data.activeIds || [])).catch(e=>{});
+            axios.get('/api/scenes').then(res => {
+                if (Array.isArray(res.data)) setScenes(res.data);
+            }).catch(e=>{});
+        };
 
-    axios.get('/api/scenes')
-        .then(res => {
-            if (Array.isArray(res.data)) setScenes(res.data);
-            else console.log("Scenes data invalid:", res.data);
-        })
-        .catch(e => console.error(e));
+        // Initial Call
+        poll();
+
+        // Poll every 2 seconds (not 50ms!)
+        const interval = setInterval(poll, 2000);
+        return () => clearInterval(interval);
+    }, []);
 
     // --- SOCKET MANAGEMENT ---
     useEffect(() => {
@@ -1002,6 +1055,20 @@ function AppContent() {
                      </div>
                  </div>
 
+                 {/* HELP BUTTON */}
+                 <button 
+                    onClick={() => setShowHelp(true)}
+                    style={{
+                        background: '#333', color: '#888', border: '1px solid #444',
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1.2em', cursor: 'pointer', marginLeft: '10px'
+                    }}
+                    title="User Guide"
+                 >
+                    ?
+                 </button>
+
                  {/* MASTER CONTROL STRIP (Compact) */}
                  <div style={{transform: 'scale(0.9)', transformOrigin: 'right center'}}>
                     <MasterStrip 
@@ -1372,19 +1439,38 @@ function AppContent() {
                           const hasHCut = channelState.hcut || false;
                           const hcutFreq = channelState.hcutFreq || 1.0;
                           
-                          // Log Scale Helpers
+                          // X32 Frequency Mapping: 20Hz to 20kHz logarithmic
+                          // X32 Formula: Freq = 20 * (1000 ^ f)
+                          // Inverting: f = log(Freq/20) / log(1000)
+                          
+                          // We use this for Display (Hz) and Position (x)
+                          // if inputs are valid 0-1 floats.
+                          // IF inputs are somehow already Hz, we need to detect/handle that.
+
+                          const fToHz = (f) => {
+                              // Safety Check: If f is clearly Hz (> 50), return it directly to avoid 10^80 errors
+                              if (f > 1.1) return f; 
+                              return 20 * Math.pow(1000, f);
+                          };
+                          
+                          const hzToF = (hz) => {
+                             if (hz < 20) hz = 20;
+                             if (hz > 20000) hz = 20000;
+                             return Math.log(hz / 20) / Math.log(1000);
+                          };
+
+                          // Helper for HPF reference
                           const minLog = Math.log10(20);
-                          const maxLog = Math.log10(20000);
-                          const rangeLog = maxLog - minLog;
-                          
-                          
-                          const fToHz = (f) => Math.pow(10, minLog + (f * rangeLog));
-                          const hzToF = (hz) => (Math.log10(hz) - minLog) / rangeLog;
 
                           // HPF Specific (20Hz - 400Hz)
+                          // X32 HPF Formula: ? Usually similar curve but smaller range?
+                          // Let's assume standard Log 20-400 for now.
                           const maxHpfLog = Math.log10(400); 
                           const rangeHpfLog = maxHpfLog - minLog;
-                          const hpfToHz = (f) => Math.pow(10, minLog + (f * rangeHpfLog));
+                          // const hpfToHz = (f) => Math.pow(10, minLog + (f * rangeHpfLog)); 
+                          // Fixing HPF to use standard curve for consistency or just standard log
+                          const hpfToHz = (f) => 20 * Math.pow(20, f); // 20 * 20^1 = 400.
+                           
 
                           
                           // Mapping
@@ -1587,15 +1673,24 @@ function AppContent() {
                                      })()}
                                      
                                      {/* Drag Handles */}
-                                     {[1,2,3,4].map(i => {
+                                     {(isMaster ? [1,2,3,4,5,6] : [1,2,3,4]).map(i => {
                                         const b = bands[i] || { f: i*0.2, g: 0.5 };
-                                        const x = fToX(b.f || 0);
+                                        let valF = b.f || 0;
+                                        // Safety convert if Hz
+                                        if (valF > 2) valF = hzToF(valF);
+                                        
+                                        let x = fToX(valF);
+                                        // Clamp X to visual area so handles are never lost
+                                        x = Math.max(10, Math.min(w-10, x));
+                                        
                                         const y = gToY(b.g || 0.5);
-                                        const colors = ['#f00', '#ffaa00', '#ffff00', '#0f0'];
+                                        const colors = ['#f00', '#ffaa00', '#ffff00', '#0f0', '#00ffff', '#ff00ff'];
+                                        const color = colors[i-1] || '#fff';
+                                        
                                         return (
                                             <g key={i} onMouseDown={(e) => handleMouseDown(e, i)} style={{cursor:'grab'}}>
-                                                <circle cx={x} cy={y} r="8" fill={colors[i-1]} stroke="white" strokeWidth="2" />
-                                                <text x={x} y={y-15} fill={colors[i-1]} fontSize="10" textAnchor="middle" style={{fontWeight:'bold', pointerEvents:'none'}}>{i}</text>
+                                                <circle cx={x} cy={y} r="8" fill={color} stroke="white" strokeWidth="2" />
+                                                <text x={x} y={y-15} fill={color} fontSize="10" textAnchor="middle" style={{fontWeight:'bold', pointerEvents:'none'}}>{i}</text>
                                             </g>
                                         );
                                      })}
@@ -1605,7 +1700,8 @@ function AppContent() {
                              {/* CONTROLS STRIP */}
                              <div style={{display:'flex', gap:'5px', flexWrap:'nowrap', overflowX:'auto'}}>
                                  
-                                 {/* LOW CUT (Input Channels Only) */}
+                                 {/* LOW CUT (Input Channels Only for now - Standard X32 Master uses Bands 1/6 for Cuts or Shelves) */}
+                                 {/* For simplicity: Show LoCut only if NOT Master, or let Master handle it via Band 1 Type */}
                                  {!isMaster && (
                                      <div style={{display:'flex', flexDirection:'column', alignItems:'center', border:'1px solid #555', padding:'4px', borderRadius:'4px', background:'#222', minWidth:'60px'}}>
                                          <div style={{fontSize:'0.7em', color:'#aaa', marginBottom:'5px'}}>LO CUT</div>
@@ -1633,13 +1729,21 @@ function AppContent() {
                                      </div>
                                  )}
                                  
-                                 {/* EQ BANDS 1-4 */}
-                                 {[1,2,3,4].map(idx => {
+                                 {/* EQ BANDS (4 for Ch, 6 for Master) */}
+                                 {(isMaster ? [1,2,3,4,5,6] : [1,2,3,4]).map(idx => {
                                      // Helper: Gain dB Converter
                                      const gToDB = (g) => ((g * 30) - 15).toFixed(1);
                                      const dbToG = (db) => (parseFloat(db) + 15) / 30;
                                      const qVal = bands[idx]?.q || 0.5; // default
-                                     const bandName = ['LOW', 'L-MID', 'H-MID', 'HIGH'][idx-1];
+                                     
+                                     let bandName = '';
+                                     if (isMaster) {
+                                         // 6-Band Main EQ Labels as per user feedback
+                                         bandName = ['LOW', 'LOW 2', 'L-MID', 'H-MID', 'HIGH', 'HIGH 2'][idx-1]; 
+                                     } else {
+                                         // 4-Band Channel EQ Labels
+                                         bandName = ['LOW', 'L-MID', 'H-MID', 'HIGH'][idx-1];
+                                     }
 
                                      return (
                                         <div key={idx} style={{display:'flex', flexDirection:'column', alignItems:'center', border:'1px solid #444', padding:'4px', borderRadius:'4px', background:'#222', minWidth:'70px'}}>
@@ -1719,7 +1823,11 @@ function AppContent() {
                                                 />
                                             </div>
 
-                                            {/* Q */}
+                                            {/* Q (Hidden for Cut adjustments if simpler, but X32 usually allows Q on shelves) */}
+                                            {/* Filter Types: 0=LCut, 1=LShv, 2=PEQ, 3=VEQ, 4=HShv, 5=HCut */}
+                                            {/* X32 logic: Q effectively changes slope for shelves/cuts. Check User Request: "Q parameter should not be available in some modes" */}
+                                            {/* Assuming disable for Shelves/Cuts based on user feedback */}
+                                            {![0, 1, 4, 5].includes(bands[idx]?.type) && (
                                             <div style={{display:'flex', gap:'2px', alignItems:'center', width:'100%', marginTop:'2px'}}>
                                                 <label style={{fontSize:'0.5em', color:'#666'}}>Q</label>
                                                 <input 
@@ -1756,6 +1864,7 @@ function AppContent() {
                                                     }}
                                                 />
                                             </div>
+                                            )}
                                         </div>
                                      );
                                  })}
@@ -2183,9 +2292,9 @@ function AppContent() {
                     }}>
                         <button 
                             className={`param-btn ${state.hpf ? 'active' : ''}`}
-                            onClick={() => handleToggleParam(ch.id, 'hpf', state.hpf)}
+                            onClick={() => {}} // No-op for single click
                             onDoubleClick={() => setOverlay({channelId:ch.id, type:'gain'})}
-                            title="Click: Low Cut | Double: Preamp"
+                            title="Double-click: Preamp"
                         >GAIN</button>
 
                         <button 
@@ -2326,7 +2435,6 @@ function AppContent() {
          <div>X32: <span style={{color: '#4fecff'}}>CONNECTED</span></div>
          <div>ABLETON: <span style={{color: '#ffaa00'}}>WAITING</span></div>
          <div>DMX: <span style={{color: '#0f0'}}>READY</span></div>
-         <div style={{marginLeft: '15px', color: '#666', fontSize: '0.8em'}}>v{__APP_VERSION__}</div>
       </div>
       
       {activeView === 'files' && <SharePointBrowser onClose={() => setActiveView(null)} />}
@@ -2449,6 +2557,10 @@ function AppContent() {
                  onCancel={() => { setShowMetadataForm(false); setPendingSceneName(null); setMetadataToEdit(null); }}
              />
         )}
+        {showHelp && (
+            <HelpOverlay onClose={() => setShowHelp(false)} />
+        )}
+
     </div>
   );
 }

@@ -23,6 +23,11 @@ class SetlistManager {
             learnedBuffer: {} // { songId: { partIdx: bars } }
         };
         this.io = null; // Socket IO instance
+        
+        // Save State Concurrency
+        this.isWriting = false;
+        this.pendingWrite = false;
+
         this.load();
     }
 
@@ -51,11 +56,33 @@ class SetlistManager {
     // ... existing save/getters/setters ...
 
     save() {
-        try {
-            fs.writeFileSync(FILE_PATH, JSON.stringify(this.data, null, 2));
-        } catch (e) {
-            console.error('❌ Failed to save setlists:', e);
+        // Debounce/Queue Logic
+        if (this.isWriting) {
+            this.pendingWrite = true;
+            return;
         }
+
+        this.isWriting = true;
+        this.pendingWrite = false;
+
+        const dataToWrite = JSON.stringify(this.data, null, 2);
+        
+
+        
+        fs.writeFile(FILE_PATH, dataToWrite, 'utf8', (err) => {
+            this.isWriting = false;
+            
+            if (err) {
+                console.error('❌ Failed to save setlists:', err);
+            } else {
+                // console.log('✅ Setlists saved');
+            }
+
+            // If a write came in while we were busy, trigger it now (latest state)
+            if (this.pendingWrite) {
+                this.save();
+            }
+        });
     }
 
     // --- GETTERS ---
@@ -74,6 +101,10 @@ class SetlistManager {
     // ... updateSong, deleteSong, updateSetlistOrder, updateSetlist ...
     updateSong(id, updates) {
         if (!this.data.songs[id]) return null;
+
+        // DEBUG PERSISTENCE (Removed)
+        // if (updates.cues) { ... }
+
         this.data.songs[id] = { ...this.data.songs[id], ...updates };
         
         // Sync Global Routing if assignments changed

@@ -39,10 +39,10 @@ module.exports = {
   groups: [
       { key: 'drums', ids: ['1','2','3','4','5','6','7','8'], label: 'Drums', bg: '#00FFFF', txt: 'black' }, 
       { key: 'bass', ids: ['9'], label: 'Bass', bg: '#FF00FF', txt: 'black' },
-      { key: 'gats', ids: ['10'], label: 'Gats', bg: '#FF0000', txt: 'white' },
+      { key: 'gats', ids: ['10', '22'], label: 'Gats', bg: '#FF0000', txt: 'white' },
       { key: 'keys', ids: ['11','12'], label: 'Keys', bg: '#FFFF00', txt: 'black' },
       { key: 'horns', ids: ['13','14','15','16'], label: 'Horns', bg: '#00FF00', txt: 'black' },
-      { key: 'vox', ids: ['17','18','19','20','21','22'], label: 'Vox', bg: '#0000FF', txt: 'white' },
+      { key: 'vox', ids: ['17','18','19','20','21'], label: 'Vox', bg: '#0000FF', txt: 'white' },
       { key: 'samples', ids: ['25','26','27','28','29'], label: 'Tracks', bg: '#FFFFFF', txt: 'black' },
       { key: 'click', ids: [], label: 'Click', bg: '#CCCCCC', txt: 'black' },
   ],

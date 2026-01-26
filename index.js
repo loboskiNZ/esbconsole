@@ -254,10 +254,10 @@ try {
 const SOLO_GROUPS = {
     drums: ['1','2','3','4','5','6','7','8'],
     bass: ['9'],
-    gats: ['10'],
+    gats: ['10', '22'],
     keys: ['11','12'],
     horns: ['13','14','15','16'],
-    vox: ['17','18','19','20','21','22'],
+    vox: ['17','18','19','20','21'],
     samples: ['25','26','27','28','29']
 };
 
@@ -283,7 +283,10 @@ const io = socketIo(server, { cors: { origin: '*' } });
 // Middleware - MUST BE BEFORE ROUTES
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(path.join(__dirname, 'client/dist')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+
+// --- API ROUTES ---app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/sharepoint', express.static(path.join(__dirname, 'sharepoint')));
 
 const PORT = 3000;
@@ -1114,22 +1117,16 @@ const handleCueChange = (songId, partIdx) => {
     }
 
     // 🧠 SHADOW LEARNING: Measurement Engine
-    // MEGA TRACE: Log all variables for debugging
-    console.log(`📏 MEGA TRACE: Song=${songId}, Cue=${partIdx}, LearnMode=${setlistManager.runtime.learnMode}, LastStart=${lastCueStartBeats}, LastSong=${lastCueSongId}, LastPart=${lastCuePartIdx}, CurrentBeats=${lastAbletonGlobalBeats}`);
-
-    if (setlistManager.runtime.learnMode && lastCueStartBeats >= 0 && lastCueSongId && lastCuePartIdx !== null) {
-        const durationBeats = lastAbletonGlobalBeats - lastCueStartBeats;
-        const measuredBars = Math.round(durationBeats / signature_num);
-        
-        console.log(`📏 Measurement Success: Delta=${durationBeats}, Bars=${measuredBars}, Signum=${signature_num}`);
-
-        if (measuredBars > 0) {
-            setlistManager.recordLearnedBars(lastCueSongId, lastCuePartIdx, measuredBars);
-        } else {
-            console.log(`📏 Measurement Skipped: measuredBars <= 0`);
+    if (setlistManager.runtime.learnMode) {
+        if (lastCueStartBeats >= 0 && lastCueSongId && lastCuePartIdx !== null) {
+            const durationBeats = lastAbletonGlobalBeats - lastCueStartBeats;
+            const measuredBars = Math.round(durationBeats / signature_num);
+            
+            if (measuredBars > 0) {
+                setlistManager.recordLearnedBars(lastCueSongId, lastCuePartIdx, measuredBars);
+                console.log(`✅ Learned: ${measuredBars} bars for ${lastCueSongId}:${lastCuePartIdx}`);
+            }
         }
-    } else {
-        console.log(`📏 Measurement Logic Skipped: Condition not met.`);
     }
 
     // Record the NEW start point
@@ -1197,20 +1194,36 @@ const broadcastAbletonTime = (force = false) => {
 };
 
 const handleAbletonTime = (message) => {
-    // DEBUG: Print EVERY incoming /live/ message
-    console.log(`📩 RECEIVED: ${message.address} [${message.args}]`);
-
+    // Throttling
+    const now = Date.now();
+    
+    // Store latest value
     let val = parseFloat(message.args[0]);
     if (isNaN(val)) return;
 
+    // 1. UPDATE GLOBAL BEATS (For Learn Mode)
     if (message.address === '/live/beat' || message.address === '/live/time' || message.address === '/live/beat_count') {
         lastAbletonGlobalBeats = val;
+        
+        // Approx Bar for Visuals
+        const estBar = Math.floor(val / 4) + 1;
+        lastAbletonGlobalBar = estBar;
     } else if (message.address === '/live/bar') {
-        // If they send Bar, convert to Beats based on current signature
-        lastAbletonGlobalBeats = (val - 1) * signature_num; 
+        lastAbletonGlobalBar = val; 
+        // If we only get Bar, we can't reliably get Beats for timing unless we assume 4/4
+        lastAbletonGlobalBeats = (val - 1) * 4; 
     }
 
-    broadcastAbletonTime();
+    // 2. BROADCAST TO UI (Throttled)
+    if (now - lastBeatBroadcast > BEAT_BROADCAST_INTERVAL) {
+        io.emit('ableton_time', { 
+            value: val, 
+            address: message.address, 
+            timestamp: now,
+            sceneStartBar: sceneStartBar // Relative Bar Logic
+        });
+        lastBeatBroadcast = now;
+    }
 };
 
 const handleAbletonScene = (message) => {
@@ -1305,6 +1318,14 @@ osc.on('open', () => {
                osc.send(new OSC.Message(`/bus/${id}/mix/fader`));
                osc.send(new OSC.Message(`/bus/${id}/mix/on`));
            } catch(e) { console.error("Bus Fetch Error", e); }
+        }
+
+        // Fetch Main EQ (Bands 1-6)
+        console.log("📥 Fetching Main EQ...");
+        for (let b = 1; b <= 6; b++) {
+            ['f', 'g', 'q', 'type'].forEach(param => {
+                osc.send(new OSC.Message(`/main/st/eq/${b}/${param}`));
+            });
         }
      }, 2000);
 });
@@ -1779,8 +1800,15 @@ const foundInputName = midiInputs.find(name => targetParamsInput.some(t => name.
 if (foundInputName) {
     console.log(`🎹 Connecting MIDI Input to: "${foundInputName}"`);
     const input = new easymidi.Input(foundInputName);
+    // Force-enable all message types (Sysex, Timing, Active Sensing)
+    // Note: easymidi source defaults to (false, false, false) but we ensure it here.
+    if (input._input) input._input.ignoreTypes(false, false, false);
     
     input.on('clock', () => {
+        // --- MIDI CLOCK SYNC ---
+        // Fallback for missing OSC: Increment global beats
+        lastAbletonGlobalBeats += (1.0/24.0);
+
         clockTicks++;
         
         // 1/16th Note (Every 6 ticks)
@@ -1805,6 +1833,27 @@ if (foundInputName) {
                 }
             }
         }
+    });
+
+    // --- MIDI TRANSPORT LISTENERS ---
+    input.on('start', () => {
+        console.log('🎹 MIDI Start: Resetting Global Beats');
+        lastAbletonGlobalBeats = 0;
+        clockTicks = 0;
+    });
+    input.on('continue', () => {
+        console.log('🎹 MIDI Continue');
+    });
+    input.on('stop', () => {
+        console.log('🎹 MIDI Stop');
+    });
+    input.on('position', (msg) => {
+        // SPP = 16th notes (6 clocks)
+        const spp = msg.value;
+        const beats = (spp * 6) / 24.0;
+        console.log(`🎹 MIDI Position: ${spp} SPP -> Beat ${beats}`);
+        lastAbletonGlobalBeats = beats;
+        clockTicks = (spp * 6) % 24; // Align local tick counter
     });
 
     // LISTENER: MIDI NOTES
@@ -1845,7 +1894,7 @@ if (foundInputName) {
 
     // LISTENER: MIDI PROGRAM CHANGE (Song Select)
     input.on('program', (msg) => {
-        console.log(`🎹 MIDI PC (Song ${msg.number + 1})`);
+        // console.log(`🎹 MIDI PC (Song ${msg.number + 1})`);
         setlistManager.setActiveIndex(msg.number);
         
         // After setActiveIndex, we know the new activeSongId and activePartIndex (usually 0)
@@ -1890,31 +1939,47 @@ try {
     dmx.registerDriver('dummy', DummyDriver);
 } catch (e) { console.error("Driver reg error:", e); }
 
-// Use 'dummy' driver for virtual dev to avoid console spam.
-const lighting = new LightingEngine(dmx, 'main', 'dummy');
+// Detect Real DMX Interface
+const DMX_PORT = '/dev/cu.usbserial-ENQ7MSFF';
+let lighting;
+
+if (fs.existsSync(DMX_PORT)) {
+    console.log(`🔌 Found DMX Interface at ${DMX_PORT}`);
+    try {
+        // Attempt to use Enttec Pro Driver
+        lighting = new LightingEngine(dmx, 'main', 'enttec-usb-dmx-pro', DMX_PORT);
+        console.log('✅ DMX Driver: Enttec USB DMX Pro');
+    } catch (e) {
+        console.error('❌ Failed to init DMX Driver:', e.message);
+        lighting = new LightingEngine(dmx, 'main', 'dummy'); 
+    }
+} else {
+    console.warn(`⚠️ DMX Interface not found at ${DMX_PORT}. Using Dummy Driver.`);
+    lighting = new LightingEngine(dmx, 'main', 'dummy');
+}
 console.log('--- SERVER RESTART DEBUG ---');
 console.log('💡 DMX Lighting Engine Initialized (Silent Mode)');
 
 // Broadcast DMX updates to Frontend Visualizer
-// Broadcast DMX updates to Frontend Visualizer (DISABLED FOR PERFORMANCE)
-// let lastDmxUpdate = Date.now();
-// let dmxUpdateTimeout = null;
-// dmx.on('update', (universe, state) => {
-//     // const timeSinceLast = Date.now() - lastDmxUpdate;
-//     // const dispatch = () => {
-//     //     io.emit('dmx_update', { universe, state });
-//     //     lastDmxUpdate = Date.now();
-//     //     dmxUpdateTimeout = null;
-//     // };
-//     // if (timeSinceLast > 50) {
-//     //     if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
-//     //     dispatch();
-//     // } else {
-//     //     if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
-//     //     dmxUpdateTimeout = setTimeout(dispatch, 50 - timeSinceLast);
-//     // }
-// });
-    // NOTE: DMX broadcasting is disabled for now.
+// Broadcast DMX updates to Frontend Visualizer (Throttled 50ms)
+let lastDmxUpdate = Date.now();
+let dmxUpdateTimeout = null;
+dmx.on('update', (universe, state) => {
+    const timeSinceLast = Date.now() - lastDmxUpdate;
+    const dispatch = () => {
+        io.emit('dmx_update', { universe, state });
+        lastDmxUpdate = Date.now();
+        dmxUpdateTimeout = null;
+    };
+    if (timeSinceLast > 50) {
+        if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
+        dispatch();
+    } else {
+        if (dmxUpdateTimeout) clearTimeout(dmxUpdateTimeout);
+        dmxUpdateTimeout = setTimeout(dispatch, 50 - timeSinceLast);
+    }
+});
+// NOTE: DMX broadcasting re-enabled for Visualizer support.
     
     // ----------- ABLETON OSC HANDLERS -----------
     // (Moved to dedicated listeners)
@@ -2745,9 +2810,81 @@ app.post('/api/charts/upload', uploadChart.single('chart'), (req, res) => {
 });
 
 // NEW: Upload and Assign in one go (for Musicians)
-app.post('/api/charts/assign', uploadChart.single('chart'), (req, res) => {
+// NEW: Upload and Assign in one go (for Musicians) + Auto-Convert Images to PDF
+app.post('/api/charts/assign', uploadChart.single('chart'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+
+        // DETECT HEIC and convert to JPEG using 'sips' (MacOS)
+        if (req.file.mimetype === 'image/heic' || req.file.mimetype === 'image/heif' || req.file.originalname.match(/\.hei[cf]$/i)) {
+            console.log(`🍏 HEIC Detected: ${req.file.filename}. Converting to JPEG via sips...`);
+            const jpgPath = req.file.path.replace(/\.[^.]+$/, '.jpg');
+            const oldPath = req.file.path;
+
+            try {
+                await new Promise((resolve, reject) => {
+                    const cmd = `sips -s format jpeg "${oldPath}" --out "${jpgPath}"`;
+                    exec(cmd, (err, stdout, stderr) => {
+                        if (err) return reject(err);
+                        resolve();
+                    });
+                });
+
+                if (fs.existsSync(jpgPath)) {
+                    // Clean up original HEIC
+                    try { fs.unlinkSync(oldPath); } catch (e) { console.warn("Failed to delete HEIC:", e.message); }
+                    
+                    // Update req.file to point to the new JPEG
+                    req.file.path = jpgPath;
+                    req.file.filename = path.basename(jpgPath);
+                    req.file.mimetype = 'image/jpeg';
+                    console.log("✅ HEIC -> JPEG Conversion Success");
+                }
+            } catch (e) {
+                console.error("HEIC Conversion Failed:", e);
+            }
+        }
+
+        // AUTO-CONVERT IMAGE TO PDF (Fix for Bug #006)
+        // If file is an image, convert it so it displays nicely in the iframe viewer
+        if (req.file.mimetype.startsWith('image/')) {
+            const PDFDocument = require('pdfkit');
+            const newPath = req.file.path.replace(/\.[^.]+$/, '.pdf');
+            const doc = new PDFDocument({ autoFirstPage: false });
+            
+            console.log(`🖼️ Converting Image ${req.file.filename} to PDF...`);
+            
+            const writeStream = fs.createWriteStream(newPath);
+            doc.pipe(writeStream);
+
+            // Create A4 Page (595.28 x 841.89)
+            // We scale the image to fit maximizing space while maintaining aspect ratio
+            // Create A4 Page (595.28 x 841.89)
+            // We scale the image to fit maximizing space while maintaining aspect ratio
+            doc.addPage({ size: 'A4', margin: 20 }); 
+            
+            doc.image(req.file.path, 20, 20, { 
+                fit: [doc.page.width - 40, doc.page.height - 40], 
+                align: 'center', 
+                valign: 'center' 
+            });
+            
+            doc.end();
+
+            await new Promise((resolve, reject) => {
+                writeStream.on('finish', resolve);
+                writeStream.on('error', reject);
+            });
+            
+            // Delete Original Image
+            fs.unlinkSync(req.file.path);
+            
+            // Update Request File Info to point to new PDF
+            req.file.path = newPath;
+            req.file.filename = path.basename(newPath);
+            req.file.mimetype = 'application/pdf';
+            console.log(`✅ Conversion Complete: ${req.file.filename}`);
+        }
         
         const { songId, inputChannel, monitorBus } = req.body;
         if (!songId || !inputChannel) {
@@ -2871,6 +3008,7 @@ app.get('/api/charts/snippets/:songId/:role/:filename', (req, res) => {
         return res.status(404).send('Not found');
     }
 
+    res.setHeader('Content-Disposition', 'inline');
     res.sendFile(filePath, (err) => {
         if (err) console.error("Error sending snippet:", err);
     });
@@ -2890,6 +3028,8 @@ app.get('/api/charts/:songId/:role', (req, res) => {
             const files = fs.readdirSync(songDir);
             const match = files.find(f => f.toLowerCase().startsWith(safeRole + '.'));
             if (match) {
+                // FORCE INLINE DISPLAY
+                res.setHeader('Content-Disposition', 'inline');
                 return res.sendFile(path.join(songDir, match));
             }
         } catch (e) {
@@ -2897,7 +3037,6 @@ app.get('/api/charts/:songId/:role', (req, res) => {
         }
     }
 
-    // 2. Try LEGACY System (setlists.json -> song.chartAssignments)
     // 2. Try LEGACY System (setlists.json -> song.chartAssignments)
     if (busId || channelId) {
         // We need to look up the song in setlistManager
@@ -2915,6 +3054,8 @@ app.get('/api/charts/:songId/:role', (req, res) => {
                     const legacyPath = path.resolve(__dirname, assignment.file.path);
                     if (fs.existsSync(legacyPath)) {
                        // console.log(`📂 Serving Legacy Chart: ${legacyPath}`);
+                       // FORCE INLINE DISPLAY
+                       res.setHeader('Content-Disposition', 'inline');
                        return res.sendFile(legacyPath);
                     }
                 }
@@ -3182,8 +3323,8 @@ app.get('/api/setlist/data', (req, res) => {
 
 app.post('/api/setlist/update', (req, res) => {
     const { id, updates } = req.body;
-    const result = setlistManager.updateSetlist(id, updates);
-    res.json(result);
+    setlistManager.updateSetlist(id, updates);
+    res.json({ success: true });
 });
 
 // --- NEW SETLIST ROUTES ---
@@ -3192,9 +3333,11 @@ app.post('/api/setlist/song', (req, res) => {
     // If ID exists and song exists, update. Else create.
     // song object from frontend might contain { id:..., title:... }
     if (song.id && setlistManager.data.songs[song.id]) {
-        res.json({ song: setlistManager.updateSong(song.id, song) });
+        setlistManager.updateSong(song.id, song);
+        res.json({ success: true });
     } else {
-        res.json({ song: setlistManager.createSong(song) });
+        const newSong = setlistManager.createSong(song);
+        res.json({ success: true, id: newSong.id });
     }
 });
 
@@ -3304,7 +3447,9 @@ app.post('/api/setlist/export-docx', (req, res) => {
 
         // 4. Render
         doc.render({
-            setlistName: setlist.name,
+            title: setlist.name,       // Likely tag used in template
+            name: setlist.name,        // Fallback tag
+            setlistName: setlist.name, // Existing logic
             songs: songs,
             date: new Date().toLocaleDateString()
         });
@@ -3364,7 +3509,9 @@ app.post('/api/setlist/export-pdf', (req, res) => {
         const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
         doc.render({
-            setlistName: setlist.name,
+            title: setlist.name,       // Likely tag used in template
+            name: setlist.name,        // Fallback tag
+            setlistName: setlist.name, // Existing logic
             songs: songs,
             date: new Date().toLocaleDateString()
         });
@@ -3703,6 +3850,15 @@ io.on('connection', (socket) => {
     });
   
   socket.on('dmx_trigger', (sceneName) => {
+        // Special Handling for Test Toggles
+        if (typeof sceneName === 'string' && sceneName.startsWith('test_toggle:')) {
+            const ch = parseInt(sceneName.split(':')[1]);
+            if (lighting && typeof lighting.toggleTestChannel === 'function') {
+                lighting.toggleTestChannel(ch);
+            }
+            return;
+        }
+
         console.log('💡 Manual Trigger:', sceneName);
         try {
             if(lighting) lighting.play(sceneName);

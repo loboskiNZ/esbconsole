@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "project": "Ed and the Shadow Boys",
+    "dmx_universes": 1,
+    "universe": 1,
+    "notes": [
+      "Single universe only (one interface).",
+      "Washes are spaced by 4 addresses; channel +3 is a deliberate gap."
+    ]
+  },
+  "fixtures": {
+    "bars": {
+      "count": 4,
+      "mode": "48ch",
+      "starts": [1, 49, 97, 145],
+      "channels_per_fixture": 48,
+      "segments": 8,
+      "channels_per_segment": 6,
+      "segment_map": ["dimmer", "strobe", "red", "green", "blue", "program"]
+    },
+    "washes": {
+      "count": 4,
+      "mode": "3ch_rgb",
+      "starts": [232, 236, 240, 244],
+      "channels_per_fixture": 3,
+      "map": ["red", "green", "blue"],
+      "addressing_note": "spaced_by_4_with_gap_channel"
+    },
+    "movers": {
+      "count": 3,
+      "mode": "14ch",
+      "starts": [247, 261, 275],
+      "channels_per_fixture": 14,
+      "map": [
+        "pan",
+        "tilt",
+        "pan_fine",
+        "tilt_fine",
+        "speed",
+        "dimmer",
+        "shutter",
+        "red",
+        "green",
+        "blue",
+        "white",
+        "reserved_12",
+        "reserved_13",
+        "reserved_14"
+      ]
+    }
+  }
+}

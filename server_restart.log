@@ -1,0 +1,107 @@
+📄 Setlists Loaded
+🛡️  Performing Startup Backup to: /Volumes/WORKER/machines/x32-controller/backups/boot_2026-01-24T22-17-04-119Z
+🧹 Cleaning old backup: boot_2026-01-24T02-31-15-315Z
+🔒 HTTPS Enabled
+📂 State Loaded from Disk
+🔌 Connecting to X32 at 10.0.0.202:10023...
+🎹 All MIDI Inputs: [
+  'IAC Driver Bus 1',
+  'IAC Driver Bus 2',
+  'Ableton Push 3 Live Port',
+  'Ableton Push 3 User Port',
+  'Ableton Push 3 External Port'
+]
+🎹 Connecting MIDI Input to: "IAC Driver Bus 1"
+🎹 Available MIDI Outputs: [
+  'IAC Driver Bus 1',
+  'IAC Driver Bus 2',
+  'Ableton Push 3 Live Port',
+  'Ableton Push 3 User Port',
+  'Ableton Push 3 External Port'
+]
+✅ MIDI Output connected to: "IAC Driver Bus 1"
+🔌 Found DMX Interface at /dev/cu.usbserial-ENQ7MSFF
+✅ DMX Driver: Enttec USB DMX Pro
+--- SERVER RESTART DEBUG ---
+💡 DMX Lighting Engine Initialized (Silent Mode)
+🎹 MIDI Input connected to: "IAC Driver Bus 1"
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🔑 add access controls to secrets: https://dotenvx.com/ops
+✅ OSC Port Open
+🌟 Controller v2.15.2 running at https://localhost:3000
+⚡ Client Connected: nBh2PuVanrHM_y7nAAAB
+📤 Sending Full State to nBh2PuVanrHM_y7nAAAB (0 chans)
+📥 Fetching Bus Configs & Safes...
+📥 Fetching Main EQ...
+📡 ANY OSC: /bus/01/config/name [Vox Ed]
+📡 ANY OSC: /bus/01/config/color [4]
+📡 ANY OSC: /bus/01/mix/fader [0.7546432018280029]
+📡 ANY OSC: /bus/01/mix/on [1]
+📡 ANY OSC: /bus/02/config/name [Vox Nathan]
+📡 ANY OSC: /bus/02/config/color [4]
+📡 ANY OSC: /bus/02/mix/fader [0.5386119484901428]
+📡 ANY OSC: /bus/02/mix/on [1]
+📡 ANY OSC: /bus/03/config/name [Vox Claire]
+📡 ANY OSC: /bus/03/config/color [4]
+📡 ANY OSC: /bus/03/mix/fader [0.759530782699585]
+📡 ANY OSC: /bus/03/mix/on [1]
+📡 ANY OSC: /bus/04/config/name [Vox Alan]
+📡 ANY OSC: /bus/04/config/color [4]
+📡 ANY OSC: /bus/04/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/04/mix/on [1]
+📡 ANY OSC: /bus/05/config/name [Vox Hyram]
+📡 ANY OSC: /bus/05/config/color [4]
+📡 ANY OSC: /bus/05/mix/fader [0.7653958797454834]
+📡 ANY OSC: /bus/05/mix/on [1]
+📡 ANY OSC: /bus/06/config/name [Vox Davina]
+📡 ANY OSC: /bus/06/config/color [4]
+📡 ANY OSC: /bus/06/mix/fader [0.7751710414886475]
+📡 ANY OSC: /bus/06/mix/on [1]
+📡 ANY OSC: /bus/07/config/name [Drums]
+📡 ANY OSC: /bus/07/config/color [6]
+📡 ANY OSC: /bus/07/mix/fader [0.764418363571167]
+📡 ANY OSC: /bus/07/mix/on [1]
+📡 ANY OSC: /bus/11/mix/fader [0]
+📡 ANY OSC: /bus/11/mix/on [1]
+📡 ANY OSC: /bus/12/config/name [Horns]
+📡 ANY OSC: /bus/12/config/color [2]
+📡 ANY OSC: /bus/12/mix/fader [0]
+📡 ANY OSC: /bus/12/mix/on [1]
+📡 ANY OSC: /bus/13/config/name [FX 1]
+📡 ANY OSC: /bus/13/config/color [5]
+📡 ANY OSC: /bus/13/mix/fader [0.7869012951850891]
+📡 ANY OSC: /bus/13/mix/on [1]
+📡 ANY OSC: /bus/14/config/name [FX 2]
+📡 ANY OSC: /bus/14/config/color [5]
+📡 ANY OSC: /bus/14/mix/fader [0.7761485576629639]
+📡 ANY OSC: /bus/14/mix/on [1]
+📡 ANY OSC: /bus/15/config/name [FX 3]
+📡 ANY OSC: /bus/15/config/color [5]
+📡 ANY OSC: /bus/15/mix/fader [0.7898338437080383]
+📡 ANY OSC: /bus/15/mix/on [1]
+📡 ANY OSC: /bus/16/config/name [FX 4]
+📡 ANY OSC: /bus/16/config/color [5]
+📡 ANY OSC: /bus/16/mix/fader [0.7996090054512024]
+📡 ANY OSC: /bus/16/mix/on [1]
+📡 ANY OSC: /main/st/eq/1/f [0.1899999976158142]
+📡 ANY OSC: /main/st/eq/1/g [0.5249999761581421]
+📡 ANY OSC: /main/st/eq/1/q [0.4647887349128723]
+📡 ANY OSC: /main/st/eq/1/type [2]
+📡 ANY OSC: /main/st/eq/2/f [0.30000001192092896]
+📡 ANY OSC: /main/st/eq/2/g [0.5166666507720947]
+📡 ANY OSC: /main/st/eq/2/q [0.4647887349128723]
+📡 ANY OSC: /main/st/eq/2/type [2]
+📡 ANY OSC: /main/st/eq/3/f [0.5550000071525574]
+🔌 Client Disconnected: nBh2PuVanrHM_y7nAAAB
+⚡ Client Connected: HLs223JlwMtkxWahAAAD
+📤 Sending Full State to HLs223JlwMtkxWahAAAD (0 chans)
+💡 Manual Trigger: aqua
+💡 Scene: aqua [Switching...]
+💡 Scene: AQUA
+💡 Manual Trigger: aqua
+💡 Scene: aqua [Switching...]
+💡 Scene: AQUA
+💡 Manual Trigger: aqua
+💡 Scene: aqua [Switching...]
+💡 Scene: AQUA
+🛑 Server stopping... Saving state.
+✅ State saved successfully.

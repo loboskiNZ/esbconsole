@@ -10,9 +10,23 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
     const [flashIndex, setFlashIndex] = useState(null); // For "Next Cue" warning
     const [abletonTime, setAbletonTime] = useState(null);
     const [learnMode, setLearnMode] = useState(false);
-    const [assignmentsCollapsed, setAssignmentsCollapsed] = useState(true);
+    const [assignmentsCollapsed, setAssignmentsCollapsed] = useState(false); // Default Open
     const [warning, setWarning] = useState(null);
     const [learnStatus, setLearnStatus] = useState({ hasData: false, songCount: 0, totalCues: 0 });
+    
+    // START FIX: Race Condition Prevention
+    // We use a Ref to store the latest songs state immediately.
+    // We only sync from `data` initially, or if we haven't edited locally yet.
+    // Ideally, we treat `songsRef` as the "Editor State".
+    const songsRef = React.useRef(null);
+    
+    // Sync Ref when data loads (One-time Init)
+    useEffect(() => {
+        if (data && data.songs && !songsRef.current) {
+            songsRef.current = data.songs;
+        }
+    }, [data]);
+    // END FIX
 
     useEffect(() => {
         fetchData();
@@ -114,9 +128,44 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
         });
     };
 
+    // START NEW: Saving Indicator
+    const [isSaving, setIsSaving] = useState(false);
+    // END NEW
+
     const handleUpdateSong = (id, updates) => {
-        const song = data.songs[id];
-        axios.post('/api/setlist/song', { ...song, ...updates }).then(() => fetchData());
+        // Init Ref if null (shouldn't happen if loaded, but safe guard)
+        if (!songsRef.current && data) songsRef.current = data.songs;
+        
+        // Use Ref as source of truth 
+        const currentSong = (songsRef.current && songsRef.current[id]) || (data && data.songs[id]); 
+        if (!currentSong) return;
+
+        const newSong = { ...currentSong, ...updates };
+        
+        // 1. Immediate Update of Ref
+        if(songsRef.current) songsRef.current[id] = newSong;
+
+        // 2. Optimistic UI Update 
+        setData(prev => {
+             if (!prev) return prev;
+             return {
+                 ...prev,
+                 songs: { ...prev.songs, [id]: newSong }
+             };
+        });
+
+        // 3. Send Merged Data to Server
+        setIsSaving(true);
+        axios.post('/api/setlist/song', newSong)
+             .then(() => {
+                 setTimeout(() => setIsSaving(false), 500); // Visual delay for reassurance
+             })
+             .catch(err => {
+                 console.error("Save Failed:", err);
+                 setIsSaving(false);
+                 const updateMsg = err.response ? `Server Error: ${err.response.status}` : err.message;
+                 alert(`Failed to save: ${updateMsg}`);
+             });
     };
 
     const moveSong = (index, direction) => {
@@ -149,183 +198,200 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
         return `Bus ${bId}`;
     };
 
-    if (!data) return <div style={{padding:'20px', color:'white'}}>Loading...</div>;
+    // --- RENDER ---
+    if (!data) return <div className="p-8 text-white">Loading...</div>;
 
     const activeSetlist = data.setlists.default;
     const selectedSong = selectedSongId ? data.songs[selectedSongId] : null;
 
     return (
-        <div style={{
-            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-            background: '#111', color: '#eee', zIndex: 2000,
-            display: 'flex', flexDirection: 'column'
-        }}>
-            {/* HEADER */}
-            <div style={{
-                height: '50px', background: '#222', borderBottom: '1px solid #444',
-                display: 'flex', alignItems: 'center', padding: '0 20px', justifyContent:'space-between'
-            }}>
-                <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
-                    <h2 style={{margin:0}}>Setlist:</h2>
-                    <input 
-                        value={activeSetlist.name}
-                        onChange={(e) => {
-                            const newName = e.target.value;
-                            const newData = { ...data };
-                            newData.setlists.default.name = newName;
-                            setData(newData);
-                            axios.post('/api/setlist/update', { id: 'default', updates: { name: newName } }); 
-                        }}
-                        style={{
-                            background:'transparent', border:'none', borderBottom:'1px solid #666', 
-                            color:'white', fontSize:'1.5em', fontWeight:'bold', width:'300px'
-                        }}
-                    />
-                </div>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[2000] flex items-center justify-center p-8">
+            <div className="bg-gray-900 w-full max-w-6xl h-full max-h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-700 relative">
                 
-                {/* ABLETON BAR COUNT */}
-                <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
-                    {/* LEARN MODE TOGGLE */}
-                    <div 
-                        onClick={() => {
-                            const newState = !learnMode;
-                            setLearnMode(newState);
-                            socket.emit('toggle_learn_mode', { enabled: newState });
-                        }}
-                        style={{
-                            display:'flex', alignItems:'center', gap:'8px', cursor:'pointer',
-                            padding:'4px 12px', borderRadius:'20px', 
-                            background: learnMode ? '#aa0000' : '#333',
-                            border: '1px solid #444',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <div style={{
-                            width:'10px', height:'10px', borderRadius:'50%', 
-                            background: learnMode ? '#ff0000' : '#444',
-                            boxShadow: learnMode ? '0 0 10px #ff0000' : 'none'
-                        }} />
-                        <span style={{fontSize:'0.8em', fontWeight:'bold', color: learnMode ? 'white' : '#888'}}>
-                            {learnMode ? 'LEARN ON' : 'LEARN OFF'}
-                        </span>
-                    </div>
-
-                    <div style={{
-                        display:'flex', alignItems:'center', gap:'10px', background:'#333', padding:'4px 12px', 
-                        borderRadius:'20px', border: (abletonTime && abletonTime.isDownbeat) ? '1px solid #00ff00' : '1px solid #444',
-                        opacity: abletonTime ? 1 : 0.4
-                    }}>
-                        <div style={{fontSize:'0.7em', color:'#888'}}>ABLETON:</div>
-                        <div style={{
-                            fontSize:'1.1em', fontFamily:'monospace', fontWeight:'bold', 
-                            color: (abletonTime && abletonTime.isDownbeat) ? '#00ff00' : '#ccc'
-                        }}>
-                            {abletonTime ? abletonTime.formatted : 'WAITING...'}
+                {/* HEADER */}
+                {/* HEADER */}
+                {/* HEADER */}
+                <div style={{
+                    width: '100%', 
+                    padding: '8px 16px', 
+                    borderBottom: '1px solid #374151', 
+                    display: 'flex', 
+                    flexDirection: 'row', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    backgroundColor: '#1f2937',
+                    flexShrink: 0  
+                }}>
+                    {/* LEFT: Title & Name Input */}
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px' }}>
+                        <h2 className="text-lg font-bold text-white m-0 whitespace-nowrap">Setlist:</h2>
+                        <div style={{ width: '250px', position: 'relative' }}>
+                            <input 
+                                value={activeSetlist.name}
+                                onChange={(e) => {
+                                    const newName = e.target.value;
+                                    const newData = { ...data };
+                                    newData.setlists.default.name = newName;
+                                    setData(newData);
+                                }}
+                                onBlur={() => {
+                                    axios.post('/api/setlist/update', { id: 'default', updates: { name: activeSetlist.name } })
+                                         .catch(err => console.error("Failed to save name:", err));
+                                }}
+                                className="bg-transparent border-none border-b border-gray-600 text-white text-xl font-bold focus:outline-none focus:border-blue-500 w-full py-0"
+                            />
                         </div>
-                        {abletonTime && (
-                             <div style={{display:'flex', gap:'5px', marginLeft:'5px'}}>
-                                 <button 
-                                    onClick={() => socket.emit('osc', { address: '/live/scene', args: [0] })}
-                                    title="Reset to Bar 1"
-                                    style={{
-                                        background:'#444', border:'none', color:'#ccc', fontSize:'0.7em', 
-                                        padding:'2px 8px', borderRadius:'4px', cursor:'pointer'
+                    </div>
+                
+                {/* RIGHT: STATUS & ACTIONS WRAPPER */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '20px' }}>
+                    
+                    {/* STATUS GROUP (Learn + Ableton) */}
+                    <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+                        {/* LEARN MODE TOGGLE */}
+                        <div 
+                            onClick={() => {
+                                const newState = !learnMode;
+                                setLearnMode(newState);
+                                socket.emit('toggle_learn_mode', { enabled: newState });
+                            }}
+                            style={{
+                                display:'flex', alignItems:'center', gap:'6px', cursor:'pointer',
+                                padding:'2px 8px', borderRadius:'20px', 
+                                background: learnMode ? '#aa0000' : '#333',
+                                border: '1px solid #444',
+                                transition: 'all 0.2s',
+                                fontSize: '0.9em'
+                            }}
+                        >
+                            <div style={{
+                                width:'8px', height:'8px', borderRadius:'50%', 
+                                background: learnMode ? '#ff0000' : '#444',
+                                boxShadow: learnMode ? '0 0 10px #ff0000' : 'none'
+                            }} />
+                            <span style={{fontSize:'0.9em', fontWeight:'bold', color: learnMode ? 'white' : '#888'}}>
+                                {learnMode ? 'LEARN ON' : 'LEARN OFF'}
+                            </span>
+                        </div>
+
+                        <div style={{
+                            display:'flex', alignItems:'center', gap:'8px', background:'#333', padding:'2px 8px', 
+                            borderRadius:'20px', border: (abletonTime && abletonTime.isDownbeat) ? '1px solid #00ff00' : '1px solid #444',
+                            opacity: abletonTime ? 1 : 0.4
+                        }}>
+                            <div style={{fontSize:'0.7em', color:'#888'}}>ABLETON:</div>
+                            <div style={{
+                                fontSize:'1em', fontFamily:'monospace', fontWeight:'bold', 
+                                color: (abletonTime && abletonTime.isDownbeat) ? '#00ff00' : '#ccc'
+                            }}>
+                                {abletonTime ? abletonTime.formatted : 'WAITING...'}
+                            </div>
+                            {abletonTime && (
+                                 <div style={{display:'flex', gap:'5px', marginLeft:'5px'}}>
+                                     <button 
+                                        onClick={() => socket.emit('osc', { address: '/live/scene', args: [0] })}
+                                        title="Reset to Bar 1"
+                                        style={{
+                                            background:'#444', border:'none', color:'#ccc', fontSize:'0.7em', 
+                                            padding:'1px 6px', borderRadius:'4px', cursor:'pointer'
+                                        }}
+                                     >SYNC</button>
+                                     <button 
+                                        onClick={() => socket.emit('reset_to_global')}
+                                        title="Reset to Global Project Time"
+                                        style={{
+                                            background:'#aa6600', border:'none', color:'white', fontSize:'0.7em', 
+                                            padding:'1px 6px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold'
+                                        }}
+                                     >GLOBAL</button>
+                                 </div>
+                            )}
+                        </div>
+
+                        {/* COMMIT LEARNED DATA */}
+                        {learnStatus.hasData && (
+                            <div style={{
+                                display:'flex', alignItems:'center', gap:'10px', 
+                                background:'#004400', padding:'2px 8px', borderRadius:'20px',
+                                border:'1px solid #00ff00'
+                            }}>
+                                <span style={{fontSize:'0.75em', fontWeight:'bold', color:'#00ff00'}}>
+                                    LEARNED: {learnStatus.totalCues} CUES ({learnStatus.songCount} SONGS)
+                                </span>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if(confirm(`Commit ${learnStatus.totalCues} cue durations to setlist?`)) {
+                                            socket.emit('commit_learn');
+                                        }
                                     }}
-                                 >SYNC</button>
-                                 <button 
-                                    onClick={() => socket.emit('reset_to_global')}
-                                    title="Reset to Global Project Time"
                                     style={{
-                                        background:'#aa6600', border:'none', color:'white', fontSize:'0.7em', 
-                                        padding:'2px 8px', borderRadius:'4px', cursor:'pointer', fontWeight:'bold'
+                                        background:'#00cc00', color:'black', border:'none', 
+                                        padding:'1px 8px', borderRadius:'4px', cursor:'pointer',
+                                        fontSize:'0.75em', fontWeight:'bold'
                                     }}
-                                 >GLOBAL</button>
-                             </div>
+                                >COMMIT ALL</button>
+                            </div>
                         )}
                     </div>
 
-                    {/* COMMIT LEARNED DATA */}
-                    {learnStatus.hasData && (
-                        <div style={{
-                            display:'flex', alignItems:'center', gap:'10px', 
-                            background:'#004400', padding:'4px 12px', borderRadius:'20px',
-                            border:'1px solid #00ff00'
-                        }}>
-                            <span style={{fontSize:'0.75em', fontWeight:'bold', color:'#00ff00'}}>
-                                LEARNED: {learnStatus.totalCues} CUES ({learnStatus.songCount} SONGS)
-                            </span>
-                            <button 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if(confirm(`Commit ${learnStatus.totalCues} cue durations to setlist?`)) {
-                                        socket.emit('commit_learn');
-                                    }
-                                }}
-                                style={{
-                                    background:'#00cc00', color:'black', border:'none', 
-                                    padding:'2px 10px', borderRadius:'4px', cursor:'pointer',
-                                    fontSize:'0.75em', fontWeight:'bold'
-                                }}
-                            >COMMIT ALL</button>
-                        </div>
-                    )}
-                </div>
+                    {/* BUTTON GROUP (Export + Close) */}
+                    <div style={{display:'flex', gap:'8px'}}>
+                        <button onClick={() => {
+                            const safeName = (activeSetlist.name || 'Setlist').replace(/[^a-z0-9\s-_]/gi, '').trim();
+                            const fileName = `Setlist - ${safeName}.docx`;
+                            
+                            axios.post('/api/setlist/export-docx', { setlistId: 'default' }, { responseType: 'blob' })
+                                 .then(res => {
+                                     const url = window.URL.createObjectURL(new Blob([res.data]));
+                                     const link = document.createElement('a');
+                                     link.href = url;
+                                     link.setAttribute('download', fileName);
+                                     document.body.appendChild(link);
+                                     link.click();
+                                     link.remove();
+                                 })
+                                 .catch(e => {
+                                     const msg = e.response && e.response.data && e.response.data.error ? e.response.data.error : "Failed to export. Check console.";
+                                     alert("Export Failed: " + msg);
+                                 });
+                        }} style={{
+                            padding:'2px 8px', background:'#004488', color:'white', border:'none', cursor:'pointer', fontSize:'0.9em'
+                        }}>EXPORT DOCX</button>
 
-                <div style={{display:'flex', gap:'10px'}}>
-                    <button onClick={() => {
-                        const safeName = (activeSetlist.name || 'Setlist').replace(/[^a-z0-9\s-_]/gi, '').trim();
-                        const fileName = `Setlist - ${safeName}.docx`;
-                        
-                        axios.post('/api/setlist/export-docx', { setlistId: 'default' }, { responseType: 'blob' })
-                             .then(res => {
-                                 const url = window.URL.createObjectURL(new Blob([res.data]));
-                                 const link = document.createElement('a');
-                                 link.href = url;
-                                 link.setAttribute('download', fileName);
-                                 document.body.appendChild(link);
-                                 link.click();
-                                 link.remove();
-                             })
-                             .catch(e => {
-                                 const msg = e.response && e.response.data && e.response.data.error ? e.response.data.error : "Failed to export. Check console.";
-                                 alert("Export Failed: " + msg);
-                             });
-                    }} style={{
-                        padding:'5px 15px', background:'#004488', color:'white', border:'none', cursor:'pointer'
-                    }}>EXPORT DOCX</button>
+                        <button onClick={() => {
+                            const safeName = (activeSetlist.name || 'Setlist').replace(/[^a-z0-9\s-_]/gi, '').trim();
+                            const fileName = `Setlist - ${safeName}.pdf`;
+                            
+                            // Optimistic feedback
+                            const originalText = document.activeElement.innerText;
+                            document.activeElement.innerText = "Generating...";
+                            
+                            axios.post('/api/setlist/export-pdf', { setlistId: 'default' }, { responseType: 'blob' })
+                                 .then(res => {
+                                     const url = window.URL.createObjectURL(new Blob([res.data]));
+                                     const link = document.createElement('a');
+                                     link.href = url;
+                                     link.setAttribute('download', fileName);
+                                     document.body.appendChild(link);
+                                     link.click();
+                                     link.remove();
+                                     document.activeElement.innerText = originalText;
+                                 })
+                                 .catch(e => {
+                                     console.error(e);
+                                     const msg = e.response && e.response.data && e.response.data.error ? e.response.data.error : "Failed to generate PDF. Check server logs.";
+                                     alert("PDF Export Failed: " + msg);
+                                     document.activeElement.innerText = originalText;
+                                 });
+                        }} style={{
+                            padding:'2px 8px', background:'#222', color:'#ccc', border:'1px solid #444', cursor:'pointer', fontSize:'0.9em'
+                        }}>EXPORT PDF</button>
 
-                    <button onClick={() => {
-                        const safeName = (activeSetlist.name || 'Setlist').replace(/[^a-z0-9\s-_]/gi, '').trim();
-                        const fileName = `Setlist - ${safeName}.pdf`;
-                        
-                        // Optimistic feedback
-                        const originalText = document.activeElement.innerText;
-                        document.activeElement.innerText = "Generating...";
-                        
-                        axios.post('/api/setlist/export-pdf', { setlistId: 'default' }, { responseType: 'blob' })
-                             .then(res => {
-                                 const url = window.URL.createObjectURL(new Blob([res.data]));
-                                 const link = document.createElement('a');
-                                 link.href = url;
-                                 link.setAttribute('download', fileName);
-                                 document.body.appendChild(link);
-                                 link.click();
-                                 link.remove();
-                                 document.activeElement.innerText = originalText;
-                             })
-                             .catch(e => {
-                                 console.error(e);
-                                 const msg = e.response && e.response.data && e.response.data.error ? e.response.data.error : "Failed to generate PDF. Check server logs.";
-                                 alert("PDF Export Failed: " + msg);
-                                 document.activeElement.innerText = originalText;
-                             });
-                    }} style={{
-                        padding:'5px 15px', background:'#222', color:'#ccc', border:'1px solid #444', cursor:'pointer'
-                    }}>EXPORT PDF</button>
-
-                    <button onClick={onClose} style={{
-                        padding:'5px 15px', background:'#444', color:'white', border:'none', cursor:'pointer'
-                    }}>CLOSE</button>
+                        <button onClick={onClose} style={{
+                            padding:'2px 8px', background:'#444', color:'white', border:'none', cursor:'pointer', fontSize:'0.9em'
+                        }}>CLOSE</button>
+                    </div>
                 </div>
             </div>
 
@@ -866,6 +932,7 @@ export default function SetlistManager({ onClose, onUpdate, config, x32State, so
         </div>
       </div>
     </div>
+   </div>
   );
 }
 
