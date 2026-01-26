@@ -412,35 +412,7 @@ const DMXVisualizer = ({ socket, onClose }) => {
                      </div>
                      <button onClick={() => socket.emit('dmx_trigger', 'police')} style={{background: 'linear-gradient(90deg, darkblue, darkred)', color:'#fff', border:'none', padding:'5px', cursor:'pointer'}}>POLICE 🚨</button>
                      
-                     <div style={{display:'flex', flexDirection:'column', gap:'5px', border:'1px solid #555', padding:'5px', maxHeight:'300px', overflowY:'auto'}}>
-                         <div style={{color:'#fff', fontSize:'0.7em', fontWeight:'bold'}}>MANUAL BAR DEBUG (24ch x 4)</div>
-                         {[1, 25, 49, 73].map((barAddr, barIdx) => (
-                             <div key={barAddr} style={{display:'flex', gap:'2px', alignItems:'center'}}>
-                                 <div style={{width:'40px', fontSize:'0.6em', color:'#888'}}>Bar {barIdx+1}</div>
-                                 <div style={{display:'flex', flexWrap:'wrap', gap:'1px'}}>
-                                     {Array.from({length: 48}, (_, i) => {
-                                         const chAddr = barAddr + i;
-                                         const isOn = (dmx[chAddr] || 0) > 0;
-                                         return (
-                                             <button key={i} 
-                                                 onClick={() => socket.emit('dmx_trigger', `test_toggle:${chAddr}`)}
-                                                 style={{
-                                                     width:'20px', height:'20px', fontSize:'0.5em', padding:0, cursor:'pointer',
-                                                     background: isOn ? '#0f0' : '#222',
-                                                     color: isOn ? '#000' : '#888',
-                                                     border: isOn ? '1px solid #0f0' : '1px solid #444'
-                                                 }}
-                                                 title={`Addr ${chAddr}`}
-                                             >
-                                                 {i+1}
-                                             </button>
-                                         );
-                                     })}
-                                 </div>
-                             </div>
-                         ))}
-                         <button onClick={() => socket.emit('dmx_trigger', 'test')} style={{background:'#0f0', color:'#000', border:'none', fontSize:'0.8em', padding:'2px', marginTop:'5px'}}>RESET / ENTER TEST MODE</button>
-                     </div>
+
 
                      <button onClick={() => socket.emit('dmx_trigger', 'blackout')} style={{background:'#333', color:'#fff', border:'none', padding:'5px', cursor:'pointer'}}>OFF</button>
  
