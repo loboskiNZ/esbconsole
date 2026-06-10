@@ -1,6 +1,6 @@
 # X32/Ableton Software Rebuild Charter v0.2
 
-Status: PH006 Finalised  
+Status: PH007 Finalised  
 Owner: Ed Lobo  
 Project: Ed and the Shadow Boys Production Platform  
 Purpose: Charter Foundation for Full Refactor/Rebuild
@@ -10,6 +10,7 @@ Runtime behaviour: `docs/RUNTIME_MODEL.md`
 Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
 Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
+Physical database plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -727,6 +728,21 @@ This includes:
 
 Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must conform to `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` before bridge or integration code is written.
 
+## 29. Physical Database & Migration Planning
+
+Canonical physical database technology choices, migration strategy, and delivery governance are defined in `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`.
+
+This includes:
+
+- **PostgreSQL 16+** selected for cloud, Director local, and Local Show Runtime databases
+- Laravel migrations as the sole approved schema change mechanism
+- Environment database topology and sync direction per database
+- Initial migration domains (M1–M14) and dependency order
+- Identifier, foreign key, indexing, file asset, runtime state, sync package, and audit persistence strategies
+- Seed, rollback, backup, testing, and prohibited database practices
+
+No migrations may be created until PH007 is complete and referenced. Physical schema implementation must conform to `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`, `docs/DATABASE_ARCHITECTURE.md`, and `docs/DATA_ARCHITECTURE.md`.
+
 ---
 
-End of Charter v0.2 — PH006
+End of Charter v0.2 — PH007

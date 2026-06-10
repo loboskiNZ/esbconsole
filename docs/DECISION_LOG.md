@@ -122,6 +122,21 @@
 | 081 | Musician devices connect to Local Show Runtime on local network; no cloud required; manual chart browsing is display-only. | Musician-centric local-first device experience. |
 | 082 | Integration failures (X32, lighting, devices, bridges) are logged and surfaced but must not stop performance or remaining cue Actions; cloud unavailable has no performance impact. | The show must go on. |
 
+## PH007 — Physical Database & Migration Planning
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 083 | PostgreSQL 16+ is the selected database engine for cloud, Director local, and Local Show Runtime. | JSONB manifest support, Laravel/DigitalOcean/Docker parity, single-engine operational simplicity; aligns with Ed's preference. |
+| 084 | Three distinct PostgreSQL databases: cloud (DO managed), Director local, Local Show Runtime (Docker). | Phase-aware authority; runtime DB required during performance; cloud not required during performance. |
+| 085 | Laravel migrations are the sole approved schema change mechanism; no manual DDL or untracked schema edits. | Version-controlled governed schema evolution. |
+| 086 | Initial migrations follow dependency order M1–M14 (identity → band → assets → songs → shows → performances → sync → runtime → audit). | FK integrity and aggregate hierarchy respected. |
+| 087 | Internal bigint PKs plus UUID public_id for API/sync; PGM/CC16 as external mapping fields — not primary keys. | Sync-safe cross-environment references. |
+| 088 | File asset records store Spaces bucket/key and checksum as canonical reference; local cache path runtime-only; production folders not Git-tracked. | Aligns PH004/PH005 file governance. |
+| 089 | Runtime state (timeline, connections, action logs, bridge health) persisted in Local Show Runtime DB only — not cloud-authoritative during performance. | Preserves Ableton authority and offline operation. |
+| 090 | Sync package persistence uses published_packages, manifests (JSONB), entity/file checksums, and sync_states. | Explicit package model for sync-before-show. |
+| 091 | Audit tables required for publish, sync, assignment/chart/file changes, Soundcheck, readiness, action failures, and performance events. | Observable trail; no silent mutation. |
+| 092 | Prohibited: production assets in Git, manual DB edits, localStorage authority, hard-coded IDs/emails, silent drops of show-critical data, cloud-authoritative runtime cue state. | Show safety and governance enforcement. |
+
 ---
 
-End of Decision Log — PH006
+End of Decision Log — PH007

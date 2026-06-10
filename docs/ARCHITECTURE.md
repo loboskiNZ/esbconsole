@@ -1,13 +1,14 @@
 # Architecture
 
-Status: PH006 Finalised  
+Status: PH007 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
 Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership and persistence: `docs/DATA_ARCHITECTURE.md`  
-Database architecture and logical schema: `docs/DATABASE_ARCHITECTURE.md`
+Database architecture and logical schema: `docs/DATABASE_ARCHITECTURE.md`  
+Physical database and migration plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
 
 ## Guiding Principles
 
@@ -193,7 +194,7 @@ Performance phase:
 | Hosting | DigitalOcean Droplet |
 | Management | Laravel Forge |
 | Backend | Laravel API / application |
-| Database | PostgreSQL or MySQL (DigitalOcean) |
+| Database | PostgreSQL 16+ (DigitalOcean Managed PostgreSQL) |
 | File Storage | DigitalOcean Spaces |
 | Authentication | Laravel Authentication |
 | Realtime / Sync | Laravel WebSockets or polling (first) |
@@ -213,7 +214,7 @@ Performance phase:
 | Component | Technology |
 |-----------|------------|
 | Containerisation | Docker |
-| Database | Local database (synced copy) |
+| Database | PostgreSQL 16+ (Docker; synced copy) |
 | UI | Local web UI |
 | Cache | Local cache as needed |
 | Integrations | Ableton, X32, Lighting |
@@ -305,13 +306,31 @@ See `docs/DOMAIN_MODEL.md` for entity definitions.
 
 ## Database Architecture Summary
 
-Logical database design is defined in `docs/DATABASE_ARCHITECTURE.md`.
+Logical database design is defined in `docs/DATABASE_ARCHITECTURE.md`. Physical technology, migration strategy, and delivery governance are defined in `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`.
 
-| Database context | Technology | Role |
-|------------------|------------|------|
-| **Cloud database** | PostgreSQL or MySQL (DigitalOcean) | Published canonical records; collaboration; sync package registry; audit |
-| **Director Local database** | Local DB on Director workstation | Draft creation/editing; publish staging |
-| **Local Show Runtime database** | Docker local DB | Performance-ready replica; runtime state; Soundcheck/Readiness; execution logs |
+### Selected Database Engine
+
+**PostgreSQL 16+** for all environments (cloud, Director local, Local Show Runtime).
+
+| Environment | Engine | Hosting |
+|-------------|--------|---------|
+| **Cloud** | PostgreSQL 16+ | DigitalOcean Managed PostgreSQL |
+| **Director local** | PostgreSQL 16+ | Local instance or Docker |
+| **Local Show Runtime** | PostgreSQL 16+ | Docker container |
+
+Single engine chosen for migration parity, JSONB manifest support, and operational simplicity.
+
+### Environment Database Topology
+
+| Database | Purpose | Runtime dependency |
+|----------|---------|-------------------|
+| **Cloud** | Published canonical data; sync registry; audit | Not required during performance |
+| **Director local** | Draft preparation; publish staging | Not required at show time |
+| **Local Show Runtime** | Performance replica + runtime state + logs | **Required during performance** |
+
+Schema changes via **Laravel migrations only** — see `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`.
+
+Entity layers and ownership classes are defined in `docs/DATA_ARCHITECTURE.md`.
 
 ### Cloud / Local Database Boundary
 
@@ -351,4 +370,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH006
+End of Architecture — PH007

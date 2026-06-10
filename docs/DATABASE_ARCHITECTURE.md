@@ -1,12 +1,13 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH005 Finalised  
+Status: PH007 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
 Related documents:
 
 - Data ownership and persistence rules: `docs/DATA_ARCHITECTURE.md`
+- Physical database and migration plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
 - Entity definitions: `docs/DOMAIN_MODEL.md`
 - Runtime behaviour: `docs/RUNTIME_MODEL.md`
 - Infrastructure: `docs/ARCHITECTURE.md`
@@ -30,7 +31,7 @@ Goals:
 - Define lifecycle, audit, deletion, and migration principles
 - Provide the schema-design gate before physical implementation
 
-Database design **must follow** `docs/DATA_ARCHITECTURE.md`. Physical implementation **must follow** this document and `docs/DATA_ARCHITECTURE.md`.
+Database design **must follow** `docs/DATA_ARCHITECTURE.md`. Physical implementation **must follow** this document, `docs/DATA_ARCHITECTURE.md`, and `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`.
 
 ---
 
@@ -761,4 +762,4 @@ None of these block PH005 logical design completion.
 
 ---
 
-End of Database Architecture — PH005
+End of Database Architecture — PH007

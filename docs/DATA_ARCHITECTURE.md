@@ -1,6 +1,6 @@
 # Data Architecture & Persistence Model
 
-Status: PH005 Finalised  
+Status: PH007 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical data ownership, persistence authority, sync boundaries, and lifecycle rules before database schema design
 
@@ -9,6 +9,7 @@ Related documents:
 - Entity definitions: `docs/DOMAIN_MODEL.md`
 - Runtime behaviour: `docs/RUNTIME_MODEL.md`
 - Logical schema design: `docs/DATABASE_ARCHITECTURE.md`
+- Physical database and migration plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
 - Infrastructure: `docs/ARCHITECTURE.md`
 
 This document defines **what** data exists, **where** it is authoritative, **how** it syncs, and **when** it transitions — not table names or schema implementation.
@@ -67,7 +68,7 @@ Goals:
 | Attribute | Value |
 |-----------|-------|
 | **Role** | Collaboration, musician access, backup, remote preparation, distribution |
-| **Persistence** | PostgreSQL or MySQL on DigitalOcean; files in DigitalOcean Spaces |
+| **Persistence** | PostgreSQL 16+ on DigitalOcean Managed PostgreSQL; files in DigitalOcean Spaces |
 | **Stack** | Laravel on Forge-managed Droplet |
 | **Authority** | Cloud-canonical for published master library and operational records |
 | **Sync** | Receives publishes from Director Local; serves pulls to Local Show Runtime |
@@ -544,7 +545,7 @@ Initial lifecycle states for governed entities and packages.
 
 | Rule | Statement |
 |------|-----------|
-| **Schema gate** | Database/schema work must not proceed unless aligned to this document and `docs/DATABASE_ARCHITECTURE.md`. |
+| **Schema gate** | Database/schema work must not proceed unless aligned to this document, `docs/DATABASE_ARCHITECTURE.md`, and `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`. |
 | **No-Git assets** | Production asset folders (`/resources/`, `/songs/`, `/charts/`, `/uploads/`) must not be Git-tracked. |
 | **No duplicate masters** | One canonical Song, Chart, Mix Move, etc. — Shows reference, never embed copies. |
 | **Reference integrity** | Published packages validate all references resolve before pull. |
@@ -579,4 +580,4 @@ Initial lifecycle states for governed entities and packages.
 
 ---
 
-End of Data Architecture — PH005
+End of Data Architecture — PH007
