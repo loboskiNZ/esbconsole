@@ -36,3 +36,5 @@ docker-compose.yml
 # Local production assets — not version controlled
 /resources/
 /songs/
+/charts/
+/uploads/
