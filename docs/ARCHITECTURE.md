@@ -1,10 +1,11 @@
 # Architecture
 
-Status: PH005 Finalised  
+Status: PH006 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
+Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership and persistence: `docs/DATA_ARCHITECTURE.md`  
 Database architecture and logical schema: `docs/DATABASE_ARCHITECTURE.md`
 
@@ -235,24 +236,60 @@ Performance phase:
 
 ## Integration Architecture
 
+Full integration and runtime topology: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
+
+### Host OS vs Docker Boundary
+
+| Layer | Components | Hardware access |
+|-------|------------|-----------------|
+| **Host OS** | Ableton Live, MIDI Bridge, Lighting/DMX Bridge, optional X32/OSC Bridge | Direct MIDI, USB-DMX, native APIs |
+| **Docker (Local Show Runtime)** | Laravel app/API, local DB, Redis/Valkey, WebSocket/realtime, Local UI, file/cache volumes | **No** assumed direct MIDI or DMX hardware |
+
+Host bridges communicate with Docker Local Show Runtime via approved local interfaces (HTTP, Redis pub/sub, WebSocket internal, or equivalent). Docker hosts application infrastructure — not direct hardware access.
+
+### Integration / Runtime Component Topology
+
+```
+┌─ HOST OS ─────────────────────────────────────────────────────┐
+│  Ableton ──MIDI──► MIDI Bridge ──event──┐                   │
+│  Lighting Bridge ◄──command──┐           │                   │
+│  X32 Bridge ◄──command───────┼───────────┼──► local interface │
+└──────────────────────────────┼───────────┼────────────────────┘
+                               │           │
+┌─ DOCKER: Local Show Runtime ─┼───────────┘
+│  Laravel App ◄──► Runtime Event Bus ◄──► Action Pipeline     │
+│       │                    │                    │              │
+│  Local DB              Redis/Valkey      WebSocket/Realtime    │
+│       │                    │                    │              │
+│  Local UI (Live Show View) │              Musician Devices     │
+└────────────────────────────┴──────────────────────────────────┘
+         (local network — no cloud required during performance)
+```
+
 ### Ableton Integration
 
-- Consumes PGM (Song) and CC16 (Cue) protocol
+- Ableton emits PGM (Song) and CC16 (Cue) via MIDI
+- **MIDI Bridge** (host) decodes and publishes TimelineEvents to Local Show Runtime
 - Platform follows Ableton; does not own timeline
-- Playlist imported from Ableton Show File
+- Playlist imported from Ableton Show File during preparation
 - PGM is show-scoped; platform maps to canonical Song records
-- See `docs/RUNTIME_MODEL.md` §4
+- See `docs/RUNTIME_MODEL.md` §4 and `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §5–§6
 
 ### X32 Integration
 
-- Executes Mix Moves (grouped parameter changes)
+- Executes **Mix Moves** (grouped parameter changes) via **X32 Bridge**
 - Monitor mix control during Soundcheck and live performance
 - Not scene-recall based
+- Failures logged and surfaced — non-blocking
+- See `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §8
 
 ### Lighting Integration
 
-- Executes Light Mode Actions at Cue boundaries
-- Driven by Ableton Protocol State via Local Runtime
+- Executes **Light Mode** Actions at Cue boundaries via **Lighting Bridge**
+- Light Modes are authoring unit — bridge translates to DMX/Art-Net/sACN/lighting software
+- USB-DMX hardware access is host-level
+- Driven by Ableton Protocol State via Local Show Runtime
+- See `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §7
 
 ## Data Architecture Summary
 
@@ -314,4 +351,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH005
+End of Architecture — PH006

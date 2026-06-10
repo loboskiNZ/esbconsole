@@ -1,19 +1,20 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH005 Finalised
+Status: PH006 Finalised
 
 ## Authority Order
 
 1. `docs/PROJECT_CHARTER.md`
 2. `docs/DOMAIN_MODEL.md`
 3. `docs/RUNTIME_MODEL.md`
-4. `docs/DATA_ARCHITECTURE.md`
-5. `docs/DATABASE_ARCHITECTURE.md`
-6. `docs/UX_MODEL.md`
-7. `docs/INFORMATION_ARCHITECTURE.md`
-8. `docs/ARCHITECTURE.md`
-9. `docs/DECISION_LOG.md`
-10. Implementation Tasks
+4. `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`
+5. `docs/DATA_ARCHITECTURE.md`
+6. `docs/DATABASE_ARCHITECTURE.md`
+7. `docs/UX_MODEL.md`
+8. `docs/INFORMATION_ARCHITECTURE.md`
+9. `docs/ARCHITECTURE.md`
+10. `docs/DECISION_LOG.md`
+11. Implementation Tasks
 
 If a task conflicts with a higher authority document:
 
@@ -61,6 +62,7 @@ The platform coordinates:
 - Mix Moves and Light Modes are reusable assets.
 - The show must go on.
 - Production assets (`/resources/`, `/songs/`, `/charts/`, `/uploads/`) are not Git assets.
+- MIDI and DMX/USB hardware integration runs on host OS bridges — not inside Docker.
 
 ## Canonical Entities (PH001)
 
@@ -68,6 +70,7 @@ Band, Musician, Device, Instrument Part, Capability, Song, Chart, Snippet, Cue, 
 
 Full definitions: `docs/DOMAIN_MODEL.md`  
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
+Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
 Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 UX and workflows: `docs/UX_MODEL.md`  
@@ -84,6 +87,7 @@ Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 - Protect Ableton authority.
 - Documentation/governance tasks must not produce application code, migrations, routes, or UI.
 - Database migrations and schema implementation must not proceed unless aligned with `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md`.
+- Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must comply with `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
 
 ## Completion Report
 

@@ -109,6 +109,19 @@
 | 073 | Runtime cue state (PGM/CC16, timeline context) is local-runtime-only during performance — not cloud-canonical. | Preserves Ableton authority in persistence layer. |
 | 074 | Audit history is required for publish, sync, assignment changes, chart changes, readiness, action failures, Soundcheck, performance completion, and file availability. | Observable trail for rollback analysis; no silent mutation of show-critical data. |
 
+## PH006 — Integration & Runtime Architecture
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 075 | `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` is the canonical integration architecture authority. | Separates bridge topology and event flow from runtime behaviour (PH002) and infrastructure (ARCHITECTURE). |
+| 076 | Docker hosts app/runtime infrastructure; MIDI and USB-DMX hardware access runs on host OS via bridge services. | Containers must not be assumed to have direct hardware access. |
+| 077 | MIDI Bridge runs on host OS; decodes Ableton PGM/CC16; publishes TimelineEvents to Local Show Runtime; does not own show state. | Preserves Ableton as timeline master; single ingress path. |
+| 078 | Lighting Bridge runs on host for USB-DMX; translates Light Mode Actions to DMX/Art-Net/sACN/lighting software; network protocols may run host or Docker. | Light Modes are authoring unit; raw DMX is translation layer. |
+| 079 | X32 Bridge translates Mix Move Actions to X32 OSC; failures are logged and non-blocking. | Mix Moves are grouped parameter changes, not primarily scene recalls. |
+| 080 | Canonical runtime event flow: Ableton → MIDI Bridge → Runtime Event → Local Runtime → Resolve Song/Cue → Execute Actions → Devices/X32/Lighting/Logs. | Single documented pipeline for integration implementation. |
+| 081 | Musician devices connect to Local Show Runtime on local network; no cloud required; manual chart browsing is display-only. | Musician-centric local-first device experience. |
+| 082 | Integration failures (X32, lighting, devices, bridges) are logged and surfaced but must not stop performance or remaining cue Actions; cloud unavailable has no performance impact. | The show must go on. |
+
 ---
 
-End of Decision Log — PH005
+End of Decision Log — PH006

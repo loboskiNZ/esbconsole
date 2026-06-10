@@ -1,12 +1,13 @@
 # X32/Ableton Software Rebuild Charter v0.2
 
-Status: PH005 Finalised  
+Status: PH006 Finalised  
 Owner: Ed Lobo  
 Project: Ed and the Shadow Boys Production Platform  
 Purpose: Charter Foundation for Full Refactor/Rebuild
 
 Entity definitions: `docs/DOMAIN_MODEL.md`  
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
+Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
 Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 UX and workflows: `docs/UX_MODEL.md`  
@@ -708,6 +709,24 @@ This includes:
 
 Implementation must conform to `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md` before database migrations or physical schema implementation begins.
 
+## 28. Integration & Runtime Architecture
+
+Canonical integration and runtime architecture for live performance execution is defined in `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
+
+This includes:
+
+- Host OS vs Docker boundary (hardware-facing bridges on host; app infrastructure in Docker)
+- MIDI Bridge architecture (Ableton PGM/CC16 ingress)
+- Lighting / DMX Bridge architecture (Light Mode → DMX/Art-Net/sACN)
+- X32 Bridge architecture (Mix Move → X32 OSC)
+- Runtime Event Bus and Action Execution Pipeline
+- Musician device communication on local network
+- Connection State, failure handling, and offline integration operation
+
+**MIDI and DMX/USB hardware-facing integrations are host-level bridge responsibilities.** Docker Local Show Runtime hosts the Laravel app, database, Redis/Valkey, WebSocket/realtime service, and Local UI — not direct MIDI or DMX hardware access.
+
+Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must conform to `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` before bridge or integration code is written.
+
 ---
 
-End of Charter v0.2 — PH005
+End of Charter v0.2 — PH006

@@ -1,12 +1,13 @@
 # Runtime Model
 
-Status: PH002 Finalised  
+Status: PH006 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical runtime and operational behaviour for the Live Performance Orchestration System
 
 Related documents:
 
 - Entity definitions: `docs/DOMAIN_MODEL.md`
+- Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`
 - Infrastructure: `docs/ARCHITECTURE.md`
 - Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -48,6 +49,7 @@ The operator runs a **Performance** on **Local Show Runtime**. All runtime behav
 | Local authority | Local runtime is authoritative during performance. |
 | Cloud role | Cloud supports collaboration, backup, distribution, and preparation sync. |
 | Reliability | The show must go on. |
+| Host bridges | MIDI and DMX/USB hardware-facing integration runs on host OS — not inside Docker. See `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`. |
 
 ### Authority Hierarchy (Runtime)
 
@@ -149,8 +151,10 @@ The platform **imports** this data during preparation. It does **not** author or
 
 ### Platform Mapping
 
+Integration ingress and bridge topology: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §5–§6.
+
 ```
-Incoming: PGM + CC16 (from Ableton)
+Incoming: PGM + CC16 (from Ableton via MIDI Bridge)
     ↓
 Lookup: Active Ableton Show File → Show → Song (by PGM) → Cue (by CC16)
     ↓
@@ -254,8 +258,10 @@ Actions are attached to Cues in the domain model. At runtime, Actions execute wh
 
 ### Execution Flow
 
+Integration pipeline detail: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §11.
+
 ```
-Ableton: PGM + CC16 change
+Ableton: PGM + CC16 change (via MIDI Bridge → Runtime Event Bus)
     ↓
 Platform: resolve Cue → load Actions for Cue
     ↓
@@ -542,4 +548,4 @@ If Local Show Runtime fails entirely:
 
 ---
 
-End of Runtime Model — PH002
+End of Runtime Model — PH006
