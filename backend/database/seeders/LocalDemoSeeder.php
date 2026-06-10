@@ -9,7 +9,7 @@ use App\Models\Song;
 use Illuminate\Database\Seeder;
 
 /**
- * Local-only demo playlist data for PH009 vertical slice verification.
+ * Local Demo Data — PH009 playlist slice + PH010 song codes.
  * Not production show data — run only in local/dev via DatabaseSeeder.
  */
 class LocalDemoSeeder extends Seeder
@@ -27,12 +27,12 @@ class LocalDemoSeeder extends Seeder
         }
 
         $songs = collect([
-            'Local Demo Opener',
-            'Local Demo Ballad',
-            'Local Demo Closer',
-        ])->map(fn (string $name) => Song::query()->firstOrCreate(
-            ['band_id' => $band->id, 'name' => $name],
-            ['lifecycle_state' => 'draft'],
+            ['002', 'Local Demo Opener'],
+            ['003', 'Local Demo Ballad'],
+            ['004', 'Local Demo Closer'],
+        ])->map(fn (array $row) => Song::query()->firstOrCreate(
+            ['band_id' => $band->id, 'song_code' => $row[0]],
+            ['name' => $row[1], 'status' => Song::STATUS_DRAFT],
         ));
 
         $showAlpha = Show::query()->firstOrCreate(

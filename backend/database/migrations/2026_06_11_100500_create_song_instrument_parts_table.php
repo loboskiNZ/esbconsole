@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('song_instrument_parts', function (Blueprint $table) {
+            $table->id();
+            $table->uuid('public_id')->unique();
+            $table->foreignId('song_id')->constrained()->restrictOnDelete();
+            $table->foreignId('instrument_part_id')->constrained()->restrictOnDelete();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+
+            $table->unique(['song_id', 'instrument_part_id']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('song_instrument_parts');
+    }
+};

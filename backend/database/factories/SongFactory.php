@@ -15,10 +15,33 @@ class SongFactory extends Factory
 
     public function definition(): array
     {
+        static $codeCounter = 1;
+
         return [
             'band_id' => Band::factory(),
+            'song_code' => str_pad((string) ($codeCounter++ % 999 ?: 1), 3, '0', STR_PAD_LEFT),
             'name' => 'Test Song '.fake()->unique()->word(),
-            'lifecycle_state' => 'draft',
+            'bpm' => fake()->numberBetween(80, 140),
+            'description' => null,
+            'notes' => null,
+            'status' => Song::STATUS_DRAFT,
         ];
+    }
+
+    public function forBand(Band $band): static
+    {
+        return $this->state(function (array $attributes) use ($band) {
+            $nextCode = str_pad(
+                (string) (($band->songs()->count() % 999) + 1),
+                3,
+                '0',
+                STR_PAD_LEFT,
+            );
+
+            return [
+                'band_id' => $band->id,
+                'song_code' => $nextCode,
+            ];
+        });
     }
 }

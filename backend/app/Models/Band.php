@@ -26,4 +26,14 @@ class Band extends Model
     {
         return $this->hasMany(Song::class);
     }
+
+    public function musicians(): HasMany
+    {
+        return $this->hasMany(Musician::class);
+    }
+
+    public function instrumentParts(): HasMany
+    {
+        return $this->hasMany(InstrumentPart::class);
+    }
 }

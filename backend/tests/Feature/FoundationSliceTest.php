@@ -76,8 +76,8 @@ class FoundationSliceTest extends TestCase
         $band = Band::factory()->create();
         $show = Show::factory()->create(['band_id' => $band->id, 'name' => 'Playlist Show']);
 
-        $songB = Song::factory()->create(['band_id' => $band->id, 'name' => 'Second Song']);
-        $songA = Song::factory()->create(['band_id' => $band->id, 'name' => 'First Song']);
+        $songB = Song::factory()->forBand($band)->create(['song_code' => '002', 'name' => 'Second Song']);
+        $songA = Song::factory()->forBand($band)->create(['song_code' => '001', 'name' => 'First Song']);
 
         ShowPlaylistItem::create(['show_id' => $show->id, 'song_id' => $songA->id, 'position' => 1]);
         ShowPlaylistItem::create(['show_id' => $show->id, 'song_id' => $songB->id, 'position' => 2]);

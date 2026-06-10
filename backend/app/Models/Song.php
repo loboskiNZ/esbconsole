@@ -14,15 +14,37 @@ class Song extends Model
     /** @use HasFactory<SongFactory> */
     use HasFactory, HasPublicId;
 
+    public const STATUS_DRAFT = 'draft';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_ARCHIVED = 'archived';
+
     protected $fillable = [
         'band_id',
+        'song_code',
         'name',
-        'lifecycle_state',
+        'bpm',
+        'description',
+        'notes',
+        'status',
     ];
 
     public function band(): BelongsTo
     {
         return $this->belongsTo(Band::class);
+    }
+
+    public function cues(): HasMany
+    {
+        return $this->hasMany(Cue::class)->orderBy('cue_number');
+    }
+
+    public function songInstrumentParts(): HasMany
+    {
+        return $this->hasMany(SongInstrumentPart::class);
     }
 
     public function playlistItems(): HasMany
