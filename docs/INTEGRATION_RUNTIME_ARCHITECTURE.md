@@ -1,6 +1,6 @@
 # Integration & Runtime Architecture
 
-Status: PH006 Finalised  
+Status: PH010.01 Amended (Ableton Naming Convention)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical integration and runtime architecture for live performance execution
 
@@ -227,6 +227,64 @@ Action Execution Pipeline
 - Ableton drives timing — platform reacts.
 - Resolution and Action loading happen in Local Show Runtime, not in MIDI Bridge.
 - Cue 0 triggers preparation Actions and musician guidance without blocking Cue 1 entry.
+
+---
+
+## 6.1 Ableton Naming Convention
+
+Approved canonical naming format for Ableton clip/scene identifiers aligned with Song Code and Cue Number.
+
+### Approved Format
+
+```
+SSS.CCC.Song Name.Cue Name
+```
+
+| Segment | Source | Example |
+|---------|--------|---------|
+| **SSS** | Song Code (`song_code`) | `001` |
+| **CCC** | Cue Number (`cue_number`) | `000`, `001`, `002` |
+| **Song Name** | Song display name | `Sweet Caroline` |
+| **Cue Name** | Cue display name | `Preparation`, `Intro`, `Verse 1`, `Chorus` |
+
+### Examples
+
+```
+001.000.Sweet Caroline.Preparation
+001.001.Sweet Caroline.Intro
+001.002.Sweet Caroline.Verse 1
+001.003.Sweet Caroline.Chorus
+```
+
+### Parser Requirements
+
+An Ableton name parser must extract:
+
+| Field | Description |
+|-------|-------------|
+| `song_code` | Three-digit Song Code (`SSS`) |
+| `cue_number` | Three-digit Cue Number (`CCC`) |
+| `song_name` | Human-readable Song name segment |
+| `cue_name` | Human-readable Cue name segment |
+
+Parser output must produce a valid `SSS.CCC` runtime identity and optional display names for validation and UI.
+
+### Validation Capability
+
+Ableton names may be validated against database Song and Cue definitions:
+
+| Validation | Rule |
+|------------|------|
+| Song Code exists | `song_code` resolves to a canonical Song record in the master library |
+| Cue Number exists | `cue_number` resolves to a Cue on that Song |
+| Name consistency | Parsed `song_name` / `cue_name` may be compared to canonical display names (warning, not block, if mismatch) |
+| Preparation Cue | `cue_number` = `000` must map to Preparation Cue |
+| Uniqueness | `unique(song_id, cue_number)` enforced at database level |
+
+Validation supports Soundcheck, import workflows, and drift detection between Ableton Show File naming and platform definitions.
+
+Runtime identity rules: `docs/RUNTIME_MODEL.md` §4.1  
+Entity definitions: `docs/DOMAIN_MODEL.md`
 
 ---
 

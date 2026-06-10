@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH001.01 Finalised  
+Status: PH010.01 Amended (Song/Cue Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -201,18 +201,30 @@ The declaration that a Musician is able to perform a specific Instrument Part. L
 
 A global, reusable musical work. Contains charts, cues, actions, and instrument requirements. Exists independently of any Show.
 
+### Canonical Business Identity
+
+| Field | Format | Range | Scope |
+|-------|--------|-------|-------|
+| **song_code** | `NNN` (three-digit zero-padded) | `001`–`999` | Unique across the Song Library (Band-scoped master library) |
+
+**Song Code** is the canonical business identifier for a Song. It is stable, human-meaningful, and used for runtime identity composition, Ableton naming, validation, and cross-system reference.
+
+The database `id` (bigint) and `public_id` (uuid) are relational and sync identifiers only — **not** canonical Song business identity. See `docs/DECISION_LOG.md` PH010.01.
+
 ### Ownership / Source of Truth
 
 - **Authoritative:** Master library (Song record and child assets).
-- **Runtime identity:** Ableton PGM number maps Song at performance time.
+- **Business identity:** `song_code` — canonical Song identifier in the master library.
+- **Runtime mapping:** Ableton PGM number maps Song at performance time within an Active Show; PGM is show-scoped, not a substitute for Song Code.
 - **Playlist presence:** Show references Song; playlist order comes from Ableton Show File.
 
 ### Key Relationships
 
 - Belongs to: Band.
+- Identified by: `song_code` (canonical business identity).
 - Contains: Charts, Cues, Actions, Instrument Part requirements.
 - Referenced by: Show (via Playlist import from Ableton Show File).
-- Mapped at runtime via: Ableton Protocol State (PGM = Song).
+- Mapped at runtime via: Song Code + Cue Number (`SSS.CCC`) and Ableton Protocol State (PGM/CC16).
 
 ### Lifecycle Notes
 
@@ -294,17 +306,33 @@ The start of a musical section within a Song. Represents a structural boundary i
 
 Examples: Intro, Verse 1, Chorus, Bridge, Solo, Ending.
 
+### Canonical Business Identity
+
+| Field | Format | Range | Scope |
+|-------|--------|-------|-------|
+| **cue_number** | `NNN` (three-digit zero-padded) | `000`–`999` | Unique within a Song |
+
+**Constraint:** `unique(song_id, cue_number)`
+
+**Cue Number** is the canonical business identifier for a Cue within a Song. Combined with Song Code it forms the canonical runtime identity `SSS.CCC`.
+
+The database `id` (bigint) and `public_id` (uuid) are relational identifiers only — **not** canonical Cue business identity.
+
+**Cue 000** = **Preparation Cue** — exists before the first musical section (Cue 001 onward). Preparation Cue is used for chart loading, snippet preparation, musician instructions, and monitoring setup before musical sections begin.
+
 ### Ownership / Source of Truth
 
 - **Authoritative:** Song definition in master library (Cue structure).
-- **Runtime authority:** Ableton via CC16 — the platform follows Ableton, does not own the timeline.
+- **Business identity:** `cue_number` — canonical Cue identifier within a Song.
+- **Runtime authority:** Ableton via CC16 — the platform follows Ableton, does not own the timeline. CC16 maps to `cue_number` at runtime.
 
 ### Key Relationships
 
 - Belongs to: Song.
+- Identified by: `cue_number` within parent Song (unique per Song).
 - Has: Actions (Mix Moves, Light Modes, effects attached to this Cue).
-- Associated with: Snippets (chart display), Ableton Protocol State (CC16 = Cue).
-- Special case: **Cue 0** = Preparation Cue (before Cue 1).
+- Associated with: Snippets (chart display), Ableton Protocol State (CC16 maps to `cue_number`).
+- Special case: **Cue 000** = Preparation Cue (before first musical section).
 
 ### Lifecycle Notes
 

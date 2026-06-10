@@ -1,6 +1,6 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH007 Finalised  
+Status: PH010.01 Amended (Song/Cue Identity Governance)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
@@ -266,8 +266,24 @@ Aggregates define consistency boundaries — changes within an aggregate are ato
 - **Root:** Song
 - **Contains:** Cues (ordered), Chart references, Snippet definitions linked to Cues
 - **References:** Actions on Cues reference Mix Moves, Light Modes (by ID)
-- **Invariant:** Cue order stable within Song; Cue 0 defined as preparation cue
+- **Invariant:** Cue order stable within Song; Cue 000 defined as preparation cue
 - **Does not contain:** Assignment or Performance data
+
+#### Song/Cue Identity Governance (PH010.01)
+
+Database stores canonical business identity fields alongside relational keys:
+
+| Entity | Stored fields | Role |
+|--------|---------------|------|
+| **Song** | `id`, `public_id`, `song_code` | `id` = relational PK; `public_id` = sync/API reference; `song_code` = canonical Song business identity (`NNN`, unique in Song Library) |
+| **Cue** | `id`, `public_id`, `cue_number` | `id` = relational PK; `public_id` = sync/API reference; `cue_number` = canonical Cue business identity within Song (`NNN`, `unique(song_id, cue_number)`) |
+
+**Canonical Runtime Identity:** `SSS.CCC` — derived at runtime from `song_code` + `cue_number`. **Must not** be stored as a separate primary key or authoritative column.
+
+Database `id` values are relational identifiers only and must not be used as runtime identities in Ableton mapping, musician guidance, snippet resolution, chart navigation, or validation workflows.
+
+Physical column planning: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md` PH010.01 notes  
+Domain definitions: `docs/DOMAIN_MODEL.md`
 
 ### Show (Ableton + playlist + production configuration aggregate)
 

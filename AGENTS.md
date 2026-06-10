@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH008 Finalised
+Status: PH010.01 Amended (Song/Cue Identity Governance)
 
 ## Authority Order
 
@@ -54,7 +54,8 @@ The platform coordinates:
 - Shows reference Songs.
 - Performances execute Shows.
 - Cue = start of a song section.
-- Cue 0 = Preparation Cue.
+- Cue 0 = Preparation Cue (Cue Number `000`).
+- Song Code + Cue Number (`SSS.CCC`) is the canonical runtime identity for Songs and Cues.
 - Soundcheck is a first-class concept.
 - Musicians are global; availability is performance-level.
 - Devices belong to musicians.
@@ -93,6 +94,7 @@ Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 - Database migrations and schema implementation must comply with `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`, `docs/DATABASE_ARCHITECTURE.md`, and `docs/DATA_ARCHITECTURE.md`.
 - **PH009 and subsequent implementation prompts must follow `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`.**
 - Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must comply with `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
+- All future runtime, Ableton, cue, snippet, chart, musician guidance, and validation work must use **Song Code + Cue Number** (`SSS.CCC`) as the canonical runtime identity — not database `id` values. See `docs/DOMAIN_MODEL.md`, `docs/RUNTIME_MODEL.md` §4.1, `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §6.1, and `docs/DECISION_LOG.md` PH010.01.
 
 ## Completion Report
 

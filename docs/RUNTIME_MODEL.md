@@ -1,6 +1,6 @@
 # Runtime Model
 
-Status: PH006 Finalised  
+Status: PH010.01 Amended (Song/Cue Runtime Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical runtime and operational behaviour for the Live Performance Orchestration System
 
@@ -169,6 +169,47 @@ Example:
 PGM 12, CC16 1  →  Song 12 / Intro (Cue 1)
 PGM 12, CC16 0  →  Song 12 / Preparation (Cue 0)
 ```
+
+---
+
+## 4.1 Song/Cue Runtime Identity
+
+Canonical runtime identity for Songs and Cues is expressed as **Song Code + Cue Number**, not database primary keys.
+
+### Canonical Runtime Identity Format
+
+```
+SSS.CCC
+```
+
+| Component | Source | Format | Example |
+|-----------|--------|--------|---------|
+| **SSS** | Song Code (`song_code`) | `NNN` (`001`–`999`) | `001` |
+| **CCC** | Cue Number (`cue_number`) | `NNN` (`000`–`999`) | `000`, `001`, `002` |
+
+### Examples
+
+| Runtime Identity | Meaning |
+|------------------|---------|
+| `001.000` | Song Code 001, Preparation Cue |
+| `001.001` | Song Code 001, first musical section |
+| `001.002` | Song Code 001, second section |
+| `001.003` | Song Code 001, third section |
+
+### Rules
+
+| Rule | Statement |
+|------|-----------|
+| **Composition** | `SSS.CCC` = `song_code` + `.` + `cue_number` |
+| **Cue 000** | Preparation Cue — exists before the first musical section |
+| **Derivation** | Runtime identity is **derived at runtime** from canonical Song and Cue business identifiers |
+| **Not a stored PK** | `SSS.CCC` must not be stored as a separate primary key; it is computed from `song_code` and `cue_number` |
+| **Not database id** | Internal `id` and `public_id` are relational/sync keys — not runtime identity |
+| **Ableton mapping** | PGM/CC16 resolve to canonical Song/Cue records; runtime identity is then expressed as `SSS.CCC` |
+| **Cross-subsystem use** | Musician guidance, snippets, charts, validation, and logging reference `SSS.CCC` |
+
+Entity definitions: `docs/DOMAIN_MODEL.md`  
+Ableton naming convention: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §6.1
 
 ---
 

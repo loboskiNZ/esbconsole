@@ -1,6 +1,6 @@
 # Physical Database & Migration Plan
 
-Status: PH007 Finalised  
+Status: PH010.01 Amended (Song/Cue Identity Migration Planning)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Physical database technology choices, migration strategy, initial schema plan, and delivery governance before any database implementation
 
@@ -299,9 +299,30 @@ M14 Supporting indexes and constraints
 | Reference | Storage | Notes |
 |-----------|---------|-------|
 | **Ableton PGM** | Integer on `show_playlist_items` or mapping table | Show-scoped; not globally unique |
-| **Ableton CC16** | Integer on `cues` | Song-scoped cue number |
+| **Ableton CC16** | Integer on `cues` | Song-scoped; maps to `cue_number` at runtime |
+| **Song Code** | `songs.song_code` | Canonical Song business identity (`NNN`) |
+| **Cue Number** | `cues.cue_number` | Canonical Cue business identity within Song (`NNN`) |
 | **Spaces object** | `file_assets.spaces_bucket`, `spaces_key` | Canonical file identity |
 | **Local cache path** | `file_asset_cache.local_path`, `checksum` | Runtime only; not canonical |
+
+### Song/Cue identity fields (PH010.01 migration planning)
+
+Planned for M6 Songs / Cues migration expansion (not PH009; implementation deferred to PH010):
+
+| Table | Column | Type | Constraint | Notes |
+|-------|--------|------|------------|-------|
+| `songs` | `song_code` | `CHAR(3)` | **Unique** (Band-scoped uniqueness enforced at application + index) | Canonical Song business identity; range `001`–`999` |
+| `cues` | `cue_number` | `CHAR(3)` or `smallint` | **`unique(song_id, cue_number)`** | Canonical Cue business identity; range `000`–`999`; `000` = Preparation Cue |
+
+| Rule | Statement |
+|------|-----------|
+| **No runtime identity column** | `SSS.CCC` is derived at runtime — not stored as PK or authoritative column |
+| **id is relational only** | `songs.id` and `cues.id` are join keys — not runtime identities |
+| **public_id for sync** | UUID `public_id` remains sync/API reference per PH007 |
+| **Index** | `cues(song_id, cue_number)` supports resolution and CC16 mapping |
+
+Logical governance: `docs/DATABASE_ARCHITECTURE.md` PH010.01  
+Domain definitions: `docs/DOMAIN_MODEL.md`
 
 ---
 

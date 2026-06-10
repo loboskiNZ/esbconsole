@@ -150,6 +150,17 @@
 | 099 | PH009 implementation requires explicit gates: governance check, clean tree, engine confirmed, Docker approach, migration order, rollback, test plan. | No code until foundation plan acknowledged. |
 | 100 | Foundation slice excludes runtime integrations: no MIDI, DMX, X32, bridges, Reverb, Performances, sync packages, or cloud Spaces. | Vertical slice proves read path only; integrations deferred. |
 
+## PH010.01 — Song/Cue Identity Governance
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 101 | **Song Code** (`song_code`, format `NNN`, range `001`–`999`) is the canonical Song business identity; unique across the Song Library. | Human-meaningful stable identifier for runtime, Ableton naming, and validation; distinct from relational `id`. |
+| 102 | **Cue Number** (`cue_number`, format `NNN`, range `000`–`999`) is the canonical Cue identity within a Song; constraint `unique(song_id, cue_number)`. | Cue identity is Song-scoped; supports preparation and section numbering without global cue IDs. |
+| 103 | Canonical Runtime Identity format is **`SSS.CCC`** (Song Code + Cue Number), derived at runtime. | Single cross-subsystem identity for logging, guidance, snippets, charts, and validation. |
+| 104 | **Cue 000** is the Preparation Cue — exists before the first musical section. | Aligns with Cue 0 / CC16 = 0 preparation model; explicit three-digit convention. |
+| 105 | Approved Ableton naming convention is **`SSS.CCC.Song Name.Cue Name`**. | Parseable bridge between Ableton Show File identifiers and platform canonical definitions. |
+| 106 | Database `id` and `public_id` are relational/sync identifiers only; must not be used as runtime identities. | Preserves PH007 identifier strategy; runtime uses Song Code + Cue Number. |
+
 ---
 
-End of Decision Log — PH008
+End of Decision Log — PH010.01
