@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH007 Finalised
+Status: PH008 Finalised
 
 ## Authority Order
 
@@ -11,11 +11,12 @@ Status: PH007 Finalised
 5. `docs/DATA_ARCHITECTURE.md`
 6. `docs/DATABASE_ARCHITECTURE.md`
 7. `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
-8. `docs/UX_MODEL.md`
-9. `docs/INFORMATION_ARCHITECTURE.md`
-10. `docs/ARCHITECTURE.md`
-11. `docs/DECISION_LOG.md`
-12. Implementation Tasks
+8. `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`
+9. `docs/UX_MODEL.md`
+10. `docs/INFORMATION_ARCHITECTURE.md`
+11. `docs/ARCHITECTURE.md`
+12. `docs/DECISION_LOG.md`
+13. Implementation Tasks
 
 If a task conflicts with a higher authority document:
 
@@ -75,6 +76,7 @@ Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
 Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 Physical database plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`  
+Foundation implementation plan: `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -88,8 +90,8 @@ Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 - Protect local-first operation.
 - Protect Ableton authority.
 - Documentation/governance tasks must not produce application code, migrations, routes, or UI.
-- **No migrations may be created until PH007 is complete and referenced.**
 - Database migrations and schema implementation must comply with `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`, `docs/DATABASE_ARCHITECTURE.md`, and `docs/DATA_ARCHITECTURE.md`.
+- **PH009 and subsequent implementation prompts must follow `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`.**
 - Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must comply with `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
 
 ## Completion Report

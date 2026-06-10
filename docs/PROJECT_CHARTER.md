@@ -1,6 +1,6 @@
 # X32/Ableton Software Rebuild Charter v0.2
 
-Status: PH007 Finalised  
+Status: PH008 Finalised  
 Owner: Ed Lobo  
 Project: Ed and the Shadow Boys Production Platform  
 Purpose: Charter Foundation for Full Refactor/Rebuild
@@ -11,6 +11,7 @@ Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
 Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 Physical database plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`  
+Foundation implementation plan: `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -743,6 +744,22 @@ This includes:
 
 No migrations may be created until PH007 is complete and referenced. Physical schema implementation must conform to `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`, `docs/DATABASE_ARCHITECTURE.md`, and `docs/DATA_ARCHITECTURE.md`.
 
+## 30. Foundation Implementation Planning
+
+Canonical foundation implementation sequence and first vertical slice are defined in `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`.
+
+This includes:
+
+- Target stack: Laravel, PostgreSQL 16+, Docker Compose, Valkey, Laravel auth
+- Local development topology (no cloud dependency)
+- M1 Identity & Access migration plan (first migration group only)
+- First vertical slice: Login → Band → Show list → Active Show → Basic Playlist view
+- PH009 implementation gates before code begins
+- Test strategy and verification evidence requirements
+- Explicit non-scope: no MIDI, DMX, X32, bridges, Reverb, or runtime tables in foundation phase
+
+PH009 implementation must follow `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`. No runtime integrations in the first implementation slice.
+
 ---
 
-End of Charter v0.2 — PH007
+End of Charter v0.2 — PH008

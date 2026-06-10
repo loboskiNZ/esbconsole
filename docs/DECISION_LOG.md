@@ -137,6 +137,19 @@
 | 091 | Audit tables required for publish, sync, assignment/chart/file changes, Soundcheck, readiness, action failures, and performance events. | Observable trail; no silent mutation. |
 | 092 | Prohibited: production assets in Git, manual DB edits, localStorage authority, hard-coded IDs/emails, silent drops of show-critical data, cloud-authoritative runtime cue state. | Show safety and governance enforcement. |
 
+## PH008 — Foundation Implementation Planning
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 093 | First implementation slice is Login → Band → Show list → Active Show → Basic Playlist view. | Proves Laravel, PostgreSQL, auth, migrations, and Show/Playlist read path before runtime complexity. |
+| 094 | Foundation stack is Laravel 11+, PostgreSQL 16+, Docker Compose, Valkey (Redis-compatible), Laravel session auth. | Aligns PH007 engine choice with local-dev parity; no cloud required for foundation. |
+| 095 | Local development uses Docker Compose (app, postgres, valkey) on Director workstation without cloud dependency. | Local-first preparation; same service pattern as future runtime stack. |
+| 096 | M1 Identity & Access is the first migration group; M2/M8 minimal follow for vertical slice after M1 gates pass. | Respects PH007 dependency order; M1 scoped to users/roles only. |
+| 097 | Authentication foundation uses Laravel Breeze (session) with Director/Admin roles; bootstrap user via artisan command — not hard-coded emails. | Governed auth without production identity leakage. |
+| 098 | Initial seed: one Band ("Ed and the Shadow Boys") + roles; Director created via `esb:create-director` command. | Minimal seed; no sample production data without approval. |
+| 099 | PH009 implementation requires explicit gates: governance check, clean tree, engine confirmed, Docker approach, migration order, rollback, test plan. | No code until foundation plan acknowledged. |
+| 100 | Foundation slice excludes runtime integrations: no MIDI, DMX, X32, bridges, Reverb, Performances, sync packages, or cloud Spaces. | Vertical slice proves read path only; integrations deferred. |
+
 ---
 
-End of Decision Log — PH007
+End of Decision Log — PH008

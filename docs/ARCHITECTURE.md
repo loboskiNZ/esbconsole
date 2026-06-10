@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH007 Finalised  
+Status: PH008 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -8,7 +8,8 @@ Runtime behaviour: `docs/RUNTIME_MODEL.md`
 Integration architecture: `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`  
 Data ownership and persistence: `docs/DATA_ARCHITECTURE.md`  
 Database architecture and logical schema: `docs/DATABASE_ARCHITECTURE.md`  
-Physical database and migration plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
+Physical database and migration plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`  
+Foundation implementation plan: `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`
 
 ## Guiding Principles
 
@@ -347,7 +348,45 @@ Entity layers and ownership classes are defined in `docs/DATA_ARCHITECTURE.md`.
 
 Live performance **must not depend** on cloud database availability. All required records and file cache must exist in Local Show Runtime database before Soundcheck.
 
-Schema implementation (migrations, models) must align with `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md`.
+Schema implementation (migrations, models) must align with `docs/DATABASE_ARCHITECTURE.md`, `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`, and `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`.
+
+## Foundation Implementation Planning (PH008)
+
+First implementable slice and stack baseline are defined in `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`.
+
+### Target stack (PH009)
+
+| Component | Choice |
+|-----------|--------|
+| Backend | Laravel 11+ |
+| Database | PostgreSQL 16+ |
+| Cache/queue | Valkey 7+ (Redis-compatible) |
+| Local dev | Docker Compose (app, postgres, valkey) |
+| Auth | Laravel Breeze (session) |
+| Realtime | Laravel Reverb — planned post-foundation |
+| Cloud files | DigitalOcean Spaces — post-foundation |
+
+### First vertical slice
+
+```
+Login → Band context → Show list → Select active Show → Basic Playlist view
+```
+
+Proves Laravel foundation, PostgreSQL, auth, governed migrations, and Show/Playlist read path — **no runtime integrations**.
+
+### Local development topology
+
+```
+Developer host
+└── Docker Compose
+    ├── Laravel app
+    ├── PostgreSQL 16
+    └── Valkey 7
+Optional: existing client/ Vite dev server (port 5173)
+No cloud, Ableton, or bridges required for foundation dev.
+```
+
+Cloud deployment and Local Show Runtime full stack remain future phases.
 
 ## Frontend Architecture Alignment
 
@@ -370,4 +409,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH007
+End of Architecture — PH008
