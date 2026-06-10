@@ -32,3 +32,7 @@ brain/
 # Docker (if any leftovers)
 Dockerfile
 docker-compose.yml
+
+# Local production assets — not version controlled
+/resources/
+/songs/
