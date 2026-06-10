@@ -1,6 +1,6 @@
 # X32/Ableton Software Rebuild Charter v0.2
 
-Status: Draft (PH004 Data Architecture Finalised)  
+Status: PH005 Finalised  
 Owner: Ed Lobo  
 Project: Ed and the Shadow Boys Production Platform  
 Purpose: Charter Foundation for Full Refactor/Rebuild
@@ -8,6 +8,7 @@ Purpose: Charter Foundation for Full Refactor/Rebuild
 Entity definitions: `docs/DOMAIN_MODEL.md`  
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
+Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -690,6 +691,23 @@ Canonical data ownership, sync boundaries, and persistence rules are defined in 
 
 Implementation must conform to `docs/DATA_ARCHITECTURE.md` before database schema design begins.
 
+## 27. Database Architecture & Logical Schema Design
+
+Canonical database architecture and logical schema design are defined in `docs/DATABASE_ARCHITECTURE.md`.
+
+This includes:
+
+- Logical data domains (Identity, Band, Music Library, Production Asset, Show, Performance, Assignment, Soundcheck/Readiness, Runtime State, Sync, File Asset, Audit/History)
+- Entity-to-domain mapping for all canonical entities
+- Aggregate boundaries (Band, Song, Show, Performance, Musician, Production Configuration, Runtime State)
+- Cloud vs Local Show Runtime database responsibilities
+- Published Show Package sync model
+- File asset persistence (Spaces + local cache; production folders excluded from Git)
+- Identity/access persistence (User vs Musician; Laravel auth)
+- Audit, lifecycle, deletion, and migration principles
+
+Implementation must conform to `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md` before database migrations or physical schema implementation begins.
+
 ---
 
-End of Charter v0.2 — PH004
+End of Charter v0.2 — PH005

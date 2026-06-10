@@ -1,11 +1,12 @@
 # Architecture
 
-Status: PH004 Finalised  
+Status: PH005 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
-Data ownership and persistence: `docs/DATA_ARCHITECTURE.md`
+Data ownership and persistence: `docs/DATA_ARCHITECTURE.md`  
+Database architecture and logical schema: `docs/DATABASE_ARCHITECTURE.md`
 
 ## Guiding Principles
 
@@ -265,6 +266,33 @@ Entity layers and ownership classes are defined in `docs/DATA_ARCHITECTURE.md`.
 
 See `docs/DOMAIN_MODEL.md` for entity definitions.
 
+## Database Architecture Summary
+
+Logical database design is defined in `docs/DATABASE_ARCHITECTURE.md`.
+
+| Database context | Technology | Role |
+|------------------|------------|------|
+| **Cloud database** | PostgreSQL or MySQL (DigitalOcean) | Published canonical records; collaboration; sync package registry; audit |
+| **Director Local database** | Local DB on Director workstation | Draft creation/editing; publish staging |
+| **Local Show Runtime database** | Docker local DB | Performance-ready replica; runtime state; Soundcheck/Readiness; execution logs |
+
+### Cloud / Local Database Boundary
+
+| Data class | Cloud DB | Local runtime DB |
+|------------|----------|------------------|
+| Master library (published) | ✅ canonical | ✅ cached replica |
+| Show / Performance (preparation) | ✅ canonical | ✅ pulled via Published Package |
+| Assignments, Monitor Assignments | ✅ published | ✅ cached; locked at `live` |
+| File asset metadata | ✅ canonical | ✅ manifest + cache status |
+| Sync Package registry | ✅ canonical | ✅ local pull record |
+| Runtime State, Ableton Protocol State | ❌ not live-canonical | ✅ authoritative during performance |
+| Soundcheck / Readiness (show day) | optional post-sync | ✅ authoritative |
+| Audit / history | ✅ long-term retention | show-day logs until post-sync |
+
+Live performance **must not depend** on cloud database availability. All required records and file cache must exist in Local Show Runtime database before Soundcheck.
+
+Schema implementation (migrations, models) must align with `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md`.
+
 ## Frontend Architecture Alignment
 
 Priority order (see `docs/INFORMATION_ARCHITECTURE.md`):
@@ -286,4 +314,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH004
+End of Architecture — PH005

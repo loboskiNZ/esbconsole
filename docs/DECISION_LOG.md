@@ -94,6 +94,21 @@
 | 063 | Monitor Assignment is operational hybrid data synced with Performance package. | Monitor routing per Performance. |
 | 064 | Database/schema work must not proceed unless aligned to DATA_ARCHITECTURE.md. | Governance gate before implementation. |
 
+## PH005 — Database Architecture & Logical Schema Design
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 065 | `docs/DATABASE_ARCHITECTURE.md` is the canonical database architecture authority. | Separates logical schema design from PH004 data ownership rules. |
+| 066 | Persistence is organised into twelve logical domains with explicit aggregate boundaries. | Band, Song, Show, Performance, Musician, Production Configuration, and Runtime State are aggregate roots. |
+| 067 | Cloud database stores published canonical collaboration and preparation data. | Master library, operational records, sync package registry, and audit after publish. |
+| 068 | Local Show Runtime database is authoritative during performance for runtime, Soundcheck, and Readiness. | Live performance must not depend on cloud database availability. |
+| 069 | Published Show Package is the atomic sync unit pulled to Local Show Runtime before performance. | Explicit package with manifest, checksums, and sync status — not ad hoc queries. |
+| 070 | File assets persist as managed object references in database; binaries in Spaces; local cache for runtime. Production folders `/resources/`, `/songs/`, `/charts/`, `/uploads/` must not be Git-tracked. | Git stores code and docs only; production assets are managed runtime assets. |
+| 071 | User (auth identity) and Musician (domain entity) are persisted separately with explicit link. | Laravel authentication approved; role-boundary data governance. |
+| 072 | All future schema changes must use versioned migrations only — no ad hoc DDL. | Governed schema evolution aligned to DATABASE_ARCHITECTURE and DATA_ARCHITECTURE. |
+| 073 | Runtime cue state (PGM/CC16, timeline context) is local-runtime-only during performance — not cloud-canonical. | Preserves Ableton authority in persistence layer. |
+| 074 | Audit history is required for publish, sync, assignment changes, chart changes, readiness, action failures, Soundcheck, performance completion, and file availability. | Observable trail for rollback analysis; no silent mutation of show-critical data. |
+
 ---
 
-End of Decision Log — PH004
+End of Decision Log — PH005

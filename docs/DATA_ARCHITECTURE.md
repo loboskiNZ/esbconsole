@@ -1,6 +1,6 @@
 # Data Architecture & Persistence Model
 
-Status: PH004 Finalised  
+Status: PH005 Finalised  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical data ownership, persistence authority, sync boundaries, and lifecycle rules before database schema design
 
@@ -8,6 +8,7 @@ Related documents:
 
 - Entity definitions: `docs/DOMAIN_MODEL.md`
 - Runtime behaviour: `docs/RUNTIME_MODEL.md`
+- Logical schema design: `docs/DATABASE_ARCHITECTURE.md`
 - Infrastructure: `docs/ARCHITECTURE.md`
 
 This document defines **what** data exists, **where** it is authoritative, **how** it syncs, and **when** it transitions — not table names or schema implementation.
@@ -45,6 +46,7 @@ Goals:
 | 8 | **Shows and Performances reference assets; they do not duplicate them.** Reference-by-ID, not copy-by-value. |
 | 9 | **Files are managed assets.** Metadata + object references — not ad hoc local-only paths. |
 | 10 | **Runtime cue state is local/live.** Cloud does not control or store live cue progression. |
+| 11 | **Production assets are not Git assets.** `/resources/`, `/songs/`, `/charts/`, and `/uploads/` are managed production/runtime folders — not version-controlled in Git. |
 
 ---
 
@@ -317,6 +319,23 @@ Local environments maintain **cache copies** with cache path as implementation d
 | **No live fetch** | Performance does not fetch files from cloud. |
 | **Integrity** | Checksum verification on pull; mismatch surfaces warning. |
 
+### Git Exclusion Policy (Production Assets)
+
+The following folders are **managed production/runtime asset directories** and **must not be Git-tracked**:
+
+| Folder | Contents |
+|--------|----------|
+| `/resources/` | Ableton projects, logos, sample media, production resources |
+| `/songs/` | Runtime song-related assets |
+| `/charts/` | Chart PDFs and snippet images |
+| `/uploads/` | User-uploaded chart and document binaries |
+
+Git stores application code, governance documentation, database schema/migrations (when implemented), and tiny approved static UI assets only.
+
+Canonical file identity lives in **DigitalOcean Spaces** (remote) and **File Asset records** in the database. Local paths are cache implementation details.
+
+Logical schema for file persistence: `docs/DATABASE_ARCHITECTURE.md` §12.
+
 ---
 
 ## 10. User/Auth Data Model
@@ -525,7 +544,8 @@ Initial lifecycle states for governed entities and packages.
 
 | Rule | Statement |
 |------|-----------|
-| **Schema gate** | Database/schema work must not proceed unless aligned to this document. |
+| **Schema gate** | Database/schema work must not proceed unless aligned to this document and `docs/DATABASE_ARCHITECTURE.md`. |
+| **No-Git assets** | Production asset folders (`/resources/`, `/songs/`, `/charts/`, `/uploads/`) must not be Git-tracked. |
 | **No duplicate masters** | One canonical Song, Chart, Mix Move, etc. — Shows reference, never embed copies. |
 | **Reference integrity** | Published packages validate all references resolve before pull. |
 | **Phase-aware authority** | Authority class depends on lifecycle phase (draft/published/live). |
@@ -559,4 +579,4 @@ Initial lifecycle states for governed entities and packages.
 
 ---
 
-End of Data Architecture — PH004
+End of Data Architecture — PH005

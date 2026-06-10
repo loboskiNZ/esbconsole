@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH004 Finalised
+Status: PH005 Finalised
 
 ## Authority Order
 
@@ -8,11 +8,12 @@ Status: PH004 Finalised
 2. `docs/DOMAIN_MODEL.md`
 3. `docs/RUNTIME_MODEL.md`
 4. `docs/DATA_ARCHITECTURE.md`
-5. `docs/UX_MODEL.md`
-6. `docs/INFORMATION_ARCHITECTURE.md`
-7. `docs/ARCHITECTURE.md`
-8. `docs/DECISION_LOG.md`
-9. Implementation Tasks
+5. `docs/DATABASE_ARCHITECTURE.md`
+6. `docs/UX_MODEL.md`
+7. `docs/INFORMATION_ARCHITECTURE.md`
+8. `docs/ARCHITECTURE.md`
+9. `docs/DECISION_LOG.md`
+10. Implementation Tasks
 
 If a task conflicts with a higher authority document:
 
@@ -59,6 +60,7 @@ The platform coordinates:
 - Musician device view is musician-centric.
 - Mix Moves and Light Modes are reusable assets.
 - The show must go on.
+- Production assets (`/resources/`, `/songs/`, `/charts/`, `/uploads/`) are not Git assets.
 
 ## Canonical Entities (PH001)
 
@@ -67,6 +69,7 @@ Band, Musician, Device, Instrument Part, Capability, Song, Chart, Snippet, Cue, 
 Full definitions: `docs/DOMAIN_MODEL.md`  
 Runtime behaviour: `docs/RUNTIME_MODEL.md`  
 Data ownership: `docs/DATA_ARCHITECTURE.md`  
+Database architecture: `docs/DATABASE_ARCHITECTURE.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 
@@ -80,7 +83,7 @@ Navigation: `docs/INFORMATION_ARCHITECTURE.md`
 - Protect local-first operation.
 - Protect Ableton authority.
 - Documentation/governance tasks must not produce application code, migrations, routes, or UI.
-- Database and schema work must not proceed unless aligned to `docs/DATA_ARCHITECTURE.md`.
+- Database migrations and schema implementation must not proceed unless aligned with `docs/DATABASE_ARCHITECTURE.md` and `docs/DATA_ARCHITECTURE.md`.
 
 ## Completion Report
 
