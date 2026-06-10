@@ -50,4 +50,9 @@ class Musician extends Model
     {
         return $this->hasMany(Assignment::class);
     }
+
+    public function performanceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceAssignment::class);
+    }
 }

@@ -47,4 +47,9 @@ class InstrumentPart extends Model
     {
         return $this->hasMany(SongInstrumentPart::class);
     }
+
+    public function performanceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceAssignment::class);
+    }
 }

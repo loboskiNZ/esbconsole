@@ -36,4 +36,14 @@ class Band extends Model
     {
         return $this->hasMany(InstrumentPart::class);
     }
+
+    public function abletonShowFiles(): HasMany
+    {
+        return $this->hasMany(AbletonShowFile::class);
+    }
+
+    public function performances(): HasMany
+    {
+        return $this->hasMany(Performance::class);
+    }
 }

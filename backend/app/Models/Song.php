@@ -51,4 +51,9 @@ class Song extends Model
     {
         return $this->hasMany(ShowPlaylistItem::class);
     }
+
+    public function performanceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceAssignment::class);
+    }
 }

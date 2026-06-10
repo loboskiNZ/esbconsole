@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             BandSeeder::class,
             LocalDemoDomainSeeder::class,
             LocalDemoSeeder::class,
+            LocalDemoOperationalSeeder::class,
         ]);
     }
 }

@@ -16,7 +16,9 @@ class Show extends Model
 
     protected $fillable = [
         'band_id',
+        'ableton_show_file_id',
         'name',
+        'description',
         'lifecycle_state',
     ];
 
@@ -25,8 +27,18 @@ class Show extends Model
         return $this->belongsTo(Band::class);
     }
 
+    public function abletonShowFile(): BelongsTo
+    {
+        return $this->belongsTo(AbletonShowFile::class);
+    }
+
     public function playlistItems(): HasMany
     {
         return $this->hasMany(ShowPlaylistItem::class)->orderBy('position');
+    }
+
+    public function performances(): HasMany
+    {
+        return $this->hasMany(Performance::class);
     }
 }

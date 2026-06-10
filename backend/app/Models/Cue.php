@@ -32,6 +32,11 @@ class Cue extends Model
         return $this->hasMany(Snippet::class);
     }
 
+    public function performanceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceAssignment::class);
+    }
+
     public function runtimeIdentity(): string
     {
         return $this->song->song_code.'.'.$this->cue_number;
