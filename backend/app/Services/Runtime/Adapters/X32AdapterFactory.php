@@ -3,12 +3,15 @@
 namespace App\Services\Runtime\Adapters;
 
 use App\Contracts\X32\UdpSocketClientInterface;
+use App\Contracts\X32\UdpSocketSenderInterface;
 use App\Services\Integration\IntegrationDeviceRegistry;
 use App\Services\X32\DryRunX32Transport;
 use App\Services\X32\FakeUdpSocketClient;
 use App\Services\X32\OscX32Transport;
+use App\Services\X32\ProductionUdpSocketClient;
 use App\Services\X32\X32DispatchContextResolver;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
+use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
 
 class X32AdapterFactory
@@ -21,6 +24,7 @@ class X32AdapterFactory
             contextResolver: new X32DispatchContextResolver($deviceRegistry),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: new DryRunX32Transport,
+            runtimeModeResolver: new X32RuntimeModeResolver,
             dryRun: true,
         );
     }
@@ -39,6 +43,7 @@ class X32AdapterFactory
                 socketClient: $socketClient ?? new FakeUdpSocketClient,
                 liveSendingEnabled: $liveSendingEnabled,
             ),
+            runtimeModeResolver: new X32RuntimeModeResolver,
             dryRun: ! $liveSendingEnabled,
         );
     }
@@ -48,6 +53,23 @@ class X32AdapterFactory
         return self::createOscTransport(
             liveSendingEnabled: true,
             socketClient: $socketClient,
+        );
+    }
+
+    public static function createProduction(?UdpSocketSenderInterface $sender = null): X32Adapter
+    {
+        $deviceRegistry = new IntegrationDeviceRegistry;
+
+        return new X32Adapter(
+            contextResolver: new X32DispatchContextResolver($deviceRegistry),
+            sceneParameterResolver: new X32SceneParameterResolver,
+            transport: new OscX32Transport(
+                packetBuilder: new X32OscSceneRecallPacketBuilder,
+                socketClient: new ProductionUdpSocketClient($sender),
+                liveSendingEnabled: true,
+            ),
+            runtimeModeResolver: new X32RuntimeModeResolver,
+            dryRun: false,
         );
     }
 }

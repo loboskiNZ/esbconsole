@@ -12,5 +12,6 @@ readonly class X32SceneRecallCommand
         public ?string $host,
         public ?int $port,
         public bool $dryRun,
+        public string $runtimeMode = X32RuntimeModeResolver::MODE_DRY_RUN,
     ) {}
 }

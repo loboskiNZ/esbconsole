@@ -21,6 +21,7 @@ use App\Services\Runtime\Adapters\X32AdapterFactory;
 use App\Services\Runtime\RuntimeExecutionOrchestrator;
 use App\Services\X32\DryRunX32Transport;
 use App\Services\X32\X32DispatchContextResolver;
+use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
 use App\Services\X32\X32SceneRecallCommand;
 use App\Services\X32\X32TransportResult;
@@ -81,6 +82,7 @@ class X32AdapterFoundationTest extends TestCase
             contextResolver: new X32DispatchContextResolver(new IntegrationDeviceRegistry),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: $transport,
+            runtimeModeResolver: new X32RuntimeModeResolver,
             dryRun: true,
         );
 

@@ -18,6 +18,7 @@ use App\Services\Runtime\Adapters\X32AdapterFactory;
 use App\Services\X32\FakeUdpSocketClient;
 use App\Services\X32\OscX32Transport;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
+use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneRecallCommand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -63,12 +64,13 @@ class X32OscTransportTest extends TestCase
             host: '192.168.1.77',
             port: 10023,
             dryRun: false,
+            runtimeMode: X32RuntimeModeResolver::MODE_LIVE,
         ));
 
         $this->assertTrue($result->success);
         $this->assertSame('192.168.1.77', $socket->sent[0]['host']);
         $this->assertSame(10023, $socket->sent[0]['port']);
-        $this->assertSame('osc', $result->mode);
+        $this->assertSame('live', $result->mode);
         $this->assertSame('/3/scene/12', $result->context['osc_path']);
     }
 
@@ -76,7 +78,11 @@ class X32OscTransportTest extends TestCase
     {
         $socket = new FakeUdpSocketClient;
         $adapter = X32AdapterFactory::createLiveOsc($socket);
-        [$dispatchItem] = $this->createOscDispatchScenario(host: '10.0.0.5', port: 10023);
+        [$dispatchItem] = $this->createOscDispatchScenario(
+            host: '10.0.0.5',
+            port: 10023,
+            runtimeMode: X32RuntimeModeResolver::MODE_LIVE,
+        );
 
         $result = $adapter->execute(
             app(AdapterExecutionRequestFactory::class)->fromDispatchItem($dispatchItem),
@@ -102,7 +108,7 @@ class X32OscTransportTest extends TestCase
         );
 
         $this->assertTrue($result->success);
-        $this->assertSame('osc_safe', $result->context['mode']);
+        $this->assertSame('dry_run', $result->context['mode']);
         $this->assertCount(0, $socket->sent);
         $this->assertSame(0, $result->context['bytes_sent']);
     }
@@ -124,10 +130,11 @@ class X32OscTransportTest extends TestCase
             host: '192.168.1.50',
             port: 10023,
             dryRun: false,
+            runtimeMode: X32RuntimeModeResolver::MODE_LIVE,
         ));
 
         $this->assertFalse($result->success);
-        $this->assertSame('osc', $result->mode);
+        $this->assertSame('live', $result->mode);
         $this->assertStringContainsString('UDP socket send failed', $result->message ?? '');
     }
 
@@ -200,13 +207,19 @@ class X32OscTransportTest extends TestCase
         ?string $scene = '5',
         string $host = '192.168.1.100',
         int $port = 10023,
+        ?string $runtimeMode = null,
     ): array {
         $performance = Performance::factory()->create();
+
+        $configuration = $runtimeMode === null
+            ? null
+            : ['runtime_mode' => $runtimeMode];
 
         $device = IntegrationDevice::factory()->forBand($performance->band)->create([
             'device_key' => 'main-x32',
             'device_type' => IntegrationDevice::TYPE_X32,
             'enabled' => true,
+            'configuration' => $configuration,
         ]);
 
         IntegrationConnectionProfile::factory()->create([

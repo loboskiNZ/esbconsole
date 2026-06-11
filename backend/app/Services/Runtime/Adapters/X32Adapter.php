@@ -8,6 +8,7 @@ use App\Models\RuntimeDispatchItem;
 use App\Services\Runtime\AdapterExecutionRequest;
 use App\Services\Runtime\AdapterExecutionResult;
 use App\Services\X32\X32DispatchContextResolver;
+use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
 use App\Services\X32\X32SceneRecallCommand;
 
@@ -17,6 +18,7 @@ class X32Adapter implements RuntimeAdapterInterface
         private readonly X32DispatchContextResolver $contextResolver,
         private readonly X32SceneParameterResolver $sceneParameterResolver,
         private readonly X32TransportInterface $transport,
+        private readonly X32RuntimeModeResolver $runtimeModeResolver,
         private readonly bool $dryRun = true,
     ) {}
 
@@ -59,6 +61,8 @@ class X32Adapter implements RuntimeAdapterInterface
             );
         }
 
+        $runtimeMode = $this->runtimeModeResolver->resolve($context->device->configuration);
+
         $transportResult = $this->transport->recallScene(new X32SceneRecallCommand(
             scene: $scene,
             deviceKey: $context->device->device_key,
@@ -66,7 +70,8 @@ class X32Adapter implements RuntimeAdapterInterface
             protocol: $context->profile->protocol,
             host: $context->profile->host,
             port: $context->profile->port,
-            dryRun: $this->dryRun,
+            dryRun: ! $this->runtimeModeResolver->isLive($runtimeMode),
+            runtimeMode: $runtimeMode,
         ));
 
         if (! $transportResult->success) {

@@ -23,6 +23,7 @@ class OscX32Transport implements X32TransportInterface
             return $this->failedResult(
                 scene: $command->scene,
                 message: 'OscX32Transport only supports OSC connection profiles.',
+                mode: $command->runtimeMode,
                 context: [
                     'protocol' => $command->protocol,
                 ],
@@ -38,6 +39,7 @@ class OscX32Transport implements X32TransportInterface
             return $this->failedResult(
                 scene: $command->scene,
                 message: 'OSC transport requires a host.',
+                mode: $command->runtimeMode,
                 context: [
                     'osc_path' => $oscPath,
                     'port' => $port,
@@ -49,6 +51,7 @@ class OscX32Transport implements X32TransportInterface
             return $this->failedResult(
                 scene: $command->scene,
                 message: 'OSC transport requires a valid port.',
+                mode: $command->runtimeMode,
                 context: [
                     'osc_path' => $oscPath,
                     'host' => $host,
@@ -56,12 +59,33 @@ class OscX32Transport implements X32TransportInterface
             );
         }
 
-        if ($command->dryRun || ! $this->liveSendingEnabled) {
+        if ($command->runtimeMode === X32RuntimeModeResolver::MODE_DISABLED) {
+            return new X32TransportResult(
+                success: false,
+                mode: X32RuntimeModeResolver::MODE_DISABLED,
+                scene: $command->scene,
+                message: 'X32 runtime mode is disabled.',
+                context: $this->baseContext($command, $host, $port, $oscPath, $packet, bytesSent: 0),
+            );
+        }
+
+        if ($command->runtimeMode === X32RuntimeModeResolver::MODE_DRY_RUN
+            || $command->dryRun
+            || ! $this->liveSendingEnabled) {
             return new X32TransportResult(
                 success: true,
-                mode: 'osc_safe',
+                mode: X32RuntimeModeResolver::MODE_DRY_RUN,
                 scene: $command->scene,
                 message: 'X32 OSC scene recall prepared without live network send.',
+                context: $this->baseContext($command, $host, $port, $oscPath, $packet, bytesSent: 0),
+            );
+        }
+
+        if ($command->runtimeMode !== X32RuntimeModeResolver::MODE_LIVE) {
+            return $this->failedResult(
+                scene: $command->scene,
+                message: 'Invalid X32 runtime mode for live OSC transport.',
+                mode: X32RuntimeModeResolver::MODE_DISABLED,
                 context: $this->baseContext($command, $host, $port, $oscPath, $packet, bytesSent: 0),
             );
         }
@@ -71,7 +95,7 @@ class OscX32Transport implements X32TransportInterface
 
             return new X32TransportResult(
                 success: true,
-                mode: 'osc',
+                mode: X32RuntimeModeResolver::MODE_LIVE,
                 scene: $command->scene,
                 message: 'X32 OSC scene recall sent.',
                 context: $this->baseContext($command, $host, $port, $oscPath, $packet, $bytesSent),
@@ -80,6 +104,7 @@ class OscX32Transport implements X32TransportInterface
             return $this->failedResult(
                 scene: $command->scene,
                 message: $exception->getMessage(),
+                mode: X32RuntimeModeResolver::MODE_LIVE,
                 context: $this->baseContext($command, $host, $port, $oscPath, $packet, bytesSent: 0),
             );
         }
@@ -88,16 +113,16 @@ class OscX32Transport implements X32TransportInterface
     /**
      * @param  array<string, mixed>  $context
      */
-    private function failedResult(string $scene, string $message, array $context = []): X32TransportResult
+    private function failedResult(string $scene, string $message, string $mode, array $context = []): X32TransportResult
     {
         return new X32TransportResult(
             success: false,
-            mode: 'osc',
+            mode: $mode,
             scene: $scene,
             message: $message,
             context: array_merge([
                 'adapter' => 'x32',
-                'mode' => 'osc',
+                'mode' => $mode,
             ], $context),
         );
     }
@@ -115,7 +140,7 @@ class OscX32Transport implements X32TransportInterface
     ): array {
         return [
             'adapter' => 'x32',
-            'mode' => $this->liveSendingEnabled && ! $command->dryRun ? 'osc' : 'osc_safe',
+            'mode' => $command->runtimeMode,
             'host' => $host,
             'port' => $port,
             'scene' => $command->scene,
