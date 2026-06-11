@@ -287,8 +287,11 @@ Deliver musician-centric guidance for the active Performance — charts, cues, i
 | Next Cue | Upcoming section name/context |
 | Assigned Instrument Part | Current role for this Performance/Song/Cue |
 | Current Chart | Chart for assigned Instrument Part |
-| Current Snippet | Snippet for current Cue (automatic by default) |
+| Current Snippet | Snippet for current Cue and assigned SongInstrumentPart (automatic by default) |
+| Next Snippet | Snippet for next cue in sequence (lookahead) |
+| Next +1 Snippet | Snippet for second lookahead cue |
 | Instructions | Musician-specific guidance (including Cue 0 preparation) |
+| Full Chart Mode (optional) | Entire Chart for assigned SongInstrumentPart — display override |
 
 ### Required Rules
 
@@ -300,6 +303,17 @@ Deliver musician-centric guidance for the active Performance — charts, cues, i
 | Not instrument-centric | Musician does not select an instrument identity; system resolves from Assignment. |
 | Monitor controls | More/Less Me, Click, Tracks available during Soundcheck and live performance. |
 | Timeline authority | Musician device never controls cue progression. |
+
+### Chart Mode vs Cue View (Musician Preparation)
+
+| Mode | When | Behaviour |
+|------|------|-----------|
+| **Chart Mode** | Song/chart preparation | View full Chart for SongInstrumentPart; crop region; select target Cue (empty cues only in normal list); save independent Snippet |
+| **Cue View** | Live performance / review | View current, next, and next+1 Snippets; clone snippet to another cue (creates copy); annotate/markup existing Snippet; optional full chart mode |
+
+Cloning a snippet from another cue creates an independent copy — snippets are not shared between cues.
+
+Photo or drawing capture may be used as a Snippet source without chart cropping.
 
 ### When Shown
 

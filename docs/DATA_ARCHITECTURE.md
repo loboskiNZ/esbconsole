@@ -98,7 +98,7 @@ For each entity: canonical owner, primary edit environment, cloud presence, loca
 | **Capability** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Musician eligibility |
 | **Song** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Global reusable asset |
 | **Chart** | Cloud (published) | Director Local | Yes | Yes (cached + file) | Director → Cloud → Runtime | File asset in Spaces |
-| **Snippet** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Part of Chart/Song |
+| **Snippet** | Cloud (published) | Director Local | Yes | Yes (cached + file) | Director → Cloud → Runtime | Cue-specific visual asset per SongInstrumentPart + Cue; independent copy |
 | **Cue** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Authored section; not live state |
 | **Action** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Attached to Cue |
 | **Mix Move** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Reusable X32 asset |

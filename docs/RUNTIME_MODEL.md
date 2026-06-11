@@ -333,7 +333,9 @@ The musician device experience is **musician-centric**, not instrument-centric.
 ### Musician Device Display (Minimum)
 
 - Previous Cue / Current Cue / Next Cue
-- Current chart snippet (automatic by cue)
+- Current Snippet (automatic by cue + SongInstrumentPart)
+- Next Snippet and Next +1 Snippet (lookahead)
+- Optional full Chart Mode for assigned SongInstrumentPart
 - Instructions (including Cue 0 preparation guidance)
 - Monitor controls (More/Less Me, Click, Tracks — live-available)
 
@@ -343,9 +345,14 @@ For each timeline update, runtime resolves:
 
 ```
 Musician + Device → Assignment(s) for Current Performance/Song/Cue
-    → Instrument Part(s) → Chart(s) → Snippet(s)
+    → SongInstrumentPart(s) → Snippet(s) for current/next cue identity
+    → Chart (full chart mode or fallback)
     → display on device
 ```
+
+Snippet resolution uses Cue **identity** (`cue_number` / `SSS.CCC`), not runtime sequence index alone. Cue sequence may differ from numeric order for special arrangements.
+
+Affected chart-derived Snippets may be flagged out-of-date when Chart is updated; runtime continues with existing assets until explicitly refreshed.
 
 A musician with multiple assignments in the same cue context receives consolidated guidance.
 

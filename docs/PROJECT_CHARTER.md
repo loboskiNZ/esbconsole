@@ -426,7 +426,9 @@ Song
 
 Charts support snippets.
 
-One snippet may be associated with one cue.
+One active snippet per SongInstrumentPart + Cue.
+
+Snippets are independent visual assets — they may originate from chart crops, photos, uploads, clones, or drawings. Charts may be shared across Instrument Parts; snippet copies are not shared.
 
 ### Chart Navigation
 

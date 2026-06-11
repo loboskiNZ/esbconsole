@@ -17,10 +17,18 @@ class Cue extends Model
     protected $fillable = [
         'song_id',
         'cue_number',
+        'sequence_order',
         'name',
         'description',
         'notes',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'sequence_order' => 'integer',
+        ];
+    }
 
     public function song(): BelongsTo
     {
@@ -30,6 +38,16 @@ class Cue extends Model
     public function snippets(): HasMany
     {
         return $this->hasMany(Snippet::class);
+    }
+
+    public function activeSnippets(): HasMany
+    {
+        return $this->hasMany(Snippet::class)->where('is_active', true);
+    }
+
+    public function scopeInPerformanceOrder($query)
+    {
+        return $query->orderBy('sequence_order')->orderBy('cue_number');
     }
 
     public function performanceAssignments(): HasMany

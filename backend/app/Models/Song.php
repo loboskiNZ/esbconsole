@@ -47,6 +47,16 @@ class Song extends Model
         return $this->hasMany(SongInstrumentPart::class);
     }
 
+    public function charts(): HasMany
+    {
+        return $this->hasMany(Chart::class);
+    }
+
+    public function cuesInPerformanceOrder(): HasMany
+    {
+        return $this->hasMany(Cue::class)->inPerformanceOrder();
+    }
+
     public function playlistItems(): HasMany
     {
         return $this->hasMany(ShowPlaylistItem::class);

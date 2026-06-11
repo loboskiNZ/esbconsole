@@ -103,7 +103,7 @@ class LocalDemoDomainSeeder extends Seeder
         );
 
         Chart::query()->firstOrCreate(
-            ['song_instrument_part_id' => $songLeadVocal->id, 'title' => 'Local Demo Vocal Chart'],
+            ['song_id' => $song->id, 'title' => 'Local Demo Vocal Chart'],
             [
                 'storage_reference' => 'local-demo/charts/demo-vocal.pdf',
                 'checksum' => 'demo-checksum-vocal',
@@ -111,11 +111,24 @@ class LocalDemoDomainSeeder extends Seeder
             ],
         );
 
+        $vocalChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->where('title', 'Local Demo Vocal Chart')
+            ->first();
+
+        $songLeadVocal->update(['chart_id' => $vocalChart->id]);
+
         $chorusCue = $cues->firstWhere('cue_number', '003');
 
         Snippet::query()->firstOrCreate(
-            ['song_instrument_part_id' => $songGuitar->id, 'cue_id' => $chorusCue->id],
             [
+                'song_instrument_part_id' => $songGuitar->id,
+                'cue_id' => $chorusCue->id,
+                'is_active' => true,
+            ],
+            [
+                'source_type' => Snippet::SOURCE_CHART_CROP,
+                'freshness_state' => Snippet::FRESHNESS_CURRENT,
                 'title' => 'Local Demo Guitar Snippet — Chorus',
                 'storage_reference' => 'local-demo/snippets/demo-guitar-chorus.png',
                 'checksum' => 'demo-checksum-snippet',

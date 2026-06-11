@@ -109,8 +109,8 @@ Each domain defines a bounded area of persistence responsibility.
 | Attribute | Value |
 |-----------|-------|
 | **Purpose** | Reusable musical content and cue structure. |
-| **Entities** | Song, Cue, Chart, Snippet, Action (authored definitions) |
-| **Primary relationships** | Song owns Cues; Song references Charts; Cue owns Actions; Chart contains Snippets; Actions reference Mix Moves, Light Modes, instructions |
+| **Entities** | Song, SongInstrumentPart, Cue, Chart, Snippet, Action (authored definitions) |
+| **Primary relationships** | Song owns Cues and SongInstrumentParts; SongInstrumentPart links Instrument Part + Chart; Snippet belongs to SongInstrumentPart + Cue; Cue owns Actions; Actions reference Mix Moves, Light Modes, instructions |
 | **Cloud** | Canonical after publish |
 | **Local runtime** | Cached subset required by Active Show playlist |
 | **Notes** | Song is primary aggregate root for music/cue/chart structure |
@@ -228,7 +228,7 @@ Each domain defines a bounded area of persistence responsibility.
 | **Capability** | Production Asset | Musician* | ✅ canonical | ✅ cached |
 | **Song** | Music Library | Song | ✅ canonical | ✅ cached |
 | **Chart** | Music Library | Song | ✅ canonical | ✅ cached + file |
-| **Snippet** | Music Library | Song / Chart | ✅ canonical | ✅ cached |
+| **Snippet** | Music Library | SongInstrumentPart + Cue | ✅ canonical | ✅ cached + file |
 | **Cue** | Music Library | Song | ✅ canonical | ✅ cached |
 | **Action** | Music Library | Cue | ✅ canonical | ✅ cached |
 | **Mix Move** | Production Asset | Band (catalog) | ✅ canonical | ✅ cached |
@@ -264,9 +264,9 @@ Aggregates define consistency boundaries — changes within an aggregate are ato
 ### Song (music / cue / chart aggregate)
 
 - **Root:** Song
-- **Contains:** Cues (ordered), Chart references, Snippet definitions linked to Cues
+- **Contains:** Cues, SongInstrumentParts (each linking Instrument Part + Chart + Snippets per Cue)
 - **References:** Actions on Cues reference Mix Moves, Light Modes (by ID)
-- **Invariant:** Cue order stable within Song; Cue 000 defined as preparation cue
+- **Invariant:** Cue identity (`cue_number`) stable within Song; cue sequence may differ from numeric order; Cue 000 defined as preparation cue
 - **Does not contain:** Assignment or Performance data
 
 #### Song/Cue Identity Governance (PH010.01)
@@ -338,9 +338,11 @@ Band
 
 ```
 Song
-├── owns → Cues (ordered; Cue 0 = preparation)
-├── references → Charts
-├── contains → Snippets (portions of Charts linked to Cues)
+├── owns → Cues (identity via cue_number; sequence may vary)
+├── owns → SongInstrumentParts
+│   ├── links → Instrument Part (global catalog)
+│   ├── uses → Chart (one per SongInstrumentPart; Chart file may be shared)
+│   └── owns → Snippets (one active per Cue for this SongInstrumentPart)
 └── Cue
     └── owns → Actions
         ├── references → Mix Move

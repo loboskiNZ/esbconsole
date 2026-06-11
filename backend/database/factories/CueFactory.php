@@ -20,6 +20,7 @@ class CueFactory extends Factory
         return [
             'song_id' => Song::factory(),
             'cue_number' => str_pad((string) ($cueCounter++ % 1000), 3, '0', STR_PAD_LEFT),
+            'sequence_order' => static fn (array $attributes) => (int) $attributes['cue_number'],
             'name' => fake()->word(),
             'description' => null,
             'notes' => null,
@@ -30,6 +31,7 @@ class CueFactory extends Factory
     {
         return $this->state(fn () => [
             'cue_number' => '000',
+            'sequence_order' => 0,
             'name' => 'Preparation',
         ]);
     }

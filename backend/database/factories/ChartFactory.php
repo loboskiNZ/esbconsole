@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Chart;
-use App\Models\SongInstrumentPart;
+use App\Models\Song;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,7 +16,7 @@ class ChartFactory extends Factory
     public function definition(): array
     {
         return [
-            'song_instrument_part_id' => SongInstrumentPart::factory(),
+            'song_id' => Song::factory(),
             'title' => 'Test Chart '.fake()->word(),
             'storage_reference' => 'local-demo/charts/'.fake()->uuid().'.pdf',
             'checksum' => fake()->sha256(),

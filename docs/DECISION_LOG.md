@@ -27,7 +27,7 @@
 | 016 | Playlist is imported from Ableton Show File, not authored in platform. | Ableton owns playlist and cue progression. |
 | 017 | Actions are attached to Cues; Cues are not Actions. | Light flash, mix change, etc. are Actions triggered at Cue boundaries. |
 | 018 | Mix Moves are grouped parameter changes, not X32 scene recalls. | Explicit parameter groups for reliability and clarity. |
-| 019 | Snippet is a Chart portion associated with a Cue. | Separates chart navigation content from Cue boundary events. |
+| 019 | Snippet is a Chart portion associated with a Cue. | Separates chart navigation content from Cue boundary events. **Amended by PH027** — Snippet is a cue-specific visual reference asset for SongInstrumentPart + Cue; not exclusively a Chart child. |
 | 020 | Stage Plot and Tech Rider are informational production documents. | Spatial layout and technical requirements; they do not drive runtime automation. |
 | 021 | Readiness is a distinct gate state after Soundcheck. | Soundcheck is the process; Readiness is the cleared-to-perform state. |
 | 022 | Cloud is canonical; Local Runtime is authoritative during live performance. | Sync supports collaboration; performance does not depend on cloud. |
@@ -161,6 +161,35 @@
 | 105 | Approved Ableton naming convention is **`SSS.CCC.Song Name.Cue Name`**. | Parseable bridge between Ableton Show File identifiers and platform canonical definitions. |
 | 106 | Database `id` and `public_id` are relational/sync identifiers only; must not be used as runtime identities. | Preserves PH007 identifier strategy; runtime uses Song Code + Cue Number. |
 
+## PH027 — Snippet Domain Reconciliation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 107 | **Snippet** is a cue-specific visual reference asset for an Instrument Part within a Song — not merely a chart fragment or cue note. | Supports multiple origin types (crop, photo, upload, clone, drawing); separates visual assets from Actions and instructions. |
+| 108 | Snippet belongs to **SongInstrumentPart + Cue** context — not to Chart as a child entity. | Aligns with assignment resolution path; Chart is whole document; Snippet is independent copied asset. |
+| 109 | One active Snippet per **SongInstrumentPart + Cue**; constraint `unique(song_instrument_part_id, cue_id)`. | One visual reference per part per cue section; matches legacy behaviour and foundation schema. |
+| 110 | Snippets are **copied, not shared** between cues; cloning creates an independent asset. | Reuse from another cue must not mutate source; each cue owns its snippet binary. |
+| 111 | A **SongInstrumentPart** uses exactly one Chart for that Song; a Chart may be shared by many SongInstrumentParts. | Separates reusable chart file assets from per-cue snippet copies. |
+| 112 | Chart updates do **not** auto-regenerate Snippets; affected snippets are flagged **out-of-date**. | Preserves musician annotations and explicit authoring; avoids silent content changes mid-preparation. |
+| 113 | Snippet **source type** distinguishes origin: `chart_crop`, `photo`, `image_upload`, `cloned_snippet`, `freehand_drawing`. | Provenance for UI, migration, and freshness rules. |
+| 114 | Musicians may **annotate / mark up** Snippets; markup is per-Snippet. | Legacy Cue View behaviour; does not mutate parent Chart. |
+| 115 | **Cue identity** (`cue_number`) is stable and distinct from **cue sequence** (display/performance order). | Supports special arrangements without reassigning snippet bindings. |
+| 116 | Live musician view minimum: current snippet, next snippet, next +1 snippet, optional full chart mode. | Lookahead guidance for performance; full chart is display override only. |
+| 117 | Chart Mode workflow: crop → select cue (empty cues only for that SongInstrumentPart) → save independent Snippet. | Captures legacy Digital Scissors / SnippetMaker behaviour. |
+| 118 | PH019 retained in history but **amended** — Snippet separates navigation content from Cue boundaries; definition expanded per PH027. | Preserves phase history while correcting scope. |
+
+## PH028 — Snippet Schema Design
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 119 | Chart is a **Song-scoped file asset** (`charts.song_id`); SongInstrumentPart holds `chart_id` for one chart assignment. | Supports shared chart assets across multiple SongInstrumentParts without duplicating file metadata. |
+| 120 | Snippet partial unique index on `(song_instrument_part_id, cue_id) WHERE is_active = 1`. | One active Snippet per context; inactive historical rows preserved. |
+| 121 | Snippet `source_type` values: `chart_crop`, `photo`, `upload`, `clone`, `drawing`. | Covers all confirmed origin paths; distinct from PH027 proposed names where simplified (`upload` vs `image_upload`, `drawing` vs `freehand_drawing`). |
+| 122 | Snippet freshness states: `current`, `out_of_date`, `needs_review`. | Chart updates flag affected snippets; no auto-regeneration. |
+| 123 | Snippet annotation/markup via storage reference columns + `source_metadata` JSON. | Defers frontend rendering; supports layered assets without prescribing UI. |
+| 124 | Cue `sequence_order` column separate from `cue_number`. | Performance/display order may differ from stable cue identity. |
+| 125 | `ChartSnippetFreshnessService` marks chart-crop snippets out-of-date on chart update. | Domain service only — no runtime execution or auto-regeneration. |
+
 ---
 
-End of Decision Log — PH010.01
+End of Decision Log — PH028

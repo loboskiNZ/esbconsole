@@ -17,6 +17,7 @@ class SongInstrumentPart extends Model
     protected $fillable = [
         'song_id',
         'instrument_part_id',
+        'chart_id',
         'notes',
     ];
 
@@ -30,13 +31,18 @@ class SongInstrumentPart extends Model
         return $this->belongsTo(InstrumentPart::class);
     }
 
-    public function charts(): HasMany
+    public function chart(): BelongsTo
     {
-        return $this->hasMany(Chart::class);
+        return $this->belongsTo(Chart::class);
     }
 
     public function snippets(): HasMany
     {
         return $this->hasMany(Snippet::class);
+    }
+
+    public function activeSnippets(): HasMany
+    {
+        return $this->hasMany(Snippet::class)->where('is_active', true);
     }
 }

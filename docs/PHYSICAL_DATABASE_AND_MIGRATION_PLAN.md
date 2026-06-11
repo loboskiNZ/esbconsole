@@ -613,4 +613,25 @@ Before writing the first migration file:
 
 ---
 
-End of Physical Database & Migration Plan — PH007
+## 27. PH027 Design Notes — Snippet Schema (Future PH028)
+
+*Documentation reconciliation only — no migration in PH027.*
+
+Foundation schema (M7) already includes `song_instrument_parts`, `charts`, and `snippets` with `unique(song_instrument_part_id, cue_id)`. PH028 should extend — not replace — this anchor.
+
+| PH028 topic | Status |
+|-------------|--------|
+| Snippet source type | ✅ `source_type` column — `chart_crop`, `photo`, `upload`, `clone`, `drawing` |
+| Copy semantics | ✅ Distinct `storage_reference`; `source_snippet_id` for clone provenance |
+| Freshness | ✅ `freshness_state`; `ChartSnippetFreshnessService` marks out-of-date on chart update |
+| Annotation | ✅ `annotation_storage_reference`, `markup_storage_reference`, `rendered_storage_reference` |
+| Chart sharing | ✅ `charts.song_id` + `song_instrument_parts.chart_id` (many SIPs → one Chart) |
+| Cue sequence | ✅ `cues.sequence_order` separate from `cue_number` |
+| Active snippet constraint | ✅ Partial unique index `snippets_active_sip_cue_unique` |
+
+Full domain rules: `docs/PH027_SNIPPET_DOMAIN_RECONCILIATION.md`  
+Migration: `backend/database/migrations/2026_06_17_100000_ph028_snippet_domain_schema.php`
+
+---
+
+End of Physical Database & Migration Plan — PH028 schema implemented

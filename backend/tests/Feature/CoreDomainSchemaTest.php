@@ -70,13 +70,14 @@ class CoreDomainSchemaTest extends TestCase
         $this->assertTrue($song->fresh()->songInstrumentParts->contains($sip));
     }
 
-    public function test_chart_owned_by_song_instrument_part(): void
+    public function test_chart_assigned_to_song_instrument_part(): void
     {
         $sip = SongInstrumentPart::factory()->create();
-        $chart = Chart::factory()->create(['song_instrument_part_id' => $sip->id]);
+        $chart = Chart::factory()->create(['song_id' => $sip->song_id]);
+        $sip->update(['chart_id' => $chart->id]);
 
-        $this->assertTrue($chart->songInstrumentPart->is($sip));
-        $this->assertTrue($sip->fresh()->charts->contains($chart));
+        $this->assertTrue($sip->fresh()->chart->is($chart));
+        $this->assertTrue($chart->song->is($sip->song));
     }
 
     public function test_snippet_owned_by_song_instrument_part_and_cue(): void
@@ -95,7 +96,7 @@ class CoreDomainSchemaTest extends TestCase
         $this->assertTrue($sip->fresh()->snippets->contains($snippet));
     }
 
-    public function test_snippet_uniqueness_per_song_instrument_part_and_cue(): void
+    public function test_active_snippet_uniqueness_per_song_instrument_part_and_cue(): void
     {
         $song = Song::factory()->create(['song_code' => '014']);
         $cue = Cue::factory()->create(['song_id' => $song->id, 'cue_number' => '003', 'name' => 'Chorus']);
@@ -104,12 +105,14 @@ class CoreDomainSchemaTest extends TestCase
         Snippet::factory()->create([
             'song_instrument_part_id' => $sip->id,
             'cue_id' => $cue->id,
+            'is_active' => true,
         ]);
 
         $this->expectException(QueryException::class);
         Snippet::factory()->create([
             'song_instrument_part_id' => $sip->id,
             'cue_id' => $cue->id,
+            'is_active' => true,
         ]);
     }
 

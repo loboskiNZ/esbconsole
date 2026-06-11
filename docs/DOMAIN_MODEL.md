@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH010.01 Amended (Song/Cue Identity)  
+Status: PH027 Amended (Snippet Domain Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -12,7 +12,9 @@ Band
 ├── Devices
 ├── Instrument Parts
 ├── Songs
-│   ├── Charts
+│   ├── SongInstrumentParts
+│   │   ├── Chart (one per SongInstrumentPart)
+│   │   └── Snippets (per Cue)
 │   ├── Cues
 │   └── Actions
 ├── Light Modes
@@ -35,7 +37,7 @@ Band
 
 | Layer | Entities |
 |-------|----------|
-| Master Library (global, reusable) | Band, Musician, Device, Instrument Part, Capability, Song, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
+| Master Library (global, reusable) | Band, Musician, Device, Instrument Part, Capability, Song, SongInstrumentPart, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
 | Operational (show execution) | Show, Performance, Soundcheck, Readiness, Assignment, Local Runtime, Sync State, Ableton Protocol State |
 
 Shows reference master assets. Assets are not duplicated per Show.
@@ -151,7 +153,7 @@ Examples: Lead Vocal, Harmony Vocal, Backing Vocal, Electric Guitar, Acoustic Gu
 ### Key Relationships
 
 - Belongs to: Band.
-- Referenced by: Song (instrument requirements), Capability (musician eligibility), Assignment (operational use), Chart (instrument-specific charts).
+- Referenced by: SongInstrumentPart (instrument requirements per Song), Capability (musician eligibility), Assignment (operational use).
 
 ### Lifecycle Notes
 
@@ -222,7 +224,7 @@ The database `id` (bigint) and `public_id` (uuid) are relational and sync identi
 
 - Belongs to: Band.
 - Identified by: `song_code` (canonical business identity).
-- Contains: Charts, Cues, Actions, Instrument Part requirements.
+- Contains: SongInstrumentParts, Cues, Actions.
 - Referenced by: Show (via Playlist import from Ableton Show File).
 - Mapped at runtime via: Song Code + Cue Number (`SSS.CCC`) and Ableton Protocol State (PGM/CC16).
 
@@ -240,31 +242,66 @@ The database `id` (bigint) and `public_id` (uuid) are relational and sync identi
 
 ---
 
+## SongInstrumentPart
+
+### Definition
+
+The declaration that a specific Instrument Part is required for a Song. Links a global Instrument Part to a Song and anchors that part's Chart and Snippets for that Song.
+
+Examples: Song "001" requires Lead Vocal and Electric Guitar — each is a SongInstrumentPart row linking the Song to the Instrument Part catalog entry.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library (Song-scoped Instrument Part requirement).
+
+### Key Relationships
+
+- Belongs to: Song, Instrument Part.
+- Uses exactly one: Chart (for that Song).
+- Has: Snippets (one active Snippet per Cue for this SongInstrumentPart).
+- Informs: Assignment options (which parts exist for the Song during Performance preparation).
+
+### Lifecycle Notes
+
+- Created when a Song declares an Instrument Part requirement.
+- A Chart is associated with the SongInstrumentPart; the Chart file asset may be shared by multiple SongInstrumentParts (see Chart).
+- Snippets are authored per Cue within this context — not embedded in the Chart document.
+
+### Must Not Be Confused With
+
+- **Instrument Part** — the global role definition; SongInstrumentPart is the Song-specific requirement instance.
+- **Assignment** — operational Musician ↔ Instrument Part mapping for a Performance; SongInstrumentPart is authored master data.
+- **Chart** — the whole notated document; SongInstrumentPart is the anchor for chart and snippet assets.
+
+---
+
 ## Chart
 
 ### Definition
 
-A notated or visual performance document for a specific Instrument Part within a Song. A Song may have multiple Charts because different instruments require different notation.
+A notated or visual performance document used by a SongInstrumentPart within a Song. A Song may have multiple Charts because different Instrument Parts require different notation.
 
 ### Ownership / Source of Truth
 
-- **Authoritative:** Master library (Chart asset linked to Song and Instrument Part).
+- **Authoritative:** Master library (Chart file asset linked to Song context via SongInstrumentPart).
 
 ### Key Relationships
 
-- Belongs to: Song.
-- Scoped to: Instrument Part (e.g. Guitar Chart, Vocal Chart).
-- Contains: Snippets (one or more per Chart, associated with Cues).
+- Used by: SongInstrumentPart (exactly one Chart per SongInstrumentPart per Song).
+- May be shared by: multiple SongInstrumentParts (same file asset referenced by more than one part when notation is identical).
+- Referenced by: Snippets with `chart_crop` source type (provenance only — Snippets are not Chart children).
 
 ### Lifecycle Notes
 
-- Created per Song per Instrument Part as needed.
+- Created or linked when preparing a SongInstrumentPart.
 - Updated independently of Show or Performance.
-- Displayed on Musician devices based on Assignment + current Cue.
+- Chart updates do **not** automatically regenerate Snippets; affected Snippets should be flagged out-of-date (see Snippet).
+- Displayed on Musician devices based on Assignment + current Cue (full chart mode) or via Snippet (default).
 
 ### Must Not Be Confused With
 
-- **Snippet** — a section/portions of a Chart tied to a Cue; Chart is the whole document.
+- **Snippet** — a cue-specific visual reference asset; may originate from a chart crop but is an independent copied asset.
+- **SongInstrumentPart** — the requirement anchor; Chart is the whole document for that part.
 - **Song** — the musical work; Chart is instrument-specific material for it.
 
 ---
@@ -273,28 +310,47 @@ A notated or visual performance document for a specific Instrument Part within a
 
 ### Definition
 
-A display unit within a Chart corresponding to a Cue (or Cue range). The portion of chart material shown when a given section begins.
+A cue-specific visual reference asset for an Instrument Part within a Song. Displayed to musicians during live performance, Soundcheck, and Cue 0 preparation.
+
+A Snippet is **not merely a chart fragment**. It may originate from:
+
+- Chart crop (Chart Mode workflow)
+- Photo capture
+- Image upload
+- Cloned snippet (independent copy from another cue)
+- Freehand / drawing capture
 
 ### Ownership / Source of Truth
 
-- **Authoritative:** Master library (Snippet linked to Chart and Cue).
+- **Authoritative:** Master library (Snippet linked to SongInstrumentPart and Cue).
 
 ### Key Relationships
 
-- Belongs to: Chart.
-- Associated with: Cue (one Snippet may be associated with one Cue).
+- Belongs to: SongInstrumentPart + Cue (Instrument Part + Cue assignment context within a Song).
+- One active Snippet per SongInstrumentPart + Cue (`unique(song_instrument_part_id, cue_id)`).
+- May reference (provenance only): source Chart, source Snippet (when cloned).
 - Displayed during: Live Show View, Soundcheck (chart validation), Cue 0 preparation.
 
 ### Lifecycle Notes
 
-- Mapped to Cues during Song authoring.
+- Authored in Chart Mode (crop + cue selection) or Cue View (clone, photo, upload, drawing).
+- Chart Mode: after cropping, user selects target Cue; normal list shows only empty cues for that SongInstrumentPart.
+- Cloning from another cue creates an **independent copy** — Snippets are not shared between cues.
+- Musicians may annotate / mark up a Snippet; markup is per-Snippet, not on the parent Chart.
+- Chart updates do not auto-regenerate Snippets; chart-derived Snippets should be flagged out-of-date.
 - Automatic navigation displays the Snippet for the current Cue by default.
-- Manual override allowed — musicians may browse ahead or review other sections.
+- Manual override and full chart mode allowed — display only, not timeline authority.
 
 ### Must Not Be Confused With
 
-- **Cue** — the section boundary event; Snippet is the chart content for that section.
-- **Chart** — the full document; Snippet is a navigable portion.
+- **Cue** — the section boundary event; Snippet is visual reference content for that section.
+- **Chart** — the full document; Snippet is an independent visual asset, not a child row of Chart.
+- **Action / Musician Instruction** — text guidance attached to Cues; not a Snippet.
+- **Shared asset** — Charts may be shared across SongInstrumentParts; Snippet copies are never shared.
+
+### PH027 Reference
+
+Full reconciliation, superseded assumptions, and future schema design notes: `docs/PH027_SNIPPET_DOMAIN_RECONCILIATION.md`
 
 ---
 
@@ -331,13 +387,14 @@ The database `id` (bigint) and `public_id` (uuid) are relational identifiers onl
 - Belongs to: Song.
 - Identified by: `cue_number` within parent Song (unique per Song).
 - Has: Actions (Mix Moves, Light Modes, effects attached to this Cue).
-- Associated with: Snippets (chart display), Ableton Protocol State (CC16 maps to `cue_number`).
+- Associated with: Snippets (per SongInstrumentPart + Cue), Ableton Protocol State (CC16 maps to `cue_number`).
 - Special case: **Cue 000** = Preparation Cue (before first musical section).
 
 ### Lifecycle Notes
 
 - Defined during Song authoring in master library.
 - At runtime, Ableton CC16 changes drive Cue transitions.
+- **Cue identity** (`cue_number`) is stable; **cue sequence** (display/performance order) may differ for special arrangements — identity is not runtime sequence.
 - Cue 0 is used for preparation: load charts, snippets, instructions, monitoring setup before Cue 1.
 
 ### Must Not Be Confused With
@@ -568,7 +625,7 @@ An Assignment may be scoped to:
 - Scoped by: Song and/or Cue (optional narrowing of context).
 - Informed by: Capability (eligibility — which musicians *can* fill the part).
 - Constrained by: Availability (musician must be listed as available for the Performance).
-- Determines: which Chart/Snippet the Musician sees on their Device during Live Show View.
+- Determines: which Chart/Snippet the Musician sees on their Device during Live Show View (via SongInstrumentPart resolution).
 - Validated during: Soundcheck.
 - Distinct from: Device (how the musician connects, not what they play).
 
