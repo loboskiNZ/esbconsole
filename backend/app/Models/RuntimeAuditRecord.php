@@ -34,6 +34,22 @@ class RuntimeAuditRecord extends Model
 
     public const STAGE_DISPATCH_BUILD_FAILED = 'dispatch_build_failed';
 
+    public const STAGE_EXECUTION_STARTED = 'execution_started';
+
+    public const STAGE_EXECUTION_ITEM_ACKNOWLEDGED = 'execution_item_acknowledged';
+
+    public const STAGE_EXECUTION_ITEM_FAILED = 'execution_item_failed';
+
+    public const STAGE_EXECUTION_ITEM_SKIPPED = 'execution_item_skipped';
+
+    public const STAGE_EXECUTION_COMPLETED = 'execution_completed';
+
+    public const STAGE_EXECUTION_FAILED = 'execution_failed';
+
+    public const STAGE_EXECUTION_ADAPTER_MISSING = 'execution_adapter_missing';
+
+    public const STAGE_EXECUTION_ADAPTER_UNSUPPORTED = 'execution_adapter_unsupported';
+
     protected $fillable = [
         'runtime_event_id',
         'runtime_action_plan_id',
