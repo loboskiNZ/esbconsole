@@ -1,0 +1,10 @@
+{
+  "musicians": [
+    {
+      "id": "legacy-m1",
+      "name": "Fixture Musician",
+      "role": "Trumpet",
+      "email": "fixture@example.test"
+    }
+  ]
+}

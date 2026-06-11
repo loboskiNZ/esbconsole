@@ -207,6 +207,17 @@
 | 136 | Legacy `partIndex` / CC16 bridge recorded in manifest; operator reconciles with Ableton Show File. | Legacy 0-based index vs canonical `cue_number` requires explicit mapping table. |
 | 137 | Imported snippets default to `freshness_state = current`; no auto-regeneration during import. | PH028 freshness service applies only to post-import chart updates. |
 
+## PH030 — Legacy Import Parser Foundation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 138 | Legacy import parser is **read-only** — builds `LegacyMigrationPlan` in memory; no canonical entity writes. | PH030 foundation only; controlled import deferred to PH032. |
+| 139 | `LegacyMigrationPlanService::buildPlan()` is the programmatic entry point. | Returns normalized plan + manifest; CLI deferred to PH031+. |
+| 140 | Import audit schema (`import_batches`, `import_entity_mappings`) added for future rollback; parser does not populate them yet. | PH029 rollback design; PH032 writes batch records on commit. |
+| 141 | Legacy role normalization via `LegacyRoleNormalizer` alias table (e.g. `guitarrist` → Guitar). | Consistent Instrument Part catalog from heterogeneous legacy strings. |
+| 142 | Chart deduplication in parser uses SHA256 within Song scope; shared charts expose multiple `assignedRoleSlugs`. | Matches PH028 sharing model at plan stage. |
+| 143 | Missing assets collected in `LegacyMigrationIssues` — never silently ignored. | PH031 dry-run report consumes same structure. |
+
 ---
 
-End of Decision Log — PH029
+End of Decision Log — PH030

@@ -1,0 +1,89 @@
+{
+  "activeSetlistId": "default",
+  "setlists": {
+    "default": {
+      "id": "default",
+      "name": "Fixture Show",
+      "songOrder": ["100001", "100002"]
+    }
+  },
+  "songs": {
+    "100001": {
+      "id": "100001",
+      "title": "Song One",
+      "artist": "Fixture Band",
+      "bpm": 120,
+      "cues": [
+        {
+          "name": "Intro",
+          "type": "preset",
+          "bars": 8,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/100001/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1000
+            }
+          }
+        },
+        {
+          "name": "Chorus",
+          "type": "preset",
+          "bars": 16,
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/100001/trumpet/cue_1.png",
+              "role": "trumpet",
+              "timestamp": 2000
+            },
+            "singer": {
+              "path": "/api/charts/snippets/100001/singer/cue_1.png",
+              "role": "singer",
+              "timestamp": 3000
+            }
+          }
+        }
+      ],
+      "chartAssignments": [
+        {
+          "file": {
+            "path": "uploads/noChart.txt",
+            "filename": "noChart.txt"
+          }
+        }
+      ]
+    },
+    "100002": {
+      "id": "100002",
+      "title": "Song Two Shared",
+      "bpm": 90,
+      "cues": [
+        {
+          "name": "Verse",
+          "visualSnippets": {
+            "machines": {
+              "path": "/api/charts/snippets/100002/machines/cue_0.png",
+              "role": "machines",
+              "timestamp": 4000
+            },
+            "singer": {
+              "path": "/api/charts/snippets/100002/singer/cue_0.png",
+              "role": "singer",
+              "timestamp": 5000
+            }
+          }
+        },
+        {
+          "name": "Missing Snippet Cue",
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/100002/trumpet/cue_1.png",
+              "role": "trumpet",
+              "timestamp": 6000
+            }
+          }
+        }
+      ]
+    }
+  }
+}

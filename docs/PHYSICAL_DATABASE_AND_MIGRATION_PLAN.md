@@ -655,4 +655,20 @@ Full design: `docs/PH029_LEGACY_MIGRATION_DESIGN.md`
 
 ---
 
-End of Physical Database & Migration Plan — PH029 design notes appended
+## 29. PH030 — Legacy Import Parser Foundation
+
+Implemented read-only parser foundation — no canonical writes, no asset copying.
+
+| Component | Location |
+|-----------|----------|
+| Entry point | `App\Services\LegacyImport\LegacyMigrationPlanService::buildPlan()` |
+| Plan builder | `App\Services\LegacyImport\LegacyMigrationPlanBuilder` |
+| DTOs | `App\DataTransferObjects\LegacyImport\*` |
+| Audit schema | `import_batches`, `import_entity_mappings` |
+| Tests / fixtures | `tests/Feature/LegacyMigrationPlanParserTest.php`, `tests/fixtures/legacy/minimal/` |
+
+Parser output: `LegacyMigrationPlan` with show/song/playlist/cue/SIP/chart/snippet candidates, `LegacyMigrationIssues`, and `toManifestArray()` for PH031 dry-run.
+
+---
+
+End of Physical Database & Migration Plan — PH030 parser foundation
