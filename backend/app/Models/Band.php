@@ -51,4 +51,9 @@ class Band extends Model
     {
         return $this->hasMany(ActionDefinition::class);
     }
+
+    public function integrationDevices(): HasMany
+    {
+        return $this->hasMany(IntegrationDevice::class);
+    }
 }
