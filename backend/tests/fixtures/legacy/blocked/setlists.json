@@ -1,0 +1,17 @@
+{
+  "activeSetlistId": "default",
+  "setlists": {
+    "default": {
+      "id": "default",
+      "name": "Blocked Fixture Show",
+      "songOrder": ["200001", "999999"]
+    }
+  },
+  "songs": {
+    "200001": {
+      "id": "200001",
+      "title": "Valid Song",
+      "cues": [{ "name": "Intro" }]
+    }
+  }
+}

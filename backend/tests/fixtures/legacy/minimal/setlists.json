@@ -4,7 +4,7 @@
     "default": {
       "id": "default",
       "name": "Fixture Show",
-      "songOrder": ["100001", "100002"]
+      "songOrder": ["100001", "100002", "100003"]
     }
   },
   "songs": {
@@ -84,6 +84,12 @@
           }
         }
       ]
+    },
+    "100003": {
+      "id": "100003",
+      "title": "Empty Cues Song",
+      "bpm": 80,
+      "cues": []
     }
   }
 }

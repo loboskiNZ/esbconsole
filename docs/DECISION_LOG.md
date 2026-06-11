@@ -218,6 +218,16 @@
 | 142 | Chart deduplication in parser uses SHA256 within Song scope; shared charts expose multiple `assignedRoleSlugs`. | Matches PH028 sharing model at plan stage. |
 | 143 | Missing assets collected in `LegacyMigrationIssues` — never silently ignored. | PH031 dry-run report consumes same structure. |
 
+## PH031 — Dry-Run Migration Validation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 144 | Dry-run validation is **read-only** — produces `LegacyDryRunValidationReport`; no canonical writes, no asset copies, no `import_batches` persistence. | PH031 is the operator safety gate before PH032 controlled import. |
+| 145 | Validation status classified as `PASS`, `PASS_WITH_WARNINGS`, or `BLOCKED`. | BLOCKED only when parser blockers present; missing assets are warnings. |
+| 146 | `legacy:import-dry-run` Artisan command accepts `--root` plus optional path overrides for real legacy show directories. | Legacy assets may not be in git; paths must be operator-supplied. |
+| 147 | JSON report is primary output; human summary optional via `--summary` or when `--output` writes file. | Machine-readable report for PH032 tooling; stdout remains valid JSON when piping. |
+| 148 | Report builder enriches PH030 plan with shared chart detection, duplicate mapping detection, and unresolved role analysis. | Full PH029 §10 dry-run report requirements without duplicating parser logic. |
+
 ---
 
-End of Decision Log — PH030
+End of Decision Log — PH031

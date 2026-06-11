@@ -49,8 +49,8 @@ class LegacyMigrationPlanParserTest extends TestCase
         $plan = app(LegacyMigrationPlanService::class)->buildPlan($this->config());
 
         $this->assertSame('Fixture Show', $plan->show->name);
-        $this->assertCount(2, $plan->songs);
-        $this->assertCount(2, $plan->playlistItems);
+        $this->assertCount(3, $plan->songs);
+        $this->assertCount(3, $plan->playlistItems);
     }
 
     public function test_synthetic_cue_000_is_added_for_each_song(): void
@@ -62,7 +62,7 @@ class LegacyMigrationPlanParserTest extends TestCase
             fn ($cue) => $cue->syntheticPreparation === true,
         );
 
-        $this->assertCount(2, $preparationCues);
+        $this->assertCount(3, $preparationCues);
 
         foreach ($preparationCues as $cue) {
             $this->assertSame('000', $cue->cueNumber);

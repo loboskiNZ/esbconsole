@@ -1,0 +1,29 @@
+{
+  "activeSetlistId": "default",
+  "setlists": {
+    "default": {
+      "id": "default",
+      "name": "Clean Pass Show",
+      "songOrder": ["300001"]
+    }
+  },
+  "songs": {
+    "300001": {
+      "id": "300001",
+      "title": "Clean Song",
+      "bpm": 100,
+      "cues": [
+        {
+          "name": "Intro",
+          "visualSnippets": {
+            "trumpet": {
+              "path": "/api/charts/snippets/300001/trumpet/cue_0.png",
+              "role": "trumpet",
+              "timestamp": 1000
+            }
+          }
+        }
+      ]
+    }
+  }
+}

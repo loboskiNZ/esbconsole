@@ -671,4 +671,20 @@ Parser output: `LegacyMigrationPlan` with show/song/playlist/cue/SIP/chart/snipp
 
 ---
 
-End of Physical Database & Migration Plan — PH030 parser foundation
+## 30. PH031 — Dry-Run Migration Validation
+
+| Component | Location |
+|-----------|----------|
+| Service | `LegacyDryRunValidationService::validate()` |
+| Report builder | `LegacyDryRunReportBuilder` |
+| Report DTO | `LegacyDryRunValidationReport` |
+| Artisan command | `legacy:import-dry-run` |
+| Tests | `tests/Feature/LegacyDryRunValidationTest.php` |
+
+No canonical writes. Report status gates PH032 import.
+
+Full specification: `docs/PH031_DRY_RUN_MIGRATION_VALIDATION.md`
+
+---
+
+End of Physical Database & Migration Plan — PH031 dry-run validation
