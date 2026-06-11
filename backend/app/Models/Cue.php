@@ -42,6 +42,11 @@ class Cue extends Model
         return $this->hasMany(CueAction::class)->orderBy('sort_order')->orderBy('id');
     }
 
+    public function runtimeActionPlans(): HasMany
+    {
+        return $this->hasMany(RuntimeActionPlan::class);
+    }
+
     public function runtimeIdentity(): string
     {
         return $this->song->song_code.'.'.$this->cue_number;

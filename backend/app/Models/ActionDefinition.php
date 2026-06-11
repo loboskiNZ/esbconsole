@@ -48,4 +48,9 @@ class ActionDefinition extends Model
     {
         return $this->hasMany(CueAction::class);
     }
+
+    public function runtimeActionItems(): HasMany
+    {
+        return $this->hasMany(RuntimeActionItem::class);
+    }
 }

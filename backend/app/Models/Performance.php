@@ -69,4 +69,14 @@ class Performance extends Model
     {
         return $this->hasOne(Readiness::class);
     }
+
+    public function runtimeEvents(): HasMany
+    {
+        return $this->hasMany(RuntimeEvent::class);
+    }
+
+    public function runtimeActionPlans(): HasMany
+    {
+        return $this->hasMany(RuntimeActionPlan::class);
+    }
 }
