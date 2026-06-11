@@ -46,4 +46,9 @@ class Band extends Model
     {
         return $this->hasMany(Performance::class);
     }
+
+    public function actionDefinitions(): HasMany
+    {
+        return $this->hasMany(ActionDefinition::class);
+    }
 }
