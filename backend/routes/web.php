@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BandPersonController;
 use App\Http\Controllers\BulkSongController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CueController;
@@ -30,6 +31,7 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::get('/shows/{show}/playlist', [PlaylistController::class, 'show'])->name('playlist.show');
     Route::post('/shows/{show}/playlist', [PlaylistController::class, 'store'])->name('playlist.store');
     Route::post('/shows/{show}/playlist/reorder', [PlaylistController::class, 'reorder'])->name('playlist.reorder');
+    Route::delete('/shows/{show}/playlist/items', [PlaylistController::class, 'bulkDestroy'])->name('playlist.bulk-destroy');
     Route::delete('/shows/{show}/playlist/{playlistItem}', [PlaylistController::class, 'destroy'])->name('playlist.destroy');
 
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
@@ -50,10 +52,19 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::post('/songs/{song}/charts', [ChartController::class, 'store'])->name('songs.charts.store');
     Route::post('/charts/{chart}/assign', [ChartController::class, 'assign'])->name('charts.assign');
 
+    Route::get('/people', [BandPersonController::class, 'index'])->name('people.index');
+    Route::post('/people', [BandPersonController::class, 'store'])->name('people.store');
+    Route::get('/people/{musician}/edit', [BandPersonController::class, 'edit'])->name('people.edit');
+    Route::put('/people/{musician}', [BandPersonController::class, 'update'])->name('people.update');
+    Route::post('/people/{musician}/archive', [BandPersonController::class, 'archive'])->name('people.archive');
+    Route::post('/people/{musician}/restore', [BandPersonController::class, 'restore'])->name('people.restore');
+
     Route::get('/musicians', [MusicianController::class, 'index'])->name('musicians.index');
     Route::post('/musicians', [MusicianController::class, 'store'])->name('musicians.store');
     Route::get('/musicians/{musician}/edit', [MusicianController::class, 'edit'])->name('musicians.edit');
     Route::put('/musicians/{musician}', [MusicianController::class, 'update'])->name('musicians.update');
+    Route::post('/musicians/{musician}/archive', [MusicianController::class, 'archive'])->name('musicians.archive');
+    Route::post('/musicians/{musician}/restore', [MusicianController::class, 'restore'])->name('musicians.restore');
 
     Route::get('/instrument-parts', [InstrumentPartController::class, 'index'])->name('instrument-parts.index');
     Route::post('/instrument-parts', [InstrumentPartController::class, 'store'])->name('instrument-parts.store');

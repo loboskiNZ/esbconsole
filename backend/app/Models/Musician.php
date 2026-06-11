@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BandRole;
 use App\Models\Concerns\HasPublicId;
 use Database\Factories\MusicianFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,11 @@ class Musician extends Model
         'display_name',
         'email',
         'notes',
+        'dietary_preferences',
+        'allergies',
+        'accessibility_notes',
+        'travel_notes',
+        'emergency_contact_notes',
         'active',
     ];
 
@@ -60,5 +66,33 @@ class Musician extends Model
     public function performanceAssignments(): HasMany
     {
         return $this->hasMany(PerformanceAssignment::class);
+    }
+
+    public function bandRoles(): HasMany
+    {
+        return $this->hasMany(MusicianBandRole::class);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function bandRoleValues(): array
+    {
+        return $this->bandRoles->pluck('role')->all();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function bandRoleLabels(): array
+    {
+        return collect($this->bandRoleValues())
+            ->map(fn (string $role) => BandRole::tryFrom($role)?->label() ?? $role)
+            ->all();
+    }
+
+    public function hasBandRole(BandRole $role): bool
+    {
+        return in_array($role->value, $this->bandRoleValues(), true);
     }
 }

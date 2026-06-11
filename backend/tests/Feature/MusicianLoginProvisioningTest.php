@@ -27,7 +27,7 @@ class MusicianLoginProvisioningTest extends TestCase
             'last_name' => 'Smith',
         ]);
 
-        $response->assertRedirect(route('musicians.index'));
+        $response->assertRedirect(route('people.index'));
         $response->assertSessionHas('status');
 
         $musician = Musician::query()->where('first_name', 'Pat')->firstOrFail();
@@ -53,7 +53,7 @@ class MusicianLoginProvisioningTest extends TestCase
             'create_login_account' => '1',
         ]);
 
-        $response->assertRedirect(route('musicians.index'));
+        $response->assertRedirect(route('people.index'));
         $response->assertSessionHas('generated_musician_password', 'Login created for login.musician@example.test. One-time password: Ab1!xyZ9');
 
         $musician = Musician::query()->where('email', 'login.musician@example.test')->firstOrFail();
@@ -88,7 +88,7 @@ class MusicianLoginProvisioningTest extends TestCase
             'email' => 'ed.operator@example.test',
         ]);
 
-        $response->assertRedirect(route('musicians.index'));
+        $response->assertRedirect(route('people.index'));
 
         $this->assertDatabaseHas('musicians', [
             'first_name' => 'Ed',

@@ -53,9 +53,9 @@
                     <h3 class="font-semibold text-gray-900">Instrument Parts</h3>
                     <p class="text-sm text-gray-600 mt-2">Manage the band instrument part catalog.</p>
                 </a>
-                <a href="{{ route('musicians.index') }}" class="bg-white p-6 rounded-lg shadow-sm hover:shadow border border-gray-100">
-                    <h3 class="font-semibold text-gray-900">Musicians</h3>
-                    <p class="text-sm text-gray-600 mt-2">Create and manage musicians.</p>
+                <a href="{{ route('people.index') }}" class="bg-white p-6 rounded-lg shadow-sm hover:shadow border border-gray-100">
+                    <h3 class="font-semibold text-gray-900">Band People</h3>
+                    <p class="text-sm text-gray-600 mt-2">Manage crew, musicians, and band roles.</p>
                 </a>
             </div>
         </div>

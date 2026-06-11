@@ -6,6 +6,7 @@ use App\Models\Concerns\HasPublicId;
 use Database\Factories\BandFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Band extends Model
@@ -15,6 +16,7 @@ class Band extends Model
 
     protected $fillable = [
         'name',
+        'primary_director_musician_id',
     ];
 
     public function shows(): HasMany
@@ -30,6 +32,11 @@ class Band extends Model
     public function musicians(): HasMany
     {
         return $this->hasMany(Musician::class);
+    }
+
+    public function primaryDirector(): BelongsTo
+    {
+        return $this->belongsTo(Musician::class, 'primary_director_musician_id');
     }
 
     public function instrumentParts(): HasMany

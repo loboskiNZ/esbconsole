@@ -47,8 +47,8 @@ class ShowLoadingWorkflowTest extends TestCase
         $songA = Song::query()->where('name', 'Opening Number')->firstOrFail();
         $songB = Song::query()->where('name', 'Finale')->firstOrFail();
 
-        $this->post(route('playlist.store', $show), ['song_id' => $songA->id])->assertRedirect();
-        $this->post(route('playlist.store', $show), ['song_id' => $songB->id])->assertRedirect();
+        $this->post(route('playlist.store', $show), ['song_ids' => [$songA->id]])->assertRedirect();
+        $this->post(route('playlist.store', $show), ['song_ids' => [$songB->id]])->assertRedirect();
 
         $items = $show->fresh()->playlistItems()->orderBy('position')->get();
         $this->assertCount(2, $items);

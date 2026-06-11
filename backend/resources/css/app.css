@@ -35,4 +35,30 @@
     .song-detail-section .break-all {
         word-break: break-all;
     }
+
+    .playlist-drag-handle {
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .playlist-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .playlist-sortable-selected {
+        background-color: rgb(238 242 255);
+    }
+
+    .playlist-sortable-item.sortable-ghost {
+        opacity: 0.45;
+    }
+
+    .playlist-sortable-item.sortable-chosen {
+        background-color: rgb(243 244 246);
+    }
+}
+
+[x-cloak] {
+    display: none !important;
 }

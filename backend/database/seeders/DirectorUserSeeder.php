@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Services\DirectorBandPersonSync;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 
@@ -34,5 +35,7 @@ class DirectorUserSeeder extends Seeder
         );
 
         $user->syncRoles(['director']);
+
+        app(DirectorBandPersonSync::class)->sync($user);
     }
 }
