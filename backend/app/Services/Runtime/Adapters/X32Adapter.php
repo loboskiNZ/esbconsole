@@ -11,6 +11,7 @@ use App\Services\X32\X32DispatchContextResolver;
 use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
 use App\Services\X32\X32SceneRecallCommand;
+use App\Services\X32\X32TransportResult;
 
 class X32Adapter implements RuntimeAdapterInterface
 {
@@ -87,5 +88,10 @@ class X32Adapter implements RuntimeAdapterInterface
             message: $transportResult->message,
             context: $transportResult->context,
         );
+    }
+
+    public function recallSceneCommand(X32SceneRecallCommand $command): X32TransportResult
+    {
+        return $this->transport->recallScene($command);
     }
 }

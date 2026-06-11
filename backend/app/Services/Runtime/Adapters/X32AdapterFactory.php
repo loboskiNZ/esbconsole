@@ -63,13 +63,18 @@ class X32AdapterFactory
         return new X32Adapter(
             contextResolver: new X32DispatchContextResolver($deviceRegistry),
             sceneParameterResolver: new X32SceneParameterResolver,
-            transport: new OscX32Transport(
-                packetBuilder: new X32OscSceneRecallPacketBuilder,
-                socketClient: new ProductionUdpSocketClient($sender),
-                liveSendingEnabled: true,
-            ),
+            transport: self::createProductionTransport($sender),
             runtimeModeResolver: new X32RuntimeModeResolver,
             dryRun: false,
+        );
+    }
+
+    public static function createProductionTransport(?UdpSocketSenderInterface $sender = null): OscX32Transport
+    {
+        return new OscX32Transport(
+            packetBuilder: new X32OscSceneRecallPacketBuilder,
+            socketClient: new ProductionUdpSocketClient($sender),
+            liveSendingEnabled: true,
         );
     }
 }
