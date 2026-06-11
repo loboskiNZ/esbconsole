@@ -190,6 +190,23 @@
 | 124 | Cue `sequence_order` column separate from `cue_number`. | Performance/display order may differ from stable cue identity. |
 | 125 | `ChartSnippetFreshnessService` marks chart-crop snippets out-of-date on chart update. | Domain service only — no runtime execution or auto-regeneration. |
 
+## PH029 — Legacy Migration Design
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 126 | Legacy timestamp song IDs (e.g. `1768048124047`) are **audit metadata only** — never `song_code`, PK, or runtime identity. | Preserves PH010.01; new `song_code` assigned sequentially in playlist order (`001`–`999`). |
+| 127 | Legacy cue array index `i` maps to `cue_number = str_pad(i + 1, 3, '0')` and `sequence_order = i + 1`. | Aligns legacy 0-based index with 1-based CC16 section numbering; identity stable after import. |
+| 128 | Import **inserts synthetic Cue 000** (Preparation) per Song. | Legacy has no preparation cue; PH010.01 requires Cue 000 before first musical section. |
+| 129 | Legacy `visualSnippets[role]` maps to Snippet via normalized Instrument Part + SIP + Cue; `source_type = chart_crop`. | All legacy PNG snippets are chart crops; role slug drives SIP resolution. |
+| 130 | Chart files deduplicated by **SHA256 checksum** within a Song; shared Chart referenced by multiple `song_instrument_parts.chart_id`. | Observed legacy duplicate assignment rows pointing to same PDF; matches PH028 sharing model. |
+| 131 | Chart resolution order: `charts/{legacySongId}/{role}.pdf` → assignment uploads → boot backup fallback. | Matches Node server lookup behaviour in `index.js`. |
+| 132 | `noChart.txt` placeholder assignments are **skipped** — no Chart row created. | Not a chart asset; monitor-only musicians. |
+| 133 | Import manifest + `import_batches` / `import_entity_mappings` audit tables carry legacy→canonical mappings. | Enables rollback and operator verification; implementation in PH030. |
+| 134 | Dry-run (PH031) must pass with **zero blockers** before controlled import (PH032). | Safety gate; no silent overwrite of existing canonical data. |
+| 135 | Musician import is **optional and basic** (name/email only); X32 routing from `musicians.json` is out of scope. | Routing belongs to Assignment/Monitor Assignment domain. |
+| 136 | Legacy `partIndex` / CC16 bridge recorded in manifest; operator reconciles with Ableton Show File. | Legacy 0-based index vs canonical `cue_number` requires explicit mapping table. |
+| 137 | Imported snippets default to `freshness_state = current`; no auto-regeneration during import. | PH028 freshness service applies only to post-import chart updates. |
+
 ---
 
-End of Decision Log — PH028
+End of Decision Log — PH029

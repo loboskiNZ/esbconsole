@@ -634,4 +634,25 @@ Migration: `backend/database/migrations/2026_06_17_100000_ph028_snippet_domain_s
 
 ---
 
-End of Physical Database & Migration Plan — PH028 schema implemented
+## 28. PH029 Design Notes — Legacy Import (Future PH030+)
+
+*Design only — no import implementation in PH029.*
+
+Legacy sources: `setlists.json`, `musicians.json`, `charts/`, `charts/snippets/`, `uploads/`, `backups/boot_*/`.
+
+| PH030+ topic | Design note |
+|--------------|-------------|
+| Show / playlist | One Show per import batch from active setlist; `show_playlist_items.position` from `songOrder` |
+| Song identity | New `song_code` in playlist order; legacy timestamp ID in manifest only |
+| Cue mapping | Legacy index `i` → `cue_number = i+1`; synthetic Cue 000 inserted; `sequence_order` initially matches |
+| Chart sharing | Dedupe by SHA256; `charts.song_id` + `song_instrument_parts.chart_id` |
+| Snippet import | `visualSnippets[role]` → SIP + Cue; `source_type = chart_crop`; `source_metadata` JSON |
+| Audit tables | `import_batches`, `import_entity_mappings` — PH030 migration |
+| Safety | Dry-run first (PH031); transactional per Song; batch rollback via manifest |
+| Asset paths | `migrated/charts/...`, `migrated/snippets/...` — copy in PH032/PH033 |
+
+Full design: `docs/PH029_LEGACY_MIGRATION_DESIGN.md`
+
+---
+
+End of Physical Database & Migration Plan — PH029 design notes appended
