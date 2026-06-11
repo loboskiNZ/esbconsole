@@ -122,8 +122,10 @@ return new class extends Migration
             $table->string('chart_revision_at_creation')->nullable()->after('source_metadata');
         });
 
+        $activePredicate = DB::getDriverName() === 'pgsql' ? 'is_active IS TRUE' : 'is_active = 1';
+
         DB::statement(
-            'CREATE UNIQUE INDEX snippets_active_sip_cue_unique ON snippets (song_instrument_part_id, cue_id) WHERE is_active = 1'
+            "CREATE UNIQUE INDEX snippets_active_sip_cue_unique ON snippets (song_instrument_part_id, cue_id) WHERE {$activePredicate}"
         );
     }
 
