@@ -4,21 +4,25 @@ namespace App\Services\X32;
 
 class X32OscSceneRecallPacketBuilder
 {
+    public const OSC_ADDRESS = '/-action/goscene';
+
+    public const OSC_TYPE_TAG = ',i';
+
     public function oscPath(string $scene): string
     {
-        $sceneNumber = (int) $scene;
-
-        return '/3/scene/'.str_pad((string) $sceneNumber, 2, '0', STR_PAD_LEFT);
+        return self::OSC_ADDRESS;
     }
 
     public function build(string $scene): string
     {
-        return $this->encodeAddressOnlyMessage($this->oscPath($scene));
+        return $this->encodeGosceneMessage((int) $scene);
     }
 
-    private function encodeAddressOnlyMessage(string $address): string
+    private function encodeGosceneMessage(int $scene): string
     {
-        return $this->padOscString($address).$this->padOscString(',');
+        return $this->padOscString(self::OSC_ADDRESS)
+            .$this->padOscString(self::OSC_TYPE_TAG)
+            .pack('N', $scene);
     }
 
     private function padOscString(string $value): string

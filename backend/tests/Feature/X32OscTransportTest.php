@@ -34,17 +34,59 @@ class X32OscTransportTest extends TestCase
         $this->assertInstanceOf(X32TransportInterface::class, $transport);
     }
 
-    public function test_osc_packet_builder_creates_deterministic_packet_bytes_for_scene_recall(): void
+    public function test_osc_packet_builder_uses_goscene_address_for_all_scenes(): void
     {
         $builder = new X32OscSceneRecallPacketBuilder;
 
-        $this->assertSame('/3/scene/05', $builder->oscPath('5'));
+        $this->assertSame('/-action/goscene', $builder->oscPath('1'));
+        $this->assertSame('/-action/goscene', $builder->oscPath('5'));
+        $this->assertSame('/-action/goscene', $builder->oscPath('99'));
+    }
 
-        $packet = $builder->build('5');
-        $expected = "/3/scene/05\0,\0\0\0";
+    public function test_osc_packet_builder_contains_goscene_address_and_i_type_tag(): void
+    {
+        $packet = (new X32OscSceneRecallPacketBuilder)->build('5');
 
-        $this->assertSame($expected, $packet);
-        $this->assertSame(16, strlen($packet));
+        $this->assertStringStartsWith("/-action/goscene\0", $packet);
+        $this->assertStringNotContainsString('/3/scene', $packet);
+        $this->assertSame(',i', substr($packet, 20, 2));
+        $this->assertSame(28, strlen($packet));
+    }
+
+    public function test_osc_packet_builder_encodes_scene_1_as_big_endian_integer(): void
+    {
+        $packet = (new X32OscSceneRecallPacketBuilder)->build('1');
+
+        $this->assertSame('00000001', bin2hex(substr($packet, -4)));
+    }
+
+    public function test_osc_packet_builder_encodes_scene_5_as_big_endian_integer(): void
+    {
+        $packet = (new X32OscSceneRecallPacketBuilder)->build('5');
+
+        $this->assertSame('00000005', bin2hex(substr($packet, -4)));
+        $this->assertSame(
+            '2f2d616374696f6e2f676f7363656e65000000002c69000000000005',
+            bin2hex($packet),
+        );
+    }
+
+    public function test_osc_packet_builder_encodes_scene_99_as_big_endian_integer(): void
+    {
+        $packet = (new X32OscSceneRecallPacketBuilder)->build('99');
+
+        $this->assertSame('00000063', bin2hex(substr($packet, -4)));
+    }
+
+    public function test_osc_packet_builder_does_not_use_address_only_scene_path_format(): void
+    {
+        $builder = new X32OscSceneRecallPacketBuilder;
+
+        foreach (['1', '5', '12', '99'] as $scene) {
+            $packet = $builder->build($scene);
+            $this->assertStringNotContainsString('/3/scene', $packet);
+            $this->assertGreaterThan(16, strlen($packet));
+        }
     }
 
     public function test_live_osc_transport_uses_host_and_port_from_connection_profile(): void
@@ -71,7 +113,8 @@ class X32OscTransportTest extends TestCase
         $this->assertSame('192.168.1.77', $socket->sent[0]['host']);
         $this->assertSame(10023, $socket->sent[0]['port']);
         $this->assertSame('live', $result->mode);
-        $this->assertSame('/3/scene/12', $result->context['osc_path']);
+        $this->assertSame('/-action/goscene', $result->context['osc_path']);
+        $this->assertSame('0000000c', bin2hex(substr($socket->sent[0]['payload'], -4)));
     }
 
     public function test_live_osc_transport_sends_through_socket_interface_when_explicitly_enabled(): void
@@ -149,7 +192,7 @@ class X32OscTransportTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSame('7', $result->context['scene']);
-        $this->assertSame('/3/scene/07', $result->context['osc_path']);
+        $this->assertSame('/-action/goscene', $result->context['osc_path']);
     }
 
     public function test_only_x32_scene_remains_supported(): void
