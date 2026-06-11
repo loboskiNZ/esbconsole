@@ -5,7 +5,6 @@ namespace App\Services\X32;
 use App\Models\IntegrationConnectionProfile;
 use App\Models\IntegrationDevice;
 use App\Models\RuntimeDispatchItem;
-use App\Services\Integration\IntegrationDeviceRegistry;
 
 readonly class X32DispatchContext
 {
@@ -14,13 +13,14 @@ readonly class X32DispatchContext
         public int $performanceId,
         public IntegrationDevice $device,
         public IntegrationConnectionProfile $profile,
+        public string $selectionSource,
     ) {}
 }
 
 class X32DispatchContextResolver
 {
     public function __construct(
-        private readonly IntegrationDeviceRegistry $deviceRegistry,
+        private readonly X32DeviceSelector $deviceSelector,
     ) {}
 
     public function resolve(int $runtimeDispatchItemId): ?X32DispatchContext
@@ -38,15 +38,17 @@ class X32DispatchContextResolver
             return null;
         }
 
-        $device = $this->deviceRegistry->resolve(
-            $performance->band_id,
-            IntegrationDevice::TYPE_X32,
+        $selection = $this->deviceSelector->select(
+            bandId: $performance->band_id,
+            performanceId: $performance->id,
+            deviceKey: $this->resolveDeviceKeyFromPayload($dispatchItem->payload ?? []),
         );
 
-        if ($device === null) {
+        if ($selection === null) {
             return null;
         }
 
+        $device = $selection->device;
         $device->loadMissing('integrationConnectionProfiles');
 
         $profile = $device->integrationConnectionProfiles
@@ -62,6 +64,28 @@ class X32DispatchContextResolver
             performanceId: $performance->id,
             device: $device,
             profile: $profile,
+            selectionSource: $selection->selectionSource,
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private function resolveDeviceKeyFromPayload(array $payload): ?string
+    {
+        if (isset($payload['device_key']) && is_string($payload['device_key']) && $payload['device_key'] !== '') {
+            return $payload['device_key'];
+        }
+
+        $parameters = $payload['parameters'] ?? null;
+
+        if (is_array($parameters)
+            && isset($parameters['device_key'])
+            && is_string($parameters['device_key'])
+            && $parameters['device_key'] !== '') {
+            return $parameters['device_key'];
+        }
+
+        return null;
     }
 }

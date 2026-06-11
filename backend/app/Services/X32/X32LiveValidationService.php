@@ -3,7 +3,6 @@
 namespace App\Services\X32;
 
 use App\Contracts\X32\UdpSocketSenderInterface;
-use App\Models\IntegrationDevice;
 use App\Services\Integration\IntegrationDeviceRegistry;
 use App\Services\Integration\IntegrationDeviceValidator;
 use App\Services\Runtime\Adapters\X32AdapterFactory;
@@ -11,7 +10,7 @@ use App\Services\Runtime\Adapters\X32AdapterFactory;
 class X32LiveValidationService
 {
     public function __construct(
-        private readonly IntegrationDeviceRegistry $deviceRegistry,
+        private readonly X32DeviceSelector $deviceSelector,
         private readonly X32RuntimeModeResolver $runtimeModeResolver,
         private readonly X32SceneParameterResolver $sceneParameterResolver,
         private readonly IntegrationDeviceValidator $deviceValidator,
@@ -25,6 +24,7 @@ class X32LiveValidationService
         ?string $deviceKey = null,
         ?string $operatorLabel = null,
         ?string $notes = null,
+        ?int $performanceId = null,
     ): X32LiveValidationResult {
         $baseContext = array_filter([
             'operator_label' => $operatorLabel,
@@ -56,13 +56,13 @@ class X32LiveValidationService
             );
         }
 
-        $device = $this->deviceRegistry->resolve(
-            $bandId,
-            IntegrationDevice::TYPE_X32,
-            $deviceKey,
+        $selection = $this->deviceSelector->select(
+            bandId: $bandId,
+            performanceId: $performanceId,
+            deviceKey: $deviceKey,
         );
 
-        if ($device === null) {
+        if ($selection === null) {
             return $this->blocked(
                 bandId: $bandId,
                 deviceKey: $deviceKey,
@@ -71,6 +71,9 @@ class X32LiveValidationService
                 context: array_merge($baseContext, ['gate' => 'device']),
             );
         }
+
+        $device = $selection->device;
+        $selectionContext = $selection->toContext();
 
         $runtimeMode = $this->runtimeModeResolver->resolve($device->configuration);
 
@@ -81,7 +84,7 @@ class X32LiveValidationService
                 scene: $normalizedScene,
                 message: 'X32 device runtime_mode must be live for validation.',
                 mode: $runtimeMode,
-                context: array_merge($baseContext, [
+                context: array_merge($baseContext, $selectionContext, [
                     'gate' => 'runtime_mode',
                     'runtime_mode' => $runtimeMode,
                 ]),
@@ -101,7 +104,7 @@ class X32LiveValidationService
                 scene: $normalizedScene,
                 message: 'X32 validation requires an enabled connection profile.',
                 mode: $runtimeMode,
-                context: array_merge($baseContext, ['gate' => 'connection_profile']),
+                context: array_merge($baseContext, $selectionContext, ['gate' => 'connection_profile']),
             );
         }
 
@@ -114,7 +117,7 @@ class X32LiveValidationService
                 scene: $normalizedScene,
                 message: $profileValidation->message ?? 'Connection profile is invalid for live validation.',
                 mode: $runtimeMode,
-                context: array_merge($baseContext, [
+                context: array_merge($baseContext, $selectionContext, [
                     'gate' => 'connection_profile',
                     'profile_name' => $profile->profile_name,
                     'profile_status' => $profileValidation->status,
@@ -144,7 +147,7 @@ class X32LiveValidationService
                 deviceKey: $device->device_key,
                 scene: $normalizedScene,
                 mode: $transportResult->mode,
-                context: array_merge($baseContext, $transportResult->context),
+                context: array_merge($baseContext, $selectionContext, $transportResult->context),
                 occurredAt: now(),
             );
         }
@@ -157,7 +160,7 @@ class X32LiveValidationService
             deviceKey: $device->device_key,
             scene: $normalizedScene,
             mode: $transportResult->mode,
-            context: array_merge($baseContext, $transportResult->context),
+            context: array_merge($baseContext, $selectionContext, $transportResult->context),
             occurredAt: now(),
         );
     }

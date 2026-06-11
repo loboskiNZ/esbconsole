@@ -20,6 +20,7 @@ use App\Services\Runtime\Adapters\X32Adapter;
 use App\Services\Runtime\Adapters\X32AdapterFactory;
 use App\Services\Runtime\RuntimeExecutionOrchestrator;
 use App\Services\X32\DryRunX32Transport;
+use App\Services\X32\X32DeviceSelector;
 use App\Services\X32\X32DispatchContextResolver;
 use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
@@ -79,7 +80,7 @@ class X32AdapterFoundationTest extends TestCase
     {
         $transport = new RecordingX32Transport;
         $adapter = new X32Adapter(
-            contextResolver: new X32DispatchContextResolver(new IntegrationDeviceRegistry),
+            contextResolver: new X32DispatchContextResolver(new X32DeviceSelector(new IntegrationDeviceRegistry)),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: $transport,
             runtimeModeResolver: new X32RuntimeModeResolver,

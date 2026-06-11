@@ -9,8 +9,11 @@ use App\Models\IntegrationDevice;
 use App\Services\Integration\IntegrationDeviceRegistry;
 use App\Services\Integration\IntegrationDeviceValidator;
 use App\Services\Runtime\Adapters\X32AdapterFactory;
+use App\Services\X32\X32DeviceSelector;
+use App\Services\X32\X32DeviceSelectionResult;
 use App\Services\X32\X32LiveValidationResult;
 use App\Services\X32\X32LiveValidationService;
+use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32RuntimeModeResolver;
 use App\Services\X32\X32SceneParameterResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -337,10 +340,39 @@ class X32LiveValidationTest extends TestCase
         $this->assertNotInstanceOf(\App\Services\X32\PhpUdpSocketSender::class, $sender);
     }
 
+    public function test_validation_harness_reports_selection_source_for_explicit_device_key(): void
+    {
+        $sender = new ValidationRecordingUdpSocketSender;
+        $band = Band::factory()->create();
+        $this->createX32Device($band, runtimeMode: X32RuntimeModeResolver::MODE_LIVE, deviceKey: 'mon-x32');
+
+        $result = $this->validationService($sender)->validate(
+            bandId: $band->id,
+            scene: '5',
+            confirmLive: true,
+            deviceKey: 'mon-x32',
+        );
+
+        $this->assertTrue($result->success);
+        $this->assertSame(X32DeviceSelectionResult::SOURCE_EXPLICIT_DEVICE_KEY, $result->context['selection_source']);
+        $this->assertSame('mon-x32', $result->deviceKey);
+    }
+
+    public function test_ph024_live_recall_packet_path_unchanged(): void
+    {
+        $builder = new X32OscSceneRecallPacketBuilder;
+
+        $this->assertSame('/-action/goscene', $builder->oscPath('1'));
+        $this->assertSame('00000001', bin2hex(substr($builder->build('1'), -4)));
+        $this->assertSame(28, strlen($builder->build('1')));
+    }
+
     private function validationService(ValidationRecordingUdpSocketSender $sender): X32LiveValidationService
     {
+        $deviceRegistry = new IntegrationDeviceRegistry;
+
         return new X32LiveValidationService(
-            deviceRegistry: new IntegrationDeviceRegistry,
+            deviceSelector: new X32DeviceSelector($deviceRegistry),
             runtimeModeResolver: new X32RuntimeModeResolver,
             sceneParameterResolver: new X32SceneParameterResolver,
             deviceValidator: new IntegrationDeviceValidator,
@@ -353,13 +385,14 @@ class X32LiveValidationTest extends TestCase
         ?string $runtimeMode,
         string $host = '192.168.1.100',
         int $port = 10023,
+        string $deviceKey = 'main-x32',
     ): IntegrationDevice {
         $configuration = $runtimeMode === null
             ? null
             : ['runtime_mode' => $runtimeMode];
 
         $device = IntegrationDevice::factory()->forBand($band)->create([
-            'device_key' => 'main-x32',
+            'device_key' => $deviceKey,
             'device_type' => IntegrationDevice::TYPE_X32,
             'enabled' => true,
             'configuration' => $configuration,

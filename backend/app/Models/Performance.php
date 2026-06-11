@@ -7,6 +7,7 @@ use Database\Factories\PerformanceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -58,6 +59,21 @@ class Performance extends Model
     public function performanceAssignments(): HasMany
     {
         return $this->hasMany(PerformanceAssignment::class);
+    }
+
+    public function performanceDeviceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceDeviceAssignment::class);
+    }
+
+    public function assignedIntegrationDevices(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            IntegrationDevice::class,
+            'performance_device_assignments',
+            'performance_id',
+            'integration_device_id',
+        )->withPivot('role')->withTimestamps();
     }
 
     public function soundcheck(): HasOne

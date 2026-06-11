@@ -9,6 +9,7 @@ use App\Services\X32\DryRunX32Transport;
 use App\Services\X32\FakeUdpSocketClient;
 use App\Services\X32\OscX32Transport;
 use App\Services\X32\ProductionUdpSocketClient;
+use App\Services\X32\X32DeviceSelector;
 use App\Services\X32\X32DispatchContextResolver;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32RuntimeModeResolver;
@@ -21,7 +22,7 @@ class X32AdapterFactory
         $deviceRegistry = new IntegrationDeviceRegistry;
 
         return new X32Adapter(
-            contextResolver: new X32DispatchContextResolver($deviceRegistry),
+            contextResolver: new X32DispatchContextResolver(new X32DeviceSelector($deviceRegistry)),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: new DryRunX32Transport,
             runtimeModeResolver: new X32RuntimeModeResolver,
@@ -36,7 +37,7 @@ class X32AdapterFactory
         $deviceRegistry = new IntegrationDeviceRegistry;
 
         return new X32Adapter(
-            contextResolver: new X32DispatchContextResolver($deviceRegistry),
+            contextResolver: new X32DispatchContextResolver(new X32DeviceSelector($deviceRegistry)),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: new OscX32Transport(
                 packetBuilder: new X32OscSceneRecallPacketBuilder,
@@ -61,7 +62,7 @@ class X32AdapterFactory
         $deviceRegistry = new IntegrationDeviceRegistry;
 
         return new X32Adapter(
-            contextResolver: new X32DispatchContextResolver($deviceRegistry),
+            contextResolver: new X32DispatchContextResolver(new X32DeviceSelector($deviceRegistry)),
             sceneParameterResolver: new X32SceneParameterResolver,
             transport: self::createProductionTransport($sender),
             runtimeModeResolver: new X32RuntimeModeResolver,

@@ -62,4 +62,9 @@ class IntegrationDevice extends Model
     {
         return $this->hasMany(IntegrationConnectionProfile::class);
     }
+
+    public function performanceDeviceAssignments(): HasMany
+    {
+        return $this->hasMany(PerformanceDeviceAssignment::class);
+    }
 }
