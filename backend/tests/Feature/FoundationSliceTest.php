@@ -7,6 +7,7 @@ use App\Models\Show;
 use App\Models\ShowPlaylistItem;
 use App\Models\Song;
 use App\Models\User;
+use Database\Seeders\DirectorUserSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\CreatesDirectorUser;
@@ -30,6 +31,23 @@ class FoundationSliceTest extends TestCase
         $this->actingAs($user)
             ->get(route('shows.index'))
             ->assertForbidden();
+    }
+
+    public function test_seeded_director_can_login_and_access_shows(): void
+    {
+        $this->seed(DirectorUserSeeder::class);
+        Band::factory()->create(['name' => 'Ed and the Shadow Boys']);
+
+        $this->post('/login', [
+            'email' => DirectorUserSeeder::DIRECTOR_EMAIL,
+            'password' => DirectorUserSeeder::DIRECTOR_PASSWORD,
+        ])->assertRedirect(route('shows.index'));
+
+        $this->assertAuthenticatedAs(User::query()->where('email', DirectorUserSeeder::DIRECTOR_EMAIL)->first());
+
+        $this->get(route('shows.index'))
+            ->assertOk()
+            ->assertSee('Ed and the Shadow Boys');
     }
 
     public function test_director_can_login_and_reach_shows(): void

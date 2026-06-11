@@ -18,10 +18,10 @@ docker compose -f compose.foundation.yaml up -d
 cp .env.example .env
 php artisan key:generate
 
-# Migrate and seed roles + band + local demo playlist data
+# Migrate and seed roles, local director login, band + local demo playlist data
 php artisan migrate --seed
 
-# Create a Director login (prompts for credentials — not committed)
+# Optional: create additional Director logins (prompts for credentials — not committed)
 php artisan esb:create-director
 
 # Run the app
@@ -33,8 +33,9 @@ Open http://localhost:8000 — login → Shows → select active Show → Playli
 ## Local-only data
 
 - `BandSeeder` creates the band scope root.
+- `DirectorUserSeeder` creates the local/dev Director login (`ed@loboski.nz`) for show-builder access (local/testing only).
 - `LocalDemoSeeder` creates clearly labelled local demo shows/songs (local/testing only).
-- Director users are created via `esb:create-director`, not hard-coded in seeders.
+- Additional director users can be created via `esb:create-director`, not hard-coded elsewhere.
 
 ## Tests
 
