@@ -15,6 +15,15 @@
                     <x-nav-link :href="route('shows.index')" :active="request()->routeIs('shows.*') || request()->routeIs('playlist.*')">
                         {{ __('Shows') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('songs.index')" :active="request()->routeIs('songs.*')">
+                        {{ __('Songs') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('musicians.index')" :active="request()->routeIs('musicians.*')">
+                        {{ __('Musicians') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('instrument-parts.index')" :active="request()->routeIs('instrument-parts.*')">
+                        {{ __('Instrument Parts') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -69,6 +78,15 @@
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('shows.index')" :active="request()->routeIs('shows.*') || request()->routeIs('playlist.*')">
                 {{ __('Shows') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('songs.index')" :active="request()->routeIs('songs.*')">
+                {{ __('Songs') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('musicians.index')" :active="request()->routeIs('musicians.*')">
+                {{ __('Musicians') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('instrument-parts.index')" :active="request()->routeIs('instrument-parts.*')">
+                {{ __('Instrument Parts') }}
             </x-responsive-nav-link>
         </div>
 

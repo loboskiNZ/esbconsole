@@ -84,7 +84,7 @@ class FoundationSliceTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('shows.activate', $show))
-            ->assertRedirect(route('playlist.show', $show));
+            ->assertRedirect(route('shows.show', $show));
 
         $response = $this->actingAs($user)->get(route('playlist.show', $show));
 
