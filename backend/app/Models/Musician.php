@@ -16,6 +16,7 @@ class Musician extends Model
 
     protected $fillable = [
         'band_id',
+        'user_id',
         'first_name',
         'last_name',
         'display_name',
@@ -34,6 +35,11 @@ class Musician extends Model
     public function band(): BelongsTo
     {
         return $this->belongsTo(Band::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function devices(): HasMany

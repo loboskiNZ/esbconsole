@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BulkSongController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CueController;
 use App\Http\Controllers\InstrumentPartController;
@@ -32,6 +33,8 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::delete('/shows/{show}/playlist/{playlistItem}', [PlaylistController::class, 'destroy'])->name('playlist.destroy');
 
     Route::get('/songs', [SongController::class, 'index'])->name('songs.index');
+    Route::get('/songs/bulk-create', [BulkSongController::class, 'create'])->name('songs.bulk-create');
+    Route::post('/songs/bulk-create', [BulkSongController::class, 'store'])->name('songs.bulk-store');
     Route::get('/songs/create', [SongController::class, 'create'])->name('songs.create');
     Route::post('/songs', [SongController::class, 'store'])->name('songs.store');
     Route::get('/songs/{song}', [SongController::class, 'show'])->name('songs.show');

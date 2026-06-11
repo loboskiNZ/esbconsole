@@ -10,6 +10,8 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    <p class="text-sm text-gray-600 mb-6">Song code is assigned automatically when the song is created.</p>
+
                     <form method="POST" action="{{ route('songs.store') }}" class="space-y-6">
                         @csrf
 
@@ -17,13 +19,6 @@
                             <x-input-label for="name" value="Song name" />
                             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required autofocus />
                             <x-input-error :messages="$errors->get('name')" class="mt-2" />
-                        </div>
-
-                        <div>
-                            <x-input-label for="song_code" value="Song code (SSS)" />
-                            <x-text-input id="song_code" name="song_code" type="text" maxlength="3" class="mt-1 block w-full max-w-xs" :value="old('song_code', $suggestedSongCode)" />
-                            <p class="text-xs text-gray-500 mt-1">Three digits, e.g. {{ $suggestedSongCode }}. Leave blank to auto-assign.</p>
-                            <x-input-error :messages="$errors->get('song_code')" class="mt-2" />
                         </div>
 
                         <div>

@@ -30,11 +30,8 @@ class SongController extends Controller
 
     public function create(): View
     {
-        $band = $this->band();
-
         return view('songs.create', [
-            'band' => $band,
-            'suggestedSongCode' => $this->songCodeAllocator->nextForBand($band),
+            'band' => $this->band(),
         ]);
     }
 
@@ -44,19 +41,12 @@ class SongController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'song_code' => ['nullable', 'string', 'size:3', 'regex:/^\d{3}$/'],
             'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
             'description' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
         ]);
 
-        $songCode = $validated['song_code'] ?? $this->songCodeAllocator->nextForBand($band);
-
-        abort_if(
-            $band->songs()->where('song_code', $songCode)->exists(),
-            422,
-            'Song code already in use.',
-        );
+        $songCode = $this->songCodeAllocator->nextForBand($band);
 
         $song = Song::create([
             'band_id' => $band->id,

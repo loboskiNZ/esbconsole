@@ -2,7 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Songs — {{ $band->name }}</h2>
-            <a href="{{ route('songs.create') }}" class="text-sm text-indigo-600 hover:text-indigo-800">+ New Song</a>
+            <div class="flex gap-4 text-sm">
+                <a href="{{ route('songs.bulk-create') }}" class="text-indigo-600 hover:text-indigo-800">Bulk Create</a>
+                <a href="{{ route('songs.create') }}" class="text-indigo-600 hover:text-indigo-800">+ New Song</a>
+            </div>
         </div>
     </x-slot>
 

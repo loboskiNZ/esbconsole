@@ -4,18 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesBand;
 use App\Models\Musician;
+use App\Services\MusicianUserProvisioner;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class MusicianController extends Controller
 {
     use ResolvesBand;
 
+    public function __construct(
+        private readonly MusicianUserProvisioner $musicianUserProvisioner,
+    ) {}
+
     public function index(): View
     {
         $band = $this->band();
-        $musicians = $band->musicians()->orderBy('display_name')->get();
+        $musicians = $band->musicians()->with('user')->orderBy('display_name')->get();
 
         return view('musicians.index', [
             'band' => $band,
@@ -33,13 +39,22 @@ class MusicianController extends Controller
             'display_name' => ['nullable', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string'],
+            'create_login_account' => ['nullable', 'boolean'],
         ]);
+
+        $createLogin = $request->boolean('create_login_account');
+
+        if ($createLogin && blank($validated['email'] ?? null)) {
+            throw ValidationException::withMessages([
+                'email' => 'Email is required when creating a login account.',
+            ]);
+        }
 
         $displayName = filled($validated['display_name'] ?? null)
             ? $validated['display_name']
             : trim("{$validated['first_name']} {$validated['last_name']}");
 
-        Musician::create([
+        $musician = Musician::create([
             'band_id' => $band->id,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
@@ -49,14 +64,27 @@ class MusicianController extends Controller
             'active' => true,
         ]);
 
-        return redirect()
+        $redirect = redirect()
             ->route('musicians.index')
             ->with('status', "Musician \"{$displayName}\" created.");
+
+        if ($createLogin && filled($validated['email'])) {
+            $provisioned = $this->musicianUserProvisioner->provision($musician, $validated['email']);
+
+            $redirect->with(
+                'generated_musician_password',
+                "Login created for {$validated['email']}. One-time password: {$provisioned['plain_password']}"
+            );
+        }
+
+        return $redirect;
     }
 
     public function edit(Musician $musician): View
     {
         $this->ensureBandOwns($musician);
+
+        $musician->load('user');
 
         return view('musicians.edit', [
             'band' => $this->band(),
@@ -75,7 +103,16 @@ class MusicianController extends Controller
             'email' => ['nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string'],
             'active' => ['nullable', 'boolean'],
+            'create_login_account' => ['nullable', 'boolean'],
         ]);
+
+        $createLogin = $request->boolean('create_login_account');
+
+        if ($createLogin && blank($validated['email'] ?? null)) {
+            throw ValidationException::withMessages([
+                'email' => 'Email is required when creating a login account.',
+            ]);
+        }
 
         $displayName = filled($validated['display_name'] ?? null)
             ? $validated['display_name']
@@ -90,8 +127,19 @@ class MusicianController extends Controller
             'active' => $request->boolean('active'),
         ]);
 
-        return redirect()
+        $redirect = redirect()
             ->route('musicians.index')
             ->with('status', "Musician \"{$displayName}\" updated.");
+
+        if ($createLogin && filled($validated['email']) && $musician->user_id === null) {
+            $provisioned = $this->musicianUserProvisioner->provision($musician->fresh(), $validated['email']);
+
+            $redirect->with(
+                'generated_musician_password',
+                "Login created for {$validated['email']}. One-time password: {$provisioned['plain_password']}"
+            );
+        }
+
+        return $redirect;
     }
 }
