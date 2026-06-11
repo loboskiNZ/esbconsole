@@ -26,6 +26,14 @@ class RuntimeAuditRecord extends Model
 
     public const STAGE_ADAPTER_RESULT_FUTURE = 'adapter_result_future';
 
+    public const STAGE_DISPATCH_CREATED = 'dispatch_created';
+
+    public const STAGE_DISPATCH_ITEM_CREATED = 'dispatch_item_created';
+
+    public const STAGE_DISPATCH_BUILD_SKIPPED = 'dispatch_build_skipped';
+
+    public const STAGE_DISPATCH_BUILD_FAILED = 'dispatch_build_failed';
+
     protected $fillable = [
         'runtime_event_id',
         'runtime_action_plan_id',

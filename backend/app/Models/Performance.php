@@ -79,4 +79,9 @@ class Performance extends Model
     {
         return $this->hasMany(RuntimeActionPlan::class);
     }
+
+    public function runtimeDispatches(): HasMany
+    {
+        return $this->hasMany(RuntimeDispatch::class);
+    }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RuntimeActionPlan extends Model
 {
@@ -56,5 +57,10 @@ class RuntimeActionPlan extends Model
     public function runtimeAuditRecords(): HasMany
     {
         return $this->hasMany(RuntimeAuditRecord::class);
+    }
+
+    public function runtimeDispatch(): HasOne
+    {
+        return $this->hasOne(RuntimeDispatch::class);
     }
 }
