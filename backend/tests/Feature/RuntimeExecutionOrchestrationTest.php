@@ -279,7 +279,7 @@ class RuntimeExecutionOrchestrationTest extends TestCase
 
     public function test_no_real_adapter_classes_exist(): void
     {
-        $this->assertFalse(class_exists(\App\Services\X32Adapter::class));
+        $this->assertFalse(class_exists(\App\Services\X32\SocketX32Transport::class));
         $this->assertFalse(class_exists(\App\Services\LightingAdapter::class));
         $this->assertFalse(class_exists(\App\Services\MusicianDeviceAdapter::class));
         $this->assertFalse(class_exists(\App\Services\VideoAdapter::class));

@@ -183,7 +183,7 @@ class RuntimeDispatchDomainTest extends TestCase
 
     public function test_no_execution_adapters_or_hardware_calls_exist(): void
     {
-        $this->assertFalse(class_exists(\App\Services\X32Adapter::class));
+        $this->assertFalse(class_exists(\App\Services\X32\SocketX32Transport::class));
         $this->assertFalse(class_exists(\App\Services\LightingAdapter::class));
         $this->assertFalse(class_exists(\App\Services\ExecutionDispatcher::class));
 
