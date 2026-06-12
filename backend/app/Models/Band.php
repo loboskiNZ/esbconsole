@@ -68,4 +68,9 @@ class Band extends Model
     {
         return $this->hasMany(Venue::class);
     }
+
+    public function festivals(): HasMany
+    {
+        return $this->hasMany(Festival::class);
+    }
 }

@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\BandPersonController;
+use App\Http\Controllers\BulkFestivalController;
 use App\Http\Controllers\BulkSongController;
 use App\Http\Controllers\BulkVenueController;
+use App\Http\Controllers\FestivalController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CueController;
 use App\Http\Controllers\InstrumentPartController;
@@ -80,6 +82,16 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::put('/venues/{venue}', [VenueController::class, 'update'])->name('venues.update');
     Route::post('/venues/{venue}/archive', [VenueController::class, 'archive'])->name('venues.archive');
     Route::post('/venues/{venue}/restore', [VenueController::class, 'restore'])->name('venues.restore');
+
+    Route::get('/festivals', [FestivalController::class, 'index'])->name('festivals.index');
+    Route::get('/festivals/create', [FestivalController::class, 'create'])->name('festivals.create');
+    Route::post('/festivals', [FestivalController::class, 'store'])->name('festivals.store');
+    Route::get('/festivals/bulk-create', [BulkFestivalController::class, 'create'])->name('festivals.bulk-create');
+    Route::post('/festivals/bulk-create', [BulkFestivalController::class, 'store'])->name('festivals.bulk-store');
+    Route::get('/festivals/{festival}/edit', [FestivalController::class, 'edit'])->name('festivals.edit');
+    Route::put('/festivals/{festival}', [FestivalController::class, 'update'])->name('festivals.update');
+    Route::post('/festivals/{festival}/archive', [FestivalController::class, 'archive'])->name('festivals.archive');
+    Route::post('/festivals/{festival}/restore', [FestivalController::class, 'restore'])->name('festivals.restore');
 });
 
 Route::get('/dashboard', function () {
