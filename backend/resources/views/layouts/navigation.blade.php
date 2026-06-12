@@ -21,6 +21,9 @@
                     <x-nav-link :href="route('people.index')" :active="request()->routeIs('people.*') || request()->routeIs('musicians.*')">
                         {{ __('Band People') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('venues.index')" :active="request()->routeIs('venues.*')">
+                        {{ __('Venues') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('instrument-parts.index')" :active="request()->routeIs('instrument-parts.*')">
                         {{ __('Instrument Parts') }}
                     </x-nav-link>
@@ -84,6 +87,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('people.index')" :active="request()->routeIs('people.*') || request()->routeIs('musicians.*')">
                 {{ __('Band People') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('venues.index')" :active="request()->routeIs('venues.*')">
+                {{ __('Venues') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('instrument-parts.index')" :active="request()->routeIs('instrument-parts.*')">
                 {{ __('Instrument Parts') }}

@@ -63,4 +63,9 @@ class Band extends Model
     {
         return $this->hasMany(IntegrationDevice::class);
     }
+
+    public function venues(): HasMany
+    {
+        return $this->hasMany(Venue::class);
+    }
 }

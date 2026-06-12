@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BandPersonController;
 use App\Http\Controllers\BulkSongController;
+use App\Http\Controllers\BulkVenueController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CueController;
 use App\Http\Controllers\InstrumentPartController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShowController;
 use App\Http\Controllers\SongController;
 use App\Http\Controllers\SongInstrumentPartController;
+use App\Http\Controllers\VenueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -68,6 +70,16 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
 
     Route::get('/instrument-parts', [InstrumentPartController::class, 'index'])->name('instrument-parts.index');
     Route::post('/instrument-parts', [InstrumentPartController::class, 'store'])->name('instrument-parts.store');
+
+    Route::get('/venues', [VenueController::class, 'index'])->name('venues.index');
+    Route::get('/venues/create', [VenueController::class, 'create'])->name('venues.create');
+    Route::post('/venues', [VenueController::class, 'store'])->name('venues.store');
+    Route::get('/venues/bulk-create', [BulkVenueController::class, 'create'])->name('venues.bulk-create');
+    Route::post('/venues/bulk-create', [BulkVenueController::class, 'store'])->name('venues.bulk-store');
+    Route::get('/venues/{venue}/edit', [VenueController::class, 'edit'])->name('venues.edit');
+    Route::put('/venues/{venue}', [VenueController::class, 'update'])->name('venues.update');
+    Route::post('/venues/{venue}/archive', [VenueController::class, 'archive'])->name('venues.archive');
+    Route::post('/venues/{venue}/restore', [VenueController::class, 'restore'])->name('venues.restore');
 });
 
 Route::get('/dashboard', function () {
