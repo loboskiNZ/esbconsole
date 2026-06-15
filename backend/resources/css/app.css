@@ -728,6 +728,12 @@
         letter-spacing: 0.06em;
         color: rgb(161 161 170);
         border-bottom: 2px solid transparent;
+        background: transparent;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        text-decoration: none;
+        cursor: pointer;
     }
 
     .vx32-tabs__btn.is-active {
@@ -1241,6 +1247,1377 @@
         font-weight: 800;
         font-variant-numeric: tabular-nums;
         color: rgb(244 244 245);
+    }
+
+    /* ── Routing workspace shell (PH041.01) ── */
+
+    .vx32-routing-workspace {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .vx32-routing-workspace__header {
+        flex-shrink: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        min-height: 4.5rem;
+        padding: 0.85rem 1rem;
+        background: rgb(18 18 20);
+        border-bottom: 1px solid rgb(39 39 42);
+    }
+
+    .vx32-routing-workspace__header-left {
+        min-width: 0;
+    }
+
+    .vx32-routing-workspace__context {
+        display: block;
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-workspace__title {
+        margin: 0;
+        font-size: 1.375rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-workspace__title-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .vx32-routing-workspace__routing-state {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        border: 1px solid transparent;
+    }
+
+    .vx32-routing-workspace__routing-state--learned {
+        color: rgb(134 239 172);
+        background: rgb(6 78 59 / 0.55);
+        border-color: rgb(34 197 94 / 0.45);
+    }
+
+    .vx32-routing-workspace__routing-state--suggested {
+        color: rgb(186 230 253);
+        background: rgb(8 47 73 / 0.65);
+        border-color: rgb(56 189 248 / 0.45);
+    }
+
+    .vx32-routing-workspace__routing-state--not-learned {
+        color: rgb(253 224 71);
+        background: rgb(69 26 3 / 0.55);
+        border-color: rgb(250 204 21 / 0.45);
+    }
+
+    .vx32-routing-workspace__sync-hint {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-workspace__header-actions {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        min-height: 2.25rem;
+    }
+
+    .vx32-routing-workspace__actions-placeholder {
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(82 82 91);
+        border: 1px dashed rgb(63 63 70);
+        border-radius: 6px;
+    }
+
+    .vx32-routing-workspace__content {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        padding: 1rem;
+    }
+
+    .vx32-routing-source-row {
+        min-height: 14rem;
+    }
+
+    /* ── Routing flow row (PH041.02 complete) ── */
+
+    .vx32-routing-flow__title {
+        margin: 0 0 1rem;
+        font-size: 0.8125rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-flow__map {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0;
+        min-height: 11rem;
+        overflow-x: auto;
+    }
+
+    .vx32-routing-flow__zone {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        flex-shrink: 0;
+    }
+
+    .vx32-routing-flow__zone--sources {
+        flex: 1.35 1 0;
+        min-width: 22rem;
+        padding: 0.65rem 0.75rem;
+        background: rgb(6 78 59 / 0.12);
+        border: 1px solid rgb(34 197 94 / 0.35);
+        border-radius: 10px 0 0 10px;
+    }
+
+    .vx32-routing-flow__zone--console {
+        flex: 0.9 1 0;
+        min-width: 11rem;
+        padding: 0.65rem 0.5rem;
+        background: rgb(69 26 3 / 0.15);
+        border-top: 1px solid rgb(250 204 21 / 0.35);
+        border-bottom: 1px solid rgb(250 204 21 / 0.35);
+    }
+
+    .vx32-routing-flow__zone--destinations {
+        flex: 1 1 0;
+        min-width: 16rem;
+        padding: 0.65rem 0.75rem;
+        background: rgb(8 47 73 / 0.18);
+        border: 1px solid rgb(56 189 248 / 0.35);
+        border-radius: 0 10px 10px 0;
+    }
+
+    .vx32-routing-flow__zone-label {
+        margin: 0 0 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-flow__zone--sources .vx32-routing-flow__zone-label {
+        color: rgb(134 239 172);
+    }
+
+    .vx32-routing-flow__zone--console .vx32-routing-flow__zone-label {
+        color: rgb(253 224 71);
+    }
+
+    .vx32-routing-flow__zone--destinations .vx32-routing-flow__zone-label {
+        color: rgb(125 211 252);
+    }
+
+    .vx32-routing-flow__source-row,
+    .vx32-routing-flow__destination-row {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 0.5rem;
+        flex: 1 1 auto;
+    }
+
+    .vx32-routing-flow__source-row .vx32-routing-source-card {
+        flex: 1 1 0;
+        min-width: 6.5rem;
+        min-height: 10.5rem;
+        padding: 0.75rem 0.65rem;
+    }
+
+    .vx32-routing-flow__source-row .vx32-routing-source-card__name {
+        font-size: 0.9375rem;
+    }
+
+    .vx32-routing-flow__source-row .vx32-routing-source-card__facts {
+        gap: 0.45rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .vx32-routing-flow__source-row .vx32-routing-source-card__fact dd {
+        font-size: 0.8125rem;
+    }
+
+    .vx32-routing-flow__source-row .vx32-routing-source-card__fact--routing dd {
+        font-size: 0.875rem;
+    }
+
+    .vx32-routing-flow__destination-row .vx32-routing-dest-card {
+        flex: 1 1 0;
+        min-width: 7rem;
+        min-height: 10.5rem;
+        padding: 0.75rem 0.65rem;
+    }
+
+    .vx32-routing-flow__destination-row .vx32-routing-dest-card__title {
+        font-size: 0.9375rem;
+    }
+
+    .vx32-routing-flow__destination-row .vx32-routing-dest-card__lines {
+        font-size: 0.8125rem;
+    }
+
+    .vx32-routing-flow__connector {
+        flex: 0 0 4.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        align-self: stretch;
+        min-width: 3.5rem;
+        padding: 0.25rem 0;
+        background: rgb(18 18 20);
+    }
+
+    .vx32-routing-flow__connector--in {
+        border-top: 1px solid rgb(34 197 94 / 0.2);
+        border-bottom: 1px solid rgb(34 197 94 / 0.2);
+    }
+
+    .vx32-routing-flow__connector--out {
+        border-top: 1px solid rgb(250 204 21 / 0.2);
+        border-bottom: 1px solid rgb(250 204 21 / 0.2);
+    }
+
+    .vx32-routing-flow__svg {
+        width: 100%;
+        height: 100%;
+        min-height: 7rem;
+        max-height: 100%;
+    }
+
+    .vx32-routing-flow__path {
+        fill: none;
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .vx32-routing-flow__path--merge {
+        stroke: rgb(34 197 94);
+    }
+
+    .vx32-routing-flow__path--trunk {
+        stroke: rgb(250 204 21);
+    }
+
+    .vx32-routing-flow__path--dashed {
+        stroke-dasharray: 6 4;
+    }
+
+    .vx32-routing-flow__path--stagebox-a {
+        stroke: rgb(34 197 94);
+    }
+
+    .vx32-routing-flow__path--stagebox-b {
+        stroke: rgb(59 130 246);
+    }
+
+    .vx32-routing-flow__path--ableton {
+        stroke: rgb(168 85 247);
+    }
+
+    .vx32-routing-flow__path--foh {
+        stroke: rgb(250 204 21);
+    }
+
+    .vx32-routing-flow__path--iems {
+        stroke: rgb(56 189 248);
+    }
+
+    @media (max-width: 900px) {
+        .vx32-routing-flow__map {
+            flex-direction: column;
+            overflow-x: visible;
+        }
+
+        .vx32-routing-flow__zone--sources,
+        .vx32-routing-flow__zone--destinations {
+            border-radius: 10px;
+        }
+
+        .vx32-routing-flow__connector {
+            flex: 0 0 auto;
+            min-height: 3.5rem;
+            width: 100%;
+        }
+
+        .vx32-routing-flow__connector--in .vx32-routing-flow__svg,
+        .vx32-routing-flow__connector--out .vx32-routing-flow__svg {
+            transform: rotate(90deg);
+            min-height: 4rem;
+        }
+
+        .vx32-routing-flow__source-row,
+        .vx32-routing-flow__destination-row {
+            flex-wrap: wrap;
+        }
+    }
+
+    .vx32-routing-console-card {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 10.5rem;
+        padding: 0.85rem 0.9rem;
+        background: rgb(24 24 27);
+        border: 2px solid rgb(250 204 21 / 0.45);
+        border-radius: 12px;
+        box-shadow: 0 0 0 1px rgb(250 204 21 / 0.15);
+    }
+
+    .vx32-routing-console-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.65rem;
+        margin-bottom: 0.65rem;
+    }
+
+    .vx32-routing-console-card__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-console-card__range {
+        margin: 0 0 0.55rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        color: rgb(250 204 21);
+    }
+
+    .vx32-routing-console-card__summaries {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.45rem;
+        flex: 1 1 auto;
+    }
+
+    .vx32-routing-console-card__summary {
+        padding: 0.35rem 0.45rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgb(228 228 231);
+        background: rgb(39 39 42);
+        border-radius: 6px;
+        border-left: 3px solid rgb(113 113 122);
+    }
+
+    .vx32-routing-console-card__summary--stagebox_a,
+    .vx32-routing-console-card__summary--learned:nth-child(1) {
+        border-left-color: rgb(34 197 94);
+    }
+
+    .vx32-routing-console-card__summary--suggested {
+        color: rgb(186 230 253);
+    }
+
+    .vx32-routing-dest-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 10rem;
+        padding: 1rem 1.05rem;
+        background: rgb(24 24 27);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 10px;
+    }
+
+    .vx32-routing-dest-card--foh {
+        border-top: 4px solid rgb(250 204 21);
+    }
+
+    .vx32-routing-dest-card--iems {
+        border-top: 4px solid rgb(56 189 248);
+    }
+
+    .vx32-routing-dest-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.65rem;
+        margin-bottom: 0.55rem;
+    }
+
+    .vx32-routing-dest-card__title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-dest-card__summary {
+        margin: 0 0 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-dest-card__lines {
+        margin: 0 0 0.85rem;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.35rem;
+        flex: 1 1 auto;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: rgb(212 212 216);
+        line-height: 1.35;
+    }
+
+    .vx32-routing-dest-card__lines strong {
+        color: rgb(244 244 245);
+        font-weight: 800;
+    }
+
+    /* ── Routing source cards (shared) ── */
+
+    .vx32-routing-source-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 13rem;
+        padding: 1rem 1.1rem;
+        background: rgb(24 24 27);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 10px;
+    }
+
+    .vx32-routing-source-card--stagebox-a {
+        border-top: 4px solid rgb(34 197 94);
+    }
+
+    .vx32-routing-source-card--stagebox-b {
+        border-top: 4px solid rgb(59 130 246);
+    }
+
+    .vx32-routing-source-card--ableton {
+        border-top: 4px solid rgb(168 85 247);
+    }
+
+    .vx32-routing-source-card__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.65rem;
+        margin-bottom: 0.85rem;
+    }
+
+    .vx32-routing-source-card__name {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-source-card__badge {
+        flex-shrink: 0;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        border: 1px solid transparent;
+    }
+
+    .vx32-routing-source-card__badge--learned {
+        color: rgb(187 247 208);
+        background: rgb(6 78 59 / 0.55);
+        border-color: rgb(34 197 94 / 0.45);
+    }
+
+    .vx32-routing-source-card__badge--suggested {
+        color: rgb(186 230 253);
+        background: rgb(8 47 73 / 0.65);
+        border-color: rgb(56 189 248 / 0.45);
+    }
+
+    .vx32-routing-source-card__badge--not-learned {
+        color: rgb(253 224 71);
+        background: rgb(69 26 3 / 0.55);
+        border-color: rgb(250 204 21 / 0.45);
+    }
+
+    .vx32-routing-source-card__facts {
+        display: grid;
+        gap: 0.65rem;
+        margin: 0 0 1rem;
+        flex: 1 1 auto;
+    }
+
+    .vx32-routing-source-card__fact dt {
+        margin-bottom: 0.15rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-source-card__fact dd {
+        margin: 0;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: rgb(228 228 231);
+        line-height: 1.35;
+    }
+
+    .vx32-routing-source-card__fact--routing dd {
+        font-size: 1rem;
+        font-weight: 700;
+        color: rgb(244 244 245);
+    }
+
+    .vx32-routing-source-card--suggested .vx32-routing-source-card__routing-prefix {
+        color: rgb(125 211 252);
+    }
+
+    .vx32-routing-source-card--learned .vx32-routing-source-card__routing-prefix {
+        color: rgb(134 239 172);
+    }
+
+    .vx32-routing-source-card__configure {
+        align-self: flex-start;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: rgb(113 113 122);
+        background: rgb(39 39 42);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 6px;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    /* ── Configuration detail row (PH041.03) ── */
+
+    .vx32-routing-detail {
+        margin-top: 1.25rem;
+    }
+
+    .vx32-routing-detail__sr-title {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .vx32-routing-detail__grid {
+        display: grid;
+        grid-template-columns: minmax(14rem, 1fr) minmax(22rem, 2fr) minmax(14rem, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+        .vx32-routing-detail__grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .vx32-routing-detail__panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        min-width: 0;
+        padding: 0.9rem 1rem;
+        background: rgb(24 24 27);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 10px;
+    }
+
+    .vx32-routing-detail__panel-title {
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__production-head {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+    }
+
+    .vx32-routing-detail__section-label {
+        margin: 0 0 0.4rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__config-name {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-detail__learned-meta {
+        margin: 0.35rem 0 0;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__learned-meta span {
+        display: block;
+        margin-top: 0.15rem;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__type-badge {
+        display: inline-block;
+        margin: 0;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border-radius: 6px;
+    }
+
+    .vx32-routing-detail__type-badge--learned {
+        color: rgb(196 181 253);
+        background: rgb(59 7 100 / 0.45);
+        border: 1px solid rgb(168 85 247 / 0.45);
+    }
+
+    .vx32-routing-detail__type-badge--not-learned {
+        color: rgb(253 224 71);
+        background: rgb(69 26 3 / 0.45);
+        border: 1px solid rgb(250 204 21 / 0.35);
+    }
+
+    .vx32-routing-detail__status-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .vx32-routing-detail__status-tile {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.5rem 0.55rem;
+        background: rgb(39 39 42);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 6px;
+    }
+
+    .vx32-routing-detail__status-tile--learned {
+        border-color: rgb(34 197 94 / 0.35);
+    }
+
+    .vx32-routing-detail__status-tile-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-routing-detail__status-tile-value {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__status-tile--learned .vx32-routing-detail__status-tile-value {
+        color: rgb(134 239 172);
+    }
+
+    .vx32-routing-detail__future-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .vx32-routing-detail__future-item {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgb(161 161 170);
+        background: rgb(39 39 42);
+        border: 1px dashed rgb(82 82 91);
+        border-radius: 6px;
+    }
+
+    .vx32-routing-detail__future-item--current {
+        color: rgb(196 181 253);
+        border-color: rgb(168 85 247 / 0.55);
+        border-style: solid;
+    }
+
+    .vx32-routing-detail__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .vx32-routing-detail__action {
+        display: grid;
+        grid-template-columns: 1.25rem 1fr auto;
+        gap: 0.45rem;
+        align-items: center;
+        padding: 0.4rem 0.5rem;
+        font-size: 0.8125rem;
+        background: rgb(39 39 42);
+        border-radius: 6px;
+    }
+
+    .vx32-routing-detail__action-number {
+        font-weight: 800;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__action-label {
+        font-weight: 700;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-routing-detail__action-status {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__action--available .vx32-routing-detail__action-status {
+        color: rgb(134 239 172);
+    }
+
+    .vx32-routing-detail__input-cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.55rem;
+    }
+
+    @media (max-width: 900px) {
+        .vx32-routing-detail__input-cards {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .vx32-routing-detail__input-card {
+        display: flex;
+        flex-direction: column;
+        min-height: 8.5rem;
+        padding: 0.75rem;
+        background: rgb(18 18 20);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 8px;
+    }
+
+    .vx32-routing-detail__input-card--stagebox-a {
+        border-top: 3px solid rgb(34 197 94);
+    }
+
+    .vx32-routing-detail__input-card--stagebox-b {
+        border-top: 3px solid rgb(59 130 246);
+    }
+
+    .vx32-routing-detail__input-card--ableton {
+        border-top: 3px solid rgb(168 85 247);
+    }
+
+    .vx32-routing-detail__input-card-title {
+        margin: 0 0 0.2rem;
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: rgb(250 250 250);
+        line-height: 1.25;
+    }
+
+    .vx32-routing-detail__input-connection-type {
+        margin: 0 0 0.55rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__connection-status {
+        margin: 0 0 0.55rem;
+        padding: 0.55rem 0.45rem;
+        font-size: 1.125rem;
+        font-weight: 800;
+        line-height: 1.1;
+        text-align: center;
+        letter-spacing: 0.02em;
+        border-radius: 6px;
+        border: 1px solid transparent;
+    }
+
+    .vx32-routing-detail__connection-status--learned {
+        color: rgb(187 247 208);
+        background: rgb(6 78 59 / 0.55);
+        border-color: rgb(34 197 94 / 0.45);
+    }
+
+    .vx32-routing-detail__connection-status--suggested {
+        color: rgb(186 230 253);
+        background: rgb(8 47 73 / 0.55);
+        border-color: rgb(56 189 248 / 0.4);
+    }
+
+    .vx32-routing-detail__connection-status--not-learned {
+        color: rgb(253 224 71);
+        background: rgb(69 26 3 / 0.55);
+        border-color: rgb(250 204 21 / 0.4);
+    }
+
+    .vx32-routing-detail__input-capacity {
+        margin: 0 0 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-routing-detail__input-note {
+        margin: 0 0 0.65rem;
+        flex: 1 1 auto;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__input-facts {
+        display: grid;
+        gap: 0.35rem;
+        margin: 0 0 0.55rem;
+    }
+
+    .vx32-routing-detail__input-facts dt {
+        font-size: 0.625rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-detail__input-facts dd {
+        margin: 0;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-routing-detail__configure {
+        align-self: flex-start;
+        margin-top: auto;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgb(113 113 122);
+        background: rgb(39 39 42);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 6px;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    .vx32-routing-detail__allocation {
+        margin-top: 0.35rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgb(63 63 70);
+    }
+
+    .vx32-routing-detail__allocation-title {
+        margin: 0 0 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__strip-ruler {
+        display: grid;
+        grid-template-columns: repeat(32, minmax(2.4rem, 1fr));
+        gap: 2px;
+        margin-bottom: 0.35rem;
+    }
+
+    .vx32-routing-detail__strip-zone {
+        grid-column: span var(--zone-span);
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
+        min-width: 0;
+        padding: 0.2rem 0.35rem;
+        border-radius: 4px 4px 0 0;
+    }
+
+    .vx32-routing-detail__strip-zone--stagebox_a {
+        color: rgb(134 239 172);
+        background: rgb(6 78 59 / 0.3);
+    }
+
+    .vx32-routing-detail__strip-zone--stagebox_b {
+        color: rgb(147 197 253);
+        background: rgb(30 58 138 / 0.3);
+    }
+
+    .vx32-routing-detail__strip-zone--ableton {
+        color: rgb(216 180 254);
+        background: rgb(59 7 100 / 0.3);
+    }
+
+    .vx32-routing-detail__strip-zone-label {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .vx32-routing-detail__strip-zone-detail {
+        font-size: 0.625rem;
+        font-weight: 600;
+        color: rgb(161 161 170);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .vx32-routing-detail__console-strip {
+        display: grid;
+        grid-template-columns: repeat(32, minmax(2.4rem, 1fr));
+        gap: 2px;
+        padding: 0.4rem 0.3rem 0.5rem;
+        background: rgb(12 12 14);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 0 0 8px 8px;
+        overflow-x: auto;
+    }
+
+    .vx32-routing-detail__fader-tile {
+        --fader-tile-width: 2.4rem;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-width: var(--fader-tile-width);
+        height: 4.5rem;
+        overflow: hidden;
+        border: 1px solid rgb(82 82 91);
+        border-radius: 3px;
+        background: rgb(24 24 27);
+        box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04);
+    }
+
+    .vx32-routing-detail__fader-tile--stagebox_a {
+        border-top: 2px solid rgb(34 197 94);
+    }
+
+    .vx32-routing-detail__fader-tile--stagebox_b {
+        border-top: 2px solid rgb(59 130 246);
+    }
+
+    .vx32-routing-detail__fader-tile--ableton {
+        border-top: 2px solid rgb(168 85 247);
+    }
+
+    .vx32-routing-detail__fader-num {
+        flex: 0 0 auto;
+        width: 100%;
+        padding: 0.2rem 0.12rem;
+        font-size: 0.875rem;
+        font-weight: 800;
+        line-height: 1;
+        text-align: center;
+        color: rgb(212 212 216);
+        border-bottom: 1px solid rgb(63 63 70 / 0.85);
+        background: rgb(18 18 20);
+    }
+
+    .vx32-routing-detail__fader-namestrip {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 0;
+        padding: 0.15rem 0.12rem;
+        overflow: hidden;
+        background: linear-gradient(180deg, rgb(39 39 42) 0%, rgb(24 24 27) 100%);
+    }
+
+    .vx32-routing-detail__fader-tile--stagebox_a .vx32-routing-detail__fader-namestrip {
+        background: linear-gradient(180deg, rgb(6 78 59 / 0.35) 0%, rgb(24 24 27) 100%);
+    }
+
+    .vx32-routing-detail__fader-tile--stagebox_b .vx32-routing-detail__fader-namestrip {
+        background: linear-gradient(180deg, rgb(30 58 138 / 0.32) 0%, rgb(24 24 27) 100%);
+    }
+
+    .vx32-routing-detail__fader-tile--ableton .vx32-routing-detail__fader-namestrip {
+        background: linear-gradient(180deg, rgb(59 7 100 / 0.32) 0%, rgb(24 24 27) 100%);
+    }
+
+    .vx32-routing-detail__fader-tile--learned .vx32-routing-detail__fader-num {
+        color: rgb(250 250 250);
+    }
+
+    .vx32-routing-detail__fader-name {
+        display: -webkit-box;
+        width: 100%;
+        max-width: 100%;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        line-height: 1.15;
+        color: rgb(212 212 216);
+        text-align: center;
+        white-space: normal;
+        overflow: hidden;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        hyphens: auto;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
+    }
+
+    .vx32-routing-detail__fader-tile--learned .vx32-routing-detail__fader-name {
+        color: rgb(228 228 231);
+    }
+
+    @media (max-width: 900px) {
+        .vx32-routing-detail__strip-ruler,
+        .vx32-routing-detail__console-strip {
+            grid-template-columns: repeat(32, 2.4rem);
+        }
+    }
+
+    .vx32-routing-detail__allocation-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin: 0.65rem 0 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .vx32-routing-detail__legend-item {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__legend-item::before {
+        content: '';
+        display: inline-block;
+        width: 0.55rem;
+        height: 0.55rem;
+        margin-right: 0.3rem;
+        border-radius: 2px;
+        vertical-align: middle;
+    }
+
+    .vx32-routing-detail__legend-item--stagebox_a::before {
+        background: rgb(34 197 94);
+    }
+
+    .vx32-routing-detail__legend-item--stagebox_b::before {
+        background: rgb(59 130 246);
+    }
+
+    .vx32-routing-detail__legend-item--ableton::before {
+        background: rgb(168 85 247);
+    }
+
+    .vx32-routing-detail__output-section {
+        padding-bottom: 0.65rem;
+        border-bottom: 1px solid rgb(63 63 70);
+    }
+
+    .vx32-routing-detail__output-section:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .vx32-routing-detail__output-section-title {
+        margin: 0 0 0.45rem;
+        font-size: 0.8125rem;
+        font-weight: 800;
+        color: rgb(244 244 245);
+    }
+
+    .vx32-routing-detail__output-lines {
+        margin: 0 0 0.55rem;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    .vx32-routing-detail__output-line {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(212 212 216);
+        line-height: 1.35;
+    }
+
+    .vx32-routing-detail__output-line strong {
+        color: rgb(244 244 245);
+    }
+
+    .vx32-routing-detail__output-source {
+        display: block;
+        margin-top: 0.1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-detail__spare-summary {
+        margin: 0 0 0.55rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgb(212 212 216);
+    }
+
+    /* ── Routing bottom row (PH041.04) ── */
+
+    .vx32-routing-bottom {
+        margin-top: 0.85rem;
+    }
+
+    .vx32-routing-bottom__sr-title {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .vx32-routing-bottom__grid {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(11rem, 1fr);
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+
+    @media (max-width: 1100px) {
+        .vx32-routing-bottom__grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .vx32-routing-bottom__panel {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        padding: 0.9rem 1rem;
+        background: rgb(24 24 27);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 10px;
+    }
+
+    .vx32-routing-bottom__panel--actions {
+        border-top: 3px solid rgb(250 204 21 / 0.55);
+    }
+
+    .vx32-routing-bottom__panel--advanced {
+        border-top: 3px solid rgb(82 82 91);
+        background: rgb(20 20 22);
+    }
+
+    .vx32-routing-bottom__panel-title {
+        margin: 0 0 0.75rem;
+        font-size: 0.8125rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-bottom__workflow {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        gap: 0.35rem 0.25rem;
+    }
+
+    .vx32-routing-bottom__workflow-arrow {
+        align-self: center;
+        padding: 0 0.15rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: rgb(82 82 91);
+    }
+
+    .vx32-routing-bottom__step {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 8.5rem;
+        min-width: 7.5rem;
+        max-width: 11rem;
+        padding: 0.65rem 0.6rem;
+        text-decoration: none;
+        background: rgb(18 18 20);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 8px;
+    }
+
+    a.vx32-routing-bottom__step--available {
+        cursor: pointer;
+        transition: border-color 120ms ease, background-color 120ms ease;
+    }
+
+    a.vx32-routing-bottom__step--available:hover {
+        background: rgb(24 24 27);
+        border-color: rgb(34 197 94 / 0.55);
+    }
+
+    .vx32-routing-bottom__step--not-available,
+    .vx32-routing-bottom__step--coming-later {
+        opacity: 0.82;
+    }
+
+    .vx32-routing-bottom__step-number {
+        margin-bottom: 0.25rem;
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-bottom__step-label {
+        margin-bottom: 0.3rem;
+        font-size: 0.8125rem;
+        font-weight: 800;
+        line-height: 1.2;
+        color: rgb(244 244 245);
+    }
+
+    .vx32-routing-bottom__step-desc {
+        flex: 1 1 auto;
+        margin: 0 0 0.45rem;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: rgb(161 161 170);
+    }
+
+    .vx32-routing-bottom__step-status {
+        align-self: flex-start;
+        padding: 0.15rem 0.4rem;
+        font-size: 0.625rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        border-radius: 999px;
+    }
+
+    .vx32-routing-bottom__step-status--available {
+        color: rgb(134 239 172);
+        background: rgb(6 78 59 / 0.55);
+    }
+
+    .vx32-routing-bottom__step-status--not-available {
+        color: rgb(253 224 71);
+        background: rgb(69 26 3 / 0.55);
+    }
+
+    .vx32-routing-bottom__step-status--coming-later {
+        color: rgb(161 161 170);
+        background: rgb(39 39 42);
+    }
+
+    .vx32-routing-bottom__advanced-desc {
+        margin: 0 0 0.65rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: rgb(113 113 122);
+    }
+
+    .vx32-routing-bottom__advanced-categories {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 0 0 0.75rem;
+        padding: 0;
+        list-style: none;
+        flex: 1 1 auto;
+    }
+
+    .vx32-routing-bottom__advanced-chip {
+        padding: 0.25rem 0.45rem;
+        font-size: 0.6875rem;
+        font-weight: 700;
+        color: rgb(161 161 170);
+        background: rgb(39 39 42);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 4px;
+    }
+
+    .vx32-routing-bottom__advanced-action {
+        align-self: flex-start;
+        padding: 0.35rem 0.6rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: rgb(113 113 122);
+        background: rgb(39 39 42);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 6px;
+        cursor: not-allowed;
+        opacity: 0.65;
     }
 }
 

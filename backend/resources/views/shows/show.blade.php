@@ -2,9 +2,10 @@
     <x-slot name="header">
         <div class="flex items-center justify-between gap-4">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ $show->name }}</h2>
-            <div class="flex gap-4 text-sm">
+            <div class="flex shrink-0 flex-wrap items-center gap-4 text-sm whitespace-nowrap">
                 <a href="{{ route('shows.edit', $show) }}" class="text-indigo-600 hover:text-indigo-800">Edit Show</a>
                 <a href="{{ route('playlist.show', $show) }}" class="text-indigo-600 hover:text-indigo-800">Manage Playlist</a>
+                <a href="{{ route('shows.console', $show) }}" class="text-indigo-600 hover:text-indigo-800 font-semibold">Console</a>
                 <a href="{{ route('shows.index') }}" class="text-gray-600 hover:text-gray-800">← Shows</a>
             </div>
         </div>
@@ -12,6 +13,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+            @if (session('status'))
+                <div class="bg-green-50 border border-green-200 text-green-900 px-4 py-3 rounded text-sm">
+                    {{ session('status') }}
+                </div>
+            @endif
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <p class="text-sm text-gray-600 mb-2">Band: <strong>{{ $band->name }}</strong></p>

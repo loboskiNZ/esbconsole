@@ -4,6 +4,7 @@ use App\Http\Controllers\BandPersonController;
 use App\Http\Controllers\BulkFestivalController;
 use App\Http\Controllers\BulkSongController;
 use App\Http\Controllers\BulkVenueController;
+use App\Http\Controllers\ConsoleController;
 use App\Http\Controllers\FestivalController;
 use App\Http\Controllers\ChartController;
 use App\Http\Controllers\CueController;
@@ -31,6 +32,14 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::get('/shows/{show}/edit', [ShowController::class, 'edit'])->name('shows.edit');
     Route::put('/shows/{show}', [ShowController::class, 'update'])->name('shows.update');
     Route::post('/shows/{show}/activate', [ShowController::class, 'activate'])->name('shows.activate');
+
+    Route::get('/shows/{show}/console', [ConsoleController::class, 'showForShow'])->name('shows.console');
+    Route::get('/shows/{show}/console/routing', [ConsoleController::class, 'routingForShow'])->name('shows.console.routing');
+    Route::post('/shows/{show}/console/save', [ConsoleController::class, 'saveForShow'])->name('shows.console.save');
+    Route::post('/shows/{show}/console/parameters', [ConsoleController::class, 'updateParameter'])->name('shows.console.parameters.update');
+    Route::post('/shows/{show}/console/controls', [ConsoleController::class, 'updateControl'])->name('shows.console.controls.update');
+    Route::get('/shows/{show}/console/learn', [ConsoleController::class, 'learnForShow'])->name('shows.console.learn');
+    Route::post('/shows/{show}/console/learn', [ConsoleController::class, 'storeForShow'])->name('shows.console.learn.store');
 
     Route::get('/shows/{show}/playlist', [PlaylistController::class, 'show'])->name('playlist.show');
     Route::post('/shows/{show}/playlist', [PlaylistController::class, 'store'])->name('playlist.store');
@@ -92,6 +101,13 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::put('/festivals/{festival}', [FestivalController::class, 'update'])->name('festivals.update');
     Route::post('/festivals/{festival}/archive', [FestivalController::class, 'archive'])->name('festivals.archive');
     Route::post('/festivals/{festival}/restore', [FestivalController::class, 'restore'])->name('festivals.restore');
+
+    Route::get('/console', [ConsoleController::class, 'index'])->name('console.index');
+    Route::get('/console/learn', [ConsoleController::class, 'create'])->name('console.learn');
+    Route::post('/console/learn', [ConsoleController::class, 'store'])->name('console.learn.store');
+    Route::get('/console/snapshots/{snapshot}', [ConsoleController::class, 'showSnapshot'])->name('console.snapshots.show');
+    Route::post('/console/snapshots/{snapshot}/save-baseline', [ConsoleController::class, 'saveBaseline'])->name('console.snapshots.save-baseline');
+    Route::get('/console/baselines/{baseline}', [ConsoleController::class, 'showBaseline'])->name('console.baselines.show');
 });
 
 Route::get('/dashboard', function () {

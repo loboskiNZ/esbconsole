@@ -73,4 +73,14 @@ class Band extends Model
     {
         return $this->hasMany(Festival::class);
     }
+
+    public function consoleLearningSnapshots(): HasMany
+    {
+        return $this->hasMany(ConsoleLearningSnapshot::class);
+    }
+
+    public function showConsoleBaselines(): HasMany
+    {
+        return $this->hasMany(ShowConsoleBaseline::class);
+    }
 }

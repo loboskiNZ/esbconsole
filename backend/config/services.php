@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'console_learn' => [
+        'osc_debug' => (bool) env('CONSOLE_LEARN_OSC_DEBUG', false),
+    ],
+
 ];

@@ -41,4 +41,14 @@ class Show extends Model
     {
         return $this->hasMany(Performance::class);
     }
+
+    public function consoleLearningSnapshots(): HasMany
+    {
+        return $this->hasMany(ConsoleLearningSnapshot::class);
+    }
+
+    public function consoleBaselines(): HasMany
+    {
+        return $this->hasMany(ShowConsoleBaseline::class);
+    }
 }
