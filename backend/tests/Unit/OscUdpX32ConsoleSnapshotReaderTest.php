@@ -8,6 +8,8 @@ use App\Services\X32\FakeX32ConsoleSnapshotReader;
 use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
+use App\Services\X32\X32RoutingLearnCapture;
+use App\Services\X32\X32RoutingOscAddressMap;
 use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32RuntimeModeResolver;
@@ -33,6 +35,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
             new X32OscMessageCodec,
             new X32OscSceneRecallPacketBuilder,
             new X32SceneParameterResolver,
+            new X32RoutingLearnCapture,
             sceneSettleMs: 0,
         );
 
@@ -51,6 +54,10 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         $this->assertTrue($result->summary['channels'][0]['controls']['gate_on']);
         $this->assertSame(0.42, $result->summary['channels'][0]['controls']['pan']);
         $this->assertTrue($result->summary['channels'][0]['controls']['main_lr']);
+        $this->assertArrayHasKey('raw_osc', $result->summary['routing']);
+        $this->assertArrayHasKey('normalized', $result->summary['routing']);
+        $this->assertSame('not_learned', $result->summary['routing']['normalized']['main_lr']['state']);
+        $this->assertArrayNotHasKey('main_lr', $result->summary['routing']);
         $this->assertNotEmpty($fakeOsc->writes());
     }
 
@@ -67,6 +74,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
                 new X32OscMessageCodec,
                 new X32OscSceneRecallPacketBuilder,
                 new X32SceneParameterResolver,
+                new X32RoutingLearnCapture,
                 sceneSettleMs: 0,
             ),
             new X32RuntimeModeResolver,
@@ -115,6 +123,24 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         for ($index = 1; $index <= 6; $index++) {
             $fakeOsc->seedFloat(sprintf('/mtx/%02d/mix/fader', $index), 0.5);
             $fakeOsc->seedInt(sprintf('/mtx/%02d/mix/on', $index), 1);
+        }
+
+        $fakeOsc->seedInt('/config/routing/routswitch', 0);
+        $fakeOsc->seedInt('/config/routing/IN/1-8', 0);
+        $fakeOsc->seedInt('/config/routing/IN/9-16', 0);
+        $fakeOsc->seedInt('/config/routing/IN/17-24', 0);
+        $fakeOsc->seedInt('/config/routing/IN/25-32', 0);
+        $fakeOsc->seedInt('/config/routing/CARD/1-8', 0);
+        $fakeOsc->seedInt('/config/routing/CARD/9-16', 0);
+        $fakeOsc->seedInt('/config/routing/CARD/17-24', 0);
+        $fakeOsc->seedInt('/config/routing/CARD/25-32', 0);
+        $fakeOsc->seedInt('/config/routing/OUT/1-4', 0);
+        $fakeOsc->seedInt('/config/routing/OUT/5-8', 0);
+        $fakeOsc->seedInt('/config/routing/OUT/9-12', 0);
+        $fakeOsc->seedInt('/config/routing/OUT/13-16', 0);
+
+        foreach (X32RoutingOscAddressMap::outputMainSrcPaths() as $path) {
+            $fakeOsc->seedInt($path, 0);
         }
     }
 

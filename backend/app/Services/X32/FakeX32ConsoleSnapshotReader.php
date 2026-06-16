@@ -19,6 +19,7 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
     public function __construct(
         private readonly bool $shouldFail = false,
         private readonly ?string $failureMessage = null,
+        private readonly X32RoutingLearnCapture $routingLearnCapture = new X32RoutingLearnCapture,
     ) {}
 
     public function learnScene(X32ConsoleLearnCommand $command): X32ConsoleLearnResult
@@ -65,7 +66,7 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
             'port' => $command->port,
             'device_key' => $command->device->device_key,
             'requested_scene_number' => $command->requestedSceneNumber,
-            'osc_responses' => $this->buildRawOscResponses($command, $channels, $buses, $dcas),
+            'osc_responses' => $this->buildRawOscResponses($command, $channels, $buses, $dcas, $routing),
         ];
 
         return new X32ConsoleLearnResult(
@@ -73,9 +74,10 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
             summary: $summary,
             rawSnapshot: $rawSnapshot,
             warnings: [
-                'Fixture transport in use — live OSC query reads are not yet implemented.',
+                'Fixture transport in use — live OSC query reads are not performed.',
                 sprintf('Scene %s fixture profile applied (fader/mute levels vary by scene number).', $scene),
                 'Matrix and FX slot values are representative placeholders.',
+                ...($routing['warnings'] ?? []),
             ],
             errors: [],
         );
@@ -296,19 +298,53 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
      */
     private function buildRouting(X32ConsoleLearnCommand $command, int $sceneSeed): array
     {
-        return [
-            'source' => 'fixture',
-            'note' => 'Raw routing data captured for future interpretation.',
-            'scene_seed' => $sceneSeed,
-            'main_lr' => ['left' => 'BUS 15', 'right' => 'BUS 16'],
-            'device_key' => $command->device->device_key,
+        $rawValues = $this->fixtureRoutingRawValues($sceneSeed);
+
+        return $this->routingLearnCapture->captureFromRawValues('fake_fixture', $rawValues);
+    }
+
+    /**
+     * Representative ESB-style routing fixture — varies slightly by scene seed.
+     *
+     * @return array<string, int>
+     */
+    private function fixtureRoutingRawValues(int $sceneSeed): array
+    {
+        $cardOutIndex = min(35, 16 + ($sceneSeed % 4));
+
+        $values = [
+            X32RoutingOscAddressMap::ROUTSWITCH => 0,
+            '/config/routing/IN/1-8' => 4,
+            '/config/routing/IN/9-16' => 5,
+            '/config/routing/IN/17-24' => 10,
+            '/config/routing/IN/25-32' => 16,
+            '/config/routing/CARD/1-8' => $cardOutIndex,
+            '/config/routing/CARD/9-16' => min(35, 17 + ($sceneSeed % 3)),
+            '/config/routing/CARD/17-24' => 0,
+            '/config/routing/CARD/25-32' => 0,
+            '/config/routing/OUT/1-4' => 0,
+            '/config/routing/OUT/5-8' => 0,
+            '/config/routing/OUT/9-12' => 0,
+            '/config/routing/OUT/13-16' => 0,
         ];
+
+        foreach (X32RoutingOscAddressMap::outputMainSrcPaths() as $path) {
+            $values[$path] = 0;
+        }
+
+        if ($sceneSeed % 5 !== 0) {
+            $values[X32RoutingOscAddressMap::outputMainSrcPath(3)] = 1;
+            $values[X32RoutingOscAddressMap::outputMainSrcPath(4)] = 2;
+        }
+
+        return $values;
     }
 
     /**
      * @param  array<int, array<string, mixed>>  $channels
      * @param  array<int, array<string, mixed>>  $buses
      * @param  array<int, array<string, mixed>>  $dcas
+     * @param  array<string, mixed>  $routing
      * @return array<int, array<string, mixed>>
      */
     private function buildRawOscResponses(
@@ -316,6 +352,7 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
         array $channels,
         array $buses,
         array $dcas,
+        array $routing,
     ): array {
         $responses = [
             [
@@ -375,6 +412,42 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
                 'path' => sprintf('/dca/%d/fader', $dca['index']),
                 'value' => $dca['fader'],
             ];
+        }
+
+        foreach ($this->flattenRoutingRawOsc($routing) as $entry) {
+            $responses[] = $entry;
+        }
+
+        return $responses;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array{path: string, value: int}>
+     */
+    private function flattenRoutingRawOsc(array $routing): array
+    {
+        $responses = [];
+        $rawOsc = is_array($routing['raw_osc'] ?? null) ? $routing['raw_osc'] : [];
+
+        if (is_array($rawOsc['routswitch'] ?? null)) {
+            $responses[] = [
+                'path' => (string) $rawOsc['routswitch']['path'],
+                'value' => (int) $rawOsc['routswitch']['value'],
+            ];
+        }
+
+        foreach (['input_banks', 'card', 'out_1_16', 'main_output_patch'] as $group) {
+            foreach ($rawOsc[$group] ?? [] as $entry) {
+                if (! is_array($entry)) {
+                    continue;
+                }
+
+                $responses[] = [
+                    'path' => (string) $entry['path'],
+                    'value' => (int) $entry['value'],
+                ];
+            }
         }
 
         return $responses;

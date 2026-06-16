@@ -9,6 +9,7 @@ use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\OscUdpX32OscConsoleClient;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
+use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32SceneParameterResolver;
@@ -40,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
                 codec: new X32OscMessageCodec,
                 sceneRecallBuilder: new X32OscSceneRecallPacketBuilder,
                 sceneParameterResolver: new X32SceneParameterResolver,
+                routingLearnCapture: new X32RoutingLearnCapture,
             );
         });
 

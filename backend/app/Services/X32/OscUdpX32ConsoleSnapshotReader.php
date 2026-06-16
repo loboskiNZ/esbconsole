@@ -25,6 +25,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         private readonly X32OscMessageCodec $codec,
         private readonly X32OscSceneRecallPacketBuilder $sceneRecallBuilder,
         private readonly X32SceneParameterResolver $sceneParameterResolver,
+        private readonly X32RoutingLearnCapture $routingLearnCapture,
         private readonly int $sceneSettleMs = 800,
     ) {}
 
@@ -75,6 +76,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $buses = $this->readBuses($command, $oscResponses);
             $dcas = $this->readDcas($command, $oscResponses);
             $matrices = $this->readMatrices($command, $oscResponses);
+            $routing = $this->readRouting($command, $oscResponses);
 
             $summary = [
                 'transport' => 'live_osc',
@@ -88,12 +90,11 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                 'dcas' => $dcas,
                 'matrices' => $matrices,
                 'fx' => [],
-                'routing' => [
-                    'source' => 'live_osc',
+                'routing' => array_merge($routing, [
                     'host' => $command->host,
                     'port' => $command->port,
                     'scene_recalled' => (int) $sceneNumber,
-                ],
+                ]),
             ];
 
             $this->logLearnDebug('LEARN COMPLETE', [
@@ -115,10 +116,11 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                     'scene_recalled' => (int) $sceneNumber,
                     'osc_responses' => $oscResponses,
                 ],
-                warnings: [
+                warnings: array_values(array_filter([
                     sprintf('Scene %s recalled on %s:%d and read over live OSC.', $sceneLabel, $command->host, $command->port),
-                    'FX slot and routing detail reads are not yet implemented.',
-                ],
+                    'FX slot reads are not yet implemented.',
+                    ...($routing['warnings'] ?? []),
+                ])),
                 errors: [],
             );
         } catch (Throwable $exception) {
@@ -290,6 +292,18 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         }
 
         return $matrices;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     * @return array<string, mixed>
+     */
+    private function readRouting(X32ConsoleLearnCommand $command, array &$oscResponses): array
+    {
+        return $this->routingLearnCapture->capture(
+            'live_osc',
+            fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
+        );
     }
 
     /**
