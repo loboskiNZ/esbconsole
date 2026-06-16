@@ -16,6 +16,7 @@ use App\Services\Console\ShowConsoleStripEnricher;
 use App\Services\Console\ShowConsoleWorkspaceResolver;
 use App\Services\Console\VirtualConsoleStripBuilder;
 use App\Services\Console\X32ConsoleLearningService;
+use App\Services\Console\X32ConfigurationWorkspaceBuilder;
 use App\Services\Console\X32RoutingWorkspaceBuilder;
 use App\Services\X32\X32SceneMetadataService;
 use App\Services\X32\X32SourceConnectivityService;
@@ -36,6 +37,7 @@ class ConsoleController extends Controller
         private readonly ShowConsoleStripEnricher $showConsoleStripEnricher,
         private readonly ShowConsoleWorkspaceResolver $workspaceResolver,
         private readonly VirtualConsoleStripBuilder $virtualConsoleStripBuilder,
+        private readonly X32ConfigurationWorkspaceBuilder $configurationWorkspaceBuilder,
         private readonly X32RoutingWorkspaceBuilder $routingWorkspaceBuilder,
         private readonly X32SourceConnectivityService $sourceConnectivityService,
         private readonly X32SceneMetadataService $sceneMetadataService,
@@ -99,6 +101,40 @@ class ConsoleController extends Controller
         }
 
         return view('console.workspace', $this->workspaceViewData($show, $workspace));
+    }
+
+    public function configurationForShow(Show $show): View|RedirectResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        $workspace = $this->workspaceResolver->resolve($show);
+
+        if ($workspace['mode'] === ShowConsoleWorkspaceResolver::MODE_EMPTY) {
+            return redirect()->route('shows.console.learn', $show);
+        }
+
+        $summary = $workspace['summary'];
+        $baseline = $workspace['baseline'] ?? null;
+
+        $consoleType = $baseline?->console_type
+            ?? ConsoleType::tryFrom((string) ($summary['console_type'] ?? ConsoleType::X32->value))
+            ?? ConsoleType::X32;
+
+        $baseline?->loadMissing('sourceSnapshot.integrationDevice');
+
+        $device = $baseline?->sourceSnapshot?->integrationDevice
+            ?? $workspace['pendingSnapshot']?->integrationDevice;
+
+        $summary = $this->sceneMetadataService->enrichSummaryWithSceneName($summary, $device);
+
+        return view('console.configuration', [
+            'band' => $this->band(),
+            'show' => $show,
+            'workspaceMode' => $workspace['mode'],
+            'summary' => $summary,
+            'consoleType' => $consoleType,
+            'configurationWorkspace' => $this->configurationWorkspaceBuilder->build($summary),
+        ]);
     }
 
     public function routingForShow(Show $show): View|RedirectResponse

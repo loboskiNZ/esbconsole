@@ -5,6 +5,7 @@
     'summary',
     'activeTab' => 'overview',
     'defaultBaselineName' => null,
+    'suppressSubbar' => false,
 ])
 
 <header class="vx32-topbar">
@@ -39,6 +40,7 @@
     </div>
 </header>
 
+@if (! $suppressSubbar)
 <div class="vx32-subbar">
     <div class="vx32-subbar__meta vx32-subbar__meta--wide">
         <span>Scene {{ $summary['scene_number'] ?? '—' }}</span>
@@ -52,3 +54,4 @@
         @endif
     </div>
 </div>
+@endif

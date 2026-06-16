@@ -113,6 +113,34 @@ class X32ConfigurationLearnAssemblerTest extends TestCase
     }
 
     #[Test]
+    public function it_keeps_configuration_warnings_separate_from_routing_warnings(): void
+    {
+        $configuration = app(X32ConfigurationLearnAssembler::class)->build([
+            'transport' => 'fake_fixture',
+            'console_type' => 'x32',
+            'device_key' => 'foh-x32',
+            'device_name' => 'FOH X32',
+            'scene_number' => '01',
+            'channels' => [],
+            'buses' => [],
+            'dcas' => [],
+            'matrices' => [],
+            'fx' => [],
+            'routing' => [
+                'warnings' => [
+                    'Input bank 1-8 has unknown routing index 99.',
+                    'Console routswitch is PLAY — IN bank values reflect playback path; PLAY bank paths were not read in PH042.03.01.',
+                ],
+            ],
+        ]);
+
+        $this->assertSame(
+            ['Configuration identity globals require live OSC transport.'],
+            $configuration['warnings'],
+        );
+    }
+
+    #[Test]
     public function it_decodes_dca_membership_bitmap(): void
     {
         $this->assertSame([1, 3], X32ConfigurationLearnAssembler::decodeDcaMembershipBitmap(0b00000101));

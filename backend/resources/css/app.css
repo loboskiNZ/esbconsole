@@ -1359,6 +1359,208 @@
         padding: 1rem;
     }
 
+    /* ── Configuration workspace shell (PH043.03B1) ── */
+
+    .vx32-configuration-workspace {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+        background: rgb(12 12 14);
+    }
+
+    .vx32-subbar--configuration {
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.5rem 0.85rem;
+    }
+
+    .vx32-subbar--configuration .vx32-subbar__meta {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-subbar--configuration .vx32-subbar__badge {
+        font-size: 0.8125rem;
+        padding: 0.2rem 0.55rem;
+    }
+
+    .vx32-configuration-subbar__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.75rem 1rem;
+    }
+
+    .vx32-configuration-subbar__context {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-configuration-subbar__timestamp {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-configuration-subbar__learn-again {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.9375rem;
+        font-weight: 800;
+        color: rgb(255 255 255);
+        text-decoration: none;
+        background: rgb(52 52 56);
+        border: 1px solid rgb(113 113 122);
+        border-radius: 6px;
+    }
+
+    .vx32-configuration-subbar__learn-again:hover {
+        background: rgb(63 63 70);
+        color: rgb(255 255 255);
+        border-color: rgb(161 161 170);
+    }
+
+    .vx32-configuration-subbar__learn-icon {
+        width: 1.1rem;
+        height: 1.1rem;
+    }
+
+    .vx32-configuration-workspace__learn-context {
+        margin: 0.45rem 0 0;
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-configuration-workspace__status-hint {
+        margin: 0.35rem 0 0;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: rgb(187 187 195);
+    }
+
+    .vx32-configuration-workspace__link {
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: rgb(147 197 253);
+        text-decoration: none;
+    }
+
+    .vx32-configuration-workspace__link:hover {
+        color: rgb(191 219 254);
+        text-decoration: underline;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-workspace__title {
+        font-size: 1.75rem;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-workspace__routing-state {
+        font-size: 0.8125rem;
+        padding: 0.35rem 0.75rem;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-workspace__content {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .vx32-configuration-identity__grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .vx32-configuration-status-legend__grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 1100px) {
+        .vx32-configuration-identity__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 960px) {
+        .vx32-configuration-status-legend__grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 640px) {
+        .vx32-configuration-identity__grid,
+        .vx32-configuration-status-legend__grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__panel-title {
+        font-size: 0.875rem;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__status-tile-label {
+        font-size: 0.875rem;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__status-tile-value {
+        font-size: 0.875rem;
+        text-transform: none;
+        letter-spacing: normal;
+        color: rgb(255 255 255);
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__status-tile--learned .vx32-routing-detail__status-tile-value {
+        color: rgb(187 247 208);
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__status-tile--not-learned .vx32-routing-detail__status-tile-value {
+        color: rgb(253 224 71);
+        font-style: italic;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__config-name {
+        font-size: 1.05rem;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__learned-meta {
+        font-size: 0.9375rem;
+        color: rgb(187 187 195);
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__learned-meta a {
+        color: rgb(147 197 253);
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .vx32-configuration-workspace .vx32-routing-detail__learned-meta a:hover {
+        text-decoration: underline;
+    }
+
+    .vx32-configuration-status-legend__panel--active {
+        border-color: rgb(168 85 247 / 0.55);
+        box-shadow: inset 0 0 0 1px rgb(168 85 247 / 0.25);
+    }
+
+    .vx32-configuration-info-panel {
+        border-color: rgb(56 189 248 / 0.45);
+        background: rgb(8 47 73 / 0.35);
+    }
+
     .vx32-routing-source-row {
         min-height: 14rem;
     }

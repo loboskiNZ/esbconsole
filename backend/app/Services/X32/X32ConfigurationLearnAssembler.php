@@ -47,12 +47,6 @@ class X32ConfigurationLearnAssembler
             $warnings[] = 'Configuration identity globals require live OSC transport.';
         }
 
-        foreach ($summary['routing']['warnings'] ?? [] as $warning) {
-            if (is_string($warning) && $warning !== '') {
-                $warnings[] = $warning;
-            }
-        }
-
         return [
             'learned_at' => now()->toIso8601String(),
             'source' => $transport,

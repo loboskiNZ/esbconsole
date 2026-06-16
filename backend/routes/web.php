@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
 
     Route::get('/shows/{show}/console', [ConsoleController::class, 'showForShow'])->name('shows.console');
     Route::get('/shows/{show}/console/routing', [ConsoleController::class, 'routingForShow'])->name('shows.console.routing');
+    Route::get('/shows/{show}/console/configuration', [ConsoleController::class, 'configurationForShow'])->name('shows.console.configuration');
     Route::post('/shows/{show}/console/save', [ConsoleController::class, 'saveForShow'])->name('shows.console.save');
     Route::post('/shows/{show}/console/parameters', [ConsoleController::class, 'updateParameter'])->name('shows.console.parameters.update');
     Route::post('/shows/{show}/console/controls', [ConsoleController::class, 'updateControl'])->name('shows.console.controls.update');
