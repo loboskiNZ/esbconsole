@@ -53,29 +53,29 @@ class X32OscTransportTest extends TestCase
         $this->assertSame(28, strlen($packet));
     }
 
-    public function test_osc_packet_builder_encodes_scene_1_as_big_endian_integer(): void
+    public function test_osc_packet_builder_encodes_scene_1_as_zero_index(): void
     {
         $packet = (new X32OscSceneRecallPacketBuilder)->build('1');
 
-        $this->assertSame('00000001', bin2hex(substr($packet, -4)));
+        $this->assertSame('00000000', bin2hex(substr($packet, -4)));
     }
 
-    public function test_osc_packet_builder_encodes_scene_5_as_big_endian_integer(): void
+    public function test_osc_packet_builder_encodes_scene_5_as_zero_based_index(): void
     {
         $packet = (new X32OscSceneRecallPacketBuilder)->build('5');
 
-        $this->assertSame('00000005', bin2hex(substr($packet, -4)));
+        $this->assertSame('00000004', bin2hex(substr($packet, -4)));
         $this->assertSame(
-            '2f2d616374696f6e2f676f7363656e65000000002c69000000000005',
+            '2f2d616374696f6e2f676f7363656e65000000002c69000000000004',
             bin2hex($packet),
         );
     }
 
-    public function test_osc_packet_builder_encodes_scene_99_as_big_endian_integer(): void
+    public function test_osc_packet_builder_encodes_scene_99_as_zero_based_index(): void
     {
         $packet = (new X32OscSceneRecallPacketBuilder)->build('99');
 
-        $this->assertSame('00000063', bin2hex(substr($packet, -4)));
+        $this->assertSame('00000062', bin2hex(substr($packet, -4)));
     }
 
     public function test_osc_packet_builder_does_not_use_address_only_scene_path_format(): void
@@ -114,7 +114,7 @@ class X32OscTransportTest extends TestCase
         $this->assertSame(10023, $socket->sent[0]['port']);
         $this->assertSame('live', $result->mode);
         $this->assertSame('/-action/goscene', $result->context['osc_path']);
-        $this->assertSame('0000000c', bin2hex(substr($socket->sent[0]['payload'], -4)));
+        $this->assertSame('0000000b', bin2hex(substr($socket->sent[0]['payload'], -4)));
     }
 
     public function test_live_osc_transport_sends_through_socket_interface_when_explicitly_enabled(): void

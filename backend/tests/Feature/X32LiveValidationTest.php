@@ -363,7 +363,7 @@ class X32LiveValidationTest extends TestCase
         $builder = new X32OscSceneRecallPacketBuilder;
 
         $this->assertSame('/-action/goscene', $builder->oscPath('1'));
-        $this->assertSame('00000001', bin2hex(substr($builder->build('1'), -4)));
+        $this->assertSame('00000000', bin2hex(substr($builder->build('1'), -4)));
         $this->assertSame(28, strlen($builder->build('1')));
     }
 

@@ -264,15 +264,143 @@ class X32RoutingWorkspaceBuilder
             return null;
         }
 
-        $console = $context['device_name'] ?? $this->connectedConsoleLabel($routing, $summary) ?? 'console';
+        $console = $context['device_name']
+            ?? $summary['device_name']
+            ?? $this->connectedConsoleLabel($routing, $summary)
+            ?? 'console';
+        $sceneSegment = $this->formatLearnedSceneSegment($routing, $summary, $context);
         $savedAt = $context['baseline_saved_at'];
 
         return [
-            'primary' => sprintf('Learned from %s', $console),
+            'primary' => sprintf('Learned from %s · %s', $console, $sceneSegment),
             'secondary' => $savedAt instanceof \DateTimeInterface
                 ? $savedAt->diffForHumans()
                 : (string) $savedAt,
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @param  array<string, mixed>  $summary
+     * @param  array<string, mixed>  $context
+     */
+    private function formatLearnedSceneSegment(array $routing, array $summary, array $context): string
+    {
+        $sceneNumber = $this->resolveOperatorSceneNumber($routing, $summary, $context);
+        $sceneName = $this->resolveLearnedSceneName($routing, $summary, $context);
+
+        if ($sceneNumber === null) {
+            return 'Scene unknown';
+        }
+
+        $segment = sprintf('Scene %s', $sceneNumber);
+
+        if ($sceneName !== null) {
+            $segment .= sprintf(' – %s', $sceneName);
+        }
+
+        return $segment;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @param  array<string, mixed>  $summary
+     * @param  array<string, mixed>  $context
+     */
+    private function resolveOperatorSceneNumber(array $routing, array $summary, array $context): ?string
+    {
+        foreach ([
+            $summary['scene_number'] ?? null,
+            $context['scene_number'] ?? null,
+            $summary['requested_scene_number'] ?? null,
+            $context['requested_scene_number'] ?? null,
+        ] as $candidate) {
+            $formatted = $this->formatOperatorSceneNumber($candidate, zeroBased: false);
+
+            if ($formatted !== null) {
+                return $formatted;
+            }
+        }
+
+        if (array_key_exists('scene_recalled', $routing)) {
+            $formatted = $this->formatOperatorSceneNumber($routing['scene_recalled'], zeroBased: false);
+
+            if ($formatted !== null) {
+                return $formatted;
+            }
+        }
+
+        foreach ([
+            $routing['scene_osc_index'] ?? null,
+            $routing['scene_index'] ?? null,
+        ] as $candidate) {
+            $formatted = $this->formatOperatorSceneNumber($candidate, zeroBased: true);
+
+            if ($formatted !== null) {
+                return $formatted;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @param  array<string, mixed>  $summary
+     * @param  array<string, mixed>  $context
+     */
+    private function resolveLearnedSceneName(array $routing, array $summary, array $context): ?string
+    {
+        foreach ([
+            $summary['scene_name'] ?? null,
+            $context['scene_name'] ?? null,
+            $routing['scene_name'] ?? null,
+        ] as $name) {
+            $name = trim((string) ($name ?? ''));
+
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        return null;
+    }
+
+    private function formatOperatorSceneNumber(mixed $value, bool $zeroBased): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+
+            if ($trimmed === '' || $trimmed === '—' || $trimmed === '-') {
+                return null;
+            }
+
+            if (ctype_digit($trimmed)) {
+                $number = (int) $trimmed;
+            } elseif (preg_match('/(\d+)/', $trimmed, $matches) === 1) {
+                $number = (int) $matches[1];
+            } else {
+                return null;
+            }
+        } elseif (is_int($value) || is_float($value)) {
+            $number = (int) $value;
+        } else {
+            return null;
+        }
+
+        if ($zeroBased) {
+            $number += 1;
+        }
+
+        if ($number < 1 || $number > 100) {
+            return null;
+        }
+
+        return str_pad((string) $number, 2, '0', STR_PAD_LEFT);
     }
 
     /**

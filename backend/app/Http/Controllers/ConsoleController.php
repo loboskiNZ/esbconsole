@@ -17,6 +17,7 @@ use App\Services\Console\ShowConsoleWorkspaceResolver;
 use App\Services\Console\VirtualConsoleStripBuilder;
 use App\Services\Console\X32ConsoleLearningService;
 use App\Services\Console\X32RoutingWorkspaceBuilder;
+use App\Services\X32\X32SceneMetadataService;
 use App\Services\X32\X32SourceConnectivityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -37,6 +38,7 @@ class ConsoleController extends Controller
         private readonly VirtualConsoleStripBuilder $virtualConsoleStripBuilder,
         private readonly X32RoutingWorkspaceBuilder $routingWorkspaceBuilder,
         private readonly X32SourceConnectivityService $sourceConnectivityService,
+        private readonly X32SceneMetadataService $sceneMetadataService,
     ) {}
 
     public function index(): View
@@ -120,6 +122,7 @@ class ConsoleController extends Controller
 
         $device = $baseline?->sourceSnapshot?->integrationDevice;
         $summary = $this->sourceConnectivityService->enrichSummaryWithLiveConnectivity($summary, $device);
+        $summary = $this->sceneMetadataService->enrichSummaryWithSceneName($summary, $device);
 
         return view('console.routing', [
             'band' => $this->band(),
@@ -132,6 +135,7 @@ class ConsoleController extends Controller
                 'baseline_name' => $baseline?->baseline_name,
                 'baseline_saved_at' => $baseline?->saved_at,
                 'device_name' => $baseline?->sourceSnapshot?->integrationDevice?->name,
+                'requested_scene_number' => $baseline?->sourceSnapshot?->requested_scene_number,
             ]),
             'routingBottom' => $this->routingWorkspaceBuilder->buildRoutingBottomRow([
                 'learn_url' => route('shows.console.learn', $show),

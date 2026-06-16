@@ -51,6 +51,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSame('live_osc', $result->summary['transport']);
+        $this->assertSame('Desk Scene 01', $result->summary['scene_name']);
         $this->assertSame('Kick', $result->summary['channels'][0]['name']);
         $this->assertSame(0.63, $result->summary['channels'][0]['fader']);
         $this->assertSame(1, $result->summary['channels'][0]['color']);
@@ -152,6 +153,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         $fakeOsc->seedString(X32SourceConnectivityOscAddressMap::AES50_B, 'Cs32');
         $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::AES50_STATE, 0);
         $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::XCARD_TYPE, 2);
+        $fakeOsc->seedString('/-show/showfile/scene/001/name', 'Desk Scene 01');
     }
 
     private function seedDefaultChannel(FakeX32OscConsoleClient $fakeOsc, int $index): void

@@ -37,6 +37,8 @@ class FakeX32ConsoleSnapshotReaderTest extends TestCase
         $this->assertTrue($sceneFive->success);
         $this->assertSame('01', $sceneOne->summary['scene_number']);
         $this->assertSame('05', $sceneFive->summary['scene_number']);
+        $this->assertArrayNotHasKey('scene_name', $sceneOne->summary);
+        $this->assertArrayNotHasKey('scene_name', $sceneFive->summary);
         $this->assertNotSame(
             $sceneOne->summary['channels'][0]['fader'],
             $sceneFive->summary['channels'][0]['fader'],

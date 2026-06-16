@@ -15,14 +15,17 @@ class X32OscSceneRecallPacketBuilder
 
     public function build(string $scene): string
     {
-        return $this->encodeGosceneMessage((int) $scene);
+        $sceneNumber = (int) $scene;
+        $oscIndex = max(0, $sceneNumber - 1);
+
+        return $this->encodeGosceneMessage($oscIndex);
     }
 
-    private function encodeGosceneMessage(int $scene): string
+    private function encodeGosceneMessage(int $oscIndex): string
     {
         return $this->padOscString(self::OSC_ADDRESS)
             .$this->padOscString(self::OSC_TYPE_TAG)
-            .pack('N', $scene);
+            .pack('N', $oscIndex);
     }
 
     private function padOscString(string $value): string

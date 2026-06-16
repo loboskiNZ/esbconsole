@@ -47,6 +47,7 @@ class ConsoleRoutingTest extends TestCase
             ->assertSee('ESB Console')
             ->assertSee('Audio Routing')
             ->assertSee('vx32-routing-workspace__routing-state', false)
+            ->assertSee('Learned from FOH X32 · Scene 01')
             ->assertSee(route('shows.console', $show, false));
     }
 
@@ -111,7 +112,7 @@ class ConsoleRoutingTest extends TestCase
         $response->assertOk()
             ->assertSee('vx32-routing-detail__grid', false)
             ->assertSee('vx32-routing-detail__console-strip', false)
-            ->assertSee('Learned from FOH X32')
+            ->assertSee('Learned from FOH X32 · Scene 01')
             ->assertSee('Input Sources')
             ->assertSee('Channel Allocation Overview')
             ->assertSee('vx32-routing-detail__allocation-layout', false)

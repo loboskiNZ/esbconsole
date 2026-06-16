@@ -78,6 +78,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $dcas = $this->readDcas($command, $oscResponses);
             $matrices = $this->readMatrices($command, $oscResponses);
             $routing = $this->readRouting($command, $oscResponses);
+            $sceneName = $this->readSceneName($command, (int) $sceneNumber, $oscResponses);
 
             $summary = [
                 'transport' => 'live_osc',
@@ -86,6 +87,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                 'device_name' => $command->device->name,
                 'requested_scene_number' => $command->requestedSceneNumber,
                 'scene_number' => $sceneLabel,
+                'scene_name' => $sceneName,
                 'channels' => $channels,
                 'buses' => $buses,
                 'dcas' => $dcas,
@@ -95,6 +97,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                     'host' => $command->host,
                     'port' => $command->port,
                     'scene_recalled' => (int) $sceneNumber,
+                    'scene_name' => $sceneName,
                 ]),
             ];
 
@@ -316,6 +319,20 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             'source_connectivity' => $connectivity['normalized'],
             'source_connectivity_raw' => $connectivity['raw_osc'],
         ]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     */
+    private function readSceneName(
+        X32ConsoleLearnCommand $command,
+        int $operatorSceneNumber,
+        array &$oscResponses,
+    ): ?string {
+        $path = X32OscAddressMap::sceneShowfileName($operatorSceneNumber);
+        $name = trim($this->queryString($command, $path, $oscResponses));
+
+        return $name !== '' ? $name : null;
     }
 
     /**

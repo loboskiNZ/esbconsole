@@ -40,7 +40,7 @@ class X32RoutingWorkspaceBuilderTest extends TestCase
 
         $this->assertSame('Current Production Configuration', $detail['production']['title']);
         $this->assertSame('Scene Baseline', $detail['production']['name']);
-        $this->assertSame('Learned from Main X32', $detail['production']['learned_meta']['primary']);
+        $this->assertSame('Learned from Main X32 · Scene unknown', $detail['production']['learned_meta']['primary']);
         $this->assertSame('Routed via AES50A', $detail['production']['status_grid'][0]['status_label']);
         $this->assertSame('Routed via AES50B', $detail['production']['status_grid'][1]['status_label']);
         $this->assertSame('Routed via USB/Card', $detail['production']['status_grid'][2]['status_label']);
@@ -52,6 +52,84 @@ class X32RoutingWorkspaceBuilderTest extends TestCase
         $this->assertCount(32, $detail['input_sources']['channel_allocation']['channels']);
         $this->assertSame('learned', $detail['input_sources']['channel_allocation']['channels'][0]['state']);
         $this->assertSame('stagebox_a', $detail['input_sources']['channel_allocation']['channels'][0]['group']);
+    }
+
+    #[Test]
+    public function it_builds_learned_meta_with_operator_scene_number_from_summary(): void
+    {
+        $summary = $this->sampleNormalizedRouting();
+        $summary['scene_number'] = '02';
+
+        $detail = app(X32RoutingWorkspaceBuilder::class)->buildConfigurationDetailRow($summary, [
+            'baseline_saved_at' => now(),
+            'device_name' => 'Main X32',
+        ]);
+
+        $this->assertSame('Learned from Main X32 · Scene 02', $detail['production']['learned_meta']['primary']);
+    }
+
+    #[Test]
+    public function it_builds_learned_meta_with_scene_name_when_available(): void
+    {
+        $summary = $this->sampleNormalizedRouting();
+        $summary['scene_number'] = '02';
+        $summary['scene_name'] = 'Worship Set A';
+
+        $detail = app(X32RoutingWorkspaceBuilder::class)->buildConfigurationDetailRow($summary, [
+            'baseline_saved_at' => now(),
+            'device_name' => 'Main X32',
+        ]);
+
+        $this->assertSame(
+            'Learned from Main X32 · Scene 02 – Worship Set A',
+            $detail['production']['learned_meta']['primary'],
+        );
+    }
+
+    #[Test]
+    public function it_converts_zero_based_osc_scene_index_to_operator_scene_number(): void
+    {
+        $summary = $this->sampleNormalizedRouting();
+        $summary['routing']['scene_osc_index'] = 1;
+
+        $detail = app(X32RoutingWorkspaceBuilder::class)->buildConfigurationDetailRow($summary, [
+            'baseline_saved_at' => now(),
+            'device_name' => 'Main X32',
+        ]);
+
+        $this->assertSame('Learned from Main X32 · Scene 02', $detail['production']['learned_meta']['primary']);
+        $this->assertStringNotContainsString('Scene 01', $detail['production']['learned_meta']['primary']);
+    }
+
+    #[Test]
+    public function it_does_not_display_raw_zero_based_index_as_operator_scene_number(): void
+    {
+        $summary = $this->sampleNormalizedRouting();
+        $summary['routing']['scene_index'] = 1;
+
+        $detail = app(X32RoutingWorkspaceBuilder::class)->buildConfigurationDetailRow($summary, [
+            'baseline_saved_at' => now(),
+            'device_name' => 'Main X32',
+        ]);
+
+        $primary = $detail['production']['learned_meta']['primary'];
+        $this->assertSame('Learned from Main X32 · Scene 02', $primary);
+        $this->assertDoesNotMatchRegularExpression('/Scene 1[^0-9]/', $primary);
+    }
+
+    #[Test]
+    public function it_falls_back_to_requested_scene_number_when_summary_scene_number_missing(): void
+    {
+        $detail = app(X32RoutingWorkspaceBuilder::class)->buildConfigurationDetailRow(
+            $this->sampleNormalizedRouting(),
+            [
+                'baseline_saved_at' => now(),
+                'device_name' => 'Main X32',
+                'requested_scene_number' => '05',
+            ],
+        );
+
+        $this->assertSame('Learned from Main X32 · Scene 05', $detail['production']['learned_meta']['primary']);
     }
 
     #[Test]

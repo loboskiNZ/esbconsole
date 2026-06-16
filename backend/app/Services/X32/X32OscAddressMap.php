@@ -113,6 +113,14 @@ class X32OscAddressMap
     }
 
     /**
+     * Scene library name for an operator-facing scene number (1–100).
+     */
+    public static function sceneShowfileName(int $operatorSceneNumber): string
+    {
+        return sprintf('/-show/showfile/scene/%03d/name', self::clamp($operatorSceneNumber, 1, 100));
+    }
+
+    /**
      * @return array{layer: string, index: int, parameter: string}|null
      */
     public static function parsePath(string $path): ?array

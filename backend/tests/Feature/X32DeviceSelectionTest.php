@@ -180,7 +180,7 @@ class X32DeviceSelectionTest extends TestCase
         $packet = $builder->build('5');
 
         $this->assertSame('/-action/goscene', $builder->oscPath('5'));
-        $this->assertSame('00000005', bin2hex(substr($packet, -4)));
+        $this->assertSame('00000004', bin2hex(substr($packet, -4)));
         $this->assertSame(28, strlen($packet));
         $this->assertStringNotContainsString('/3/scene', $packet);
     }
