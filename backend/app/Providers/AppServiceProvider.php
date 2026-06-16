@@ -10,6 +10,8 @@ use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\OscUdpX32OscConsoleClient;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
 use App\Services\X32\X32RoutingLearnCapture;
+use App\Services\X32\X32SourceConnectivityCapture;
+use App\Services\X32\X32SourceConnectivityService;
 use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32SceneParameterResolver;
@@ -42,9 +44,12 @@ class AppServiceProvider extends ServiceProvider
                 sceneRecallBuilder: new X32OscSceneRecallPacketBuilder,
                 sceneParameterResolver: new X32SceneParameterResolver,
                 routingLearnCapture: new X32RoutingLearnCapture,
+                sourceConnectivityCapture: new X32SourceConnectivityCapture,
             );
         });
 
+        $this->app->singleton(X32SourceConnectivityCapture::class);
+        $this->app->singleton(X32SourceConnectivityService::class);
         $this->app->singleton(X32ConsoleSnapshotReaderInterface::class, RoutingX32ConsoleSnapshotReader::class);
     }
 

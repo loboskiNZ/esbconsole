@@ -24,8 +24,8 @@
                 @foreach ($production['status_grid'] as $tile)
                     <li @class([
                         'vx32-routing-detail__status-tile',
-                        'vx32-routing-detail__status-tile--learned' => in_array($tile['status_state'], ['learned', 'partial'], true),
-                        'vx32-routing-detail__status-tile--not-learned' => $tile['status_state'] === 'not_learned',
+                        'vx32-routing-detail__status-tile--learned' => in_array($tile['status_state'], ['learned', 'partial', 'routed', 'expected'], true),
+                        'vx32-routing-detail__status-tile--not-learned' => in_array($tile['status_state'], ['not_learned', 'not_routed'], true),
                     ])>
                         <span class="vx32-routing-detail__status-tile-label">{{ $tile['label'] }}</span>
                         <span class="vx32-routing-detail__status-tile-value">{{ $tile['status_label'] }}</span>
@@ -58,20 +58,35 @@
                         'vx32-routing-detail__input-card--stagebox-b' => $card['key'] === 'stagebox_b',
                         'vx32-routing-detail__input-card--ableton' => $card['key'] === 'ableton',
                     ])>
-                        <h4 class="vx32-routing-detail__input-card-title">{{ $card['title'] }}</h4>
-                        <p class="vx32-routing-detail__input-connection-type">{{ $card['connection_type'] }}</p>
+                        <header class="vx32-routing-detail__input-card-head">
+                            <h4 class="vx32-routing-detail__input-card-title">{{ $card['title'] }}</h4>
+                            <span @class([
+                                'vx32-routing-detail__input-routing-pill',
+                                'vx32-routing-detail__input-routing-pill--routed' => ($card['routing_pill']['state'] ?? '') === 'routed',
+                                'vx32-routing-detail__input-routing-pill--not-routed' => ($card['routing_pill']['state'] ?? '') === 'not_routed',
+                                'vx32-routing-detail__input-routing-pill--expected' => ($card['routing_pill']['state'] ?? '') === 'expected',
+                            ])>{{ $card['routing_pill']['label'] }}</span>
+                        </header>
 
-                        <div @class([
-                            'vx32-routing-detail__connection-status',
-                            'vx32-routing-detail__connection-status--learned' => $card['connection_status']['state'] === 'learned',
-                            'vx32-routing-detail__connection-status--suggested' => $card['connection_status']['state'] === 'suggested',
-                            'vx32-routing-detail__connection-status--not-learned' => $card['connection_status']['state'] === 'not_learned',
-                        ])>
-                            {{ $card['connection_status']['label'] }}
-                        </div>
-
-                        <p class="vx32-routing-detail__input-capacity">{{ $card['capacity'] }}</p>
-                        <p class="vx32-routing-detail__input-note">{{ $card['secondary_note'] }}</p>
+                        <dl class="vx32-routing-detail__input-facts">
+                            <div class="vx32-routing-detail__input-fact">
+                                <dt>Connection</dt>
+                                <dd>{{ $card['connectivity']['label'] }}</dd>
+                            </div>
+                            <div class="vx32-routing-detail__input-fact">
+                                <dt>Channels</dt>
+                                <dd>{{ $card['channel_range'] }}</dd>
+                            </div>
+                            <div class="vx32-routing-detail__input-fact">
+                                <dt>Result</dt>
+                                <dd @class([
+                                    'vx32-routing-detail__input-result--ready' => ($card['result']['state'] ?? '') === 'ready',
+                                    'vx32-routing-detail__input-result--disconnected' => ($card['result']['state'] ?? '') === 'disconnected',
+                                    'vx32-routing-detail__input-result--source-offline' => ($card['result']['state'] ?? '') === 'source_offline',
+                                    'vx32-routing-detail__input-result--not-routed' => ($card['result']['state'] ?? '') === 'not_routed',
+                                ])>{{ $card['result']['label'] }}</dd>
+                            </div>
+                        </dl>
 
                         <button type="button" class="vx32-routing-detail__configure" disabled title="Not available yet">Configure</button>
                     </div>
@@ -81,40 +96,51 @@
             <div class="vx32-routing-detail__allocation">
                 <h4 class="vx32-routing-detail__allocation-title">{{ $inputs['channel_allocation']['title'] }}</h4>
 
-                <div class="vx32-routing-detail__strip-ruler">
+                <div class="vx32-routing-detail__allocation-layout">
                     @foreach ($allocationGroups as $group)
-                        <div @class([
-                            'vx32-routing-detail__strip-zone',
-                            'vx32-routing-detail__strip-zone--stagebox_a' => $group['key'] === 'stagebox_a',
-                            'vx32-routing-detail__strip-zone--stagebox_b' => $group['key'] === 'stagebox_b',
-                            'vx32-routing-detail__strip-zone--ableton' => $group['key'] === 'ableton',
-                        ]) style="--zone-span: {{ $group['end'] - $group['start'] + 1 }};">
-                            <span class="vx32-routing-detail__strip-zone-label">{{ $group['label'] }}</span>
-                            <span class="vx32-routing-detail__strip-zone-detail">{{ $group['detail'] }}</span>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div class="vx32-routing-detail__console-strip">
-                    @foreach ($inputs['channel_allocation']['channels'] as $channel)
                         @php
-                            $stripGroup = $channel['number'] <= 16
-                                ? 'stagebox_a'
-                                : ($channel['number'] <= 24 ? 'stagebox_b' : 'ableton');
-                            $channelLabel = $channel['name'] !== ''
-                                ? $channel['name']
-                                : ($stripGroup === 'ableton' ? 'A'.($channel['number'] - 24) : '—');
+                            $zoneSpan = $group['end'] - $group['start'] + 1;
                         @endphp
-                        <div @class([
-                            'vx32-routing-detail__fader-tile',
-                            'vx32-routing-detail__fader-tile--stagebox_a' => $stripGroup === 'stagebox_a',
-                            'vx32-routing-detail__fader-tile--stagebox_b' => $stripGroup === 'stagebox_b',
-                            'vx32-routing-detail__fader-tile--ableton' => $stripGroup === 'ableton',
-                            'vx32-routing-detail__fader-tile--learned' => $channel['state'] === 'learned',
-                        ]) title="{{ $channel['label'] }} · {{ $channelLabel }}">
-                            <span class="vx32-routing-detail__fader-num">{{ $channel['number'] }}</span>
-                            <div class="vx32-routing-detail__fader-namestrip">
-                                <span class="vx32-routing-detail__fader-name">{{ $channelLabel }}</span>
+                        <div class="vx32-routing-detail__allocation-block" style="--zone-span: {{ $zoneSpan }};">
+                            <div @class([
+                                'vx32-routing-detail__strip-zone',
+                                'vx32-routing-detail__strip-zone--stagebox_a' => $group['key'] === 'stagebox_a',
+                                'vx32-routing-detail__strip-zone--stagebox_b' => $group['key'] === 'stagebox_b',
+                                'vx32-routing-detail__strip-zone--ableton' => $group['key'] === 'ableton',
+                            ])>
+                                <span class="vx32-routing-detail__strip-zone-label">{{ $group['label'] }}</span>
+                                <span class="vx32-routing-detail__strip-zone-detail">{{ $group['detail'] }}</span>
+                            </div>
+
+                            <div class="vx32-routing-detail__console-strip">
+                                @foreach ($inputs['channel_allocation']['channels'] as $channel)
+                                    @if ($channel['number'] < $group['start'] || $channel['number'] > $group['end'])
+                                        @continue
+                                    @endif
+                                    @php
+                                        $stripGroup = $channel['group'] ?? (
+                                            $channel['number'] <= 16
+                                                ? 'stagebox_a'
+                                                : ($channel['number'] <= 24 ? 'stagebox_b' : 'ableton')
+                                        );
+                                        $channelLabel = $channel['name'] !== ''
+                                            ? $channel['name']
+                                            : ($stripGroup === 'ableton' ? 'A'.($channel['number'] - 24) : '—');
+                                    @endphp
+                                    <div @class([
+                                        'vx32-routing-detail__fader-tile',
+                                        'vx32-routing-detail__fader-tile--stagebox_a' => $stripGroup === 'stagebox_a',
+                                        'vx32-routing-detail__fader-tile--stagebox_b' => $stripGroup === 'stagebox_b',
+                                        'vx32-routing-detail__fader-tile--ableton' => $stripGroup === 'ableton',
+                                        'vx32-routing-detail__fader-tile--local' => $stripGroup === 'local',
+                                        'vx32-routing-detail__fader-tile--learned' => $channel['state'] === 'learned',
+                                    ]) title="{{ $channel['label'] }} · {{ $channelLabel }}">
+                                        <span class="vx32-routing-detail__fader-num">{{ $channel['number'] }}</span>
+                                        <div class="vx32-routing-detail__fader-namestrip">
+                                            <span class="vx32-routing-detail__fader-name">{{ $channelLabel }}</span>
+                                        </div>
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     @endforeach
@@ -149,16 +175,18 @@
             </div>
 
             <div class="vx32-routing-detail__output-section">
-                <h4 class="vx32-routing-detail__output-section-title">{{ $outputs['iems']['title'] }}</h4>
-                <ul class="vx32-routing-detail__output-lines">
-                    @foreach ($outputs['iems']['mixes'] as $mix)
-                        <li @class([
-                            'vx32-routing-detail__output-line',
-                            'vx32-routing-detail__output-line--suggested' => $mix['state'] === 'suggested',
-                        ])>{{ $mix['line'] }}</li>
-                    @endforeach
-                </ul>
-                <button type="button" class="vx32-routing-detail__configure" disabled title="Not available yet">Configure</button>
+                <h4 class="vx32-routing-detail__output-section-title">{{ $outputs['out_1_16']['title'] ?? 'Out 1–16' }}</h4>
+                <p class="vx32-routing-detail__spare-summary">{{ $outputs['out_1_16']['summary'] ?? 'Not learned' }}</p>
+                @if (! empty($outputs['out_1_16']['blocks']))
+                    <ul class="vx32-routing-detail__output-lines">
+                        @foreach ($outputs['out_1_16']['blocks'] as $block)
+                            <li class="vx32-routing-detail__output-line">
+                                <strong>{{ $block['output_range'] }}</strong>
+                                {{ $block['source_range'] }}
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </div>
 
             <div class="vx32-routing-detail__output-section">

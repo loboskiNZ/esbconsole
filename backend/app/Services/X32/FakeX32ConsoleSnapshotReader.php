@@ -20,6 +20,7 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
         private readonly bool $shouldFail = false,
         private readonly ?string $failureMessage = null,
         private readonly X32RoutingLearnCapture $routingLearnCapture = new X32RoutingLearnCapture,
+        private readonly X32SourceConnectivityCapture $sourceConnectivityCapture = new X32SourceConnectivityCapture,
     ) {}
 
     public function learnScene(X32ConsoleLearnCommand $command): X32ConsoleLearnResult
@@ -300,7 +301,18 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
     {
         $rawValues = $this->fixtureRoutingRawValues($sceneSeed);
 
-        return $this->routingLearnCapture->captureFromRawValues('fake_fixture', $rawValues);
+        $routing = $this->routingLearnCapture->captureFromRawValues('fake_fixture', $rawValues);
+
+        $connectivity = $this->sourceConnectivityCapture->captureFromRawValues('fake_fixture', [
+            X32SourceConnectivityOscAddressMap::AES50_A => 'Es32',
+            X32SourceConnectivityOscAddressMap::AES50_B => 'Cs32',
+            X32SourceConnectivityOscAddressMap::AES50_STATE => 0,
+            X32SourceConnectivityOscAddressMap::XCARD_TYPE => 2,
+        ]);
+
+        return array_merge($routing, [
+            'source_connectivity' => $connectivity['normalized'],
+        ]);
     }
 
     /**

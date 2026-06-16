@@ -46,7 +46,9 @@
 
             <ul class="vx32-routing-bottom__advanced-categories">
                 @foreach ($advanced['categories'] as $category)
-                    <li class="vx32-routing-bottom__advanced-chip">{{ $category['label'] }}</li>
+                    <li class="vx32-routing-bottom__advanced-chip" title="{{ $category['status_label'] ?? '' }}">
+                        {{ $category['label'] }}@if (! empty($category['status_label'])) · {{ $category['status_label'] }}@endif
+                    </li>
                 @endforeach
             </ul>
 

@@ -10,6 +10,8 @@ use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32RoutingOscAddressMap;
+use App\Services\X32\X32SourceConnectivityCapture;
+use App\Services\X32\X32SourceConnectivityOscAddressMap;
 use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32RuntimeModeResolver;
@@ -36,6 +38,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
             new X32OscSceneRecallPacketBuilder,
             new X32SceneParameterResolver,
             new X32RoutingLearnCapture,
+            new X32SourceConnectivityCapture,
             sceneSettleMs: 0,
         );
 
@@ -57,7 +60,8 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         $this->assertArrayHasKey('raw_osc', $result->summary['routing']);
         $this->assertArrayHasKey('normalized', $result->summary['routing']);
         $this->assertSame('not_learned', $result->summary['routing']['normalized']['main_lr']['state']);
-        $this->assertArrayNotHasKey('main_lr', $result->summary['routing']);
+        $this->assertArrayHasKey('source_connectivity', $result->summary['routing']);
+        $this->assertSame('online', $result->summary['routing']['source_connectivity']['ableton']['state']);
         $this->assertNotEmpty($fakeOsc->writes());
     }
 
@@ -75,6 +79,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
                 new X32OscSceneRecallPacketBuilder,
                 new X32SceneParameterResolver,
                 new X32RoutingLearnCapture,
+                new X32SourceConnectivityCapture,
                 sceneSettleMs: 0,
             ),
             new X32RuntimeModeResolver,
@@ -142,6 +147,11 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         foreach (X32RoutingOscAddressMap::outputMainSrcPaths() as $path) {
             $fakeOsc->seedInt($path, 0);
         }
+
+        $fakeOsc->seedString(X32SourceConnectivityOscAddressMap::AES50_A, 'Es32');
+        $fakeOsc->seedString(X32SourceConnectivityOscAddressMap::AES50_B, 'Cs32');
+        $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::AES50_STATE, 0);
+        $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::XCARD_TYPE, 2);
     }
 
     private function seedDefaultChannel(FakeX32OscConsoleClient $fakeOsc, int $index): void

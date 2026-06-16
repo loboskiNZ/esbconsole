@@ -4,12 +4,18 @@ namespace App\Services\Console;
 
 /**
  * Builds operator-facing X32 audio routing workspace data from learned console summary.
+ *
+ * Source connectivity (PH043.01): routing assignment and live link status are separate.
+ * Routing tables must never imply physical connection. Live AES50/Card status is only
+ * Live AES50/Card status is read from /-stat/* during learn and on routing page load (live mode).
  */
 class X32RoutingWorkspaceBuilder
 {
     private const NOT_LEARNED = 'Not learned';
 
     private const UNASSIGNED = 'Unassigned';
+
+    private const OUTPUT_NOT_RESOLVED = 'Main L/R output not resolved';
 
     public function __construct(
         private readonly X32RoutingTemplateCatalog $templateCatalog,
@@ -33,11 +39,12 @@ class X32RoutingWorkspaceBuilder
 
         return [
             'label' => 'Routing Flow',
+            'routing_state' => $this->computeRoutingLearnState($routing),
             'sources' => $sources,
-            'console' => $this->buildFlowConsoleCard($sources),
+            'console' => $this->buildFlowConsoleCard($sources, $routing),
             'destinations' => [
                 $this->buildFlowFohCard($routing),
-                $this->buildFlowIemCard($routing),
+                $this->buildFlowIemCard($routing, $summary),
             ],
         ];
     }
@@ -58,7 +65,7 @@ class X32RoutingWorkspaceBuilder
         $stageboxB = $this->buildStageboxSource('stagebox_b', 'Stagebox B', 'AES50B', $routing, 17, 32);
         $ableton = $this->buildAbletonSource($routing);
         $foh = $this->buildFohOutput($routing);
-        $iems = $this->buildDetailIemOutputs($routing);
+        $iems = $this->buildDetailIemOutputs($routing, $summary);
         $channelAllocation = $this->buildChannelAllocation($routing, $channels);
         $production = $this->buildProductionConfiguration(
             $routing,
@@ -90,9 +97,30 @@ class X32RoutingWorkspaceBuilder
             'input_sources' => [
                 'title' => 'Input Sources',
                 'cards' => [
-                    $this->buildDetailStageboxInputCard($stageboxA, 'stagebox_a'),
-                    $this->buildDetailStageboxInputCard($stageboxB, 'stagebox_b'),
-                    $this->buildDetailAbletonInputCard($ableton),
+                    $this->buildDetailInputSourceCard(
+                        key: 'stagebox_a',
+                        title: 'Stagebox A',
+                        viaLabel: 'AES50A',
+                        sourceType: 'aes50_a',
+                        routing: $routing,
+                        defaultDeskRange: 'CH01–CH16',
+                    ),
+                    $this->buildDetailInputSourceCard(
+                        key: 'stagebox_b',
+                        title: 'Stagebox B',
+                        viaLabel: 'AES50B',
+                        sourceType: 'aes50_b',
+                        routing: $routing,
+                        defaultDeskRange: 'CH17–CH24',
+                    ),
+                    $this->buildDetailInputSourceCard(
+                        key: 'ableton',
+                        title: 'Ableton',
+                        viaLabel: 'USB/Card',
+                        sourceType: 'card_usb',
+                        routing: $routing,
+                        defaultDeskRange: 'CH25–CH32',
+                    ),
                 ],
                 'channel_allocation' => [
                     'title' => 'Channel Allocation Overview',
@@ -117,6 +145,8 @@ class X32RoutingWorkspaceBuilder
      */
     public function buildRoutingBottomRow(array $context = []): array
     {
+        $routing = is_array($context['routing'] ?? null) ? $context['routing'] : [];
+
         return [
             'configuration_actions' => [
                 'title' => 'Configuration Actions',
@@ -125,7 +155,7 @@ class X32RoutingWorkspaceBuilder
             'advanced' => [
                 'title' => 'Advanced X32 Routing',
                 'description' => 'Raw console routing tables for advanced users.',
-                'categories' => $this->buildAdvancedCategoryChips(),
+                'categories' => $this->buildAdvancedCategoryChips($routing),
                 'action_label' => 'View Advanced Routing',
                 'action_available' => false,
                 'status_label' => 'Coming later',
@@ -193,19 +223,32 @@ class X32RoutingWorkspaceBuilder
     }
 
     /**
+     * @param  array<string, mixed>  $routing
      * @return list<array<string, string>>
      */
-    private function buildAdvancedCategoryChips(): array
+    private function buildAdvancedCategoryChips(array $routing = []): array
     {
+        $normalized = $this->normalized($routing);
+        $hasInputBanks = ($normalized['input_banks'] ?? []) !== [];
+        $hasOut = ($normalized['out_1_16'] ?? []) !== [];
+        $hasCard = ($normalized['card_inputs'] ?? []) !== [];
+
+        $chip = static fn (string $key, string $label, bool $available, string $pendingLabel = 'Pending', string $availableLabel = 'Available'): array => [
+            'key' => $key,
+            'label' => $label,
+            'status_label' => $available ? $availableLabel : $pendingLabel,
+            'state' => $available ? 'available' : 'pending',
+        ];
+
         return [
-            ['key' => 'inputs', 'label' => 'Inputs'],
-            ['key' => 'out_1_16', 'label' => 'Out 1-16'],
-            ['key' => 'user_out', 'label' => 'User Out'],
-            ['key' => 'aes50a', 'label' => 'AES50A'],
-            ['key' => 'aes50b', 'label' => 'AES50B'],
-            ['key' => 'card_usb', 'label' => 'Card / USB'],
-            ['key' => 'p16_ultranet', 'label' => 'P16 / Ultranet'],
-            ['key' => 'aux_out', 'label' => 'Aux Out'],
+            $chip('inputs', 'Inputs', $hasInputBanks, 'Pending', 'Inputs available'),
+            $chip('out_1_16', 'Out 1-16', $hasOut, 'Pending', 'Out 1–16 available'),
+            ['key' => 'user_out', 'label' => 'User Out', 'status_label' => 'User routing pending', 'state' => 'pending'],
+            $chip('aes50a', 'AES50A', $this->hasInputBankSourceType($routing, 'aes50_a'), 'AES50 output learn pending'),
+            $chip('aes50b', 'AES50B', $this->hasInputBankSourceType($routing, 'aes50_b'), 'AES50 output learn pending'),
+            $chip('card_usb', 'Card / USB', $hasCard || $this->hasInputBankSourceType($routing, 'card_usb'), 'Card routing pending', 'Card routing available'),
+            ['key' => 'p16_ultranet', 'label' => 'P16 / Ultranet', 'status_label' => 'Coming later', 'state' => 'pending'],
+            ['key' => 'aux_out', 'label' => 'Aux Out', 'status_label' => 'Coming later', 'state' => 'pending'],
         ];
     }
 
@@ -247,7 +290,7 @@ class X32RoutingWorkspaceBuilder
             $this->detailStatusTile('stagebox_b', 'Stagebox B', $stageboxB, 'stagebox'),
             $this->detailStatusTile('ableton', 'Ableton', $ableton, 'ableton'),
             $this->detailStatusTile('foh', 'FOH', $foh, 'output'),
-            $this->detailStatusTile('iems', 'IEMs', $iems, 'output'),
+            $this->detailStatusTile('iems', 'IEM / Return Buses', $iems, 'monitor_buses'),
         ];
     }
 
@@ -257,28 +300,62 @@ class X32RoutingWorkspaceBuilder
      */
     private function detailStatusTile(string $key, string $label, array $zone, string $kind): array
     {
+        $operatorLabel = (string) ($zone['operator_label'] ?? '');
         $state = (string) ($zone['state'] ?? 'not_learned');
+
+        if ($operatorLabel !== '') {
+            $statusState = match ($state) {
+                'routed', 'learned', 'buses_configured' => 'learned',
+                'partial' => 'partial',
+                'expected' => 'expected',
+                'not_routed', 'not_configured' => 'not_learned',
+                default => $state,
+            };
+
+            return [
+                'key' => $key,
+                'label' => $label,
+                'status_label' => $operatorLabel,
+                'status_state' => $statusState,
+            ];
+        }
 
         $statusLabel = match ($kind) {
             'stagebox' => match ($state) {
-                'learned', 'partial' => 'Connected',
-                default => 'Not Learned',
+                'routed', 'learned', 'partial' => 'Routed',
+                'expected' => 'Expected setup',
+                'not_routed' => 'Not routed',
+                default => 'Needs attention',
             },
             'ableton' => match ($state) {
-                'learned' => 'Active',
-                default => 'Not Learned',
+                'routed', 'learned' => 'Routed',
+                'expected' => 'Expected setup',
+                'not_routed' => 'Not routed',
+                default => 'Needs attention',
             },
             'output' => match ($state) {
-                'learned', 'partial' => 'Configured',
-                default => 'Not Learned',
+                'learned' => 'Output resolved',
+                'partial' => 'Partial routing',
+                'not_learned' => 'Output not resolved',
+                default => 'Needs attention',
             },
-            default => 'Not Learned',
+            'monitor_buses' => match ($state) {
+                'buses_configured', 'learned' => (string) ($zone['operator_summary'] ?? 'Buses configured'),
+                default => 'Not configured',
+            },
+            default => 'Needs attention',
         };
 
         $statusState = match ($statusLabel) {
-            'Connected', 'Active', 'Configured' => $state === 'partial' ? 'partial' : 'learned',
-            default => 'not_learned',
+            'Routed', 'Output resolved', 'Buses configured' => $state === 'partial' ? 'partial' : 'learned',
+            'Expected setup' => 'expected',
+            'Partial routing' => 'partial',
+            default => in_array($state, ['routed', 'learned', 'buses_configured'], true) ? 'learned' : 'not_learned',
         };
+
+        if (str_contains($statusLabel, 'bus')) {
+            $statusState = $state === 'buses_configured' ? 'learned' : 'not_learned';
+        }
 
         return [
             'key' => $key,
@@ -331,67 +408,61 @@ class X32RoutingWorkspaceBuilder
     }
 
     /**
-     * @param  array<string, mixed>  $source
+     * Input Sources detail card — routing assignment in header pill; body shows link, range, result.
+     *
      * @return array<string, mixed>
      */
-    private function buildDetailStageboxInputCard(array $source, string $key): array
-    {
-        $connection = (string) ($source['connection'] ?? self::NOT_LEARNED);
-        $connectionType = $connection !== self::NOT_LEARNED
-            ? $connection
-            : ($key === 'stagebox_a' ? 'AES50A' : 'AES50B');
+    private function buildDetailInputSourceCard(
+        string $key,
+        string $title,
+        string $viaLabel,
+        string $sourceType,
+        array $routing,
+        string $defaultDeskRange,
+    ): array {
+        $hasNormalized = $this->normalized($routing) !== [];
+        $isRouted = $this->hasInputBankSourceType($routing, $sourceType);
+        $deskChannels = $this->learnedDeskChannels(null, $routing, $key) ?? $defaultDeskRange;
+        $connectivity = $this->resolveSourceConnectivity($routing, $key);
+        $result = $this->resolveSourceOperationalResult($key, $isRouted, $connectivity);
 
         return [
             'key' => $key,
-            'title' => (string) ($source['label'] ?? 'Stagebox'),
-            'connection_type' => $connectionType,
-            'connection_status' => $this->detailInputConnectionStatus($source, 'stagebox'),
-            'capacity' => (string) ($source['input_count_label'] ?? '16 inputs'),
-            'secondary_note' => 'Assigned below',
+            'title' => $title,
+            'routing_pill' => $this->resolveDetailRoutingPill($isRouted, $hasNormalized, $viaLabel),
+            'connectivity' => [
+                'label' => (string) $connectivity['label'],
+                'state' => (string) $connectivity['state'],
+                'monitored' => (bool) ($connectivity['monitored'] ?? false),
+            ],
+            'channel_range' => $deskChannels,
+            'result' => $result,
         ];
     }
 
     /**
-     * @param  array<string, mixed>  $ableton
-     * @return array<string, mixed>
+     * @return array{label: string, state: string}
      */
-    private function buildDetailAbletonInputCard(array $ableton): array
+    private function resolveDetailRoutingPill(bool $isRouted, bool $hasNormalized, string $viaLabel): array
     {
-        $connection = (string) ($ableton['connection'] ?? self::NOT_LEARNED);
-        $returnCount = count($ableton['returns'] ?? []);
+        if ($isRouted) {
+            return [
+                'label' => sprintf('Routed: %s', $viaLabel),
+                'state' => 'routed',
+            ];
+        }
+
+        if ($hasNormalized) {
+            return [
+                'label' => 'Not routed',
+                'state' => 'not_routed',
+            ];
+        }
 
         return [
-            'key' => 'ableton',
-            'title' => 'Ableton',
-            'connection_type' => $connection !== self::NOT_LEARNED ? $connection : 'USB/Card',
-            'connection_status' => $this->detailInputConnectionStatus($ableton, 'ableton'),
-            'capacity' => sprintf('%d returns', $returnCount > 0 ? $returnCount : 8),
-            'secondary_note' => 'Returns assigned below',
+            'label' => 'Expected',
+            'state' => 'expected',
         ];
-    }
-
-    /**
-     * @param  array<string, mixed>  $source
-     * @return array<string, string>
-     */
-    private function detailInputConnectionStatus(array $source, string $kind): array
-    {
-        $state = (string) ($source['state'] ?? 'not_learned');
-        $connectionState = (string) ($source['connection_state'] ?? 'not_learned');
-
-        if ($kind === 'ableton') {
-            if ($state === 'learned') {
-                return ['label' => 'Active', 'state' => 'learned'];
-            }
-
-            return ['label' => 'Expected', 'state' => 'suggested'];
-        }
-
-        if ($state === 'learned' || $state === 'partial' || $connectionState === 'learned') {
-            return ['label' => 'Connected', 'state' => 'learned'];
-        }
-
-        return ['label' => 'Expected', 'state' => 'suggested'];
     }
 
     /**
@@ -403,6 +474,12 @@ class X32RoutingWorkspaceBuilder
         array $stageboxB,
         array $ableton,
     ): array {
+        $learnedGroups = $this->channelAllocationGroupsFromInputBanks($routing);
+
+        if ($learnedGroups !== []) {
+            return $learnedGroups;
+        }
+
         $stageboxAConnection = (string) ($stageboxA['connection'] ?? 'AES50A');
         $stageboxBConnection = (string) ($stageboxB['connection'] ?? 'AES50B');
 
@@ -441,25 +518,9 @@ class X32RoutingWorkspaceBuilder
      * @param  array<string, mixed>  $routing
      * @return array<string, mixed>
      */
-    private function buildDetailIemOutputs(array $routing): array
+    private function buildDetailIemOutputs(array $routing, array $summary = []): array
     {
-        $learned = $this->buildIemOutputs($routing);
-
-        if (($learned['state'] ?? '') === 'learned') {
-            return $learned;
-        }
-
-        $mixes = [];
-
-        foreach ($this->templateCatalog->suggestedIemMixLabels() as $entry) {
-            $mixes[] = array_merge($entry, ['state' => 'suggested']);
-        }
-
-        return [
-            'label' => 'IEMs',
-            'mixes' => $mixes,
-            'state' => 'suggested',
-        ];
+        return $this->buildMonitorReturnBusSection($routing, $summary);
     }
 
     /**
@@ -494,7 +555,6 @@ class X32RoutingWorkspaceBuilder
                         'label' => 'Main Left',
                         'route' => $this->formatDetailOutputRoute(
                             (string) ($foh['left']['output'] ?? self::NOT_LEARNED),
-                            'XLR 1',
                         ),
                         'source' => (string) ($foh['left']['source'] ?? self::NOT_LEARNED),
                         'state' => (string) ($foh['left']['state'] ?? 'not_learned'),
@@ -503,7 +563,6 @@ class X32RoutingWorkspaceBuilder
                         'label' => 'Main Right',
                         'route' => $this->formatDetailOutputRoute(
                             (string) ($foh['right']['output'] ?? self::NOT_LEARNED),
-                            'XLR 2',
                         ),
                         'source' => (string) ($foh['right']['source'] ?? self::NOT_LEARNED),
                         'state' => (string) ($foh['right']['state'] ?? 'not_learned'),
@@ -511,19 +570,19 @@ class X32RoutingWorkspaceBuilder
                 ],
                 'state' => (string) ($foh['state'] ?? 'not_learned'),
             ],
+            'out_1_16' => $this->buildDetailOutBlocks($routing),
             'iems' => [
-                'title' => 'IEM Mixes',
+                'title' => (string) ($iems['title'] ?? 'IEM / Return Buses'),
+                'summary' => (string) ($iems['summary'] ?? ''),
+                'detail_line' => (string) ($iems['detail_line'] ?? ''),
+                'columns' => is_array($iems['columns'] ?? null) ? $iems['columns'] : [],
                 'mixes' => array_map(function (array $mix) {
                     return [
-                        'name' => (string) ($mix['name'] ?? 'IEM Mix'),
+                        'number' => (int) ($mix['number'] ?? 0),
+                        'name' => (string) ($mix['name'] ?? 'Return Bus'),
                         'bus' => (string) ($mix['bus'] ?? self::UNASSIGNED),
-                        'output' => (string) ($mix['output'] ?? self::NOT_LEARNED),
-                        'line' => sprintf(
-                            '%s → %s → %s',
-                            $mix['name'] ?? 'IEM Mix',
-                            $mix['bus'] ?? self::UNASSIGNED,
-                            $mix['output'] ?? self::NOT_LEARNED,
-                        ),
+                        'output' => (string) ($mix['output'] ?? self::OUTPUT_NOT_RESOLVED),
+                        'line' => (string) ($mix['line'] ?? ''),
                         'state' => (string) ($mix['state'] ?? 'not_learned'),
                     ];
                 }, $iems['mixes'] ?? []),
@@ -537,48 +596,98 @@ class X32RoutingWorkspaceBuilder
         ];
     }
 
-    private function formatDetailOutputRoute(string $learnedOutput, string $suggestedOutput): string
+    private function formatDetailOutputRoute(string $learnedOutput): string
     {
         if ($learnedOutput !== self::NOT_LEARNED && $learnedOutput !== self::UNASSIGNED) {
             return sprintf('→ %s', $learnedOutput);
         }
 
-        return sprintf('→ %s (Suggested)', $suggestedOutput);
+        return self::OUTPUT_NOT_RESOLVED;
     }
 
     /**
-     * @param  list<array<string, mixed>>  $sources
+     * @param  array<string, mixed>  $routing
      * @return array<string, mixed>
      */
-    private function buildFlowConsoleCard(array $sources): array
+    private function buildDetailOutBlocks(array $routing): array
     {
-        $summaries = [];
-        $hasLearned = false;
-        $hasSuggested = false;
+        $blocks = $this->learnedOutBanks($routing);
 
-        foreach ($sources as $source) {
-            $status = (string) ($source['status'] ?? 'not_learned');
-            $hasLearned = $hasLearned || $status === 'learned';
-            $hasSuggested = $hasSuggested || $status === 'suggested';
+        if ($blocks === []) {
+            return [
+                'title' => 'Out 1–16',
+                'summary' => self::NOT_LEARNED,
+                'blocks' => [],
+                'state' => 'not_learned',
+            ];
+        }
 
-            $summaries[] = [
-                'source' => (string) ($source['title'] ?? 'Source'),
-                'channels' => (string) ($source['routing_line'] ?? self::NOT_LEARNED),
-                'status' => $status,
-                'line' => sprintf(
-                    '%s → %s',
-                    $source['title'] ?? 'Source',
-                    $source['routing_line'] ?? self::NOT_LEARNED,
-                ),
+        $rows = [];
+
+        foreach ($blocks as $block) {
+            if (! is_array($block)) {
+                continue;
+            }
+
+            $rows[] = [
+                'block' => (string) ($block['block'] ?? '—'),
+                'output_range' => (string) ($block['output_range'] ?? '—'),
+                'source_range' => (string) ($block['source_range'] ?? $block['raw_label'] ?? self::UNASSIGNED),
+                'source_type' => (string) ($block['source_type'] ?? 'unknown'),
+                'state' => 'learned',
             ];
         }
 
         return [
+            'title' => 'Out 1–16',
+            'summary' => sprintf('%d output blocks learned', count($rows)),
+            'blocks' => $rows,
+            'state' => 'learned',
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $sources
+     * @param  array<string, mixed>  $routing
+     * @return array<string, mixed>
+     */
+    private function buildFlowConsoleCard(array $sources, array $routing): array
+    {
+        $coverage = $this->analyzeChannelRoutingCoverage($routing);
+        $summaries = [];
+
+        foreach ($sources as $source) {
+            $routingAssignment = is_array($source['routing'] ?? null) ? $source['routing'] : [];
+            $routingLabel = (string) ($routingAssignment['label'] ?? $source['routing_line'] ?? '—');
+            $channelRange = (string) ($routingAssignment['line'] ?? '');
+
+            if ($channelRange === '' || $channelRange === '—') {
+                $channelRange = null;
+            }
+
+            $summaries[] = [
+                'key' => (string) ($source['key'] ?? 'unknown'),
+                'source' => (string) ($source['title'] ?? 'Source'),
+                'routing_label' => $routingLabel,
+                'channel_range' => $channelRange,
+                'result_label' => (string) ($source['status_label'] ?? '—'),
+                'status' => (string) ($source['status'] ?? 'not_routed'),
+                'line' => sprintf(
+                    '%s · %s',
+                    $source['title'] ?? 'Source',
+                    (string) ($routingAssignment['display_line'] ?? $source['routing_line'] ?? '—'),
+                ),
+            ];
+        }
+
+        $learnedRange = $this->consoleChannelRangeFromInputBanks($routing);
+
+        return [
             'title' => 'Console Channels',
-            'channel_range' => 'CH01–CH32',
+            'channel_range' => $learnedRange ?? 'CH01–CH32',
             'summaries' => $summaries,
-            'status' => $hasLearned ? 'learned' : ($hasSuggested ? 'suggested' : 'not_learned'),
-            'status_label' => $hasLearned ? 'Learned' : ($hasSuggested ? 'Suggested' : 'Not learned'),
+            'status' => (string) $coverage['status'],
+            'status_label' => (string) $coverage['status_label'],
         ];
     }
 
@@ -596,9 +705,9 @@ class X32RoutingWorkspaceBuilder
             'title' => 'FOH',
             'status' => $state === 'learned' || $state === 'partial' ? ($state === 'partial' ? 'partial' : 'learned') : 'not_learned',
             'status_label' => match ($state) {
-                'learned' => 'Learned',
-                'partial' => 'Partial',
-                default => 'Not learned',
+                'learned' => 'Output resolved',
+                'partial' => 'Partial routing',
+                default => 'Output not resolved',
             },
             'lines' => [
                 [
@@ -622,7 +731,7 @@ class X32RoutingWorkspaceBuilder
         $output = (string) ($side['output'] ?? self::NOT_LEARNED);
 
         if ($source === self::NOT_LEARNED && $output === self::NOT_LEARNED) {
-            return self::NOT_LEARNED;
+            return self::OUTPUT_NOT_RESOLVED;
         }
 
         if ($output !== self::NOT_LEARNED && $source !== self::NOT_LEARNED) {
@@ -636,44 +745,48 @@ class X32RoutingWorkspaceBuilder
      * @param  array<string, mixed>  $routing
      * @return array<string, mixed>
      */
-    private function buildFlowIemCard(array $routing): array
+    private function buildFlowIemCard(array $routing, array $summary = []): array
     {
-        $iems = $this->buildIemOutputs($routing);
-        $state = (string) ($iems['state'] ?? 'not_learned');
+        $section = $this->buildMonitorReturnBusSection($routing, $summary);
+        $state = (string) ($section['state'] ?? 'not_configured');
+        $columns = is_array($section['columns'] ?? null) ? $section['columns'] : [];
 
         if ($state === 'learned') {
-            $lines = [];
-
-            foreach ($iems['mixes'] as $mix) {
-                $lines[] = sprintf(
-                    '%s → %s → %s',
-                    $mix['name'],
-                    $mix['bus'],
-                    $mix['output'],
-                );
-            }
-
             return [
                 'key' => 'iems',
-                'title' => 'IEMs',
+                'title' => 'IEM / Return Buses',
                 'status' => 'learned',
-                'status_label' => 'Learned',
-                'summary' => sprintf('%d monitor mixes', count($lines)),
-                'lines' => $lines,
+                'status_label' => (string) ($section['operator_summary'] ?? sprintf('%d buses configured', count($section['mixes'] ?? []))),
+                'summary' => (string) ($section['summary'] ?? ''),
+                'detail_line' => (string) ($section['detail_line'] ?? ''),
+                'columns' => $columns,
+                'lines' => [],
+            ];
+        }
+
+        if ($state === 'buses_configured') {
+            return [
+                'key' => 'iems',
+                'title' => 'IEM / Return Buses',
+                'status' => 'partial',
+                'status_label' => (string) ($section['operator_summary'] ?? $section['summary'] ?? 'Buses configured'),
+                'summary' => (string) ($section['detail_line'] ?? 'Output routing not resolved yet'),
+                'detail_line' => (string) ($section['detail_line'] ?? 'Output routing not resolved yet'),
+                'columns' => $columns,
+                'lines' => [],
             ];
         }
 
         return [
             'key' => 'iems',
-            'title' => 'IEMs',
-            'status' => 'suggested',
-            'status_label' => 'Suggested',
-            'summary' => 'Suggested monitor mixes',
+            'title' => 'IEM / Return Buses',
+            'status' => 'not_learned',
+            'status_label' => 'Not configured',
+            'summary' => (string) ($section['detail_line'] ?? 'Return bus routing not available yet'),
+            'detail_line' => (string) ($section['detail_line'] ?? 'Return bus routing not available yet'),
+            'columns' => [],
             'lines' => [
-                'IEM Mix 1 → Bus 1 → Not learned',
-                'IEM Mix 2 → Bus 2 → Not learned',
-                'IEM Mix 3 → Bus 3 → Not learned',
-                'IEM Mix 4 → Bus 4 → Not learned',
+                (string) ($section['detail_line'] ?? 'Return bus routing not available yet'),
             ],
         ];
     }
@@ -704,18 +817,15 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildSourceRowStageboxACard(array $routing): array
     {
-        $learned = is_array($routing['stagebox_a'] ?? null) ? $routing['stagebox_a'] : null;
-        $isLearned = $this->hasLearnedStageboxRouting($learned, $routing, 'stagebox_a');
-        $deskChannels = $this->learnedDeskChannels($learned, $routing, 'stagebox_a') ?? 'CH01–CH16';
-
-        return $this->sourceRowCard(
+        return $this->buildOperatorSourceRowCard(
             key: 'stagebox_a',
             title: 'Stagebox A',
-            connection: $this->learnedConnection($learned, 'AES50A'),
-            capacity: sprintf('%d inputs', (int) ($learned['input_count'] ?? 16)),
-            deskChannels: $deskChannels,
-            isLearned: $isLearned,
-            suggestedDeskChannels: 'CH01–CH16',
+            viaLabel: 'AES50A',
+            sourceType: 'aes50_a',
+            routing: $routing,
+            connectionFallback: 'AES50A',
+            defaultDeskRange: 'CH01–CH16',
+            defaultCapacity: 16,
         );
     }
 
@@ -725,26 +835,19 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildSourceRowStageboxBCard(array $routing): array
     {
-        $learned = is_array($routing['stagebox_b'] ?? null) ? $routing['stagebox_b'] : null;
-        $isLearned = $this->hasLearnedStageboxRouting($learned, $routing, 'stagebox_b');
-        $deskChannels = $this->learnedDeskChannels($learned, $routing, 'stagebox_b');
-
-        $suggestedDeskChannels = $this->abletonOccupiesUpperChannels($routing)
+        $expectedRange = $this->abletonOccupiesUpperChannels($routing)
             ? 'CH17–CH24'
             : 'CH17–CH32';
 
-        if ($deskChannels === null) {
-            $deskChannels = $suggestedDeskChannels;
-        }
-
-        return $this->sourceRowCard(
+        return $this->buildOperatorSourceRowCard(
             key: 'stagebox_b',
             title: 'Stagebox B',
-            connection: $this->learnedConnection($learned, 'AES50B'),
-            capacity: sprintf('%d inputs', (int) ($learned['input_count'] ?? 16)),
-            deskChannels: $deskChannels,
-            isLearned: $isLearned,
-            suggestedDeskChannels: $suggestedDeskChannels,
+            viaLabel: 'AES50B',
+            sourceType: 'aes50_b',
+            routing: $routing,
+            connectionFallback: 'AES50B',
+            defaultDeskRange: $expectedRange,
+            defaultCapacity: 16,
         );
     }
 
@@ -754,26 +857,15 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildSourceRowAbletonCard(array $routing): array
     {
-        $learned = is_array($routing['ableton'] ?? null) ? $routing['ableton'] : null;
-        $isLearned = $learned !== null && (
-            is_array($learned['returns'] ?? null) && $learned['returns'] !== []
-            || isset($learned['desk_channels'])
-        );
-
-        $deskChannels = is_string($learned['desk_channels'] ?? null)
-            ? (string) $learned['desk_channels']
-            : 'CH25–CH32';
-
-        return $this->sourceRowCard(
+        return $this->buildOperatorSourceRowCard(
             key: 'ableton',
             title: 'Ableton',
-            connection: $learned !== null
-                ? (string) ($learned['connection'] ?? 'USB/Card')
-                : 'USB/Card',
-            capacity: sprintf('%d returns', (int) ($learned['return_count'] ?? 8)),
-            deskChannels: $deskChannels,
-            isLearned: $isLearned,
-            suggestedDeskChannels: 'CH25–CH32',
+            viaLabel: 'USB/Card',
+            sourceType: 'card_usb',
+            routing: $routing,
+            connectionFallback: 'USB/Card',
+            defaultDeskRange: 'CH25–CH32',
+            defaultCapacity: 8,
             capacityNoun: 'returns',
         );
     }
@@ -781,43 +873,45 @@ class X32RoutingWorkspaceBuilder
     /**
      * @return array<string, mixed>
      */
-    private function sourceRowCard(
+    private function buildOperatorSourceRowCard(
         string $key,
         string $title,
-        string $connection,
-        string $capacity,
-        string $deskChannels,
-        bool $isLearned,
-        string $suggestedDeskChannels,
+        string $viaLabel,
+        string $sourceType,
+        array $routing,
+        string $connectionFallback,
+        string $defaultDeskRange,
+        int $defaultCapacity = 16,
         string $capacityNoun = 'inputs',
     ): array {
-        if ($isLearned) {
-            $status = 'learned';
-            $statusLabel = 'Learned';
-            $routingPrefix = 'Routed to';
-            $routingLine = $deskChannels;
-        } elseif ($suggestedDeskChannels !== '') {
-            $status = 'suggested';
-            $statusLabel = 'Suggested';
-            $routingPrefix = 'Suggested';
-            $routingLine = $suggestedDeskChannels;
-        } else {
-            $status = 'not_learned';
-            $statusLabel = 'Not learned';
-            $routingPrefix = 'Routing';
-            $routingLine = self::NOT_LEARNED;
-        }
+        $hasNormalized = $this->normalized($routing) !== [];
+        $isRouted = $this->hasInputBankSourceType($routing, $sourceType);
+        $deskChannels = $this->learnedDeskChannels(null, $routing, $key) ?? $defaultDeskRange;
+        $inputCount = $this->inputCountForSourceType($routing, $sourceType) ?? $defaultCapacity;
+        $connectivity = $this->resolveSourceConnectivity($routing, $key);
+        $result = $this->resolveSourceOperationalResult($key, $isRouted, $connectivity);
+        $routingAssignment = $this->resolveRoutingAssignmentPresentation(
+            $isRouted,
+            $hasNormalized,
+            $viaLabel,
+            $deskChannels,
+            $defaultDeskRange,
+        );
 
         return [
             'key' => $key,
             'title' => $title,
-            'connection' => $connection,
-            'capacity' => $capacity,
+            'capacity' => sprintf('%d %s', $isRouted ? $inputCount : $defaultCapacity, $capacityNoun),
             'capacity_noun' => $capacityNoun,
-            'routing_prefix' => $routingPrefix,
-            'routing_line' => $routingLine,
-            'status' => $status,
-            'status_label' => $statusLabel,
+            'status' => (string) $result['state'],
+            'status_label' => (string) $result['label'],
+            'result' => $result,
+            'routing' => $routingAssignment,
+            'connectivity' => $connectivity,
+            'routing_prefix' => 'Assignment',
+            'routing_line' => (string) $routingAssignment['display_line'],
+            'connection' => (string) $connectivity['label'],
+            'connection_fallback' => $connectionFallback,
         ];
     }
 
@@ -859,19 +953,34 @@ class X32RoutingWorkspaceBuilder
             }
         }
 
+        $sourceType = match ($key) {
+            'stagebox_a' => 'aes50_a',
+            'stagebox_b' => 'aes50_b',
+            'ableton' => 'card_usb',
+            default => null,
+        };
+
+        if ($sourceType !== null) {
+            $ranges = $this->deskChannelRangesForSourceType($routing, $sourceType);
+
+            if ($ranges !== []) {
+                return implode(', ', $ranges);
+            }
+        }
+
         foreach ($routing['input_banks'] ?? [] as $bank) {
             if (! is_array($bank)) {
                 continue;
             }
 
             $source = mb_strtolower((string) ($bank['source_type'] ?? ''));
-            $channels = (string) ($bank['channels'] ?? $bank['desk_channels'] ?? '');
+            $channels = (string) ($bank['channels'] ?? $bank['desk_channels'] ?? $bank['console_channel_range'] ?? '');
 
-            if ($key === 'stagebox_a' && str_contains($source, 'aes50a') && $channels !== '') {
+            if ($key === 'stagebox_a' && str_contains($source, 'aes50') && str_contains($source, 'a') && $channels !== '') {
                 return $this->normalizeDeskChannelRange($channels);
             }
 
-            if ($key === 'stagebox_b' && str_contains($source, 'aes50b') && $channels !== '') {
+            if ($key === 'stagebox_b' && str_contains($source, 'aes50') && str_contains($source, 'b') && $channels !== '') {
                 return $this->normalizeDeskChannelRange($channels);
             }
         }
@@ -968,18 +1077,12 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildHeader(array $routing, array $summary, array $context): array
     {
-        $hasRouting = $routing !== [];
-        $hasInputDetail = $this->hasLearnedInputBanks($routing)
-            || is_array($routing['stagebox_a'] ?? null)
-            || is_array($routing['channel_sources'] ?? null);
-
+        $routingState = $this->computeRoutingLearnState($routing);
         $isPreview = ($context['workspace_mode'] ?? '') === 'preview';
 
         return [
-            'learned_label' => $hasRouting && ($hasInputDetail || isset($routing['main_lr']))
-                ? 'Learned from console'
-                : ($hasRouting ? 'Partially learned' : 'Not learned yet'),
-            'learned_state' => $hasRouting ? 'partial' : 'none',
+            'learned_label' => (string) $routingState['label'],
+            'learned_state' => (string) $routingState['state'],
             'sync_label' => $isPreview ? 'Unsynced changes' : 'In sync',
             'sync_state' => $isPreview ? 'unsynced' : 'in_sync',
             'connected_console' => $this->connectedConsoleLabel($routing, $summary),
@@ -1080,20 +1183,63 @@ class X32RoutingWorkspaceBuilder
         $routingLines = $this->learnedStageboxRoutingLines($learned, $label, $deskStart, $deskEnd);
 
         if ($routingLines === []) {
+            $routingLines = $this->routingLinesFromInputBanks($routing, $key, $label);
+        }
+
+        if ($routingLines === []) {
             $routingLines = $this->suggestedStageboxRoutingLines($label, $deskStart, $deskEnd, $key);
         }
 
-        $state = $learned !== null ? 'learned' : 'not_learned';
+        $normalizedConnection = $this->connectionLabelForSourceType($routing, match ($key) {
+            'stagebox_a' => 'aes50_a',
+            'stagebox_b' => 'aes50_b',
+            default => null,
+        });
+
+        if ($normalizedConnection !== null) {
+            $connection = $normalizedConnection;
+        }
+
+        $inputCount = $this->inputCountForSourceType($routing, match ($key) {
+            'stagebox_a' => 'aes50_a',
+            'stagebox_b' => 'aes50_b',
+            default => null,
+        }) ?? $inputCount;
+
+        $sourceType = match ($key) {
+            'stagebox_a' => 'aes50_a',
+            'stagebox_b' => 'aes50_b',
+            default => null,
+        };
+        $viaLabel = match ($key) {
+            'stagebox_a' => 'AES50A',
+            'stagebox_b' => 'AES50B',
+            default => null,
+        };
+        $isRouted = $sourceType !== null && $this->hasInputBankSourceType($routing, $sourceType);
+        $hasNormalized = $this->normalized($routing) !== [];
+
+        if ($isRouted) {
+            $state = 'routed';
+            $operatorLabel = sprintf('Routed via %s', $viaLabel);
+        } elseif ($hasNormalized) {
+            $state = 'not_routed';
+            $operatorLabel = 'Not routed';
+        } else {
+            $state = 'expected';
+            $operatorLabel = 'Expected setup';
+        }
 
         return [
             'key' => $key,
             'label' => $label,
             'connection' => $connection,
-            'connection_state' => $learned !== null ? 'learned' : 'not_learned',
+            'connection_state' => $isRouted ? 'learned' : 'not_learned',
             'input_count' => $inputCount,
             'input_count_label' => sprintf('%d inputs', $inputCount),
             'routing_lines' => $routingLines,
-            'state' => $this->hasLearnedStageboxRouting($learned, $routing, $key) ? 'learned' : 'not_learned',
+            'state' => $state,
+            'operator_label' => $operatorLabel,
         ];
     }
 
@@ -1174,6 +1320,22 @@ class X32RoutingWorkspaceBuilder
             return true;
         }
 
+        foreach ($this->learnedInputBanks($routing) as $bank) {
+            if (! is_array($bank)) {
+                continue;
+            }
+
+            $source = (string) ($bank['source_type'] ?? '');
+
+            if ($key === 'stagebox_a' && $source === 'aes50_a') {
+                return true;
+            }
+
+            if ($key === 'stagebox_b' && $source === 'aes50_b') {
+                return true;
+            }
+        }
+
         foreach ($routing['input_banks'] ?? [] as $bank) {
             if (! is_array($bank)) {
                 continue;
@@ -1181,11 +1343,11 @@ class X32RoutingWorkspaceBuilder
 
             $source = mb_strtolower((string) ($bank['source_type'] ?? ''));
 
-            if ($key === 'stagebox_a' && str_contains($source, 'aes50a')) {
+            if ($key === 'stagebox_a' && str_contains($source, 'aes50') && str_contains($source, 'a')) {
                 return true;
             }
 
-            if ($key === 'stagebox_b' && str_contains($source, 'aes50b')) {
+            if ($key === 'stagebox_b' && str_contains($source, 'aes50') && str_contains($source, 'b')) {
                 return true;
             }
         }
@@ -1200,9 +1362,12 @@ class X32RoutingWorkspaceBuilder
     private function buildAbletonSource(array $routing): array
     {
         $learned = is_array($routing['ableton'] ?? null) ? $routing['ableton'] : null;
-        $connection = $learned !== null
-            ? (string) ($learned['connection'] ?? 'Card / USB')
-            : self::NOT_LEARNED;
+        $hasNormalizedCard = $this->hasInputBankSourceType($routing, 'card_usb');
+        $connection = $hasNormalizedCard
+            ? ($this->connectionLabelForSourceType($routing, 'card_usb') ?? 'Card / USB')
+            : ($learned !== null
+                ? (string) ($learned['connection'] ?? 'Card / USB')
+                : self::NOT_LEARNED);
 
         $returns = [];
 
@@ -1221,19 +1386,50 @@ class X32RoutingWorkspaceBuilder
             }
         }
 
+        if ($returns === [] && $hasNormalizedCard) {
+            foreach ($this->inputBanksForSourceType($routing, 'card_usb') as $bank) {
+                $channels = $bank['console_channels'] ?? [];
+                $range = (string) ($bank['source_range'] ?? $bank['raw_label'] ?? 'Card');
+
+                foreach ($channels as $channelNumber) {
+                    $returns[] = [
+                        'return' => sprintf('Return %d', max(1, (int) $channelNumber - 24)),
+                        'desk_channel' => sprintf('CH %02d', (int) $channelNumber),
+                        'card_usb' => $range,
+                        'state' => 'learned',
+                    ];
+                }
+            }
+        }
+
         if ($returns === []) {
             foreach ($this->templateCatalog->suggestedAbletonReturns() as $entry) {
                 $returns[] = array_merge($entry, ['state' => 'suggested']);
             }
         }
 
+        $isRouted = $hasNormalizedCard;
+        $hasNormalized = $this->normalized($routing) !== [];
+
+        if ($isRouted) {
+            $state = 'routed';
+            $operatorLabel = 'Routed via USB/Card';
+        } elseif ($hasNormalized) {
+            $state = 'not_routed';
+            $operatorLabel = 'Not routed';
+        } else {
+            $state = 'expected';
+            $operatorLabel = 'Expected setup';
+        }
+
         return [
             'label' => 'Ableton',
             'connection' => $connection,
-            'connection_state' => $learned !== null ? 'learned' : 'not_learned',
+            'connection_state' => $isRouted ? 'learned' : 'not_learned',
             'expected_use' => 'Ableton returns usually use CH 25–32',
             'returns' => $returns,
-            'state' => $learned !== null ? 'learned' : 'not_learned',
+            'state' => $state,
+            'operator_label' => $operatorLabel,
         ];
     }
 
@@ -1244,6 +1440,7 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildChannelAllocation(array $routing, array $channels): array
     {
+        $bankMap = $this->channelSourceMapFromInputBanks($routing);
         $learnedSources = is_array($routing['channel_sources'] ?? null)
             ? $routing['channel_sources']
             : [];
@@ -1252,24 +1449,35 @@ class X32RoutingWorkspaceBuilder
 
         for ($number = 1; $number <= 32; $number++) {
             $channel = $channels[$number - 1] ?? [];
+            $bankEntry = $bankMap[$number] ?? null;
+
             $learned = is_array($learnedSources[$number] ?? null)
                 ? $learnedSources[$number]
                 : (is_array($learnedSources[(string) $number] ?? null) ? $learnedSources[(string) $number] : null);
 
-            $sourceType = $learned !== null
-                ? (string) ($learned['source_type'] ?? self::UNASSIGNED)
-                : self::NOT_LEARNED;
-
-            $sourceSocket = $learned !== null
-                ? (string) ($learned['source_socket'] ?? self::UNASSIGNED)
-                : self::NOT_LEARNED;
+            if ($bankEntry !== null) {
+                $group = (string) ($bankEntry['group'] ?? 'unknown');
+                $sourceType = (string) ($bankEntry['source_label'] ?? self::NOT_LEARNED);
+                $sourceSocket = (string) ($bankEntry['source_range'] ?? self::UNASSIGNED);
+                $groupState = 'learned';
+                $state = 'learned';
+            } elseif ($learned !== null) {
+                $sourceType = (string) ($learned['source_type'] ?? self::UNASSIGNED);
+                $sourceSocket = (string) ($learned['source_socket'] ?? self::UNASSIGNED);
+                $group = $this->operatorGroupKeyForLabel($sourceType) ?? $this->suggestedChannelGroupKey($number);
+                $groupState = 'learned';
+                $state = 'learned';
+            } else {
+                $sourceType = self::NOT_LEARNED;
+                $sourceSocket = self::NOT_LEARNED;
+                $group = $this->suggestedChannelGroupKey($number);
+                $groupState = 'suggested';
+                $state = 'not_learned';
+            }
 
             $purpose = $learned !== null
                 ? (string) ($learned['purpose'] ?? self::UNASSIGNED)
                 : self::UNASSIGNED;
-
-            $group = $this->suggestedChannelGroup($number);
-            $groupState = $learned !== null ? 'learned' : 'suggested';
 
             $tiles[] = [
                 'number' => $number,
@@ -1280,24 +1488,34 @@ class X32RoutingWorkspaceBuilder
                 'purpose' => $purpose !== self::UNASSIGNED ? $purpose : self::UNASSIGNED,
                 'group' => $group,
                 'group_state' => $groupState,
-                'state' => $learned !== null ? 'learned' : 'not_learned',
+                'state' => $state,
             ];
         }
 
         return $tiles;
     }
 
-    private function suggestedChannelGroup(int $number): string
+    private function suggestedChannelGroupKey(int $number): string
     {
         if ($number <= 16) {
-            return 'Stagebox A';
+            return 'stagebox_a';
         }
 
         if ($number <= 24) {
-            return 'Stagebox B';
+            return 'stagebox_b';
         }
 
-        return 'Ableton';
+        return 'ableton';
+    }
+
+    private function suggestedChannelGroup(int $number): string
+    {
+        return match ($this->suggestedChannelGroupKey($number)) {
+            'stagebox_a' => 'Stagebox A',
+            'stagebox_b' => 'Stagebox B',
+            'ableton' => 'Ableton',
+            default => 'Unassigned',
+        };
     }
 
     /**
@@ -1306,43 +1524,65 @@ class X32RoutingWorkspaceBuilder
      */
     private function buildFohOutput(array $routing): array
     {
-        $learned = is_array($routing['foh'] ?? null) ? $routing['foh'] : null;
-        $mainLr = is_array($routing['main_lr'] ?? null) ? $routing['main_lr'] : null;
+        $mainLr = $this->learnedMainLr($routing);
+        $state = is_array($mainLr) ? (string) ($mainLr['state'] ?? 'not_learned') : 'not_learned';
 
-        $leftSource = $learned['left_source'] ?? ($mainLr['left'] ?? null);
-        $rightSource = $learned['right_source'] ?? ($mainLr['right'] ?? null);
+        if ($state === 'not_learned') {
+            return [
+                'label' => 'FOH',
+                'left' => [
+                    'label' => 'FOH Left',
+                    'output' => self::NOT_LEARNED,
+                    'source' => self::NOT_LEARNED,
+                    'state' => 'not_learned',
+                ],
+                'right' => [
+                    'label' => 'FOH Right',
+                    'output' => self::NOT_LEARNED,
+                    'source' => self::NOT_LEARNED,
+                    'state' => 'not_learned',
+                ],
+                'state' => 'not_learned',
+                'operator_label' => 'Output not resolved',
+            ];
+        }
 
-        $leftOutput = $learned['left_output'] ?? $this->findLearnedOutputAssignment($routing, 1);
-        $rightOutput = $learned['right_output'] ?? $this->findLearnedOutputAssignment($routing, 2);
-
-        $hasPartial = $leftSource !== null || $rightSource !== null;
+        $left = is_array($mainLr['left'] ?? null) ? $mainLr['left'] : null;
+        $right = is_array($mainLr['right'] ?? null) ? $mainLr['right'] : null;
 
         return [
             'label' => 'FOH',
-            'left' => [
-                'label' => 'FOH Left',
-                'output' => $leftOutput ?? self::NOT_LEARNED,
-                'source' => $leftSource !== null ? (string) $leftSource : self::NOT_LEARNED,
-                'state' => ($leftOutput !== null || $leftSource !== null) ? 'partial' : 'not_learned',
-            ],
-            'right' => [
-                'label' => 'FOH Right',
-                'output' => $rightOutput ?? self::NOT_LEARNED,
-                'source' => $rightSource !== null ? (string) $rightSource : self::NOT_LEARNED,
-                'state' => ($rightOutput !== null || $rightSource !== null) ? 'partial' : 'not_learned',
-            ],
-            'state' => $learned !== null ? 'learned' : ($hasPartial ? 'partial' : 'not_learned'),
+            'left' => $this->formatMainLrSide('FOH Left', $left),
+            'right' => $this->formatMainLrSide('FOH Right', $right),
+            'state' => $state,
+            'operator_label' => $state === 'learned' ? 'Output resolved' : 'Partial routing',
         ];
     }
 
     /**
-     * @param  array<string, mixed>  $routing
+     * @param  array<string, mixed>|null  $side
+     * @return array<string, mixed>
      */
-    private function findLearnedOutputAssignment(array $routing, int $number): ?string
+    private function formatMainLrSide(string $label, ?array $side): array
     {
-        $entry = $this->findLearnedOutput($routing, 'xlr', $number);
+        if ($side === null) {
+            return [
+                'label' => $label,
+                'output' => self::NOT_LEARNED,
+                'source' => self::NOT_LEARNED,
+                'state' => 'not_learned',
+            ];
+        }
 
-        return $entry['assignment'] ?? null;
+        $outputNumber = (int) ($side['output_number'] ?? 0);
+        $rawLabel = (string) ($side['raw_label'] ?? self::NOT_LEARNED);
+
+        return [
+            'label' => $label,
+            'output' => $outputNumber > 0 ? sprintf('Out %d', $outputNumber) : self::NOT_LEARNED,
+            'source' => $rawLabel !== '' ? $rawLabel : self::NOT_LEARNED,
+            'state' => 'learned',
+        ];
     }
 
     /**
@@ -1489,6 +1729,18 @@ class X32RoutingWorkspaceBuilder
 
         $learned = [];
 
+        foreach ($this->learnedInputBanks($routing) as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+
+            $bank = (string) ($entry['bank'] ?? '');
+
+            if ($bank !== '') {
+                $learned[$bank] = $entry;
+            }
+        }
+
         foreach ($routing['input_banks'] ?? [] as $entry) {
             if (! is_array($entry)) {
                 continue;
@@ -1510,7 +1762,9 @@ class X32RoutingWorkspaceBuilder
                 'label' => $def['label'],
                 'channels' => $def['channels'],
                 'source_type' => $entry !== null ? (string) ($entry['source_type'] ?? self::UNASSIGNED) : self::NOT_LEARNED,
-                'source_range' => $entry !== null ? (string) ($entry['source_range'] ?? self::UNASSIGNED) : self::NOT_LEARNED,
+                'source_range' => $entry !== null
+                    ? (string) ($entry['source_range'] ?? $entry['raw_label'] ?? self::UNASSIGNED)
+                    : self::NOT_LEARNED,
                 'state' => $entry !== null ? 'learned' : 'not_learned',
             ];
         }
@@ -1656,7 +1910,7 @@ class X32RoutingWorkspaceBuilder
      */
     private function hasLearnedInputBanks(array $routing): bool
     {
-        return is_array($routing['input_banks'] ?? null) && $routing['input_banks'] !== [];
+        return $this->learnedInputBanks($routing) !== [];
     }
 
     /**
@@ -1664,7 +1918,11 @@ class X32RoutingWorkspaceBuilder
      */
     private function hasLearnedOutputs(array $routing): bool
     {
-        return is_array($routing['xlr_outputs'] ?? null) && $routing['xlr_outputs'] !== [];
+        if (is_array($routing['xlr_outputs'] ?? null) && $routing['xlr_outputs'] !== []) {
+            return true;
+        }
+
+        return $this->learnedOutBanks($routing) !== [];
     }
 
     /**
@@ -1687,5 +1945,771 @@ class X32RoutingWorkspaceBuilder
         }
 
         return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return array<string, mixed>
+     */
+    private function normalized(array $routing): array
+    {
+        return is_array($routing['normalized'] ?? null) ? $routing['normalized'] : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function learnedInputBanks(array $routing): array
+    {
+        $banks = $this->normalized($routing)['input_banks'] ?? [];
+
+        return is_array($banks) ? array_values(array_filter($banks, 'is_array')) : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function learnedOutBanks(array $routing): array
+    {
+        $blocks = $this->normalized($routing)['out_1_16'] ?? [];
+
+        return is_array($blocks) ? array_values(array_filter($blocks, 'is_array')) : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function learnedCardInputs(array $routing): array
+    {
+        $entries = $this->normalized($routing)['card_inputs'] ?? [];
+
+        return is_array($entries) ? array_values(array_filter($entries, 'is_array')) : [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return array<string, mixed>|null
+     */
+    private function learnedMainLr(array $routing): ?array
+    {
+        $mainLr = $this->normalized($routing)['main_lr'] ?? null;
+
+        return is_array($mainLr) ? $mainLr : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return array{state: string, label: string}
+     */
+    private function computeRoutingLearnState(array $routing): array
+    {
+        $normalized = $this->normalized($routing);
+
+        if ($normalized === []) {
+            return ['state' => 'not_learned', 'label' => 'Awaiting console routing learn'];
+        }
+
+        $coverage = $this->analyzeChannelRoutingCoverage($routing);
+
+        if (($coverage['status'] ?? '') === 'needs_attention') {
+            return ['state' => 'partial', 'label' => 'Routing needs attention'];
+        }
+
+        $hasInputBanks = ($normalized['input_banks'] ?? []) !== [];
+        $hasCardInputs = ($normalized['card_inputs'] ?? []) !== [];
+        $hasOut = ($normalized['out_1_16'] ?? []) !== [];
+        $mainLrState = (string) (($normalized['main_lr'] ?? [])['state'] ?? 'not_learned');
+        $hasMainLr = $mainLrState === 'learned';
+        $hasMainLrPartial = $mainLrState === 'partial';
+
+        $learnedDomains = count(array_filter([
+            $hasInputBanks,
+            $hasCardInputs,
+            $hasOut,
+            $hasMainLr,
+        ]));
+
+        $anySignal = $hasInputBanks || $hasCardInputs || $hasOut || $hasMainLr || $hasMainLrPartial;
+
+        if (! $anySignal) {
+            return ['state' => 'not_learned', 'label' => 'Awaiting console routing learn'];
+        }
+
+        if (($coverage['status'] ?? '') === 'partial') {
+            return ['state' => 'partial', 'label' => 'Partial routing'];
+        }
+
+        if ($hasMainLrPartial || ($learnedDomains > 0 && $learnedDomains < 4)) {
+            return ['state' => 'partial', 'label' => 'Partial routing'];
+        }
+
+        if ($learnedDomains === 4 && ($coverage['status'] ?? '') === 'ok') {
+            return ['state' => 'learned', 'label' => 'Routing from console'];
+        }
+
+        if (($coverage['status'] ?? '') === 'ok') {
+            return ['state' => 'learned', 'label' => 'Routing from console'];
+        }
+
+        return ['state' => 'partial', 'label' => 'Partial routing'];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     */
+    private function hasInputBankSourceType(array $routing, string $sourceType): bool
+    {
+        foreach ($this->learnedInputBanks($routing) as $bank) {
+            if ((string) ($bank['source_type'] ?? '') === $sourceType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function inputBanksForSourceType(array $routing, string $sourceType): array
+    {
+        return array_values(array_filter(
+            $this->learnedInputBanks($routing),
+            fn (array $bank): bool => (string) ($bank['source_type'] ?? '') === $sourceType,
+        ));
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<string>
+     */
+    private function deskChannelRangesForSourceType(array $routing, string $sourceType): array
+    {
+        $ranges = [];
+
+        foreach ($this->inputBanksForSourceType($routing, $sourceType) as $bank) {
+            $range = (string) ($bank['console_channel_range'] ?? '');
+
+            if ($range !== '') {
+                $ranges[] = $this->normalizeDeskChannelRange($range);
+            }
+        }
+
+        return $ranges;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     */
+    private function connectionLabelForSourceType(array $routing, ?string $sourceType): ?string
+    {
+        if ($sourceType === null || ! $this->hasInputBankSourceType($routing, $sourceType)) {
+            return null;
+        }
+
+        $labels = array_map(
+            fn (array $bank): string => (string) ($bank['raw_label'] ?? $bank['source_range'] ?? ''),
+            $this->inputBanksForSourceType($routing, $sourceType),
+        );
+        $labels = array_values(array_filter($labels, fn (string $label): bool => $label !== ''));
+
+        return match ($sourceType) {
+            'aes50_a' => $labels !== [] ? 'AES50A · '.implode(', ', $labels) : 'AES50A',
+            'aes50_b' => $labels !== [] ? 'AES50B · '.implode(', ', $labels) : 'AES50B',
+            'card_usb' => $labels !== [] ? 'USB/Card · '.implode(', ', $labels) : 'USB/Card',
+            default => $labels !== [] ? implode(', ', $labels) : null,
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     */
+    private function inputCountForSourceType(array $routing, ?string $sourceType): ?int
+    {
+        if ($sourceType === null) {
+            return null;
+        }
+
+        $count = 0;
+
+        foreach ($this->inputBanksForSourceType($routing, $sourceType) as $bank) {
+            $count += count($bank['console_channels'] ?? []);
+        }
+
+        return $count > 0 ? $count : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function routingLinesFromInputBanks(array $routing, string $key, string $label): array
+    {
+        $sourceType = match ($key) {
+            'stagebox_a' => 'aes50_a',
+            'stagebox_b' => 'aes50_b',
+            default => null,
+        };
+
+        if ($sourceType === null) {
+            return [];
+        }
+
+        $lines = [];
+
+        foreach ($this->inputBanksForSourceType($routing, $sourceType) as $bank) {
+            $sourceRange = (string) ($bank['source_range'] ?? $bank['raw_label'] ?? '—');
+            $deskRange = (string) ($bank['console_channel_range'] ?? '—');
+
+            $lines[] = [
+                'text' => sprintf('%s %s → %s', $label, $sourceRange, $this->normalizeDeskChannelRange($deskRange)),
+                'state' => 'learned',
+            ];
+        }
+
+        return $lines;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return array<int, array<string, mixed>>
+     */
+    private function channelSourceMapFromInputBanks(array $routing): array
+    {
+        $map = [];
+
+        foreach ($this->learnedInputBanks($routing) as $bank) {
+            $sourceType = (string) ($bank['source_type'] ?? 'unknown');
+            $group = $this->operatorGroupKeyForSourceType($sourceType) ?? 'unknown';
+            $sourceLabel = (string) ($bank['raw_label'] ?? $bank['source_range'] ?? self::NOT_LEARNED);
+            $sourceRange = (string) ($bank['source_range'] ?? $bank['raw_label'] ?? '');
+
+            foreach ($bank['console_channels'] ?? [] as $channelNumber) {
+                $map[(int) $channelNumber] = [
+                    'group' => $group,
+                    'source_label' => $sourceLabel,
+                    'source_range' => $sourceRange,
+                    'source_type' => $sourceType,
+                ];
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return list<array<string, mixed>>
+     */
+    private function channelAllocationGroupsFromInputBanks(array $routing): array
+    {
+        $groups = [];
+
+        foreach ($this->learnedInputBanks($routing) as $bank) {
+            $sourceType = (string) ($bank['source_type'] ?? 'unknown');
+            $groupKey = $this->operatorGroupKeyForSourceType($sourceType);
+
+            if ($groupKey === null) {
+                continue;
+            }
+
+            $channels = $bank['console_channels'] ?? [];
+
+            if ($channels === []) {
+                continue;
+            }
+
+            $groups[] = [
+                'key' => $groupKey,
+                'label' => $this->operatorGroupLabelForKey($groupKey),
+                'detail' => (string) ($bank['source_range'] ?? $bank['raw_label'] ?? '—'),
+                'start' => min($channels),
+                'end' => max($channels),
+            ];
+        }
+
+        return $groups;
+    }
+
+    private function operatorGroupKeyForSourceType(string $sourceType): ?string
+    {
+        return match ($sourceType) {
+            'aes50_a' => 'stagebox_a',
+            'aes50_b' => 'stagebox_b',
+            'card_usb' => 'ableton',
+            'local' => 'local',
+            default => null,
+        };
+    }
+
+    private function operatorGroupLabelForKey(string $key): string
+    {
+        return match ($key) {
+            'stagebox_a' => 'Stagebox A',
+            'stagebox_b' => 'Stagebox B',
+            'ableton' => 'Ableton',
+            'local' => 'Local',
+            default => 'Unknown',
+        };
+    }
+
+    private function operatorGroupKeyForLabel(string $label): ?string
+    {
+        $normalized = mb_strtolower($label);
+
+        if (str_contains($normalized, 'stagebox a') || str_contains($normalized, 'aes50a')) {
+            return 'stagebox_a';
+        }
+
+        if (str_contains($normalized, 'stagebox b') || str_contains($normalized, 'aes50b')) {
+            return 'stagebox_b';
+        }
+
+        if (str_contains($normalized, 'ableton') || str_contains($normalized, 'card')) {
+            return 'ableton';
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     */
+    private function consoleChannelRangeFromInputBanks(array $routing): ?string
+    {
+        $ranges = [];
+
+        foreach ($this->learnedInputBanks($routing) as $bank) {
+            $range = (string) ($bank['console_channel_range'] ?? '');
+
+            if ($range !== '') {
+                $ranges[] = $this->normalizeDeskChannelRange($range);
+            }
+        }
+
+        return $ranges !== [] ? implode(', ', $ranges) : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @return array{status: string, status_label: string, covered: int, total: int}
+     */
+    private function analyzeChannelRoutingCoverage(array $routing): array
+    {
+        $banks = $this->learnedInputBanks($routing);
+
+        if ($banks === []) {
+            return [
+                'status' => 'not_learned',
+                'status_label' => 'No routing learned',
+                'covered' => 0,
+                'total' => 32,
+            ];
+        }
+
+        $channelAssignments = [];
+        $needsAttention = false;
+        $supportedSourceTypes = ['aes50_a', 'aes50_b', 'card_usb', 'local'];
+
+        foreach ($banks as $bank) {
+            $sourceType = (string) ($bank['source_type'] ?? '');
+
+            if ($sourceType !== '' && ! in_array($sourceType, $supportedSourceTypes, true)) {
+                $needsAttention = true;
+            }
+
+            foreach ($bank['console_channels'] ?? [] as $channelNumber) {
+                $channelNumber = (int) $channelNumber;
+
+                if ($channelNumber < 1 || $channelNumber > 32) {
+                    $needsAttention = true;
+
+                    continue;
+                }
+
+                if (isset($channelAssignments[$channelNumber])) {
+                    $needsAttention = true;
+                }
+
+                $channelAssignments[$channelNumber] = true;
+            }
+        }
+
+        $covered = count($channelAssignments);
+
+        if ($needsAttention) {
+            return [
+                'status' => 'needs_attention',
+                'status_label' => 'Routing needs attention',
+                'covered' => $covered,
+                'total' => 32,
+            ];
+        }
+
+        if ($covered === 32) {
+            return [
+                'status' => 'ok',
+                'status_label' => 'Channel routing OK',
+                'covered' => $covered,
+                'total' => 32,
+            ];
+        }
+
+        if ($covered > 0) {
+            return [
+                'status' => 'partial',
+                'status_label' => 'Partial routing',
+                'covered' => $covered,
+                'total' => 32,
+            ];
+        }
+
+        return [
+            'status' => 'needs_attention',
+            'status_label' => 'Routing needs attention',
+            'covered' => 0,
+            'total' => 32,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $routing
+     * @param  array<string, mixed>  $summary
+     * @return array<string, mixed>
+     */
+    private function buildMonitorReturnBusSection(array $routing, array $summary): array
+    {
+        $buses = is_array($summary['buses'] ?? null) ? array_values(array_filter($summary['buses'], 'is_array')) : [];
+        $busCount = count($buses);
+        $iemOutputs = $this->buildIemOutputs($routing);
+        $hasIemRouting = ($iemOutputs['state'] ?? '') === 'learned';
+
+        if ($hasIemRouting) {
+            $entries = $this->buildMonitorBusEntriesFromIemMixes($iemOutputs['mixes'] ?? []);
+            $mixes = [];
+
+            foreach ($entries as $entry) {
+                $mix = $this->findIemMixForBusNumber($iemOutputs['mixes'] ?? [], (int) $entry['number']);
+
+                $mixes[] = [
+                    'number' => (int) $entry['number'],
+                    'name' => (string) $entry['name'],
+                    'bus' => (string) ($mix['bus'] ?? self::UNASSIGNED),
+                    'output' => (string) ($mix['output'] ?? self::OUTPUT_NOT_RESOLVED),
+                    'line' => (string) $entry['name'],
+                    'state' => 'learned',
+                ];
+            }
+
+            return [
+                'title' => 'IEM / Return Buses',
+                'summary' => sprintf('%d monitor mixes routed', count($mixes)),
+                'detail_line' => '',
+                'mixes' => $mixes,
+                'columns' => $this->layoutMonitorBusColumns($entries),
+                'state' => 'learned',
+                'operator_summary' => sprintf('%d buses configured', count($mixes)),
+                'operator_label' => sprintf('%d buses configured', count($mixes)),
+            ];
+        }
+
+        if ($busCount > 0) {
+            $entries = $this->buildMonitorBusEntriesFromSummaryBuses($buses);
+            $mixes = array_map(fn (array $entry): array => [
+                'number' => (int) $entry['number'],
+                'name' => (string) $entry['name'],
+                'bus' => self::UNASSIGNED,
+                'output' => self::OUTPUT_NOT_RESOLVED,
+                'line' => (string) $entry['name'],
+                'state' => 'buses_configured',
+            ], $entries);
+
+            return [
+                'title' => 'IEM / Return Buses',
+                'summary' => sprintf('%d buses configured', min($busCount, 12)),
+                'detail_line' => 'Output routing not resolved yet',
+                'mixes' => $mixes,
+                'columns' => $this->layoutMonitorBusColumns($entries),
+                'state' => 'buses_configured',
+                'operator_summary' => sprintf('%d buses configured', $busCount),
+                'operator_label' => sprintf('%d buses configured', $busCount),
+            ];
+        }
+
+        return [
+            'title' => 'IEM / Return Buses',
+            'summary' => 'Not configured',
+            'detail_line' => 'Return bus routing not available yet',
+            'mixes' => [[
+                'number' => 0,
+                'name' => 'Return buses',
+                'bus' => self::UNASSIGNED,
+                'output' => self::OUTPUT_NOT_RESOLVED,
+                'line' => 'Return bus routing not available yet',
+                'state' => 'not_learned',
+            ]],
+            'columns' => [],
+            'state' => 'not_configured',
+        ];
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $buses
+     * @return list<array{number: int, name: string, state: string}>
+     */
+    private function buildMonitorBusEntriesFromSummaryBuses(array $buses): array
+    {
+        $byNumber = [];
+
+        foreach ($buses as $position => $bus) {
+            if (! is_array($bus)) {
+                continue;
+            }
+
+            $number = $this->resolveMonitorBusNumber($bus, $position + 1);
+
+            if ($number < 1 || $number > 12) {
+                continue;
+            }
+
+            $byNumber[$number] = [
+                'number' => $number,
+                'name' => $this->resolveMonitorBusDisplayName($bus, $number),
+                'state' => 'buses_configured',
+            ];
+        }
+
+        return $this->padMonitorBusEntries($byNumber);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $mixes
+     * @return list<array{number: int, name: string, state: string}>
+     */
+    private function buildMonitorBusEntriesFromIemMixes(array $mixes): array
+    {
+        $byNumber = [];
+
+        foreach ($mixes as $position => $mix) {
+            if (! is_array($mix)) {
+                continue;
+            }
+
+            $number = $this->resolveMonitorBusNumber($mix, $position + 1);
+            $name = trim((string) ($mix['name'] ?? ''));
+
+            if ($name === '') {
+                $name = $this->monitorBusFallbackName($number);
+            }
+
+            $byNumber[$number] = [
+                'number' => $number,
+                'name' => $name,
+                'state' => 'learned',
+            ];
+        }
+
+        return $this->padMonitorBusEntries($byNumber);
+    }
+
+    /**
+     * @param  array<int, array{number: int, name: string, state: string}>  $byNumber
+     * @return list<array{number: int, name: string, state: string}>
+     */
+    private function padMonitorBusEntries(array $byNumber): array
+    {
+        $entries = [];
+
+        for ($number = 1; $number <= 12; $number++) {
+            $entries[] = $byNumber[$number] ?? [
+                'number' => $number,
+                'name' => $this->monitorBusFallbackName($number),
+                'state' => 'not_routed',
+            ];
+        }
+
+        return $entries;
+    }
+
+    /**
+     * @param  list<array{number: int, name: string, state: string}>  $entries
+     * @return list<list<array{number: int, name: string, state: string}>>
+     */
+    private function layoutMonitorBusColumns(array $entries): array
+    {
+        $columns = [[], [], []];
+
+        foreach ($entries as $entry) {
+            $columnIndex = intdiv(((int) $entry['number']) - 1, 4);
+
+            if ($columnIndex >= 0 && $columnIndex < 3) {
+                $columns[$columnIndex][] = $entry;
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * @param  array<string, mixed>  $bus
+     */
+    private function resolveMonitorBusNumber(array $bus, int $fallbackIndex): int
+    {
+        foreach (['number', 'index'] as $key) {
+            $value = (int) ($bus[$key] ?? 0);
+
+            if ($value >= 1 && $value <= 12) {
+                return $value;
+            }
+        }
+
+        return min(12, max(1, $fallbackIndex));
+    }
+
+    /**
+     * @param  array<string, mixed>  $bus
+     */
+    private function resolveMonitorBusDisplayName(array $bus, int $number): string
+    {
+        $name = trim((string) ($bus['name'] ?? ''));
+
+        if ($name !== '') {
+            return $name;
+        }
+
+        return $this->monitorBusFallbackName($number);
+    }
+
+    private function monitorBusFallbackName(int $number): string
+    {
+        return sprintf('Return %d', $number);
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $mixes
+     * @return array<string, mixed>|null
+     */
+    private function findIemMixForBusNumber(array $mixes, int $number): ?array
+    {
+        foreach ($mixes as $position => $mix) {
+            if (! is_array($mix)) {
+                continue;
+            }
+
+            if ($this->resolveMonitorBusNumber($mix, $position + 1) === $number) {
+                return $mix;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Live link/connectivity for a routing source — never inferred from input banks.
+     *
+     * @param  array<string, mixed>  $routing
+     * @return array{state: string, label: string, monitored: bool}
+     */
+    private function resolveSourceConnectivity(array $routing, string $sourceKey): array
+    {
+        $root = is_array($routing['source_connectivity'] ?? null)
+            ? $routing['source_connectivity']
+            : [];
+
+        $entry = is_array($root[$sourceKey] ?? null) ? $root[$sourceKey] : null;
+
+        if ($entry === null) {
+            return [
+                'state' => 'not_monitored',
+                'label' => 'Status not monitored yet',
+                'monitored' => false,
+            ];
+        }
+
+        $state = mb_strtolower(trim((string) ($entry['state'] ?? 'unknown')));
+
+        return [
+            'state' => $state,
+            'label' => match ($state) {
+                'online' => 'Online',
+                'offline' => 'Offline',
+                'unknown' => 'Unknown',
+                default => 'Status not monitored yet',
+            },
+            'monitored' => in_array($state, ['online', 'offline', 'unknown'], true),
+        ];
+    }
+
+    /**
+     * @param  array{state: string, label: string, monitored: bool}  $connectivity
+     * @return array{state: string, label: string}
+     */
+    private function resolveSourceOperationalResult(string $sourceKey, bool $isRouted, array $connectivity): array
+    {
+        if (! $isRouted) {
+            return [
+                'state' => 'not_routed',
+                'label' => 'Not routed',
+            ];
+        }
+
+        return match ((string) ($connectivity['state'] ?? 'not_monitored')) {
+            'online' => [
+                'state' => 'ready',
+                'label' => 'Ready',
+            ],
+            'offline' => [
+                'state' => 'source_offline',
+                'label' => $sourceKey === 'ableton'
+                    ? 'Ableton/Card not available'
+                    : 'Source offline',
+            ],
+            default => [
+                'state' => 'disconnected',
+                'label' => 'Disconnected',
+            ],
+        };
+    }
+
+    /**
+     * @return array{state: string, label: string, line: string, display_line: string}
+     */
+    private function resolveRoutingAssignmentPresentation(
+        bool $isRouted,
+        bool $hasNormalized,
+        string $viaLabel,
+        string $deskChannels,
+        string $defaultDeskRange,
+    ): array {
+        if ($isRouted) {
+            $label = sprintf('Routed via %s', $viaLabel);
+
+            return [
+                'state' => 'routed',
+                'label' => $label,
+                'line' => $deskChannels,
+                'display_line' => sprintf('%s · %s', $label, $deskChannels),
+            ];
+        }
+
+        if ($hasNormalized) {
+            return [
+                'state' => 'not_routed',
+                'label' => 'Not routed',
+                'line' => '—',
+                'display_line' => 'Not routed',
+            ];
+        }
+
+        return [
+            'state' => 'expected',
+            'label' => 'Expected setup',
+            'line' => $defaultDeskRange,
+            'display_line' => sprintf('Expected setup · %s', $defaultDeskRange),
+        ];
     }
 }

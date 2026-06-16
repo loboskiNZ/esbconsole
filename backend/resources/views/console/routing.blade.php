@@ -19,20 +19,22 @@
                     <div class="vx32-routing-workspace__title-row">
                         <h1 class="vx32-routing-workspace__title">Audio Routing</h1>
                         @php
-                            $workspaceRoutingLabel = match ($routingFlow['console']['status'] ?? 'not_learned') {
-                                'learned' => 'Learned from console',
-                                'suggested' => 'Suggested routing',
-                                default => 'Not learned',
+                            $workspaceRoutingState = $flow['routing_state']['state'] ?? ($flow['console']['status'] ?? 'not_learned');
+                            $workspaceRoutingLabel = $flow['routing_state']['label'] ?? match ($workspaceRoutingState) {
+                                'learned' => 'Routing from console',
+                                'partial' => 'Partial routing',
+                                'ok' => 'Channel routing OK',
+                                'needs_attention' => 'Routing needs attention',
+                                default => 'Awaiting console routing learn',
                             };
-                            $workspaceRoutingState = $routingFlow['console']['status'] ?? 'not_learned';
-                            if (! empty($routingDetail['production']['learned_meta']['primary'])) {
+                            if (! empty($routingDetail['production']['learned_meta']['primary']) && $workspaceRoutingState !== 'not_learned') {
                                 $workspaceRoutingLabel = $routingDetail['production']['learned_meta']['primary'];
-                                $workspaceRoutingState = 'learned';
                             }
                         @endphp
                         <span @class([
                             'vx32-routing-workspace__routing-state',
                             'vx32-routing-workspace__routing-state--learned' => $workspaceRoutingState === 'learned',
+                            'vx32-routing-workspace__routing-state--partial' => $workspaceRoutingState === 'partial',
                             'vx32-routing-workspace__routing-state--suggested' => $workspaceRoutingState === 'suggested',
                             'vx32-routing-workspace__routing-state--not-learned' => $workspaceRoutingState === 'not_learned',
                         ])>{{ $workspaceRoutingLabel }}</span>
@@ -78,21 +80,39 @@
                         {{-- Console processing --}}
                         <div class="vx32-routing-flow__zone vx32-routing-flow__zone--console">
                             <h3 class="vx32-routing-flow__zone-label">Console Processing</h3>
-                            <article class="vx32-routing-console-card vx32-routing-console-card--{{ $flow['console']['status'] }}">
+                            <article @class([
+                                'vx32-routing-console-card',
+                                'vx32-routing-console-card--' . $flow['console']['status'],
+                                'vx32-routing-console-card--learned' => in_array($flow['console']['status'], ['learned', 'ok'], true),
+                                'vx32-routing-console-card--partial' => in_array($flow['console']['status'], ['partial', 'needs_attention'], true),
+                                'vx32-routing-console-card--not-learned' => $flow['console']['status'] === 'not_learned',
+                            ])>
                                 <header class="vx32-routing-console-card__head">
                                     <h4 class="vx32-routing-console-card__title">{{ $flow['console']['title'] }}</h4>
                                     <span @class([
                                         'vx32-routing-source-card__badge',
-                                        'vx32-routing-source-card__badge--learned' => $flow['console']['status'] === 'learned',
+                                        'vx32-routing-source-card__badge--learned' => in_array($flow['console']['status'], ['learned', 'ok'], true),
                                         'vx32-routing-source-card__badge--suggested' => $flow['console']['status'] === 'suggested',
-                                        'vx32-routing-source-card__badge--not-learned' => $flow['console']['status'] === 'not_learned',
+                                        'vx32-routing-source-card__badge--not-learned' => in_array($flow['console']['status'], ['not_learned', 'needs_attention'], true),
+                                        'vx32-routing-source-card__badge--partial' => $flow['console']['status'] === 'partial',
                                     ])>{{ $flow['console']['status_label'] }}</span>
                                 </header>
                                 <p class="vx32-routing-console-card__range">{{ $flow['console']['channel_range'] }}</p>
                                 <ul class="vx32-routing-console-card__summaries">
                                     @foreach ($flow['console']['summaries'] as $summaryLine)
-                                        <li class="vx32-routing-console-card__summary vx32-routing-console-card__summary--{{ $summaryLine['status'] }}">
-                                            {{ $summaryLine['line'] }}
+                                        <li @class([
+                                            'vx32-routing-console-card__summary',
+                                            'vx32-routing-console-card__summary--' . ($summaryLine['key'] ?? 'unknown'),
+                                            'vx32-routing-console-card__summary--' . ($summaryLine['status'] ?? 'not_routed'),
+                                        ])>
+                                            <span class="vx32-routing-console-card__summary-name">{{ $summaryLine['source'] }}</span>
+                                            <span class="vx32-routing-console-card__summary-routing">{{ $summaryLine['routing_label'] ?? $summaryLine['line'] ?? '—' }}</span>
+                                            @if (! empty($summaryLine['channel_range']))
+                                                <span class="vx32-routing-console-card__summary-channels">{{ $summaryLine['channel_range'] }}</span>
+                                            @endif
+                                            @if (! empty($summaryLine['result_label']) && ($summaryLine['result_label'] ?? '') !== '—')
+                                                <span class="vx32-routing-console-card__summary-result">{{ $summaryLine['result_label'] }}</span>
+                                            @endif
                                         </li>
                                     @endforeach
                                 </ul>
@@ -144,17 +164,21 @@
                                             <p class="vx32-routing-dest-card__summary">{{ $destination['summary'] }}</p>
                                         @endif
 
-                                        <ul class="vx32-routing-dest-card__lines">
-                                            @foreach ($destination['lines'] as $line)
-                                                <li>
-                                                    @if (is_array($line))
-                                                        <strong>{{ $line['label'] }}</strong> {{ $line['value'] }}
-                                                    @else
-                                                        {{ $line }}
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                                        @if ($destination['key'] === 'iems' && ! empty($destination['columns']))
+                                            @include('console._routing-iem-bus-grid', ['columns' => $destination['columns']])
+                                        @else
+                                            <ul class="vx32-routing-dest-card__lines">
+                                                @foreach ($destination['lines'] as $line)
+                                                    <li>
+                                                        @if (is_array($line))
+                                                            <strong>{{ $line['label'] }}</strong> {{ $line['value'] }}
+                                                        @else
+                                                            {{ $line }}
+                                                        @endif
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        @endif
 
                                         <button
                                             type="button"

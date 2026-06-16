@@ -17,6 +17,7 @@ use App\Services\Console\ShowConsoleWorkspaceResolver;
 use App\Services\Console\VirtualConsoleStripBuilder;
 use App\Services\Console\X32ConsoleLearningService;
 use App\Services\Console\X32RoutingWorkspaceBuilder;
+use App\Services\X32\X32SourceConnectivityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class ConsoleController extends Controller
         private readonly ShowConsoleWorkspaceResolver $workspaceResolver,
         private readonly VirtualConsoleStripBuilder $virtualConsoleStripBuilder,
         private readonly X32RoutingWorkspaceBuilder $routingWorkspaceBuilder,
+        private readonly X32SourceConnectivityService $sourceConnectivityService,
     ) {}
 
     public function index(): View
@@ -116,6 +118,9 @@ class ConsoleController extends Controller
 
         $baseline?->loadMissing('sourceSnapshot.integrationDevice');
 
+        $device = $baseline?->sourceSnapshot?->integrationDevice;
+        $summary = $this->sourceConnectivityService->enrichSummaryWithLiveConnectivity($summary, $device);
+
         return view('console.routing', [
             'band' => $this->band(),
             'show' => $show,
@@ -130,6 +135,7 @@ class ConsoleController extends Controller
             ]),
             'routingBottom' => $this->routingWorkspaceBuilder->buildRoutingBottomRow([
                 'learn_url' => route('shows.console.learn', $show),
+                'routing' => is_array($summary['routing'] ?? null) ? $summary['routing'] : [],
             ]),
         ]);
     }

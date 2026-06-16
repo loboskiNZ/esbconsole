@@ -26,6 +26,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         private readonly X32OscSceneRecallPacketBuilder $sceneRecallBuilder,
         private readonly X32SceneParameterResolver $sceneParameterResolver,
         private readonly X32RoutingLearnCapture $routingLearnCapture,
+        private readonly X32SourceConnectivityCapture $sourceConnectivityCapture,
         private readonly int $sceneSettleMs = 800,
     ) {}
 
@@ -300,10 +301,21 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
      */
     private function readRouting(X32ConsoleLearnCommand $command, array &$oscResponses): array
     {
-        return $this->routingLearnCapture->capture(
+        $routing = $this->routingLearnCapture->capture(
             'live_osc',
             fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
         );
+
+        $connectivity = $this->sourceConnectivityCapture->capture(
+            'live_osc',
+            fn (string $path): string => $this->queryString($command, $path, $oscResponses),
+            fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
+        );
+
+        return array_merge($routing, [
+            'source_connectivity' => $connectivity['normalized'],
+            'source_connectivity_raw' => $connectivity['raw_osc'],
+        ]);
     }
 
     /**

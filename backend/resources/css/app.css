@@ -1400,8 +1400,8 @@
     }
 
     .vx32-routing-flow__zone--console {
-        flex: 0.9 1 0;
-        min-width: 11rem;
+        flex: 1.5 1 0;
+        min-width: 26rem;
         padding: 0.65rem 0.5rem;
         background: rgb(69 26 3 / 0.15);
         border-top: 1px solid rgb(250 204 21 / 0.35);
@@ -1622,18 +1622,78 @@
         padding: 0;
         list-style: none;
         display: grid;
-        gap: 0.45rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
         flex: 1 1 auto;
     }
 
     .vx32-routing-console-card__summary {
-        padding: 0.35rem 0.45rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-height: 4.75rem;
+        padding: 0.5rem 0.55rem;
         font-size: 0.75rem;
         font-weight: 600;
         color: rgb(228 228 231);
         background: rgb(39 39 42);
         border-radius: 6px;
         border-left: 3px solid rgb(113 113 122);
+    }
+
+    .vx32-routing-console-card__summary-name {
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-routing-console-card__summary-routing {
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-routing-console-card__summary-channels {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: rgb(250 204 21);
+    }
+
+    .vx32-routing-console-card__summary-result {
+        margin-top: auto;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
+    .vx32-routing-console-card__summary--stagebox_a {
+        border-left-color: rgb(34 197 94);
+    }
+
+    .vx32-routing-console-card__summary--stagebox_b {
+        border-left-color: rgb(56 189 248);
+    }
+
+    .vx32-routing-console-card__summary--ableton {
+        border-left-color: rgb(129 140 248);
+    }
+
+    .vx32-routing-console-card__summary--ready .vx32-routing-console-card__summary-result {
+        color: rgb(187 247 208);
+    }
+
+    .vx32-routing-console-card__summary--disconnected .vx32-routing-console-card__summary-result,
+    .vx32-routing-console-card__summary--source_offline .vx32-routing-console-card__summary-result {
+        color: rgb(254 202 202);
+    }
+
+    .vx32-routing-console-card__summary--not_routed .vx32-routing-console-card__summary-result {
+        color: rgb(161 161 170);
     }
 
     .vx32-routing-console-card__summary--stagebox_a,
@@ -1643,6 +1703,12 @@
 
     .vx32-routing-console-card__summary--suggested {
         color: rgb(186 230 253);
+    }
+
+    @media (max-width: 900px) {
+        .vx32-routing-console-card__summaries {
+            grid-template-columns: 1fr;
+        }
     }
 
     .vx32-routing-dest-card {
@@ -1701,6 +1767,77 @@
     .vx32-routing-dest-card__lines strong {
         color: rgb(244 244 245);
         font-weight: 800;
+    }
+
+    .vx32-routing-iem-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.45rem 0.55rem;
+        flex: 1 1 auto;
+        margin: 0 0 0.85rem;
+    }
+
+    .vx32-routing-iem-grid__column {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.28rem;
+        min-width: 0;
+    }
+
+    .vx32-routing-iem-grid__line {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        min-width: 0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.25;
+        color: rgb(212 212 216);
+    }
+
+    .vx32-routing-iem-grid__number {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.15rem;
+        height: 1.15rem;
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0;
+        color: rgb(228 228 231);
+        background: rgb(39 39 42);
+        border: 1px solid rgb(82 82 91);
+        border-radius: 4px;
+    }
+
+    .vx32-routing-iem-grid__name {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: rgb(228 228 231);
+    }
+
+    .vx32-routing-flow__destination-row .vx32-routing-iem-grid {
+        font-size: 0.68rem;
+    }
+
+    .vx32-routing-flow__destination-row .vx32-routing-iem-grid__line {
+        font-size: 0.68rem;
+    }
+
+    .vx32-routing-detail__output-section .vx32-routing-iem-grid {
+        margin-bottom: 0.55rem;
+    }
+
+    @media (max-width: 720px) {
+        .vx32-routing-iem-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* ── Routing source cards (shared) ── */
@@ -1770,6 +1907,16 @@
         color: rgb(253 224 71);
         background: rgb(69 26 3 / 0.55);
         border-color: rgb(250 204 21 / 0.45);
+    }
+
+    .vx32-routing-source-card__badge--disconnected {
+        color: rgb(254 202 202);
+        background: rgb(127 29 29 / 0.65);
+        border-color: rgb(239 68 68 / 0.55);
+    }
+
+    .vx32-routing-source-card--disconnected {
+        border-color: rgb(239 68 68 / 0.35);
     }
 
     .vx32-routing-source-card__facts {
@@ -1845,7 +1992,7 @@
         display: grid;
         grid-template-columns: minmax(14rem, 1fr) minmax(22rem, 2fr) minmax(14rem, 1fr);
         gap: 0.75rem;
-        align-items: start;
+        align-items: stretch;
     }
 
     @media (max-width: 1100px) {
@@ -1859,6 +2006,8 @@
         flex-direction: column;
         gap: 0.85rem;
         min-width: 0;
+        min-height: 100%;
+        height: 100%;
         padding: 0.9rem 1rem;
         background: rgb(24 24 27);
         border: 1px solid rgb(63 63 70);
@@ -2074,11 +2223,50 @@
     }
 
     .vx32-routing-detail__input-card-title {
-        margin: 0 0 0.2rem;
+        margin: 0;
         font-size: 0.875rem;
         font-weight: 800;
         color: rgb(250 250 250);
         line-height: 1.25;
+    }
+
+    .vx32-routing-detail__input-card-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.45rem;
+        margin: 0 0 0.55rem;
+        min-width: 0;
+    }
+
+    .vx32-routing-detail__input-routing-pill {
+        flex-shrink: 0;
+        padding: 0.15rem 0.45rem;
+        font-size: 0.625rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        line-height: 1.3;
+        white-space: nowrap;
+        border-radius: 999px;
+        border: 1px solid transparent;
+    }
+
+    .vx32-routing-detail__input-routing-pill--routed {
+        color: rgb(187 247 208);
+        background: rgb(6 78 59 / 0.55);
+        border-color: rgb(34 197 94 / 0.45);
+    }
+
+    .vx32-routing-detail__input-routing-pill--not-routed {
+        color: rgb(161 161 170);
+        background: rgb(39 39 42);
+        border-color: rgb(82 82 91);
+    }
+
+    .vx32-routing-detail__input-routing-pill--expected {
+        color: rgb(186 230 253);
+        background: rgb(8 47 73 / 0.55);
+        border-color: rgb(56 189 248 / 0.4);
     }
 
     .vx32-routing-detail__input-connection-type {
@@ -2138,6 +2326,14 @@
         display: grid;
         gap: 0.35rem;
         margin: 0 0 0.55rem;
+        flex: 1 1 auto;
+    }
+
+    .vx32-routing-detail__input-fact {
+        display: grid;
+        grid-template-columns: 4.75rem minmax(0, 1fr);
+        gap: 0.35rem;
+        align-items: baseline;
     }
 
     .vx32-routing-detail__input-facts dt {
@@ -2153,6 +2349,21 @@
         font-size: 0.8125rem;
         font-weight: 600;
         color: rgb(228 228 231);
+    }
+
+    .vx32-routing-detail__input-result--ready {
+        color: rgb(187 247 208);
+        font-weight: 800;
+    }
+
+    .vx32-routing-detail__input-result--disconnected,
+    .vx32-routing-detail__input-result--source-offline {
+        color: rgb(254 202 202);
+        font-weight: 800;
+    }
+
+    .vx32-routing-detail__input-result--not-routed {
+        color: rgb(161 161 170);
     }
 
     .vx32-routing-detail__configure {
@@ -2184,21 +2395,34 @@
         color: rgb(161 161 170);
     }
 
-    .vx32-routing-detail__strip-ruler {
-        display: grid;
-        grid-template-columns: repeat(32, minmax(2.4rem, 1fr));
-        gap: 2px;
-        margin-bottom: 0.35rem;
+    .vx32-routing-detail__allocation-layout {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.35rem;
+    }
+
+    .vx32-routing-detail__allocation-block {
+        --allocation-gap: 2px;
+        --fader-tile-width: 2.4rem;
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 auto;
+        width: fit-content;
+        max-width: 100%;
+        overflow: hidden;
+        background: rgb(12 12 14);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 8px;
     }
 
     .vx32-routing-detail__strip-zone {
-        grid-column: span var(--zone-span);
         display: flex;
         flex-direction: column;
         gap: 0.05rem;
         min-width: 0;
         padding: 0.2rem 0.35rem;
-        border-radius: 4px 4px 0 0;
+        border-radius: 0;
     }
 
     .vx32-routing-detail__strip-zone--stagebox_a {
@@ -2227,19 +2451,17 @@
         font-weight: 600;
         color: rgb(161 161 170);
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
     .vx32-routing-detail__console-strip {
         display: grid;
-        grid-template-columns: repeat(32, minmax(2.4rem, 1fr));
-        gap: 2px;
+        grid-template-columns: repeat(var(--zone-span), minmax(0, var(--fader-tile-width)));
+        gap: var(--allocation-gap);
+        width: max(100%, calc(var(--zone-span) * var(--fader-tile-width) + (var(--zone-span) - 1) * var(--allocation-gap)));
         padding: 0.4rem 0.3rem 0.5rem;
         background: rgb(12 12 14);
-        border: 1px solid rgb(63 63 70);
-        border-radius: 0 0 8px 8px;
-        overflow-x: auto;
+        border-top: 1px solid rgb(63 63 70);
+        border-radius: 0;
     }
 
     .vx32-routing-detail__fader-tile {
@@ -2247,7 +2469,8 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        min-width: var(--fader-tile-width);
+        min-width: 0;
+        max-width: var(--fader-tile-width);
         height: 4.5rem;
         overflow: hidden;
         border: 1px solid rgb(82 82 91);
@@ -2330,13 +2553,6 @@
 
     .vx32-routing-detail__fader-tile--learned .vx32-routing-detail__fader-name {
         color: rgb(228 228 231);
-    }
-
-    @media (max-width: 900px) {
-        .vx32-routing-detail__strip-ruler,
-        .vx32-routing-detail__console-strip {
-            grid-template-columns: repeat(32, 2.4rem);
-        }
     }
 
     .vx32-routing-detail__allocation-legend {

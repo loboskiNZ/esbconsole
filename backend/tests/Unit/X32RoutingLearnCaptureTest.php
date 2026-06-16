@@ -15,6 +15,8 @@ use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32RoutingOscAddressMap;
+use App\Services\X32\X32SourceConnectivityCapture;
+use App\Services\X32\X32SourceConnectivityOscAddressMap;
 use App\Services\X32\X32SceneParameterResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -230,6 +232,7 @@ class X32RoutingLearnCaptureTest extends TestCase
             new X32OscSceneRecallPacketBuilder,
             new X32SceneParameterResolver,
             new X32RoutingLearnCapture,
+            new X32SourceConnectivityCapture,
             sceneSettleMs: 0,
         );
 
@@ -296,6 +299,11 @@ class X32RoutingLearnCaptureTest extends TestCase
 
         $fakeOsc->seedInt(X32RoutingOscAddressMap::outputMainSrcPath(3), 1);
         $fakeOsc->seedInt(X32RoutingOscAddressMap::outputMainSrcPath(4), 2);
+
+        $fakeOsc->seedString(X32SourceConnectivityOscAddressMap::AES50_A, 'Es32');
+        $fakeOsc->seedString(X32SourceConnectivityOscAddressMap::AES50_B, '');
+        $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::AES50_STATE, 0);
+        $fakeOsc->seedInt(X32SourceConnectivityOscAddressMap::XCARD_TYPE, 2);
     }
 
     /**
