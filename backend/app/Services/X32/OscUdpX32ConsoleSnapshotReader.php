@@ -27,6 +27,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         private readonly X32SceneParameterResolver $sceneParameterResolver,
         private readonly X32RoutingLearnCapture $routingLearnCapture,
         private readonly X32SourceConnectivityCapture $sourceConnectivityCapture,
+        private readonly X32ConfigurationIdentityCapture $configurationIdentityCapture,
         private readonly int $sceneSettleMs = 800,
     ) {}
 
@@ -79,6 +80,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $matrices = $this->readMatrices($command, $oscResponses);
             $routing = $this->readRouting($command, $oscResponses);
             $sceneName = $this->readSceneName($command, (int) $sceneNumber, $oscResponses);
+            $configurationCapture = $this->readConfigurationCapture($command, $oscResponses);
 
             $summary = [
                 'transport' => 'live_osc',
@@ -93,6 +95,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                 'dcas' => $dcas,
                 'matrices' => $matrices,
                 'fx' => [],
+                'configuration_capture' => $configurationCapture,
                 'routing' => array_merge($routing, [
                     'host' => $command->host,
                     'port' => $command->port,
@@ -177,6 +180,9 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $eqPath = X32InputChannelControlMap::oscPath('eq_on', $index);
             $panPath = X32InputChannelControlMap::oscPath('pan', $index);
             $mainPath = X32InputChannelControlMap::oscPath('main_lr', $index);
+            $iconPath = X32OscAddressMap::channelIcon($index);
+            $sourcePath = X32OscAddressMap::channelSource($index);
+            $dcaGroupPath = X32OscAddressMap::channelDcaGroup($index);
 
             $fader = $this->queryFloat($command, $faderPath, $oscResponses);
             $on = $this->queryInt($command, $onPath, $oscResponses);
@@ -187,11 +193,17 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $eqOn = $this->queryInt($command, $eqPath, $oscResponses);
             $pan = $this->queryFloat($command, $panPath, $oscResponses);
             $mainSt = $this->queryInt($command, $mainPath, $oscResponses);
+            $icon = $this->queryInt($command, $iconPath, $oscResponses);
+            $source = $this->queryInt($command, $sourcePath, $oscResponses);
+            $dcaBitmap = $this->queryInt($command, $dcaGroupPath, $oscResponses);
 
             $channels[] = [
                 'index' => $index,
                 'name' => $name !== '' ? $name : sprintf('CH %02d', $index),
                 'color' => $color,
+                'icon' => $icon,
+                'source' => $source,
+                'dca_membership' => X32ConfigurationLearnAssembler::decodeDcaMembershipBitmap($dcaBitmap),
                 'fader' => round($fader, 4),
                 'mute' => $on === 0,
                 'osc_fader' => $faderPath,
@@ -222,16 +234,19 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $onPath = X32OscAddressMap::busOn($index);
             $namePath = X32OscAddressMap::busName($index);
             $colorPath = X32OscAddressMap::busColor($index);
+            $iconPath = X32OscAddressMap::busIcon($index);
 
             $fader = $this->queryFloat($command, $faderPath, $oscResponses);
             $on = $this->queryInt($command, $onPath, $oscResponses);
             $name = trim($this->queryString($command, $namePath, $oscResponses));
             $color = $this->queryInt($command, $colorPath, $oscResponses);
+            $icon = $this->queryInt($command, $iconPath, $oscResponses);
 
             $buses[] = [
                 'index' => $index,
                 'name' => $name !== '' ? $name : sprintf('Bus %02d', $index),
                 'color' => $color,
+                'icon' => $icon,
                 'fader' => round($fader, 4),
                 'mute' => $on === 0,
                 'osc_fader' => $faderPath,
@@ -253,13 +268,20 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         for ($index = 1; $index <= 8; $index++) {
             $faderPath = X32OscAddressMap::dcaFader($index);
             $onPath = X32OscAddressMap::dcaOn($index);
+            $namePath = X32OscAddressMap::dcaName($index);
+            $colorPath = X32OscAddressMap::dcaColor($index);
 
             $fader = $this->queryFloat($command, $faderPath, $oscResponses);
             $on = $this->queryInt($command, $onPath, $oscResponses);
+            $name = trim($this->queryString($command, $namePath, $oscResponses));
+            $color = $this->queryInt($command, $colorPath, $oscResponses);
 
             $dcas[] = [
                 'index' => $index,
-                'name' => sprintf('DCA %d', $index),
+                'name' => $name !== '' ? $name : sprintf('DCA %d', $index),
+                'name_learned' => $name !== '',
+                'color' => $color,
+                'color_learned' => true,
                 'fader' => round($fader, 4),
                 'mute' => $on === 0,
                 'osc_fader' => $faderPath,
@@ -281,13 +303,16 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         for ($index = 1; $index <= 6; $index++) {
             $faderPath = X32OscAddressMap::matrixFader($index);
             $onPath = X32OscAddressMap::matrixOn($index);
+            $namePath = X32OscAddressMap::matrixName($index);
 
             $fader = $this->queryFloat($command, $faderPath, $oscResponses);
             $on = $this->queryInt($command, $onPath, $oscResponses);
+            $name = trim($this->queryString($command, $namePath, $oscResponses));
 
             $matrices[] = [
                 'index' => $index,
-                'name' => sprintf('MTRX %d', $index),
+                'name' => $name !== '' ? $name : sprintf('MTRX %d', $index),
+                'name_learned' => $name !== '',
                 'fader' => round($fader, 4),
                 'mute' => $on === 0,
                 'osc_fader' => $faderPath,
@@ -319,6 +344,55 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             'source_connectivity' => $connectivity['normalized'],
             'source_connectivity_raw' => $connectivity['raw_osc'],
         ]);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     * @return array<string, mixed>
+     */
+    private function readConfigurationCapture(X32ConsoleLearnCommand $command, array &$oscResponses): array
+    {
+        return [
+            'identity' => $this->configurationIdentityCapture->capture(
+                fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
+            ),
+            'channel_links' => $this->readChannelLinkMap($command, $oscResponses),
+            'bus_links' => $this->readBusLinkMap($command, $oscResponses),
+        ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     * @return array<int, bool>
+     */
+    private function readChannelLinkMap(X32ConsoleLearnCommand $command, array &$oscResponses): array
+    {
+        $links = [];
+
+        for ($first = 1; $first <= 31; $first += 2) {
+            $linked = $this->queryInt($command, X32OscAddressMap::channelLink($first), $oscResponses) === 1;
+            $links[$first] = $linked;
+            $links[$first + 1] = $linked;
+        }
+
+        return $links;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     * @return array<int, bool>
+     */
+    private function readBusLinkMap(X32ConsoleLearnCommand $command, array &$oscResponses): array
+    {
+        $links = [];
+
+        for ($first = 1; $first <= 15; $first += 2) {
+            $linked = $this->queryInt($command, X32OscAddressMap::busLink($first), $oscResponses) === 1;
+            $links[$first] = $linked;
+            $links[$first + 1] = $linked;
+        }
+
+        return $links;
     }
 
     /**

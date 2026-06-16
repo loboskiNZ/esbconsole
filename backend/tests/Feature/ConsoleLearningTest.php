@@ -142,6 +142,18 @@ class ConsoleLearningTest extends TestCase
         $this->assertSame($show->id, $snapshot->show_id);
         $this->assertSame(ConsoleLearningStatus::Review, $snapshot->learning_status);
 
+        $configuration = $snapshot->learned_summary_json['configuration'] ?? null;
+        $this->assertIsArray($configuration);
+        $this->assertSame('fake_fixture', $configuration['source']);
+        $this->assertSame('learned', $configuration['identity']['console_name']['state']);
+        $this->assertSame('FOH X32', $configuration['identity']['console_name']['value']);
+        $this->assertSame('foh-x32', $configuration['identity']['device_key']['value']);
+        $this->assertArrayHasKey('channels', $configuration);
+        $this->assertFalse($configuration['fx']['learned']);
+        $this->assertArrayHasKey('channels', $snapshot->learned_summary_json);
+        $this->assertArrayNotHasKey('configuration_capture', $snapshot->learned_summary_json);
+        $this->assertArrayNotHasKey('configuration_capture', $snapshot->raw_snapshot_json ?? []);
+
         $this->actingAs($user)
             ->get(route('shows.console', $show))
             ->assertOk()
@@ -165,6 +177,10 @@ class ConsoleLearningTest extends TestCase
             'baseline_name' => 'My Active Baseline',
         ])->assertRedirect(route('shows.console', $show));
 
+        $baseline = ShowConsoleBaseline::query()->where('show_id', $show->id)->where('active', true)->firstOrFail();
+        $this->assertIsArray($baseline->baseline_json['configuration'] ?? null);
+        $this->assertArrayNotHasKey('configuration_capture', $baseline->baseline_json);
+
         $this->actingAs($user)
             ->get(route('shows.console', $show))
             ->assertOk()
@@ -172,6 +188,60 @@ class ConsoleLearningTest extends TestCase
             ->assertSee('Saved Baseline Show')
             ->assertSee('Active')
             ->assertDontSee('Unsaved preview');
+    }
+
+    public function test_configuration_capture_persists_in_raw_snapshot_not_in_summary_or_baseline(): void
+    {
+        $band = Band::factory()->create();
+        $show = Show::factory()->forBand($band)->create();
+        $device = $this->createX32Device($band);
+
+        $configurationCapture = [
+            'identity' => [
+                'sample_rate' => ['value' => '48K', 'state' => 'learned'],
+                'clock_source' => ['value' => 'INT', 'state' => 'learned'],
+            ],
+            'channel_links' => [1 => true, 2 => true],
+            'bus_links' => [1 => false, 2 => false],
+        ];
+
+        $this->app->instance(
+            X32ConsoleSnapshotReaderInterface::class,
+            new class($configurationCapture) implements X32ConsoleSnapshotReaderInterface {
+                public function __construct(private readonly array $configurationCapture) {}
+
+                public function learnScene(\App\DataTransferObjects\X32\X32ConsoleLearnCommand $command): \App\DataTransferObjects\X32\X32ConsoleLearnResult
+                {
+                    $fixture = new FakeX32ConsoleSnapshotReader;
+                    $result = $fixture->learnScene($command);
+
+                    $summary = $result->summary;
+                    $summary['transport'] = 'live_osc';
+                    $summary['configuration_capture'] = $this->configurationCapture;
+
+                    return new \App\DataTransferObjects\X32\X32ConsoleLearnResult(
+                        success: true,
+                        summary: $summary,
+                        rawSnapshot: $result->rawSnapshot,
+                        warnings: $result->warnings,
+                        errors: [],
+                    );
+                }
+            },
+        );
+
+        $snapshot = app(X32ConsoleLearningService::class)->startLearning($show, $device, '01');
+        $baseline = app(ShowConsoleBaselineService::class)->saveFromSnapshot($snapshot, 'Capture Baseline');
+
+        $this->assertIsArray($snapshot->learned_summary_json['configuration'] ?? null);
+        $this->assertSame('learned', $snapshot->learned_summary_json['configuration']['globals']['sample_rate']['state']);
+        $this->assertSame('48K', $snapshot->learned_summary_json['configuration']['globals']['sample_rate']['value']);
+        $this->assertArrayNotHasKey('configuration_capture', $snapshot->learned_summary_json);
+
+        $this->assertSame($configurationCapture, $snapshot->raw_snapshot_json['configuration_capture'] ?? null);
+
+        $this->assertIsArray($baseline->baseline_json['configuration'] ?? null);
+        $this->assertArrayNotHasKey('configuration_capture', $baseline->baseline_json);
     }
 
     public function test_fader_updates_work_before_console_is_saved(): void

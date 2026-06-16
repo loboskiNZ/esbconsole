@@ -9,6 +9,7 @@ use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\OscUdpX32OscConsoleClient;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
+use App\Services\X32\X32ConfigurationIdentityCapture;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32SourceConnectivityCapture;
 use App\Services\X32\X32SourceConnectivityService;
@@ -45,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
                 sceneParameterResolver: new X32SceneParameterResolver,
                 routingLearnCapture: new X32RoutingLearnCapture,
                 sourceConnectivityCapture: new X32SourceConnectivityCapture,
+                configurationIdentityCapture: new X32ConfigurationIdentityCapture,
             );
         });
 

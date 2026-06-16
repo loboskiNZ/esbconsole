@@ -8,6 +8,7 @@ use App\Services\X32\FakeX32ConsoleSnapshotReader;
 use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
+use App\Services\X32\X32ConfigurationIdentityCapture;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32RoutingOscAddressMap;
 use App\Services\X32\X32SourceConnectivityCapture;
@@ -39,6 +40,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
             new X32SceneParameterResolver,
             new X32RoutingLearnCapture,
             new X32SourceConnectivityCapture,
+            new X32ConfigurationIdentityCapture,
             sceneSettleMs: 0,
         );
 
@@ -81,6 +83,7 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
                 new X32SceneParameterResolver,
                 new X32RoutingLearnCapture,
                 new X32SourceConnectivityCapture,
+                new X32ConfigurationIdentityCapture,
                 sceneSettleMs: 0,
             ),
             new X32RuntimeModeResolver,

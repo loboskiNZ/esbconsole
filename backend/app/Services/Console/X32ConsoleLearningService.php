@@ -9,6 +9,7 @@ use App\Models\ConsoleLearningSnapshot;
 use App\Models\IntegrationConnectionProfile;
 use App\Models\IntegrationDevice;
 use App\Models\Show;
+use App\Services\X32\X32ConfigurationLearnAssembler;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -16,6 +17,7 @@ class X32ConsoleLearningService
 {
     public function __construct(
         private readonly X32ConsoleSnapshotReaderInterface $snapshotReader,
+        private readonly X32ConfigurationLearnAssembler $configurationAssembler,
     ) {}
 
     public function startLearning(
@@ -54,10 +56,22 @@ class X32ConsoleLearningService
             return $snapshot->fresh(['show', 'integrationDevice']);
         }
 
+        $hadConfigurationCapture = array_key_exists('configuration_capture', $result->summary);
+        $configurationCapture = is_array($result->summary['configuration_capture'] ?? null)
+            ? $result->summary['configuration_capture']
+            : null;
+
+        $summary = $this->configurationAssembler->attach($result->summary);
+
+        $rawSnapshot = $result->rawSnapshot;
+        if ($hadConfigurationCapture && $configurationCapture !== null) {
+            $rawSnapshot['configuration_capture'] = $configurationCapture;
+        }
+
         $snapshot->update([
             'learning_status' => ConsoleLearningStatus::Review,
-            'learned_summary_json' => $result->summary,
-            'raw_snapshot_json' => $result->rawSnapshot,
+            'learned_summary_json' => $summary,
+            'raw_snapshot_json' => $rawSnapshot,
             'warnings_json' => $result->warnings,
             'errors_json' => $result->errors,
             'learned_at' => now(),

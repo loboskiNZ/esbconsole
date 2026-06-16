@@ -13,6 +13,7 @@ use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\X32OscMessageCodec;
 use App\Services\X32\X32OscSceneRecallPacketBuilder;
+use App\Services\X32\X32ConfigurationIdentityCapture;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32RoutingOscAddressMap;
 use App\Services\X32\X32SourceConnectivityCapture;
@@ -209,6 +210,10 @@ class X32RoutingLearnCaptureTest extends TestCase
         $snapshot = app(X32ConsoleLearningService::class)->startLearning($show, $device, '01');
         $baseline = app(ShowConsoleBaselineService::class)->saveFromSnapshot($snapshot, 'Routing Baseline');
 
+        $this->assertArrayHasKey('configuration', $baseline->baseline_json);
+        $this->assertArrayHasKey('routing', $baseline->baseline_json);
+        $this->assertArrayHasKey('channels', $baseline->baseline_json);
+
         $routing = $baseline->baseline_json['routing'] ?? [];
         $this->assertArrayHasKey('raw_osc', $routing);
         $this->assertArrayHasKey('normalized', $routing);
@@ -233,6 +238,7 @@ class X32RoutingLearnCaptureTest extends TestCase
             new X32SceneParameterResolver,
             new X32RoutingLearnCapture,
             new X32SourceConnectivityCapture,
+            new X32ConfigurationIdentityCapture,
             sceneSettleMs: 0,
         );
 
