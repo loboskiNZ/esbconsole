@@ -2000,6 +2000,25 @@
         color: rgb(212 212 216);
     }
 
+    .vx32-routing-iem-grid__line--link {
+        padding: 0.15rem 0.2rem;
+        margin: -0.15rem -0.2rem;
+        color: inherit;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .vx32-routing-iem-grid__line--link:hover {
+        color: rgb(250 250 250);
+        background: rgb(39 39 42 / 0.85);
+    }
+
+    .vx32-routing-iem-grid__line--link:focus-visible {
+        outline: 2px solid rgb(56 189 248);
+        outline-offset: 1px;
+    }
+
     .vx32-routing-iem-grid__number {
         flex-shrink: 0;
         display: inline-flex;
@@ -2170,6 +2189,19 @@
         border-radius: 6px;
         cursor: not-allowed;
         opacity: 0.65;
+    }
+
+    .vx32-routing-source-card__configure--link {
+        color: rgb(147 197 253);
+        cursor: pointer;
+        opacity: 1;
+        text-decoration: none;
+    }
+
+    .vx32-routing-source-card__configure--link:hover {
+        color: rgb(191 219 254);
+        background: rgb(30 58 138 / 0.35);
+        border-color: rgb(56 189 248 / 0.45);
     }
 
     /* ── Configuration detail row (PH041.03) ── */
@@ -3037,8 +3069,1769 @@
         cursor: not-allowed;
         opacity: 0.65;
     }
+
+    /* ── Monitors workspace shell (scaffold) — layout lives outside @layer below ── */
 }
 
 [x-cloak] {
     display: none !important;
 }
+
+/* Monitors workspace — unlayered so panel height rules cannot collapse the layout */
+.vx32-monitors-workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.vx32-monitors-workspace__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: row;
+    gap: 0.75rem;
+    min-height: 0;
+    height: 0;
+    padding: 0.75rem;
+    overflow: hidden;
+}
+
+.vx32-monitors-workspace__header-actions {
+    gap: 0.5rem;
+}
+
+.vx32-monitors-workspace__header-btn,
+.vx32-monitors-workspace__header-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.vx32-monitors-workspace__header-icon-btn {
+    width: 2.25rem;
+    padding: 0.45rem;
+}
+
+.vx32-monitors-workspace__header-btn svg,
+.vx32-monitors-workspace__header-icon-btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.vx32-monitors-workspace .vx32-routing-detail__panel {
+    height: auto;
+    min-height: 0;
+}
+
+.vx32-monitors-sidebar {
+    grid-area: sidebar;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    margin: 0;
+    padding: 0.85rem 0.75rem;
+    overflow: hidden;
+}
+
+.vx32-monitors-bus-picker {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.vx32-monitors-bus-picker__summary {
+    display: none;
+    list-style: none;
+    cursor: pointer;
+}
+
+.vx32-monitors-bus-picker__summary::-webkit-details-marker {
+    display: none;
+}
+
+.vx32-monitors-bus-picker__summary-label {
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-bus-picker__summary-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgb(228 228 231);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vx32-monitors-bus-picker__summary-chevron,
+.vx32-monitors-groups-menu__summary-chevron {
+    flex-shrink: 0;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-right: 2px solid rgb(161 161 170);
+    border-bottom: 2px solid rgb(161 161 170);
+    transform: rotate(45deg);
+    transition: transform 0.15s ease;
+}
+
+.vx32-monitors-bus-picker[open] .vx32-monitors-bus-picker__summary-chevron,
+.vx32-monitors-groups-menu[open] .vx32-monitors-groups-menu__summary-chevron {
+    transform: rotate(-135deg) translateY(-1px);
+}
+
+.vx32-monitors-bus-picker__panel {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.65rem;
+    min-height: 0;
+}
+
+.vx32-monitors-sidebar__head {
+    display: flex;
+    flex-shrink: 0;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.vx32-monitors-sidebar__title {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-sidebar__count {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: rgb(56 189 248);
+    white-space: nowrap;
+}
+
+.vx32-monitors-sidebar__list {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    list-style: none;
+}
+
+.vx32-monitors-sidebar__item {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
+    padding: 0.35rem 0.5rem;
+    line-height: 1.15;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(161 161 170);
+    text-decoration: none;
+    background: rgb(18 18 20);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+}
+
+.vx32-monitors-sidebar__item.is-active {
+    color: rgb(250 250 250);
+    background: rgb(8 47 73 / 0.55);
+    border-color: rgb(56 189 248 / 0.55);
+}
+
+.vx32-monitors-sidebar__item-num {
+    flex: 0 0 1.25rem;
+    font-weight: 800;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-sidebar__item-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vx32-monitors-sidebar__item-icon {
+    font-size: 0.625rem;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-sidebar__item-tap {
+    padding: 0.1rem 0.35rem;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+    border-radius: 4px;
+}
+
+.vx32-monitors-sidebar__footer {
+    flex-shrink: 0;
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-main {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(10rem, 20%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "sidebar stack"
+        "sidebar bottom";
+    gap: 0.75rem;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+
+.vx32-monitors-main__stack {
+    grid-area: stack;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.vx32-monitors-main--eq-collapsed .vx32-monitors-channels {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.vx32-monitors-eq {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 0.45rem;
+    max-height: 38%;
+    min-height: 10rem;
+    margin: 0;
+    padding: 0.65rem 0.85rem;
+    overflow: hidden;
+}
+
+.vx32-monitors-eq.is-collapsed {
+    flex: 0 0 auto;
+    gap: 0;
+    max-height: none;
+    min-height: 0;
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}
+
+.vx32-monitors-eq__head {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.vx32-monitors-eq__head-bar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.vx32-monitors-eq__head-bar .vx32-routing-detail__panel-title {
+    margin: 0;
+    min-width: 0;
+}
+
+.vx32-monitors-eq__panel-toggle {
+    flex-shrink: 0;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(134 239 172);
+    background: rgb(6 78 59 / 0.55);
+    border: 1px solid rgb(34 197 94 / 0.45);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-eq__panel-toggle:hover {
+    color: rgb(187 247 208);
+    background: rgb(6 78 59 / 0.75);
+    border-color: rgb(34 197 94 / 0.65);
+}
+
+.vx32-monitors-eq__head-details {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.vx32-monitors-eq.is-collapsed .vx32-monitors-eq__head-details,
+.vx32-monitors-eq.is-collapsed .vx32-monitors-eq__collapsible {
+    display: none;
+}
+
+.vx32-monitors-eq__collapsible {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.vx32-monitors-eq__head-main {
+    min-width: 0;
+}
+
+.vx32-monitors-eq__head-actions {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+}
+
+.vx32-monitors-eq__scope {
+    margin: 0.15rem 0 0;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-eq__layout-note {
+    margin: 0.1rem 0 0;
+    font-size: 0.625rem;
+    line-height: 1.35;
+    color: rgb(82 82 91);
+}
+
+.vx32-monitors-eq__status-badge {
+    padding: 0.15rem 0.45rem;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    border: 1px solid rgb(63 63 70);
+}
+
+.vx32-monitors-eq__status-badge--learned {
+    color: rgb(134 239 172);
+    background: rgb(6 78 59 / 0.45);
+    border-color: rgb(34 197 94 / 0.45);
+}
+
+.vx32-monitors-eq__status-badge--placeholder {
+    color: rgb(250 204 21);
+    background: rgb(66 32 6 / 0.45);
+    border-color: rgb(234 179 8 / 0.45);
+}
+
+.vx32-monitors-eq__placeholder-notice {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: rgb(250 204 21);
+}
+
+.vx32-monitors-eq__toggle {
+    flex-shrink: 0;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 999px;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+.vx32-monitors-eq__toggle.is-on {
+    color: rgb(134 239 172);
+    background: rgb(6 78 59 / 0.55);
+    border-color: rgb(34 197 94 / 0.45);
+}
+
+.vx32-monitors-eq__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-height: 0;
+    overflow: auto;
+}
+
+.vx32-monitors-eq__graph-wrap {
+    flex-shrink: 0;
+    width: 100%;
+    min-width: 0;
+}
+
+.vx32-monitors-eq__graph-shell {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.vx32-monitors-eq__graph-y-axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.35rem 0 1.15rem;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgb(113 113 122);
+    text-align: right;
+}
+
+.vx32-monitors-eq__graph-plot {
+    min-width: 0;
+}
+
+.vx32-monitors-eq__graph {
+    display: block;
+    width: 100%;
+    min-width: 100%;
+    height: 7rem;
+    border: 1px solid rgb(63 63 70);
+    border-radius: 8px;
+    background: rgb(12 12 14);
+}
+
+.vx32-monitors-eq__graph-x-axis {
+    position: relative;
+    height: 0.95rem;
+    margin-top: 0.15rem;
+}
+
+.vx32-monitors-eq__graph-x-axis span {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 0.5625rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgb(113 113 122);
+    white-space: nowrap;
+}
+
+.vx32-monitors-eq__graph-note {
+    margin: 0.25rem 0 0;
+    font-size: 0.625rem;
+    line-height: 1.35;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-eq__bands-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+.vx32-monitors-eq__band-strip {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 6.25rem;
+    padding: 0.35rem 0.4rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-monitors-eq__band-strip-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.vx32-monitors-eq__band-strip-name {
+    overflow: hidden;
+    font-size: 0.5625rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: rgb(161 161 170);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vx32-monitors-eq__band-strip--placeholder {
+    border-style: dashed;
+    opacity: 0.88;
+}
+
+.vx32-monitors-eq__band-strip-num {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-eq__band-strip--band-1 .vx32-monitors-eq__band-strip-num { color: rgb(96 165 250); }
+.vx32-monitors-eq__band-strip--band-2 .vx32-monitors-eq__band-strip-num { color: rgb(74 222 128); }
+.vx32-monitors-eq__band-strip--band-3 .vx32-monitors-eq__band-strip-num { color: rgb(250 204 21); }
+.vx32-monitors-eq__band-strip--band-4 .vx32-monitors-eq__band-strip-num { color: rgb(251 146 60); }
+.vx32-monitors-eq__band-strip--band-5 .vx32-monitors-eq__band-strip-num { color: rgb(244 114 182); }
+.vx32-monitors-eq__band-strip--band-6 .vx32-monitors-eq__band-strip-num { color: rgb(192 132 252); }
+
+.vx32-monitors-eq__field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.vx32-monitors-eq__field[hidden] {
+    display: none !important;
+}
+
+.vx32-monitors-eq__field-label {
+    flex: 0 0 2rem;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-eq__field-select,
+.vx32-monitors-eq__field-input {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    padding: 0.12rem 0.2rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: rgb(212 212 216);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 3px;
+    opacity: 1;
+}
+
+.vx32-monitors-eq__field-select {
+    padding-right: 0.05rem;
+    cursor: pointer;
+}
+
+.vx32-monitors-eq__field-input {
+    cursor: text;
+}
+
+.vx32-monitors-eq__field-input:focus,
+.vx32-monitors-eq__field-select:focus {
+    outline: 1px solid rgb(56 189 248);
+    outline-offset: 0;
+}
+
+.vx32-monitors-eq__band-strip--placeholder .vx32-monitors-eq__field-input,
+.vx32-monitors-eq__band-strip--placeholder .vx32-monitors-eq__field-select {
+    border-style: dashed;
+}
+
+.vx32-monitors-eq__handle {
+    cursor: grab;
+    pointer-events: all;
+    touch-action: none;
+    stroke: rgb(12 12 14);
+    stroke-width: 1.5;
+}
+
+.vx32-monitors-eq__handle:active {
+    cursor: grabbing;
+}
+
+.vx32-monitors-eq__handle--band-1 { fill: rgb(59 130 246); }
+.vx32-monitors-eq__handle--band-2 { fill: rgb(34 197 94); }
+.vx32-monitors-eq__handle--band-3 { fill: rgb(234 179 8); }
+.vx32-monitors-eq__handle--band-4 { fill: rgb(249 115 22); }
+.vx32-monitors-eq__handle--band-5 { fill: rgb(244 114 182); }
+.vx32-monitors-eq__handle--band-6 { fill: rgb(192 132 252); }
+
+.vx32-monitors-mixer {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-height: 12rem;
+    margin: 0;
+    padding: 0.65rem 0.85rem;
+    overflow: hidden;
+}
+
+.vx32-monitors-mixer__toolbar {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding-bottom: 0.45rem;
+    border-bottom: 1px solid rgb(39 39 42);
+}
+
+.vx32-monitors-mixer__toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.vx32-monitors-mixer__toolbar-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-mixer__toolbar-btn,
+.vx32-monitors-mixer__clear-solo {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.vx32-monitors-mixer__clear-solo {
+    margin-left: auto;
+}
+
+.vx32-monitors-mixer__toolbar-select,
+.vx32-monitors-mixer__layout-pills span {
+    padding: 0.3rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(212 212 216);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+}
+
+.vx32-monitors-mixer__layout-pills span.is-active {
+    color: rgb(186 230 253);
+    border-color: rgb(56 189 248 / 0.55);
+    background: rgb(8 47 73 / 0.55);
+}
+
+.vx32-monitors-mixer__bank {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 0.65rem;
+    align-items: stretch;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.vx32-monitors-mixer__group {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100%;
+    padding: 0.45rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 8px;
+}
+
+.vx32-monitors-mixer__group-label {
+    flex-shrink: 0;
+    margin-bottom: 0.45rem;
+    padding: 0.25rem 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.vx32-monitors-mixer__group--drumkit .vx32-monitors-mixer__group-label { color: rgb(251 146 60); background: rgb(124 45 18 / 0.45); }
+.vx32-monitors-mixer__group--bass .vx32-monitors-mixer__group-label { color: rgb(192 132 252); background: rgb(59 7 100 / 0.45); }
+.vx32-monitors-mixer__group--keys .vx32-monitors-mixer__group-label { color: rgb(96 165 250); background: rgb(30 58 138 / 0.45); }
+.vx32-monitors-mixer__group--guitars .vx32-monitors-mixer__group-label { color: rgb(250 204 21); background: rgb(113 63 18 / 0.45); }
+.vx32-monitors-mixer__group--vocals .vx32-monitors-mixer__group-label { color: rgb(74 222 128); background: rgb(6 78 59 / 0.45); }
+.vx32-monitors-mixer__group--horns .vx32-monitors-mixer__group-label { color: rgb(45 212 191); background: rgb(19 78 74 / 0.45); }
+
+.vx32-monitors-mixer__strips {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.35rem;
+    align-items: stretch;
+    min-height: 0;
+}
+
+.vx32-monitors-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 3.35rem;
+    min-width: 3.35rem;
+    height: 100%;
+    min-height: 8rem;
+    padding: 0.35rem 0.25rem 0.45rem;
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+}
+
+.vx32-monitors-strip[hidden] {
+    display: none !important;
+}
+
+.vx32-monitors-channel-strip {
+    padding-top: 0.45rem;
+    border-width: 2px;
+    border-color: var(--channel-color);
+    background: color-mix(in srgb, var(--channel-color) 14%, rgb(24 24 27));
+    box-shadow:
+        inset 0 3px 0 var(--channel-color),
+        0 0 0 1px color-mix(in srgb, var(--channel-color) 35%, transparent);
+}
+
+.vx32-monitors-channel-strip.is-color-default {
+    border-color: rgb(63 63 70);
+    background: rgb(24 24 27);
+    box-shadow: none;
+}
+
+.vx32-monitors-channel-strip .vx32-monitors-strip__num {
+    font-weight: 900;
+    color: var(--channel-color);
+}
+
+.vx32-monitors-channel-strip.is-color-default .vx32-monitors-strip__num {
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-channel-strip .vx32-monitors-strip__track {
+    border-width: 2px;
+    border-color: color-mix(in srgb, var(--channel-color) 55%, transparent);
+    background: color-mix(in srgb, var(--channel-color) 10%, rgb(12 12 14));
+}
+
+.vx32-monitors-channel-strip.is-color-default .vx32-monitors-strip__track {
+    border-width: 1px;
+    border-color: rgb(63 63 70);
+    background: rgb(12 12 14);
+}
+
+.vx32-monitors-channel-strip .vx32-monitors-strip__handle {
+    background: var(--channel-color);
+}
+
+.vx32-monitors-channel-strip.is-color-default .vx32-monitors-strip__handle {
+    background: rgb(212 212 216);
+}
+
+.vx32-monitors-channel-strip a.vx32-monitors-strip__name {
+    color: color-mix(in srgb, var(--channel-color) 72%, white);
+}
+
+.vx32-monitors-channel-strip.is-color-default a.vx32-monitors-strip__name {
+    color: rgb(161 161 170);
+}
+
+.vx32-monitors-channel-strip a.vx32-monitors-strip__name:hover {
+    color: var(--channel-color-text);
+}
+
+.vx32-monitors-strip__num {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-strip__name {
+    flex-shrink: 0;
+    min-height: 1.75rem;
+    margin: 0.15rem 0 0.35rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    color: rgb(161 161 170);
+}
+
+.vx32-monitors-strip__mute {
+    flex-shrink: 0;
+    margin-bottom: 0.35rem;
+    padding: 0.15rem 0.25rem;
+    font-size: 0.5625rem;
+    font-weight: 800;
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 4px;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+.vx32-monitors-strip__fader {
+    display: flex;
+    flex: 1 1 auto;
+    gap: 0.15rem;
+    align-items: stretch;
+    width: 100%;
+    min-height: 4.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.vx32-monitors-strip__scale {
+    position: relative;
+    flex: 0 0 0.6rem;
+    width: 0.6rem;
+    height: 100%;
+    pointer-events: none;
+}
+
+.vx32-monitors-strip__scale-tick {
+    position: absolute;
+    right: 0;
+    transform: translateY(50%);
+    font-size: 0.4375rem;
+    font-weight: 700;
+    line-height: 1;
+    color: rgb(113 113 122);
+    white-space: nowrap;
+}
+
+.vx32-monitors-strip__scale-tick.is-unity {
+    color: rgb(250 204 21);
+    font-weight: 800;
+}
+
+.vx32-monitors-strip__track {
+    position: relative;
+    flex: 1 1 auto;
+    height: 100%;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 999px;
+    overflow: visible;
+}
+
+.vx32-monitors-strip__track-unity {
+    position: absolute;
+    left: -0.6rem;
+    right: 0;
+    height: 2px;
+    background: rgb(250 204 21);
+    box-shadow: 0 0 3px rgb(250 204 21 / 0.45);
+    transform: translateY(50%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.vx32-monitors-strip__track-tick {
+    position: absolute;
+    left: 0.2rem;
+    right: 0.2rem;
+    height: 1px;
+    background: rgb(63 63 70);
+    transform: translateY(50%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.vx32-monitors-strip__track-tick.is-unity {
+    display: none;
+}
+
+.vx32-monitors-strip__handle {
+    position: absolute;
+    left: 50%;
+    width: 1.1rem;
+    height: 0.35rem;
+    margin-left: -0.55rem;
+    background: rgb(212 212 216);
+    border-radius: 2px;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.45);
+    z-index: 3;
+}
+
+.vx32-monitors-strip__meter {
+    position: relative;
+    width: 0.45rem;
+    height: 100%;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.vx32-monitors-strip__meter span {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(180deg, rgb(34 197 94), rgb(250 204 21), rgb(239 68 68));
+}
+
+.vx32-monitors-strip__level {
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgb(161 161 170);
+}
+
+.vx32-monitors-eq__placeholder {
+    margin: 0;
+    padding: 0.65rem 0.85rem 0.85rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-channels {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-height: 12rem;
+    margin: 0;
+    padding: 0.65rem 0.85rem;
+    overflow: hidden;
+}
+
+.vx32-monitors-channels__head {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.vx32-monitors-channels__head-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.35rem 0.75rem;
+}
+
+.vx32-monitors-channels__view-toggle {
+    display: inline-flex;
+    gap: 0.2rem;
+    padding: 0.15rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 999px;
+}
+
+.vx32-monitors-channels__view-btn {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(161 161 170);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-channels__view-btn.is-active {
+    color: rgb(186 230 253);
+    background: rgb(8 47 73 / 0.65);
+    border-color: rgb(56 189 248 / 0.45);
+}
+
+.vx32-monitors-channels__scope {
+    margin: 0;
+    font-size: 0.6875rem;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-channels__strips {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    align-items: stretch;
+    min-height: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.vx32-monitors-bus-master-strip {
+    flex-shrink: 0;
+    width: 3.85rem;
+    min-width: 3.85rem;
+    margin-left: 0.35rem;
+    padding-top: 0.5rem;
+    padding-left: 0.35rem;
+    border-width: 2px;
+    border-color: rgb(212 175 55);
+    border-left-width: 3px;
+    background: linear-gradient(
+        180deg,
+        rgb(212 175 55 / 0.18) 0%,
+        rgb(24 24 27) 42%
+    );
+    box-shadow:
+        inset 0 3px 0 rgb(212 175 55),
+        0 0 0 1px rgb(212 175 55 / 0.35),
+        -4px 0 0 rgb(39 39 42);
+}
+
+.vx32-monitors-bus-master-strip .vx32-monitors-strip__num {
+    font-weight: 900;
+    color: rgb(250 204 21);
+}
+
+.vx32-monitors-bus-master-strip .vx32-monitors-strip__name {
+    font-size: 0.5625rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(253 224 71);
+}
+
+.vx32-monitors-bus-master-strip .vx32-monitors-strip__track {
+    border-width: 2px;
+    border-color: rgb(212 175 55 / 0.55);
+    background: rgb(212 175 55 / 0.1);
+}
+
+.vx32-monitors-bus-master-strip .vx32-monitors-strip__handle {
+    background: linear-gradient(180deg, rgb(253 224 71), rgb(212 175 55));
+}
+
+.vx32-monitors-bus-master-strip .vx32-monitors-strip__level {
+    color: rgb(253 224 71);
+}
+
+.vx32-monitors-bus-master-strip__bus-name {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    font-size: 0.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    color: rgb(212 175 55);
+}
+
+.vx32-monitors-group-strip {
+    width: 3.75rem;
+    min-width: 3.75rem;
+    padding-top: 0.5rem;
+    border-width: 2px;
+}
+
+.vx32-monitors-group-strip .vx32-monitors-strip__num {
+    font-size: 0.6875rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.vx32-monitors-group-strip .vx32-monitors-strip__name {
+    font-size: 0.6875rem;
+    font-weight: 800;
+}
+
+.vx32-monitors-group-strip .vx32-monitors-strip__track {
+    border-width: 2px;
+}
+
+.vx32-monitors-group-strip .vx32-monitors-strip__handle {
+    cursor: ns-resize;
+    touch-action: none;
+    height: 0.4rem;
+}
+
+.vx32-monitors-group-strip__clear {
+    flex-shrink: 0;
+    margin-bottom: 0.25rem;
+    padding: 0.1rem 0.3rem;
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(254 202 202);
+    background: rgb(69 10 10 / 0.35);
+    border: 1px solid rgb(239 68 68 / 0.35);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-group-strip--drumkit {
+    background: rgb(251 146 60 / 0.14);
+    border-color: rgb(251 146 60);
+    box-shadow: inset 0 3px 0 rgb(251 146 60), 0 0 0 1px rgb(251 146 60 / 0.35);
+}
+.vx32-monitors-group-strip--drumkit .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--drumkit .vx32-monitors-strip__name {
+    color: rgb(253 186 116);
+}
+.vx32-monitors-group-strip--drumkit .vx32-monitors-strip__track {
+    border-color: rgb(251 146 60 / 0.55);
+    background: rgb(251 146 60 / 0.1);
+}
+.vx32-monitors-group-strip--drumkit .vx32-monitors-strip__handle {
+    background: rgb(253 186 116);
+}
+.vx32-monitors-group-strip--drumkit.is-focused {
+    box-shadow: inset 0 3px 0 rgb(251 146 60), 0 0 0 2px rgb(251 146 60 / 0.75), 0 0 14px rgb(251 146 60 / 0.25);
+}
+
+.vx32-monitors-group-strip--bass {
+    background: rgb(192 132 252 / 0.14);
+    border-color: rgb(192 132 252);
+    box-shadow: inset 0 3px 0 rgb(192 132 252), 0 0 0 1px rgb(192 132 252 / 0.35);
+}
+.vx32-monitors-group-strip--bass .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--bass .vx32-monitors-strip__name {
+    color: rgb(216 180 254);
+}
+.vx32-monitors-group-strip--bass .vx32-monitors-strip__track {
+    border-color: rgb(192 132 252 / 0.55);
+    background: rgb(192 132 252 / 0.1);
+}
+.vx32-monitors-group-strip--bass .vx32-monitors-strip__handle {
+    background: rgb(216 180 254);
+}
+.vx32-monitors-group-strip--bass.is-focused {
+    box-shadow: inset 0 3px 0 rgb(192 132 252), 0 0 0 2px rgb(192 132 252 / 0.75), 0 0 14px rgb(192 132 252 / 0.25);
+}
+
+.vx32-monitors-group-strip--guitars {
+    background: rgb(250 204 21 / 0.12);
+    border-color: rgb(250 204 21);
+    box-shadow: inset 0 3px 0 rgb(250 204 21), 0 0 0 1px rgb(250 204 21 / 0.35);
+}
+.vx32-monitors-group-strip--guitars .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--guitars .vx32-monitors-strip__name {
+    color: rgb(253 224 71);
+}
+.vx32-monitors-group-strip--guitars .vx32-monitors-strip__track {
+    border-color: rgb(250 204 21 / 0.55);
+    background: rgb(250 204 21 / 0.08);
+}
+.vx32-monitors-group-strip--guitars .vx32-monitors-strip__handle {
+    background: rgb(253 224 71);
+}
+.vx32-monitors-group-strip--guitars.is-focused {
+    box-shadow: inset 0 3px 0 rgb(250 204 21), 0 0 0 2px rgb(250 204 21 / 0.75), 0 0 14px rgb(250 204 21 / 0.25);
+}
+
+.vx32-monitors-group-strip--keys {
+    background: rgb(96 165 250 / 0.14);
+    border-color: rgb(96 165 250);
+    box-shadow: inset 0 3px 0 rgb(96 165 250), 0 0 0 1px rgb(96 165 250 / 0.35);
+}
+.vx32-monitors-group-strip--keys .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--keys .vx32-monitors-strip__name {
+    color: rgb(147 197 253);
+}
+.vx32-monitors-group-strip--keys .vx32-monitors-strip__track {
+    border-color: rgb(96 165 250 / 0.55);
+    background: rgb(96 165 250 / 0.1);
+}
+.vx32-monitors-group-strip--keys .vx32-monitors-strip__handle {
+    background: rgb(147 197 253);
+}
+.vx32-monitors-group-strip--keys.is-focused {
+    box-shadow: inset 0 3px 0 rgb(96 165 250), 0 0 0 2px rgb(96 165 250 / 0.75), 0 0 14px rgb(96 165 250 / 0.25);
+}
+
+.vx32-monitors-group-strip--vocals {
+    background: rgb(74 222 128 / 0.12);
+    border-color: rgb(74 222 128);
+    box-shadow: inset 0 3px 0 rgb(74 222 128), 0 0 0 1px rgb(74 222 128 / 0.35);
+}
+.vx32-monitors-group-strip--vocals .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--vocals .vx32-monitors-strip__name {
+    color: rgb(134 239 172);
+}
+.vx32-monitors-group-strip--vocals .vx32-monitors-strip__track {
+    border-color: rgb(74 222 128 / 0.55);
+    background: rgb(74 222 128 / 0.08);
+}
+.vx32-monitors-group-strip--vocals .vx32-monitors-strip__handle {
+    background: rgb(134 239 172);
+}
+.vx32-monitors-group-strip--vocals.is-focused {
+    box-shadow: inset 0 3px 0 rgb(74 222 128), 0 0 0 2px rgb(74 222 128 / 0.75), 0 0 14px rgb(74 222 128 / 0.25);
+}
+
+.vx32-monitors-group-strip--horns {
+    background: rgb(45 212 191 / 0.12);
+    border-color: rgb(45 212 191);
+    box-shadow: inset 0 3px 0 rgb(45 212 191), 0 0 0 1px rgb(45 212 191 / 0.35);
+}
+.vx32-monitors-group-strip--horns .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--horns .vx32-monitors-strip__name {
+    color: rgb(94 234 212);
+}
+.vx32-monitors-group-strip--horns .vx32-monitors-strip__track {
+    border-color: rgb(45 212 191 / 0.55);
+    background: rgb(45 212 191 / 0.08);
+}
+.vx32-monitors-group-strip--horns .vx32-monitors-strip__handle {
+    background: rgb(94 234 212);
+}
+.vx32-monitors-group-strip--horns.is-focused {
+    box-shadow: inset 0 3px 0 rgb(45 212 191), 0 0 0 2px rgb(45 212 191 / 0.75), 0 0 14px rgb(45 212 191 / 0.25);
+}
+
+.vx32-monitors-group-strip--tracks {
+    background: rgb(244 114 182 / 0.12);
+    border-color: rgb(244 114 182);
+    box-shadow: inset 0 3px 0 rgb(244 114 182), 0 0 0 1px rgb(244 114 182 / 0.35);
+}
+.vx32-monitors-group-strip--tracks .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--tracks .vx32-monitors-strip__name {
+    color: rgb(249 168 212);
+}
+.vx32-monitors-group-strip--tracks .vx32-monitors-strip__track {
+    border-color: rgb(244 114 182 / 0.55);
+    background: rgb(244 114 182 / 0.08);
+}
+.vx32-monitors-group-strip--tracks .vx32-monitors-strip__handle {
+    background: rgb(249 168 212);
+}
+.vx32-monitors-group-strip--tracks.is-focused {
+    box-shadow: inset 0 3px 0 rgb(244 114 182), 0 0 0 2px rgb(244 114 182 / 0.75), 0 0 14px rgb(244 114 182 / 0.25);
+}
+
+.vx32-monitors-group-strip--talkback {
+    background: rgb(161 161 170 / 0.12);
+    border-color: rgb(161 161 170);
+    box-shadow: inset 0 3px 0 rgb(161 161 170), 0 0 0 1px rgb(161 161 170 / 0.35);
+}
+.vx32-monitors-group-strip--talkback .vx32-monitors-strip__num,
+.vx32-monitors-group-strip--talkback .vx32-monitors-strip__name {
+    color: rgb(212 212 216);
+}
+.vx32-monitors-group-strip--talkback .vx32-monitors-strip__track {
+    border-color: rgb(161 161 170 / 0.55);
+    background: rgb(161 161 170 / 0.08);
+}
+.vx32-monitors-group-strip--talkback .vx32-monitors-strip__handle {
+    background: rgb(212 212 216);
+}
+.vx32-monitors-group-strip--talkback.is-focused {
+    box-shadow: inset 0 3px 0 rgb(161 161 170), 0 0 0 2px rgb(161 161 170 / 0.75), 0 0 14px rgb(161 161 170 / 0.25);
+}
+
+.vx32-monitors-channels.is-group-view .vx32-monitors-strip.is-pick-disabled {
+    cursor: default;
+}
+
+.vx32-monitors-strip__group-badge {
+    flex-shrink: 0;
+    margin: 0 0 0.25rem;
+    padding: 0.1rem 0.25rem;
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(186 230 253);
+    background: rgb(8 47 73 / 0.65);
+    border: 1px solid rgb(56 189 248 / 0.35);
+    border-radius: 999px;
+}
+
+.vx32-monitors-strip.is-selected {
+    border-color: rgb(56 189 248 / 0.65);
+    box-shadow: 0 0 0 1px rgb(56 189 248 / 0.35);
+}
+
+.vx32-monitors-strip[data-group-pick-target] {
+    cursor: pointer;
+}
+
+.vx32-monitors-strip[data-group-pick-target] [data-channel-fader-control] {
+    cursor: ns-resize;
+    touch-action: none;
+}
+
+.vx32-monitors-strip.is-group-pick-selected {
+    border-color: rgb(250 204 21 / 0.75);
+    box-shadow: 0 0 0 1px rgb(250 204 21 / 0.45);
+}
+
+.vx32-monitors-strip.is-group-assigned:not(.is-group-pick-selected) {
+    border-color: rgb(56 189 248 / 0.35);
+}
+
+.vx32-monitors-strip.is-group-controlled {
+    border-color: rgb(56 189 248 / 0.65);
+    box-shadow: inset 0 0 0 1px rgb(56 189 248 / 0.18);
+}
+
+a.vx32-monitors-strip__name {
+    color: rgb(161 161 170);
+    text-decoration: none;
+}
+
+a.vx32-monitors-strip__name:hover {
+    color: rgb(186 230 253);
+}
+
+.vx32-monitors-channel-settings__empty {
+    margin: 0.35rem 0 0;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-channel-settings__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin: 0.35rem 0 0;
+}
+
+.vx32-monitors-channel-settings__row {
+    display: grid;
+    grid-template-columns: minmax(5rem, 1fr) 2fr;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-monitors-channel-settings__row dt {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-channel-settings__row dd {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-groups__scope,
+.vx32-monitors-groups__scaffold {
+    margin: 0.15rem 0 0;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-groups__scaffold {
+    font-style: italic;
+    color: rgb(82 82 91);
+}
+
+.vx32-monitors-groups__selection-status {
+    margin: 0.35rem 0 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(161 161 170);
+}
+
+.vx32-monitors-groups__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.vx32-monitors-groups__clear-pick {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(212 212 216);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-groups__remove-from,
+.vx32-monitors-groups__clear-group {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(254 202 202);
+    background: rgb(69 10 10 / 0.45);
+    border: 1px solid rgb(239 68 68 / 0.45);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-groups__pill.is-assign-ready {
+    box-shadow: 0 0 0 2px rgb(250 204 21 / 0.45);
+}
+
+.vx32-monitors-groups__pill.is-remove-ready {
+    box-shadow: 0 0 0 2px rgb(239 68 68 / 0.45);
+}
+
+.vx32-monitors-bottom {
+    grid-area: bottom;
+    display: grid;
+    flex-shrink: 0;
+    grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.4fr);
+    gap: 0.75rem;
+    align-items: stretch;
+}
+
+.vx32-monitors-groups-menu {
+    display: block;
+    min-width: 0;
+}
+
+.vx32-monitors-groups-menu__summary {
+    display: none;
+    list-style: none;
+    cursor: pointer;
+}
+
+.vx32-monitors-groups-menu__summary::-webkit-details-marker {
+    display: none;
+}
+
+.vx32-monitors-groups-menu__summary-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: rgb(212 212 216);
+}
+
+.vx32-monitors-groups-menu__summary-hint {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(113 113 122);
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vx32-monitors-groups-menu__panel {
+    min-width: 0;
+}
+
+.vx32-monitors-groups__desktop-title {
+    margin: 0;
+}
+
+.vx32-monitors-settings__rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.vx32-monitors-settings__row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-monitors-settings__label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(161 161 170);
+}
+
+.vx32-monitors-settings__value {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgb(228 228 231);
+}
+
+.vx32-monitors-settings__icon {
+    font-size: 1rem;
+    color: rgb(113 113 122);
+}
+
+.vx32-monitors-settings__pan-dial {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin: 0;
+}
+
+.vx32-monitors-groups__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.vx32-monitors-groups__pill {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(212 212 216);
+    background: rgb(39 39 42);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-monitors-groups__pill--all.is-active {
+    color: rgb(187 247 208);
+    background: rgb(6 78 59 / 0.45);
+    border-color: rgb(34 197 94 / 0.45);
+    box-shadow: 0 0 0 1px rgb(34 197 94 / 0.25);
+}
+
+.vx32-monitors-groups__pill--drumkit { border-color: rgb(251 146 60 / 0.45); }
+.vx32-monitors-groups__pill--drumkit.is-active,
+.vx32-monitors-groups__pill--drumkit.is-assign-ready {
+    color: rgb(253 186 116);
+    background: rgb(251 146 60 / 0.18);
+    border-color: rgb(251 146 60);
+    box-shadow: 0 0 0 1px rgb(251 146 60 / 0.35);
+}
+
+.vx32-monitors-groups__pill--bass { border-color: rgb(192 132 252 / 0.45); }
+.vx32-monitors-groups__pill--bass.is-active,
+.vx32-monitors-groups__pill--bass.is-assign-ready {
+    color: rgb(216 180 254);
+    background: rgb(192 132 252 / 0.18);
+    border-color: rgb(192 132 252);
+    box-shadow: 0 0 0 1px rgb(192 132 252 / 0.35);
+}
+
+.vx32-monitors-groups__pill--guitars { border-color: rgb(250 204 21 / 0.45); }
+.vx32-monitors-groups__pill--guitars.is-active,
+.vx32-monitors-groups__pill--guitars.is-assign-ready {
+    color: rgb(253 224 71);
+    background: rgb(250 204 21 / 0.14);
+    border-color: rgb(250 204 21);
+    box-shadow: 0 0 0 1px rgb(250 204 21 / 0.35);
+}
+
+.vx32-monitors-groups__pill--keys { border-color: rgb(96 165 250 / 0.45); }
+.vx32-monitors-groups__pill--keys.is-active,
+.vx32-monitors-groups__pill--keys.is-assign-ready {
+    color: rgb(147 197 253);
+    background: rgb(96 165 250 / 0.18);
+    border-color: rgb(96 165 250);
+    box-shadow: 0 0 0 1px rgb(96 165 250 / 0.35);
+}
+
+.vx32-monitors-groups__pill--vocals { border-color: rgb(74 222 128 / 0.45); }
+.vx32-monitors-groups__pill--vocals.is-active,
+.vx32-monitors-groups__pill--vocals.is-assign-ready {
+    color: rgb(134 239 172);
+    background: rgb(74 222 128 / 0.14);
+    border-color: rgb(74 222 128);
+    box-shadow: 0 0 0 1px rgb(74 222 128 / 0.35);
+}
+
+.vx32-monitors-groups__pill--horns { border-color: rgb(45 212 191 / 0.45); }
+.vx32-monitors-groups__pill--horns.is-active,
+.vx32-monitors-groups__pill--horns.is-assign-ready {
+    color: rgb(94 234 212);
+    background: rgb(45 212 191 / 0.14);
+    border-color: rgb(45 212 191);
+    box-shadow: 0 0 0 1px rgb(45 212 191 / 0.35);
+}
+
+.vx32-monitors-groups__pill--tracks { border-color: rgb(244 114 182 / 0.45); }
+.vx32-monitors-groups__pill--tracks.is-active,
+.vx32-monitors-groups__pill--tracks.is-assign-ready {
+    color: rgb(249 168 212);
+    background: rgb(244 114 182 / 0.14);
+    border-color: rgb(244 114 182);
+    box-shadow: 0 0 0 1px rgb(244 114 182 / 0.35);
+}
+
+.vx32-monitors-groups__pill--talkback { border-color: rgb(161 161 170 / 0.45); }
+.vx32-monitors-groups__pill--talkback.is-active,
+.vx32-monitors-groups__pill--talkback.is-assign-ready {
+    color: rgb(212 212 216);
+    background: rgb(161 161 170 / 0.14);
+    border-color: rgb(161 161 170);
+    box-shadow: 0 0 0 1px rgb(161 161 170 / 0.35);
+}
+
+.vx32-monitors-groups__pill--drumkit.is-remove-ready,
+.vx32-monitors-groups__pill--bass.is-remove-ready,
+.vx32-monitors-groups__pill--guitars.is-remove-ready,
+.vx32-monitors-groups__pill--keys.is-remove-ready,
+.vx32-monitors-groups__pill--vocals.is-remove-ready,
+.vx32-monitors-groups__pill--horns.is-remove-ready,
+.vx32-monitors-groups__pill--tracks.is-remove-ready,
+.vx32-monitors-groups__pill--talkback.is-remove-ready {
+    color: rgb(254 202 202);
+    background: rgb(69 10 10 / 0.35);
+    border-color: rgb(239 68 68 / 0.65);
+    box-shadow: 0 0 0 1px rgb(239 68 68 / 0.45);
+}
+
+.vx32-monitors-groups__pill--add {
+    min-width: 2rem;
+    padding-inline: 0.55rem;
+}
+
+@media (max-width: 900px) {
+    .vx32-monitors-workspace__body {
+        height: auto;
+        overflow: auto;
+    }
+
+    .vx32-monitors-main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        height: auto;
+        min-height: min(100%, 100dvh);
+        overflow: visible;
+    }
+
+    .vx32-monitors-main__stack {
+        flex: 1 1 auto;
+        order: 1;
+        min-height: 55vh;
+    }
+
+    .vx32-monitors-sidebar {
+        order: 2;
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        padding: 0.55rem 0.65rem;
+    }
+
+    .vx32-monitors-bottom {
+        order: 3;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .vx32-monitors-channel-settings {
+        display: none !important;
+    }
+
+    .vx32-monitors-channels {
+        flex: 1 1 auto;
+        min-height: 42vh;
+    }
+
+    .vx32-monitors-channels__strips {
+        min-height: 36vh;
+    }
+
+    .vx32-monitors-eq {
+        max-height: none;
+        flex-shrink: 0;
+    }
+
+    .vx32-monitors-bus-picker__summary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.65rem;
+        background: rgb(18 18 20);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 8px;
+    }
+
+    .vx32-monitors-bus-picker__panel {
+        margin-top: 0.45rem;
+        max-height: 14rem;
+    }
+
+    .vx32-monitors-bus-picker:not([open]) .vx32-monitors-bus-picker__panel {
+        display: none;
+    }
+
+    .vx32-monitors-sidebar__head {
+        display: none;
+    }
+
+    .vx32-monitors-sidebar__footer {
+        display: none;
+    }
+
+    .vx32-monitors-groups-menu__summary {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 0.65rem;
+        background: rgb(18 18 20);
+        border: 1px solid rgb(63 63 70);
+        border-radius: 8px;
+    }
+
+    .vx32-monitors-groups-menu:not([open]) .vx32-monitors-groups-menu__panel {
+        display: none;
+    }
+
+    .vx32-monitors-groups__desktop-title,
+    .vx32-monitors-groups__selection-status {
+        display: none;
+    }
+
+    .vx32-monitors-groups-menu__panel {
+        padding-top: 0.45rem;
+    }
+}
+

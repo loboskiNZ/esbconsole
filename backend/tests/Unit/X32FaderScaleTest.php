@@ -46,6 +46,31 @@ class X32FaderScaleTest extends TestCase
         $this->assertTrue($marks[0]['unity'] ?? false);
     }
 
+    public function test_console_scale_marks_include_full_monitor_labels(): void
+    {
+        $marks = collect(X32FaderScale::consoleScaleMarks())->keyBy('db');
+
+        $this->assertSame('+10', $marks[10]['label']);
+        $this->assertSame('+5', $marks[5]['label']);
+        $this->assertSame('0', $marks[0]['label']);
+        $this->assertTrue($marks[0]['unity']);
+        $this->assertSame('-5', $marks[-5]['label']);
+        $this->assertSame('-10', $marks[-10]['label']);
+        $this->assertSame('-20', $marks[-20]['label']);
+        $this->assertSame('-30', $marks[-30]['label']);
+        $this->assertSame('-40', $marks[-40]['label']);
+        $this->assertSame('-60', $marks[-60]['label']);
+        $this->assertSame('−∞', $marks[-90]['label']);
+        $this->assertSame(75.0, $marks[0]['pct']);
+        $this->assertSame(0.0, $marks[-90]['pct']);
+    }
+
+    public function test_db_mark_percent_matches_linear_scale(): void
+    {
+        $this->assertEqualsWithDelta(75.0, X32FaderScale::dbMarkPercent(0.0), 0.001);
+        $this->assertEqualsWithDelta(100.0, X32FaderScale::dbMarkPercent(10.0), 0.001);
+    }
+
     public function test_quantize_linear_snaps_to_x32_step_grid(): void
     {
         $this->assertEqualsWithDelta(768 / 1023.0, X32FaderScale::quantizeLinear(0.75), 0.0001);

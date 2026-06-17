@@ -150,7 +150,28 @@ Per channel:
 * Icon
 * Mute status
 * DCA assignment
-* Bus send summary
+* Bus send summary (monitor workspace — PH043.05)
+
+Per channel, per monitor bus (`configuration.channels[n].sends.buses[bus]`):
+
+* `level` — linear 0–1 (+10 dB scale) and dB value, `unit: dB`, `source` OSC path
+* `on` — send active (monitor mute is inverse of send off)
+* `pan` — where available (odd buses only)
+* `tap` — tap/pre/post mode from `/type` enum (odd buses only)
+
+OSC read paths (Patrick Gilles Maillot X32/M32 OSC Remote Protocol):
+
+| Field | OSC path | Scale / enum |
+|---|---|---|
+| Send on | `/ch/{01…32}/mix/{01…16}/on` | enum int 0/1 |
+| Send level | `/ch/{01…32}/mix/{01…16}/level` | level [0.0…1.0(+10dB), 161] |
+| Send pan | `/ch/{01…32}/mix/{01,03…15}/pan` | linf [-100, 100, 2] |
+| Send tap/type | `/ch/{01…32}/mix/{01,03…15}/type` | int 0–5: in_lc, pre_eq, post_eq, pre_fader, post_fader, grp |
+| Pan follow | `/ch/{01…32}/mix/{03,05…15}/panFollow` | enum int 0/1 (learned; not rendered PH043.05) |
+
+No `/tap` OSC path — X32 uses `/type` for tap point. Even bus sends have no per-send pan/type paths.
+
+Missing capture omits `sends` key — Channels card shows placeholder fader (unity) and `—` level display.
 
 Status:
 
@@ -179,8 +200,33 @@ Per bus:
 * Sends-on-fader availability
 * Assigned outputs
 * Primary purpose
+* Bus master EQ (monitor workspace — PH043.04)
 
-Examples:
+Per bus master EQ (when learned):
+
+* EQ on/off (`configuration.buses[n].eq.on`)
+* Six bands (`configuration.buses[n].eq.bands[]`):
+  * `number` (1–6)
+  * `mode` (LCUT, LSHV, PEQ, VEQ, HSHV, HCUT; or OSC filter types BU6…LR24 with unsupported reason)
+  * `frequency_hz`
+  * `gain_db`
+  * `q`
+
+OSC read paths (Patrick Gilles Maillot X32/M32 OSC Remote Protocol):
+
+| Field | OSC path | Scale |
+|---|---|---|
+| Master EQ on | `/bus/{01…16}/eq/on` | enum int 0/1 |
+| Band type | `/bus/{01…16}/eq/{1…6}/type` | int 0–13 |
+| Band frequency | `/bus/{01…16}/eq/{1…6}/f` | logf [20, 20000, 201] Hz |
+| Band gain | `/bus/{01…16}/eq/{1…6}/g` | linf [-15, 15, 0.25] dB |
+| Band Q | `/bus/{01…16}/eq/{1…6}/q` | logf [10.0, 0.3, 72] |
+
+Fields not learned in PH043.04: per-band `/eq/{n}/on`, channel EQ, main LR EQ, send EQ.
+
+Learned values use `{ value, state: "learned" }`. Missing capture omits `eq` key — UI shows placeholder scaffold without claiming X32 origin.
+
+Graph rendering remains visual approximation only — not DSP accurate.
 
 * Ed IEM
 * Guitar IEM

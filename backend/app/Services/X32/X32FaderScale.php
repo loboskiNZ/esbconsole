@@ -101,6 +101,38 @@ class X32FaderScale
         ];
     }
 
+    /**
+     * Console fader scale ticks — matches virtual console / FADER_SCALE_TICKS.
+     *
+     * @return list<array{db: float, linear: float, label: string, unity: bool, pct: float}>
+     */
+    public static function consoleScaleMarks(): array
+    {
+        $marks = [
+            ['db' => 10.0, 'linear' => 1.0, 'label' => '+10', 'unity' => false],
+            ['db' => 5.0, 'linear' => 0.875, 'label' => '+5', 'unity' => false],
+            ['db' => 0.0, 'linear' => self::LINEAR_UNITY, 'label' => '0', 'unity' => true],
+            ['db' => -5.0, 'linear' => 0.625, 'label' => '-5', 'unity' => false],
+            ['db' => -10.0, 'linear' => 0.5, 'label' => '-10', 'unity' => false],
+            ['db' => -20.0, 'linear' => 0.375, 'label' => '-20', 'unity' => false],
+            ['db' => -30.0, 'linear' => 0.25, 'label' => '-30', 'unity' => false],
+            ['db' => -40.0, 'linear' => 0.1875, 'label' => '-40', 'unity' => false],
+            ['db' => -60.0, 'linear' => 0.0625, 'label' => '-60', 'unity' => false],
+            ['db' => -90.0, 'linear' => 0.0, 'label' => '−∞', 'unity' => false],
+        ];
+
+        return array_map(static function (array $mark): array {
+            $mark['pct'] = self::linearMarkPercent($mark['linear']);
+
+            return $mark;
+        }, $marks);
+    }
+
+    public static function dbMarkPercent(float $db): float
+    {
+        return self::linearMarkPercent(self::dbToLinear($db));
+    }
+
     public static function quantizeLinear(float $linear): float
     {
         $linear = max(0.0, min(self::LINEAR_MAX, $linear));

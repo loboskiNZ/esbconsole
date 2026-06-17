@@ -131,7 +131,7 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
         $channels = [];
 
         for ($index = 1; $index <= 32; $index++) {
-            $channels[] = $this->stripWithOscPaths([
+            $channel = $this->stripWithOscPaths([
                 'index' => $index,
                 'name' => $this->fixtureChannelName($index, $scene),
                 'color' => $this->fixtureChannelColor($index),
@@ -139,6 +139,12 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
                 'mute' => $this->fixtureMute($index, $sceneSeed, 11),
                 'controls' => $this->fixtureChannelControls($index, $sceneSeed),
             ], 'channel', $index);
+
+            $channel['sends'] = $index === 1
+                ? X32MonitorSendMatrixLearnCapture::fixtureChannelOne()
+                : X32MonitorSendMatrixLearnCapture::fixtureChannelDefault($index);
+
+            $channels[] = $channel;
         }
 
         return $channels;
@@ -225,13 +231,19 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
         $buses = [];
 
         for ($index = 1; $index <= 16; $index++) {
-            $buses[] = $this->stripWithOscPaths([
+            $bus = $this->stripWithOscPaths([
                 'index' => $index,
                 'name' => sprintf('Bus %02d', $index),
                 'color' => ($index % 7) + 1,
                 'fader' => $this->fixtureFader($index, $sceneSeed, 0.35, 0.035),
                 'mute' => $this->fixtureMute($index, $sceneSeed, 9),
             ], 'bus', $index);
+
+            if ($index === 1) {
+                $bus['eq'] = X32BusEqLearnCapture::fixtureBusOne();
+            }
+
+            $buses[] = $bus;
         }
 
         return $buses;
@@ -410,6 +422,12 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
             if (array_key_exists('main_lr', $controls)) {
                 $responses[] = ['path' => X32OscAddressMap::channelLr($index), 'value' => $controls['main_lr'] ? 1 : 0];
             }
+
+            if (is_array($channel['sends'] ?? null)) {
+                foreach (X32MonitorSendMatrixLearnCapture::oscSeedsFromCapture($channel['sends']) as $seed) {
+                    $responses[] = $seed;
+                }
+            }
         }
 
         foreach ($buses as $bus) {
@@ -417,6 +435,12 @@ class FakeX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterface
                 'path' => sprintf('/bus/%02d/mix/fader', $bus['index']),
                 'value' => $bus['fader'],
             ];
+
+            if (is_array($bus['eq'] ?? null)) {
+                foreach (X32BusEqLearnCapture::oscSeedsFromCapture($bus['eq']) as $seed) {
+                    $responses[] = $seed;
+                }
+            }
         }
 
         foreach ($dcas as $dca) {

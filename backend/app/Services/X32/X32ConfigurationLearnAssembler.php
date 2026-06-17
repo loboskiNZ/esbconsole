@@ -129,7 +129,7 @@ class X32ConfigurationLearnAssembler
             $source = $channel['source'] ?? null;
             $dcaMembership = $channel['dca_membership'] ?? null;
 
-            $configured[] = [
+            $configuredChannel = [
                 'number' => $number,
                 'name' => $this->fieldFromValue(
                     (string) ($channel['name'] ?? ''),
@@ -173,9 +173,131 @@ class X32ConfigurationLearnAssembler
                     'main_lr' => $this->fieldFromOptionalCapture($controls['main_lr'] ?? null, array_key_exists('main_lr', $controls)),
                 ],
             ];
+
+            $sends = $this->buildChannelSends($channel);
+
+            if ($sends !== null) {
+                $configuredChannel['sends'] = $sends;
+            }
+
+            $configured[] = $configuredChannel;
         }
 
         return $configured;
+    }
+
+    /**
+     * @param  array<string, mixed>  $channel
+     * @return array<string, mixed>|null
+     */
+    private function buildChannelSends(array $channel): ?array
+    {
+        $sends = is_array($channel['sends'] ?? null) ? $channel['sends'] : null;
+
+        if ($sends === null || ($sends['captured'] ?? false) !== true) {
+            return null;
+        }
+
+        $buses = [];
+
+        foreach (is_array($sends['buses'] ?? null) ? $sends['buses'] : [] as $busNumber => $bus) {
+            if (! is_array($bus)) {
+                continue;
+            }
+
+            $number = (int) ($bus['bus'] ?? $busNumber);
+
+            if ($number < 1 || $number > 16) {
+                continue;
+            }
+
+            $paths = is_array($bus['osc_paths'] ?? null) ? $bus['osc_paths'] : [];
+            $levelLinear = $bus['level'] ?? null;
+            $levelDb = $bus['level_db'] ?? null;
+
+            if ($levelDb === null && is_numeric($levelLinear)) {
+                $levelDb = round(X32FaderScale::linearToDb((float) $levelLinear), 2);
+            }
+
+            $busEntry = [
+                'level' => $this->learnedSendField(
+                    [
+                        'linear' => is_numeric($levelLinear) ? round((float) $levelLinear, 6) : null,
+                        'value' => $levelDb,
+                        'unit' => 'dB',
+                    ],
+                    array_key_exists('level', $bus),
+                    (string) ($paths['level'] ?? X32OscAddressMap::channelBusSendLevel((int) ($channel['index'] ?? 0), $number)),
+                ),
+                'on' => $this->learnedSendField(
+                    ((int) ($bus['on'] ?? 0)) === 1,
+                    array_key_exists('on', $bus),
+                    (string) ($paths['on'] ?? X32OscAddressMap::channelBusSendOn((int) ($channel['index'] ?? 0), $number)),
+                ),
+            ];
+
+            if (array_key_exists('pan', $bus) || array_key_exists('pan_normalized', $bus)) {
+                $busEntry['pan'] = $this->learnedSendField(
+                    $bus['pan'] ?? X32ChannelBusSendOscDecoder::decodePan(
+                        is_numeric($bus['pan_normalized'] ?? null) ? (float) $bus['pan_normalized'] : null,
+                    ),
+                    array_key_exists('pan', $bus) || array_key_exists('pan_normalized', $bus),
+                    (string) ($paths['pan'] ?? ''),
+                );
+            } elseif (X32ChannelBusSendOscDecoder::busSupportsSendPan($number)) {
+                $busEntry['pan'] = $this->notLearned('osc_path_not_queried');
+            } else {
+                $busEntry['pan'] = $this->notLearned('osc_path_not_on_even_bus_send');
+            }
+
+            if (array_key_exists('tap', $bus) || array_key_exists('type', $bus)) {
+                $busEntry['tap'] = $this->learnedSendField(
+                    $bus['tap'] ?? X32ChannelBusSendOscDecoder::typeToTap(
+                        array_key_exists('type', $bus) ? (int) $bus['type'] : null,
+                    ),
+                    array_key_exists('tap', $bus) || array_key_exists('type', $bus),
+                    (string) ($paths['type'] ?? ''),
+                );
+            } elseif (X32ChannelBusSendOscDecoder::busSupportsSendType($number)) {
+                $busEntry['tap'] = $this->notLearned('osc_path_not_queried');
+            } else {
+                $busEntry['tap'] = $this->notLearned('osc_path_not_on_even_bus_send');
+            }
+
+            if (array_key_exists('pan_follow', $bus)) {
+                $busEntry['pan_follow'] = $this->learnedSendField(
+                    ((int) ($bus['pan_follow'] ?? 0)) === 1,
+                    true,
+                    (string) ($paths['pan_follow'] ?? ''),
+                );
+            }
+
+            $buses[(string) $number] = $busEntry;
+        }
+
+        if ($buses === []) {
+            return null;
+        }
+
+        return [
+            'buses' => $buses,
+        ];
+    }
+
+    /**
+     * @return array{value: mixed, state: string, source?: string, reason?: string|null}
+     */
+    private function learnedSendField(mixed $value, bool $learned, string $source): array
+    {
+        if (! $learned || $source === '') {
+            return $this->notLearned('not_learned');
+        }
+
+        return [
+            'value' => $value,
+            'state' => 'learned',
+            'source' => $source,
+        ];
     }
 
     /**
@@ -203,7 +325,7 @@ class X32ConfigurationLearnAssembler
             $name = (string) ($bus['name'] ?? '');
             $purpose = $this->inferBusPurpose($name);
 
-            $configured[] = [
+            $configuredBus = [
                 'number' => $number,
                 'name' => $this->fieldFromValue($name, ! $this->isGenericStripName($name, $number, 'Bus')),
                 'mute' => $this->fieldFromValue((bool) ($bus['mute'] ?? false), array_key_exists('mute', $bus)),
@@ -219,9 +341,100 @@ class X32ConfigurationLearnAssembler
                     : $this->notLearned('purpose_not_inferable'),
                 'output_assignment' => $this->buildBusOutputReference($number, $summary),
             ];
+
+            $eq = $this->buildBusEq($bus);
+
+            if ($eq !== null) {
+                $configuredBus['eq'] = $eq;
+            }
+
+            $configured[] = $configuredBus;
         }
 
         return $configured;
+    }
+
+    /**
+     * @param  array<string, mixed>  $bus
+     * @return array<string, mixed>|null
+     */
+    private function buildBusEq(array $bus): ?array
+    {
+        $eq = is_array($bus['eq'] ?? null) ? $bus['eq'] : null;
+
+        if ($eq === null || ($eq['captured'] ?? false) !== true) {
+            return null;
+        }
+
+        $bands = [];
+
+        foreach (is_array($eq['bands'] ?? null) ? $eq['bands'] : [] as $band) {
+            if (! is_array($band)) {
+                continue;
+            }
+
+            $number = (int) ($band['number'] ?? 0);
+
+            if ($number < 1 || $number > 6) {
+                continue;
+            }
+
+            $type = array_key_exists('type', $band) ? (int) $band['type'] : null;
+            $mode = X32BusEqOscDecoder::typeToMode($type);
+            $modeLearned = array_key_exists('type', $band) && $mode !== null;
+            $modeReason = null;
+
+            if ($modeLearned && ! X32BusEqOscDecoder::modeIsSupportedInMonitorCard($mode)) {
+                $modeReason = 'osc_eq_type_outside_monitor_card_modes';
+            }
+
+            $frequencyHz = $band['f_hz'] ?? null;
+
+            if ($frequencyHz === null && array_key_exists('f_normalized', $band)) {
+                $frequencyHz = X32BusEqOscDecoder::decodeFrequency((float) $band['f_normalized']);
+            }
+
+            $gainDb = $band['g_db'] ?? null;
+
+            if ($gainDb === null && array_key_exists('g_normalized', $band)) {
+                $gainDb = X32BusEqOscDecoder::decodeGainDb((float) $band['g_normalized']);
+            }
+
+            $q = $band['q'] ?? null;
+
+            if ($q === null && array_key_exists('q_normalized', $band)) {
+                $q = X32BusEqOscDecoder::decodeQ((float) $band['q_normalized']);
+            }
+
+            $bands[] = [
+                'number' => $number,
+                'mode' => $this->fieldFromValue($mode, $modeLearned, $modeReason),
+                'frequency_hz' => $this->fieldFromValue(
+                    $frequencyHz,
+                    array_key_exists('f_hz', $band) || array_key_exists('f_normalized', $band),
+                ),
+                'gain_db' => $this->fieldFromValue(
+                    $gainDb,
+                    array_key_exists('g_db', $band) || array_key_exists('g_normalized', $band),
+                ),
+                'q' => $this->fieldFromValue(
+                    $q,
+                    array_key_exists('q', $band) || array_key_exists('q_normalized', $band),
+                ),
+            ];
+        }
+
+        if ($bands === [] && ! array_key_exists('on', $eq)) {
+            return null;
+        }
+
+        return [
+            'on' => $this->fieldFromValue(
+                ((int) ($eq['on'] ?? 0)) === 1,
+                array_key_exists('on', $eq),
+            ),
+            'bands' => $bands,
+        ];
     }
 
     /**

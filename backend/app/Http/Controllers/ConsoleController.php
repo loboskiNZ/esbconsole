@@ -17,6 +17,7 @@ use App\Services\Console\ShowConsoleWorkspaceResolver;
 use App\Services\Console\VirtualConsoleStripBuilder;
 use App\Services\Console\X32ConsoleLearningService;
 use App\Services\Console\X32ConfigurationWorkspaceBuilder;
+use App\Services\Console\X32MonitorsWorkspaceBuilder;
 use App\Services\Console\X32RoutingWorkspaceBuilder;
 use App\Services\X32\X32SceneMetadataService;
 use App\Services\X32\X32SourceConnectivityService;
@@ -38,6 +39,7 @@ class ConsoleController extends Controller
         private readonly ShowConsoleWorkspaceResolver $workspaceResolver,
         private readonly VirtualConsoleStripBuilder $virtualConsoleStripBuilder,
         private readonly X32ConfigurationWorkspaceBuilder $configurationWorkspaceBuilder,
+        private readonly X32MonitorsWorkspaceBuilder $monitorsWorkspaceBuilder,
         private readonly X32RoutingWorkspaceBuilder $routingWorkspaceBuilder,
         private readonly X32SourceConnectivityService $sourceConnectivityService,
         private readonly X32SceneMetadataService $sceneMetadataService,
@@ -135,6 +137,63 @@ class ConsoleController extends Controller
             'consoleType' => $consoleType,
             'configurationWorkspace' => $this->configurationWorkspaceBuilder->build($summary),
         ]);
+    }
+
+    public function busLayoutForShow(Request $request, Show $show, int $bus): View|RedirectResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        abort_unless($bus >= 1 && $bus <= 16, 404);
+
+        $workspace = $this->workspaceResolver->resolve($show);
+
+        if ($workspace['mode'] === ShowConsoleWorkspaceResolver::MODE_EMPTY) {
+            return redirect()->route('shows.console.learn', $show);
+        }
+
+        $summary = $workspace['summary'];
+        $baseline = $workspace['baseline'] ?? null;
+
+        $consoleType = $baseline?->console_type
+            ?? ConsoleType::tryFrom((string) ($summary['console_type'] ?? ConsoleType::X32->value))
+            ?? ConsoleType::X32;
+
+        $baseline?->loadMissing('sourceSnapshot.integrationDevice');
+
+        $device = $baseline?->sourceSnapshot?->integrationDevice;
+        $summary = $this->sceneMetadataService->enrichSummaryWithSceneName($summary, $device);
+
+        $selectedChannel = $request->query('channel');
+        $selectedChannel = is_numeric($selectedChannel) ? (int) $selectedChannel : null;
+
+        try {
+            $monitorsWorkspace = $this->monitorsWorkspaceBuilder->build($summary, $bus, $selectedChannel);
+        } catch (\InvalidArgumentException) {
+            abort(404);
+        }
+
+        return view('console.monitors', [
+            'band' => $this->band(),
+            'show' => $show,
+            'workspaceMode' => $workspace['mode'],
+            'summary' => $summary,
+            'consoleType' => $consoleType,
+            'monitorsWorkspace' => $monitorsWorkspace,
+        ]);
+    }
+
+    public function redirectLegacyMonitorRoute(Show $show, int $busNumber): RedirectResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        abort_unless($busNumber >= 1 && $busNumber <= 16, 404);
+
+        return redirect()->route('shows.console.bus.layout', [$show, $busNumber]);
+    }
+
+    public function monitorsForShow(Show $show, int $busNumber): View|RedirectResponse
+    {
+        return $this->redirectLegacyMonitorRoute($show, $busNumber);
     }
 
     public function routingForShow(Show $show): View|RedirectResponse

@@ -47,6 +47,29 @@ class FakeX32ConsoleSnapshotReaderTest extends TestCase
             $sceneOne->summary['buses'][0]['fader'],
             $sceneFive->summary['buses'][0]['fader'],
         );
+        $this->assertArrayHasKey('eq', $sceneOne->summary['buses'][0]);
+        $this->assertArrayNotHasKey('eq', $sceneOne->summary['buses'][1]);
+        $this->assertSame(79.6, $sceneOne->summary['buses'][0]['eq']['bands'][0]['f_hz']);
+        $this->assertArrayHasKey('sends', $sceneOne->summary['channels'][0]);
+        $this->assertSame(0.75, $sceneOne->summary['channels'][0]['sends']['buses'][1]['level']);
+    }
+
+    public function test_fixture_send_matrix_flows_into_configuration_block(): void
+    {
+        $device = $this->createX32Device(Band::factory()->create());
+        $result = (new FakeX32ConsoleSnapshotReader)->learnScene(new X32ConsoleLearnCommand(
+            device: $device,
+            requestedSceneNumber: '01',
+            host: '127.0.0.1',
+            port: 10023,
+        ));
+
+        $attached = app(\App\Services\X32\X32ConfigurationLearnAssembler::class)->attach($result->summary);
+
+        $this->assertSame(
+            'learned',
+            $attached['configuration']['channels'][0]['sends']['buses']['1']['level']['state'],
+        );
     }
 
     private function createX32Device(Band $band): IntegrationDevice

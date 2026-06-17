@@ -62,6 +62,31 @@ class X32OscAddressMap
         return sprintf('/ch/%02d/eq/on', self::clamp($index, 1, 32));
     }
 
+    public static function channelBusSendOn(int $channel, int $bus): string
+    {
+        return sprintf('/ch/%02d/mix/%02d/on', self::clamp($channel, 1, 32), self::clamp($bus, 1, 16));
+    }
+
+    public static function channelBusSendLevel(int $channel, int $bus): string
+    {
+        return sprintf('/ch/%02d/mix/%02d/level', self::clamp($channel, 1, 32), self::clamp($bus, 1, 16));
+    }
+
+    public static function channelBusSendPan(int $channel, int $bus): string
+    {
+        return sprintf('/ch/%02d/mix/%02d/pan', self::clamp($channel, 1, 32), self::clamp($bus, 1, 16));
+    }
+
+    public static function channelBusSendType(int $channel, int $bus): string
+    {
+        return sprintf('/ch/%02d/mix/%02d/type', self::clamp($channel, 1, 32), self::clamp($bus, 1, 16));
+    }
+
+    public static function channelBusSendPanFollow(int $channel, int $bus): string
+    {
+        return sprintf('/ch/%02d/mix/%02d/panFollow', self::clamp($channel, 1, 32), self::clamp($bus, 1, 16));
+    }
+
     public static function busFader(int $index): string
     {
         return sprintf('/bus/%02d/mix/fader', self::clamp($index, 1, 16));
@@ -146,6 +171,36 @@ class X32OscAddressMap
     public static function busIcon(int $index): string
     {
         return sprintf('/bus/%02d/config/icon', self::clamp($index, 1, 16));
+    }
+
+    public static function busEqOn(int $index): string
+    {
+        return sprintf('/bus/%02d/eq/on', self::clamp($index, 1, 16));
+    }
+
+    public static function busEqBandType(int $index, int $band): string
+    {
+        return sprintf('/bus/%02d/eq/%d/type', self::clamp($index, 1, 16), self::clamp($band, 1, 6));
+    }
+
+    public static function busEqBandFrequency(int $index, int $band): string
+    {
+        return sprintf('/bus/%02d/eq/%d/f', self::clamp($index, 1, 16), self::clamp($band, 1, 6));
+    }
+
+    public static function busEqBandGain(int $index, int $band): string
+    {
+        return sprintf('/bus/%02d/eq/%d/g', self::clamp($index, 1, 16), self::clamp($band, 1, 6));
+    }
+
+    public static function busEqBandQ(int $index, int $band): string
+    {
+        return sprintf('/bus/%02d/eq/%d/q', self::clamp($index, 1, 16), self::clamp($band, 1, 6));
+    }
+
+    public static function busEqBandOn(int $index, int $band): string
+    {
+        return sprintf('/bus/%02d/eq/%d/on', self::clamp($index, 1, 16), self::clamp($band, 1, 6));
     }
 
     public static function busLink(int $firstBus): string

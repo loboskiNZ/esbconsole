@@ -51,6 +51,8 @@
         @endif
         @if ($activeTab === 'routing')
             <span class="vx32-subbar__badge vx32-subbar__badge--routing">Audio routing workspace</span>
+        @elseif ($activeTab === 'monitor')
+            <span class="vx32-subbar__badge vx32-subbar__badge--routing">Monitor bus workspace</span>
         @endif
     </div>
 </div>

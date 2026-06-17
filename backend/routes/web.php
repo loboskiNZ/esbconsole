@@ -35,6 +35,12 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
 
     Route::get('/shows/{show}/console', [ConsoleController::class, 'showForShow'])->name('shows.console');
     Route::get('/shows/{show}/console/routing', [ConsoleController::class, 'routingForShow'])->name('shows.console.routing');
+    Route::get('/shows/{show}/console/bus/{bus}/layout', [ConsoleController::class, 'busLayoutForShow'])
+        ->whereNumber('bus')
+        ->name('shows.console.bus.layout');
+    Route::get('/shows/{show}/monitors/{busNumber}', [ConsoleController::class, 'redirectLegacyMonitorRoute'])
+        ->whereNumber('busNumber')
+        ->name('shows.monitors');
     Route::get('/shows/{show}/console/configuration', [ConsoleController::class, 'configurationForShow'])->name('shows.console.configuration');
     Route::post('/shows/{show}/console/save', [ConsoleController::class, 'saveForShow'])->name('shows.console.save');
     Route::post('/shows/{show}/console/parameters', [ConsoleController::class, 'updateParameter'])->name('shows.console.parameters.update');

@@ -28,6 +28,8 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
         private readonly X32RoutingLearnCapture $routingLearnCapture,
         private readonly X32SourceConnectivityCapture $sourceConnectivityCapture,
         private readonly X32ConfigurationIdentityCapture $configurationIdentityCapture,
+        private readonly X32BusEqLearnCapture $busEqLearnCapture = new X32BusEqLearnCapture,
+        private readonly X32MonitorSendMatrixLearnCapture $monitorSendMatrixLearnCapture = new X32MonitorSendMatrixLearnCapture,
         private readonly int $sceneSettleMs = 800,
     ) {}
 
@@ -75,6 +77,7 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             usleep($this->sceneSettleMs * 1000);
 
             $channels = $this->readChannels($command, $oscResponses);
+            $this->attachChannelBusSends($command, $channels, $oscResponses);
             $buses = $this->readBuses($command, $oscResponses);
             $dcas = $this->readDcas($command, $oscResponses);
             $matrices = $this->readMatrices($command, $oscResponses);
@@ -222,6 +225,36 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $channels
+     * @param  array<int, array<string, mixed>>  $oscResponses
+     */
+    private function attachChannelBusSends(X32ConsoleLearnCommand $command, array &$channels, array &$oscResponses): void
+    {
+        foreach ($channels as &$channel) {
+            if (! is_array($channel)) {
+                continue;
+            }
+
+            $index = (int) ($channel['index'] ?? 0);
+
+            if ($index < 1 || $index > 32) {
+                continue;
+            }
+
+            $sends = $this->monitorSendMatrixLearnCapture->captureForChannel(
+                $index,
+                fn (string $path): float => $this->queryFloat($command, $path, $oscResponses),
+                fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
+            );
+
+            if (($sends['captured'] ?? false) === true) {
+                $channel['sends'] = $sends;
+            }
+        }
+        unset($channel);
+    }
+
+    /**
      * @param  array<int, array<string, mixed>>  $oscResponses
      * @return array<int, array<string, mixed>>
      */
@@ -242,7 +275,13 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
             $color = $this->queryInt($command, $colorPath, $oscResponses);
             $icon = $this->queryInt($command, $iconPath, $oscResponses);
 
-            $buses[] = [
+            $eq = $this->busEqLearnCapture->capture(
+                $index,
+                fn (string $path): float => $this->queryFloat($command, $path, $oscResponses),
+                fn (string $path): int => $this->queryInt($command, $path, $oscResponses),
+            );
+
+            $busEntry = [
                 'index' => $index,
                 'name' => $name !== '' ? $name : sprintf('Bus %02d', $index),
                 'color' => $color,
@@ -252,6 +291,12 @@ class OscUdpX32ConsoleSnapshotReader implements X32ConsoleSnapshotReaderInterfac
                 'osc_fader' => $faderPath,
                 'osc_on' => $onPath,
             ];
+
+            if (($eq['captured'] ?? false) === true) {
+                $busEntry['eq'] = $eq;
+            }
+
+            $buses[] = $busEntry;
         }
 
         return $buses;

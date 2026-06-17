@@ -17,6 +17,11 @@
                 href="{{ route('shows.console.configuration', $show) }}"
                 class="vx32-tabs__btn {{ $activeTab === 'configuration' ? 'is-active' : '' }}"
             >{{ strtoupper($tabLabel) }}</a>
+        @elseif ($tabKey === 'monitor')
+            <a
+                href="{{ route('shows.console.bus.layout', [$show, 1]) }}"
+                class="vx32-tabs__btn {{ $activeTab === 'monitor' ? 'is-active' : '' }}"
+            >{{ strtoupper($tabLabel) }}</a>
         @else
             <button type="button" class="vx32-tabs__btn" disabled>{{ strtoupper($tabLabel) }}</button>
         @endif

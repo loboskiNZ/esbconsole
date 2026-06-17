@@ -2,7 +2,9 @@
 
 namespace Tests\Unit;
 
+use App\Services\X32\X32BusEqLearnCapture;
 use App\Services\X32\X32ConfigurationLearnAssembler;
+use App\Services\X32\X32MonitorSendMatrixLearnCapture;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -144,5 +146,132 @@ class X32ConfigurationLearnAssemblerTest extends TestCase
     public function it_decodes_dca_membership_bitmap(): void
     {
         $this->assertSame([1, 3], X32ConfigurationLearnAssembler::decodeDcaMembershipBitmap(0b00000101));
+    }
+
+    #[Test]
+    public function it_stores_learned_bus_eq_under_configuration_buses(): void
+    {
+        $configuration = app(X32ConfigurationLearnAssembler::class)->build([
+            'transport' => 'live_osc',
+            'console_type' => 'x32',
+            'device_key' => 'foh-x32',
+            'device_name' => 'FOH X32',
+            'scene_number' => '01',
+            'channels' => [],
+            'buses' => [
+                [
+                    'index' => 1,
+                    'name' => 'Ed IEM',
+                    'fader' => 0.5,
+                    'mute' => false,
+                    'color' => 3,
+                    'eq' => X32BusEqLearnCapture::fixtureBusOne(),
+                ],
+                [
+                    'index' => 2,
+                    'name' => 'Bus 02',
+                    'fader' => 0.5,
+                    'mute' => false,
+                    'color' => 3,
+                ],
+            ],
+            'dcas' => [],
+            'matrices' => [],
+            'fx' => [],
+        ]);
+
+        $busOne = $configuration['buses'][0];
+        $busTwo = $configuration['buses'][1];
+
+        $this->assertArrayHasKey('eq', $busOne);
+        $this->assertArrayNotHasKey('eq', $busTwo);
+        $this->assertSame('learned', $busOne['eq']['on']['state']);
+        $this->assertFalse($busOne['eq']['on']['value']);
+        $this->assertSame('learned', $busOne['eq']['bands'][0]['frequency_hz']['state']);
+        $this->assertEqualsWithDelta(79.6, $busOne['eq']['bands'][0]['frequency_hz']['value'], 0.1);
+        $this->assertSame('LSHV', $busOne['eq']['bands'][0]['mode']['value']);
+        $this->assertSame('learned', $busOne['eq']['bands'][0]['q']['state']);
+        $this->assertEqualsWithDelta(1.96, $busOne['eq']['bands'][0]['q']['value'], 0.05);
+        $this->assertSame('LCUT', $busOne['eq']['bands'][5]['mode']['value']);
+    }
+
+    #[Test]
+    public function it_stores_learned_monitor_send_matrix_under_channel_configuration(): void
+    {
+        $configuration = app(X32ConfigurationLearnAssembler::class)->build([
+            'transport' => 'live_osc',
+            'console_type' => 'x32',
+            'device_key' => 'foh-x32',
+            'device_name' => 'FOH X32',
+            'scene_number' => '01',
+            'channels' => [
+                [
+                    'index' => 1,
+                    'name' => 'Kick',
+                    'fader' => 0.63,
+                    'mute' => false,
+                    'sends' => X32MonitorSendMatrixLearnCapture::fixtureChannelOne(),
+                ],
+            ],
+            'buses' => [],
+            'dcas' => [],
+            'matrices' => [],
+            'fx' => [],
+        ]);
+
+        $channel = $configuration['channels'][0];
+
+        $this->assertArrayHasKey('sends', $channel);
+        $this->assertSame('learned', $channel['sends']['buses']['1']['level']['state']);
+        $this->assertSame('/ch/01/mix/01/level', $channel['sends']['buses']['1']['level']['source']);
+        $this->assertEqualsWithDelta(0.0, $channel['sends']['buses']['1']['level']['value']['value'], 0.1);
+        $this->assertTrue($channel['sends']['buses']['1']['on']['value']);
+        $this->assertSame('learned', $channel['sends']['buses']['1']['tap']['state']);
+        $this->assertSame('post_fader', $channel['sends']['buses']['1']['tap']['value']);
+        $this->assertSame('learned', $channel['sends']['buses']['1']['pan']['state']);
+        $this->assertSame('not_learned', $channel['sends']['buses']['2']['pan']['state']);
+        $this->assertSame('osc_path_not_on_even_bus_send', $channel['sends']['buses']['2']['pan']['reason']);
+    }
+
+    #[Test]
+    public function it_does_not_store_placeholder_sends_when_capture_is_missing(): void
+    {
+        $configuration = app(X32ConfigurationLearnAssembler::class)->build([
+            'transport' => 'fake_fixture',
+            'console_type' => 'x32',
+            'device_key' => 'foh-x32',
+            'device_name' => 'FOH X32',
+            'scene_number' => '01',
+            'channels' => [
+                ['index' => 1, 'name' => 'Kick', 'fader' => 0.5, 'mute' => false],
+            ],
+            'buses' => [],
+            'dcas' => [],
+            'matrices' => [],
+            'fx' => [],
+        ]);
+
+        $this->assertArrayNotHasKey('sends', $configuration['channels'][0]);
+    }
+
+    #[Test]
+    public function it_does_not_store_placeholder_eq_when_capture_is_missing(): void
+    {
+        $configuration = app(X32ConfigurationLearnAssembler::class)->build([
+            'transport' => 'fake_fixture',
+            'console_type' => 'x32',
+            'device_key' => 'foh-x32',
+            'device_name' => 'FOH X32',
+            'scene_number' => '01',
+            'channels' => [],
+            'buses' => [
+                ['index' => 1, 'name' => 'Ed IEM', 'fader' => 0.5, 'mute' => false, 'color' => 3],
+            ],
+            'dcas' => [],
+            'matrices' => [],
+            'fx' => [],
+        ]);
+
+        $this->assertArrayNotHasKey('eq', $configuration['buses'][0]);
     }
 }

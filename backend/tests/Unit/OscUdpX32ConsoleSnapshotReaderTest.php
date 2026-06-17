@@ -8,7 +8,9 @@ use App\Services\X32\FakeX32ConsoleSnapshotReader;
 use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
 use App\Services\X32\RoutingX32ConsoleSnapshotReader;
+use App\Services\X32\X32BusEqLearnCapture;
 use App\Services\X32\X32ConfigurationIdentityCapture;
+use App\Services\X32\X32MonitorSendMatrixLearnCapture;
 use App\Services\X32\X32RoutingLearnCapture;
 use App\Services\X32\X32RoutingOscAddressMap;
 use App\Services\X32\X32SourceConnectivityCapture;
@@ -41,6 +43,8 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
             new X32RoutingLearnCapture,
             new X32SourceConnectivityCapture,
             new X32ConfigurationIdentityCapture,
+            new X32BusEqLearnCapture,
+            new X32MonitorSendMatrixLearnCapture,
             sceneSettleMs: 0,
         );
 
@@ -65,6 +69,14 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
         $this->assertSame('not_learned', $result->summary['routing']['normalized']['main_lr']['state']);
         $this->assertArrayHasKey('source_connectivity', $result->summary['routing']);
         $this->assertSame('online', $result->summary['routing']['source_connectivity']['ableton']['state']);
+        $this->assertArrayHasKey('sends', $result->summary['channels'][0]);
+        $this->assertSame(1, $result->summary['channels'][0]['sends']['buses'][1]['on']);
+        $this->assertSame(0.75, $result->summary['channels'][0]['sends']['buses'][1]['level']);
+        $this->assertArrayHasKey('eq', $result->summary['buses'][0]);
+        $this->assertSame(0, $result->summary['buses'][0]['eq']['on']);
+        $this->assertSame(79.6, $result->summary['buses'][0]['eq']['bands'][0]['f_hz']);
+        $this->assertArrayHasKey('eq', $result->summary['buses'][1]);
+        $this->assertSame(20.0, $result->summary['buses'][1]['eq']['bands'][0]['f_hz']);
         $this->assertNotEmpty($fakeOsc->writes());
     }
 
@@ -84,6 +96,8 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
                 new X32RoutingLearnCapture,
                 new X32SourceConnectivityCapture,
                 new X32ConfigurationIdentityCapture,
+                new X32BusEqLearnCapture,
+                new X32MonitorSendMatrixLearnCapture,
                 sceneSettleMs: 0,
             ),
             new X32RuntimeModeResolver,
@@ -122,6 +136,24 @@ class OscUdpX32ConsoleSnapshotReaderTest extends TestCase
             $fakeOsc->seedInt(sprintf('/bus/%02d/mix/on', $index), 1);
             $fakeOsc->seedString(sprintf('/bus/%02d/config/name', $index), sprintf('Bus %02d', $index));
             $fakeOsc->seedInt(sprintf('/bus/%02d/config/color', $index), 3);
+        }
+
+        foreach (X32BusEqLearnCapture::oscSeedsFromCapture(X32BusEqLearnCapture::fixtureBusOne()) as $seed) {
+            if (is_int($seed['value'])) {
+                $fakeOsc->seedInt($seed['path'], $seed['value']);
+            } else {
+                $fakeOsc->seedFloat($seed['path'], (float) $seed['value']);
+            }
+        }
+
+        foreach (X32MonitorSendMatrixLearnCapture::oscSeedsFromCapture(
+            X32MonitorSendMatrixLearnCapture::fixtureChannelOne(),
+        ) as $seed) {
+            if (is_int($seed['value'])) {
+                $fakeOsc->seedInt($seed['path'], $seed['value']);
+            } else {
+                $fakeOsc->seedFloat($seed['path'], (float) $seed['value']);
+            }
         }
 
         for ($index = 1; $index <= 8; $index++) {

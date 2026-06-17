@@ -2,6 +2,10 @@
 import Alpine from 'alpinejs';
 import { initPlaylistSortable } from './playlist-sortable';
 import './virtual-console';
+import './x32-bus-eq';
+import './x32-monitors-eq-panel';
+import './x32-monitors-group-control';
+import './x32-monitors-responsive-panels';
 
 window.Alpine = Alpine;
 

@@ -159,7 +159,12 @@ Learn stores a **single JSON summary** (not yet split per PH043 contract):
 | Channel | Pan | `/ch/NN/mix/pan` | In codebase | Yes | Yes | Yes | Strip control |
 | Channel | Main L/R send | `/ch/NN/mix/st` | In codebase | Yes | Yes | Yes | Mix assignment, not output routing |
 | Channel | DCA membership | `/ch/NN/grp/dca` (%int bitmap) | Doc-verified | No | No | No | |
-| Channel | Bus send summary | `/ch/NN/mix/01…16` (level/on) | Doc-verified | No | No | No | 16 buses × 32 channels = large read set; needs summary strategy |
+| Channel | Bus send summary | `/ch/NN/mix/01…16` (level/on) | Doc-verified | Yes (PH043.05) | Yes | Yes (monitor Channels card) | 32×16 matrix; level+on all buses; pan/type on odd buses only |
+| Channel | Bus send level | `/ch/NN/mix/BB/level` | Doc-verified (Maillot OSC) | Yes (PH043.05) | Yes | Yes | level [0.0…1.0(+10dB), 161] dB — `X32FaderScale` |
+| Channel | Bus send on | `/ch/NN/mix/BB/on` | Doc-verified | Yes (PH043.05) | Yes | Yes | enum OFF/ON (int 0/1) |
+| Channel | Bus send pan | `/ch/NN/mix/BB/pan` | Doc-verified | Yes (PH043.05) | Yes | Partial | linf [-100, 100, 2]; **odd BB only** (01,03…15) |
+| Channel | Bus send tap/type | `/ch/NN/mix/BB/type` | Doc-verified | Yes (PH043.05) | Yes | Partial | int 0–5: in_lc, pre_eq, post_eq, pre_fader, post_fader, grp; **odd BB only** |
+| Channel | Bus send pan follow | `/ch/NN/mix/BB/panFollow` | Doc-verified | Yes (PH043.05) | Stored | No | odd BB ≥03 only; not shown on Channels card in PH043.05 |
 | Channel | Sends UI flag | — | UI-only | Partial | Partial | Yes | `sends` control opens UI; **no bus matrix read** |
 
 ---
@@ -178,6 +183,12 @@ Learn stores a **single JSON summary** (not yet split per PH043 contract):
 | Bus | Assigned outputs | `/outputs/*` (PH042) | Doc-verified | No* | Partial* | Partial | *Routing domain — derived in routing builder, not bus config page |
 | Bus | Primary purpose | — | Derived | No | No | Partial | Operator labels inferred from names in routing IEM section only |
 | Bus | Fader / mute | `/bus/NN/mix/fader`, `/mix/on` | In codebase | Yes | Yes | Partial | Review table; not dedicated bus workspace |
+| Bus | Master EQ on | `/bus/NN/eq/on` | Doc-verified (Maillot OSC) | Yes (PH043.04) | Yes | Yes (monitor bus workspace) | Enum OFF/ON (int 0/1) |
+| Bus | EQ band type | `/bus/NN/eq/1…6/type` | Doc-verified | Yes (PH043.04) | Yes | Yes | int 0–13: LCut, LShv, PEQ, VEQ, HShv, HCut, BU6…LR24 |
+| Bus | EQ band frequency | `/bus/NN/eq/1…6/f` | Doc-verified | Yes (PH043.04) | Yes | Yes | logf [20, 20000, 201] Hz |
+| Bus | EQ band gain | `/bus/NN/eq/1…6/g` | Doc-verified | Yes (PH043.04) | Yes | Yes | linf [-15, 15, 0.25] dB |
+| Bus | EQ band Q | `/bus/NN/eq/1…6/q` | Doc-verified | Yes (PH043.04) | Yes | Yes | logf [10.0, 0.3, 72] |
+| Bus | EQ band on | `/bus/NN/eq/1…6/on` | Doc-verified | No | No | No | Per-band enable exists; monitor card uses master `/eq/on` only in PH043.04 |
 
 ---
 
@@ -247,7 +258,9 @@ Learn stores a **single JSON summary** (not yet split per PH043 contract):
 | Scene recall + operator scene number | `OscUdpX32ConsoleSnapshotReader`, `X32OscSceneRecallPacketBuilder` | Console identity |
 | Scene name (live learn + routing enrich) | `readSceneName`, `X32SceneMetadataService` | Console identity |
 | Channel learn (name, colour, fader, mute, core controls) | `readChannels` | Area 2 partial |
+| Monitor send matrix learn (32×16) | `X32MonitorSendMatrixLearnCapture`, `attachChannelBusSends` | Area 2 — PH043.05 Channels card |
 | Bus learn (name, colour, fader, mute) | `readBuses` | Area 3 partial |
+| Bus master EQ learn (6 bands) | `X32BusEqLearnCapture`, `readBuses` | Area 3 — PH043.04 monitor EQ card |
 | DCA/matrix fader/mute learn | `readDcas`, `readMatrices` | Areas 4–5 partial |
 | Baseline persistence | `ShowConsoleBaselineService` | All areas |
 | 32-channel virtual overview UI | `VirtualConsoleStripBuilder`, `workspace.blade.php` | Area 2 display (channels only) |
@@ -259,8 +272,8 @@ Learn stores a **single JSON summary** (not yet split per PH043 contract):
 | Capability | Gap |
 |---|---|
 | Console identity | Device name from app DB; firmware/sample rate/clock not read |
-| Channel configuration | No icon, source, headamp gain/phantom, DCA, bus sends, live stereo link |
-| Bus configuration | Name/fader/mute only; no link/type/purpose workspace |
+| Channel configuration | Icon, source, headamp gain/phantom, DCA, live stereo link; **bus sends learned (PH043.05)** |
+| Bus configuration | Name/fader/mute + **master EQ (PH043.04)**; no link/type/purpose workspace |
 | DCA configuration | Placeholder names; no colours or membership |
 | Matrix configuration | Placeholder names; no dedicated UI layer |
 | FX configuration | Explicitly empty on live learn; fixture placeholders only |
