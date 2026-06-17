@@ -55,7 +55,7 @@ class X32MonitorBusMasterEqCardBuilder
         return [
             'title' => sprintf('%s — EQ', $busName),
             'scope_hint' => sprintf('Bus master EQ for %s', $busName),
-            'layout_note' => 'X32-style bus master EQ layout · display-only',
+            'layout_note' => 'X32-style bus master EQ layout · live control when console runtime is enabled',
             'learned' => $learned,
             'status_badge' => [
                 'label' => $learned ? 'Learned from console' : 'EQ not learned from console yet',

@@ -98,4 +98,57 @@ Patrick Gilles Maillot X32/M32 OSC Remote Protocol — channel mix sends chapter
 
 ---
 
-End of X32 Decision Log — X32-DEC-001, X32-DEC-002, X32-DEC-003
+## X32-DEC-004 — PH043.07 Monitor Send Writes Restricted to Level and On
+
+| Field | Value |
+|-------|-------|
+| **Decision ID** | X32-DEC-004 |
+| **Title** | PH043.07 Monitor Send Writes Restricted to Level and On |
+| **Status** | Approved (PH043.06) |
+
+### Decision
+
+PH043.07 may implement live OSC writes for **channel-to-bus send level** and **send on** only, targeting `/ch/{01…32}/mix/{01…16}/level` and `/on` for the **selected monitor bus** on the bus workspace route.
+
+PH043.07 initial scope **excludes**:
+
+- Send pan writes (`/pan` on odd buses)
+- Send type/tap writes (`/type` on odd buses)
+- Pan follow writes (`/panFollow` on odd buses ≥ 03)
+- Grouped fader batch writes (UI-only today; requires multi-send write strategy)
+- Bus master fader/mute writes
+- Bus EQ writes (per X32-DEC-002)
+
+Send level writes use `X32FaderScale::dbToLinear` + `quantizeLinear` (same fader scale as channel/bus faders). Send on writes use int `0`/`1` with **no** `invert_osc` — unlike channel strip mute (`/ch/NN/mix/on`), send on `1` means send active.
+
+Even buses (02, 04, …, 16) are valid write targets for level/on. Stereo bus link state is learned (`/config/buslink/*`) but does not change level/on OSC paths; pan/type writes remain deferred until stereo-linked send behaviour is live-proven.
+
+### Evidence
+
+PH043.06 readiness audit — `docs/x32/PH043_CONFIGURATION_DISCOVERY_AUDIT.md` § PH043.06; existing read path verification in `X32MonitorSendMatrixLearnCapture`, `X32ChannelBusSendOscDecoder`, `X32ConfigurationLearnAssembler`; channel fader write precedent in `ShowConsoleControlService` / `X32InputChannelControlMap`.
+
+---
+
+## X32-DEC-005 — PH043.09 Monitor Bus Master Writes Restricted to Fader and On
+
+| Field | Value |
+|-------|-------|
+| **Decision ID** | X32-DEC-005 |
+| **Title** | PH043.09 Monitor Bus Master Writes Restricted to Fader and On |
+| **Status** | Approved (PH043.09) |
+
+### Decision
+
+PH043.09 may implement live OSC writes for **monitor bus master fader** and **bus on/mute** only, targeting `/bus/{01…16}/mix/fader` and `/bus/{01…16}/mix/on` for the **selected monitor bus** on the bus workspace route.
+
+Bus fader writes use `X32FaderScale::quantizeLinear`. Bus on writes use int `0`/`1` where `1` means bus active; UI mute inverts visually (`muted` → write `0`). This matches learn capture (`mute => $on === 0`) and differs from channel strip mute invert semantics.
+
+PH043.09 initial scope **excludes**: Main LR, matrix, channel master, send level/on, bus EQ, group fader, pan, tap, snapshots, and baseline persistence on write.
+
+### Evidence
+
+`X32OscAddressMap::busFader`, `busOn`; `OscUdpX32ConsoleSnapshotReader::readBuses`; PH043.07/PH043.08 live-control precedent (`ShowConsoleMonitorSendControlService`, `ShowConsoleMonitorBusEqControlService`).
+
+---
+
+End of X32 Decision Log — X32-DEC-001, X32-DEC-002, X32-DEC-003, X32-DEC-004, X32-DEC-005

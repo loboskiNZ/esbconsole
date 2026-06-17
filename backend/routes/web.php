@@ -38,6 +38,15 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
     Route::get('/shows/{show}/console/bus/{bus}/layout', [ConsoleController::class, 'busLayoutForShow'])
         ->whereNumber('bus')
         ->name('shows.console.bus.layout');
+    Route::post('/shows/{show}/console/bus/{bus}/sends', [ConsoleController::class, 'updateMonitorSend'])
+        ->whereNumber('bus')
+        ->name('shows.console.bus.sends.update');
+    Route::post('/shows/{show}/console/bus/{bus}/eq', [ConsoleController::class, 'updateMonitorEq'])
+        ->whereNumber('bus')
+        ->name('shows.console.bus.eq.update');
+    Route::post('/shows/{show}/console/bus/{bus}/master', [ConsoleController::class, 'updateMonitorBusMaster'])
+        ->whereNumber('bus')
+        ->name('shows.console.bus.master.update');
     Route::get('/shows/{show}/monitors/{busNumber}', [ConsoleController::class, 'redirectLegacyMonitorRoute'])
         ->whereNumber('busNumber')
         ->name('shows.monitors');

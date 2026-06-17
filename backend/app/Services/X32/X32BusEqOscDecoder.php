@@ -141,6 +141,23 @@ class X32BusEqOscDecoder
         return self::TYPE_LABELS[$type] ?? null;
     }
 
+    public static function modeToType(?string $mode): ?int
+    {
+        if ($mode === null || trim($mode) === '') {
+            return null;
+        }
+
+        $normalized = strtoupper(trim($mode));
+
+        foreach (self::TYPE_LABELS as $type => $label) {
+            if ($label === $normalized) {
+                return $type;
+            }
+        }
+
+        return null;
+    }
+
     public static function modeIsSupportedInMonitorCard(?string $mode): bool
     {
         if ($mode === null) {

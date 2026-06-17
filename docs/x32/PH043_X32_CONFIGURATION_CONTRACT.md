@@ -201,6 +201,16 @@ Per bus:
 * Assigned outputs
 * Primary purpose
 * Bus master EQ (monitor workspace — PH043.04)
+* Bus master fader and mute (monitor workspace — PH043.09)
+
+Per bus master (monitor workspace Bus Master card, when learned):
+
+| Field | OSC path | Scale / semantics |
+|---|---|---|
+| Fader | `/bus/{01…16}/mix/fader` | `X32FaderScale` linear [0.0…1.0 (+10 dB)] |
+| On / mute | `/bus/{01…16}/mix/on` | int 0/1 — `1` = bus active; UI mute when `on === 0` |
+
+Live writes (PH043.09): write → read-back → UI from confirmed value only. Requires `runtime_mode: live`. No baseline persistence on write.
 
 Per bus master EQ (when learned):
 

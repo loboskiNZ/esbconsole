@@ -1,6 +1,7 @@
 function setEqPanelCollapsed(panel, main, collapsed) {
     panel.classList.toggle('is-collapsed', collapsed);
     main?.classList.toggle('vx32-monitors-main--eq-collapsed', collapsed);
+    main?.classList.toggle('vx32-monitors-main--eq-focus', !collapsed);
 
     const toggle = panel.querySelector('[data-eq-panel-toggle]');
 
@@ -38,3 +39,5 @@ if (document.readyState === 'loading') {
 } else {
     bootEqPanelToggles();
 }
+
+export { setEqPanelCollapsed };

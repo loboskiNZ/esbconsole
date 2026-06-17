@@ -3329,6 +3329,16 @@
     min-height: 0;
 }
 
+.vx32-monitors-main--eq-focus .vx32-monitors-channels {
+    display: none;
+}
+
+.vx32-monitors-main--eq-focus .vx32-monitors-eq {
+    flex: 1 1 auto;
+    max-height: none;
+    min-height: 0;
+}
+
 .vx32-monitors-eq {
     display: flex;
     flex: 0 0 auto;
@@ -3436,6 +3446,21 @@
     font-size: 0.625rem;
     line-height: 1.35;
     color: rgb(82 82 91);
+}
+
+.vx32-monitors-eq__control-notice {
+    margin: 0.35rem 0 0;
+    font-size: 0.625rem;
+    line-height: 1.35;
+    color: rgb(251 191 36);
+}
+
+.vx32-monitors-eq.is-eq-error {
+    box-shadow: inset 0 0 0 1px rgb(239 68 68 / 0.45);
+}
+
+.vx32-monitors-eq__band-strip.is-eq-band-error {
+    box-shadow: inset 0 0 0 1px rgb(239 68 68 / 0.45);
 }
 
 .vx32-monitors-eq__status-badge {
@@ -3917,6 +3942,47 @@
     opacity: 0.75;
 }
 
+.vx32-monitors-channel-strip.is-send-control-enabled .vx32-monitors-strip__mute:not(:disabled) {
+    cursor: pointer;
+    opacity: 1;
+}
+
+.vx32-monitors-strip__mute.is-muted,
+.vx32-monitors-group-strip__mute.is-muted {
+    color: rgb(255 255 255) !important;
+    background: rgb(220 38 38) !important;
+    border-color: rgb(248 113 113) !important;
+    opacity: 1 !important;
+}
+
+.vx32-monitors-group-strip__mute.is-partial-muted {
+    color: rgb(255 255 255);
+    background: rgb(180 83 9);
+    border-color: rgb(251 191 36);
+    opacity: 1;
+}
+
+.vx32-monitors-group-strip.is-group-mute-error {
+    outline: 1px solid rgb(248 113 113 / 0.65);
+    outline-offset: 1px;
+    border-radius: 6px;
+}
+
+.vx32-monitors-channel-strip.is-send-control-enabled [data-channel-fader-handle] {
+    cursor: ns-resize;
+    touch-action: none;
+}
+
+.vx32-monitors-channel-strip.is-send-error .vx32-monitors-strip__level {
+    color: rgb(248 113 113);
+}
+
+.vx32-monitors-channel-strip.is-send-error .vx32-monitors-strip__fader {
+    outline: 1px solid rgb(248 113 113 / 0.65);
+    outline-offset: 1px;
+    border-radius: 4px;
+}
+
 .vx32-monitors-strip__fader {
     display: flex;
     flex: 1 1 auto;
@@ -4153,6 +4219,10 @@
     color: rgb(253 224 71);
 }
 
+.vx32-monitors-bus-master-strip.is-bus-master-error .vx32-monitors-strip__level {
+    color: rgb(248 113 113);
+}
+
 .vx32-monitors-bus-master-strip__bus-name {
     flex-shrink: 0;
     margin-top: 0.15rem;
@@ -4204,6 +4274,16 @@
     border: 1px solid rgb(239 68 68 / 0.35);
     border-radius: 999px;
     cursor: pointer;
+}
+
+.vx32-monitors-group-strip__trim-note {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.45rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    color: rgb(148 163 184);
 }
 
 .vx32-monitors-group-strip--drumkit {

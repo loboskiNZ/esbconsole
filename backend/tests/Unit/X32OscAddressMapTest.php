@@ -54,4 +54,16 @@ class X32OscMessageCodecTest extends TestCase
 
         $this->assertEqualsWithDelta(0.68035191297531, $codec->parseFloatResponse($payload), 0.0001);
     }
+
+    public function test_parse_on_response_accepts_int_or_float_type_tags(): void
+    {
+        $codec = new X32OscMessageCodec;
+        $path = '/ch/01/mix/01/on';
+        $paddedPath = $path."\0".str_repeat("\0", (4 - ((strlen($path) + 1) % 4)) % 4);
+        $intPayload = $paddedPath.',i'."\0\0\0".pack('N', 0);
+        $floatPayload = $paddedPath.',f'."\0\0\0".pack('G', 1.0);
+
+        $this->assertSame(0, $codec->parseOnResponse($intPayload));
+        $this->assertSame(1, $codec->parseOnResponse($floatPayload));
+    }
 }

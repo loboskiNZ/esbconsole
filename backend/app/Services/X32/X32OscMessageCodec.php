@@ -67,6 +67,22 @@ class X32OscMessageCodec
         return unpack('N', substr($payload, $dataOffset, 4))[1];
     }
 
+    /**
+     * Parse X32 on/off style enum responses that may arrive as int or float.
+     */
+    public function parseOnResponse(string $payload): int
+    {
+        if (str_contains($payload, ',i')) {
+            return $this->parseIntResponse($payload) === 1 ? 1 : 0;
+        }
+
+        if (str_contains($payload, ',f')) {
+            return $this->parseFloatResponse($payload) >= 0.5 ? 1 : 0;
+        }
+
+        throw new InvalidArgumentException('OSC response does not contain on/off enum type tag.');
+    }
+
     public function parseStringResponse(string $payload): string
     {
         $typeTagOffset = strpos($payload, ',s');

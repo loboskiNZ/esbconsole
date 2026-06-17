@@ -411,7 +411,7 @@ class X32MonitorsWorkspaceBuilder
                 ],
                 self::MONITOR_SEND_GROUPS,
             ),
-            'scaffold_notice' => 'Group assignments are UI-only — not learned from the X32.',
+            'scaffold_notice' => 'Group trim — visual only. Preserves relative channel balance. Group assignments are UI-only — not learned from the X32.',
         ];
     }
 

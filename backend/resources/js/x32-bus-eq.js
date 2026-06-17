@@ -1,3 +1,10 @@
+import {
+    commitEqBandParameter,
+    commitEqMasterOn,
+    eqControlConfig,
+    getEqControlRoot,
+} from './x32-monitors-eq-api';
+
 const MODE_FIELDS = {
     LCUT: ['frequency'],
     HCUT: ['frequency'],
@@ -223,6 +230,8 @@ function svgPointFromClient(svg, clientX, clientY) {
 class BusEqWorkspace {
     constructor(root) {
         this.root = root;
+        this.controlRoot = getEqControlRoot();
+        this.eqControl = eqControlConfig(this.controlRoot);
         this.svg = root.querySelector('[data-eq-graph]');
         this.curve = root.querySelector('[data-eq-curve]');
         this.strips = [...root.querySelectorAll('[data-eq-band-strip]')];
@@ -233,9 +242,53 @@ class BusEqWorkspace {
             ]),
         );
         this.dragState = null;
+        this.commitPending = false;
 
         this.bind();
         this.refresh();
+    }
+
+    liveControlEnabled() {
+        return this.eqControl.available;
+    }
+
+    async commitBand(strip, parameter, value) {
+        if (!this.liveControlEnabled() || this.commitPending) {
+            return null;
+        }
+
+        this.commitPending = true;
+
+        try {
+            const payload = await commitEqBandParameter(this.controlRoot, strip, parameter, value);
+            this.refresh();
+
+            return payload;
+        } finally {
+            this.commitPending = false;
+        }
+    }
+
+    async commitBandFromStrip(strip, parameter) {
+        const band = readBandFromStrip(strip);
+
+        if (parameter === 'type') {
+            return this.commitBand(strip, 'type', band.mode);
+        }
+
+        if (parameter === 'f') {
+            return this.commitBand(strip, 'f', band.frequencyHz);
+        }
+
+        if (parameter === 'g') {
+            return this.commitBand(strip, 'g', band.gainDb);
+        }
+
+        if (parameter === 'q') {
+            return this.commitBand(strip, 'q', band.q);
+        }
+
+        return null;
     }
 
     bands() {
@@ -276,20 +329,59 @@ class BusEqWorkspace {
             strip.dataset.eqStripBound = 'true';
 
             const modeSelect = strip.querySelector('[data-eq-mode-select]');
-            modeSelect?.addEventListener('change', () => {
+            modeSelect?.addEventListener('change', async () => {
                 applyModeVisibility(strip, modeSelect.value);
                 this.refresh();
+
+                if (this.liveControlEnabled()) {
+                    await this.commitBandFromStrip(strip, 'type');
+                }
             });
 
             applyModeVisibility(strip, modeSelect?.value ?? 'PEQ');
 
             strip.querySelectorAll('[data-eq-input]').forEach((input) => {
-                input.addEventListener('change', () => this.refresh());
+                input.addEventListener('change', async () => {
+                    this.refresh();
+
+                    if (!this.liveControlEnabled()) {
+                        return;
+                    }
+
+                    const parameter = input.dataset.eqInput === 'frequency'
+                        ? 'f'
+                        : input.dataset.eqInput === 'gain'
+                            ? 'g'
+                            : 'q';
+
+                    if (parameter === 'q' && !(MODE_FIELDS[strip.querySelector('[data-eq-mode-select]')?.value ?? 'PEQ'] ?? []).includes('q')) {
+                        return;
+                    }
+
+                    await this.commitBandFromStrip(strip, parameter);
+                });
                 input.addEventListener('input', () => {
                     if (input.dataset.eqInput === 'gain' || input.dataset.eqInput === 'frequency') {
                         this.refresh();
                     }
                 });
+            });
+        }
+
+        if (this.controlRoot && this.controlRoot.dataset.eqMasterBound !== 'true') {
+            this.controlRoot.dataset.eqMasterBound = 'true';
+
+            this.controlRoot.querySelector('[data-eq-master-toggle]')?.addEventListener('click', async (event) => {
+                event.preventDefault();
+
+                if (!this.liveControlEnabled()) {
+                    return;
+                }
+
+                const button = event.currentTarget;
+                const targetEnabled = !button.classList.contains('is-on');
+
+                await commitEqMasterOn(this.controlRoot, targetEnabled);
             });
         }
 
@@ -347,12 +439,26 @@ class BusEqWorkspace {
             this.refresh();
         });
 
-        const endDrag = (event) => {
+        const endDrag = async (event) => {
             if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
                 return;
             }
 
+            const strip = this.stripForBand(this.dragState.band);
+
             this.dragState = null;
+
+            if (!strip || !this.liveControlEnabled()) {
+                return;
+            }
+
+            await this.commitBandFromStrip(strip, 'f');
+
+            const mode = strip.querySelector('[data-eq-mode-select]')?.value ?? 'PEQ';
+
+            if (modeSupportsGain(mode)) {
+                await this.commitBandFromStrip(strip, 'g');
+            }
         };
 
         this.svg.addEventListener('pointerup', endDrag);

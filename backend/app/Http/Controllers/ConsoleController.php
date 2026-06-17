@@ -11,6 +11,9 @@ use App\Models\Show;
 use App\Models\ShowConsoleBaseline;
 use App\Services\Console\ShowConsoleBaselineService;
 use App\Services\Console\ShowConsoleControlService;
+use App\Services\Console\ShowConsoleMonitorBusEqControlService;
+use App\Services\Console\ShowConsoleMonitorBusMasterControlService;
+use App\Services\Console\ShowConsoleMonitorSendControlService;
 use App\Services\Console\ShowConsoleParameterService;
 use App\Services\Console\ShowConsoleStripEnricher;
 use App\Services\Console\ShowConsoleWorkspaceResolver;
@@ -24,6 +27,7 @@ use App\Services\X32\X32SourceConnectivityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ConsoleController extends Controller
@@ -35,6 +39,9 @@ class ConsoleController extends Controller
         private readonly ShowConsoleBaselineService $showConsoleBaselineService,
         private readonly ShowConsoleParameterService $showConsoleParameterService,
         private readonly ShowConsoleControlService $showConsoleControlService,
+        private readonly ShowConsoleMonitorSendControlService $showConsoleMonitorSendControlService,
+        private readonly ShowConsoleMonitorBusEqControlService $showConsoleMonitorBusEqControlService,
+        private readonly ShowConsoleMonitorBusMasterControlService $showConsoleMonitorBusMasterControlService,
         private readonly ShowConsoleStripEnricher $showConsoleStripEnricher,
         private readonly ShowConsoleWorkspaceResolver $workspaceResolver,
         private readonly VirtualConsoleStripBuilder $virtualConsoleStripBuilder,
@@ -179,7 +186,107 @@ class ConsoleController extends Controller
             'summary' => $summary,
             'consoleType' => $consoleType,
             'monitorsWorkspace' => $monitorsWorkspace,
+            'monitorSendControl' => array_merge(
+                $this->showConsoleMonitorSendControlService->controlContext($show),
+                [
+                    'update_url' => route('shows.console.bus.sends.update', [$show, $bus]),
+                    'bus_number' => $bus,
+                ],
+            ),
+            'monitorEqControl' => array_merge(
+                $this->showConsoleMonitorBusEqControlService->controlContext($show),
+                [
+                    'update_url' => route('shows.console.bus.eq.update', [$show, $bus]),
+                    'bus_number' => $bus,
+                ],
+            ),
+            'monitorBusMasterControl' => array_merge(
+                $this->showConsoleMonitorBusMasterControlService->controlContext($show),
+                [
+                    'update_url' => route('shows.console.bus.master.update', [$show, $bus]),
+                    'bus_number' => $bus,
+                ],
+            ),
         ]);
+    }
+
+    public function updateMonitorBusMaster(Request $request, Show $show, int $bus): JsonResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        abort_unless($bus >= 1 && $bus <= 16, 404);
+
+        $validated = $request->validate([
+            'parameter' => ['required', 'string', 'in:level,mute'],
+            'value' => ['required'],
+        ]);
+
+        $result = $this->showConsoleMonitorBusMasterControlService->updateMaster(
+            $show,
+            $bus,
+            $validated['parameter'],
+            $validated['value'],
+        );
+
+        return response()->json($result);
+    }
+
+    public function updateMonitorEq(Request $request, Show $show, int $bus): JsonResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        abort_unless($bus >= 1 && $bus <= 16, 404);
+
+        $validated = $request->validate([
+            'parameter' => ['required', 'string', 'in:on,type,f,g,q'],
+            'band' => ['nullable', 'integer', 'min:1', 'max:6'],
+            'value' => ['required'],
+        ]);
+
+        if ($validated['parameter'] === 'on' && array_key_exists('band', $validated) && $validated['band'] !== null) {
+            throw ValidationException::withMessages([
+                'band' => 'Band number is not used for bus EQ master on.',
+            ]);
+        }
+
+        if ($validated['parameter'] !== 'on' && empty($validated['band'])) {
+            throw ValidationException::withMessages([
+                'band' => 'Band number is required for this EQ parameter.',
+            ]);
+        }
+
+        $result = $this->showConsoleMonitorBusEqControlService->updateEq(
+            $show,
+            $bus,
+            isset($validated['band']) ? (int) $validated['band'] : null,
+            $validated['parameter'],
+            $validated['value'],
+        );
+
+        return response()->json($result);
+    }
+
+    public function updateMonitorSend(Request $request, Show $show, int $bus): JsonResponse
+    {
+        $this->ensureShowBelongsToBand($show);
+
+        abort_unless($bus >= 1 && $bus <= 16, 404);
+
+        $validated = $request->validate([
+            'channel' => ['required', 'integer', 'min:1', 'max:32'],
+            'parameter' => ['required', 'string', 'in:level,mute'],
+            'value' => ['required'],
+        ]);
+
+        $result = $this->showConsoleMonitorSendControlService->updateSend(
+            $show,
+            $bus,
+            (int) $validated['channel'],
+            $validated['parameter'],
+            $validated['value'],
+        );
+
+        return response()->json($result);
     }
 
     public function redirectLegacyMonitorRoute(Show $show, int $busNumber): RedirectResponse

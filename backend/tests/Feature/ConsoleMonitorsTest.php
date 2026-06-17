@@ -133,6 +133,74 @@ class ConsoleMonitorsTest extends TestCase
             ->assertDontSee('Monitor send levels for Ed IEM', false);
     }
 
+    public function test_muted_channel_renders_red_active_mute_class_for_monitor_send(): void
+    {
+        $summary = $this->summaryWithNamedBus(1, 'Ed IEM');
+        $summary['configuration']['channels'][0] = [
+            'number' => 1,
+            'name' => ['value' => 'Kick', 'state' => 'learned'],
+            'sends' => [
+                'buses' => [
+                    '1' => [
+                        'on' => ['value' => false, 'state' => 'learned', 'source' => '/ch/01/mix/01/on'],
+                        'level' => ['value' => ['linear' => 0.0, 'value' => -90.0], 'state' => 'learned', 'source' => '/ch/01/mix/01/level'],
+                    ],
+                ],
+            ],
+        ];
+        $summary['configuration']['channels'][1] = [
+            'number' => 2,
+            'name' => ['value' => 'Snare', 'state' => 'learned'],
+            'sends' => [
+                'buses' => [
+                    '1' => [
+                        'on' => ['value' => true, 'state' => 'learned', 'source' => '/ch/02/mix/01/on'],
+                        'level' => ['value' => ['linear' => 0.75, 'value' => 0.0], 'state' => 'learned', 'source' => '/ch/02/mix/01/level'],
+                    ],
+                ],
+            ],
+        ];
+
+        $content = $this->actingAs($this->createDirectorUser())
+            ->get(route('shows.console.bus.layout', [$this->showWithBaseline($summary), 1]))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/data-channel="1"[^>]*>[\s\S]*?vx32-monitors-strip__mute is-muted/',
+            $content,
+        );
+        $this->assertDoesNotMatchRegularExpression(
+            '/data-channel="2"[^>]*>[\s\S]*?vx32-monitors-strip__mute is-muted/',
+            $content,
+        );
+    }
+
+    public function test_group_mute_button_renders_on_group_strip(): void
+    {
+        $show = $this->showWithBaseline($this->summaryWithNamedBus(1, 'Ed IEM'));
+
+        $this->actingAs($this->createDirectorUser())
+            ->get(route('shows.console.bus.layout', [$show, 1]))
+            ->assertOk()
+            ->assertSee('data-group-mute', false)
+            ->assertSee('vx32-monitors-group-strip__mute', false);
+    }
+
+    public function test_eq_focus_mode_hides_channels_card_via_layout_class(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+
+        $this->assertIsString($css);
+        $this->assertStringContainsString('.vx32-monitors-main--eq-focus .vx32-monitors-channels', $css);
+        $this->assertStringContainsString('display: none', $css);
+
+        $eqPanelJs = file_get_contents(resource_path('js/x32-monitors-eq-panel.js'));
+        $this->assertIsString($eqPanelJs);
+        $this->assertStringContainsString('vx32-monitors-main--eq-focus', $eqPanelJs);
+        $this->assertStringContainsString('vx32-monitors-main--eq-collapsed', $eqPanelJs);
+    }
+
     public function test_group_control_renders_monitor_send_groups_not_dcas(): void
     {
         $show = $this->showWithBaseline($this->summaryWithNamedBus(1, 'Ed IEM'));
@@ -164,6 +232,8 @@ class ConsoleMonitorsTest extends TestCase
             ->assertSee('Remove from group', false)
             ->assertSee('Clear group', false)
             ->assertDontSee('Group Controls', false)
+            ->assertSee('Group trim — visual only', false)
+            ->assertSee('Preserves relative channel balance', false)
             ->assertSee('Group assignments are UI-only', false)
             ->assertDontSee('FOH group', false);
     }
@@ -182,6 +252,7 @@ class ConsoleMonitorsTest extends TestCase
         $this->assertStringContainsString('data-group-strip', $content);
         $this->assertStringContainsString('data-group-fader-handle', $content);
         $this->assertStringContainsString('data-group-fader-track', $content);
+        $this->assertStringContainsString('Group trim · visual only', $content);
         $this->assertStringContainsString('data-channel="1"', $content);
         $this->assertStringContainsString('data-group-pick-target', $content);
         $this->assertStringContainsString('vx32-monitors-groups__pill--all is-active', $content);

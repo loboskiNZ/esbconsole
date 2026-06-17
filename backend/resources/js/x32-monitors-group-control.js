@@ -1,4 +1,16 @@
 import { dbToLinear, formatDb, linearMarkPercent, linearToDb } from './x32-fader-scale';
+import {
+    applyGroupTrimLevels,
+    trimOffsetDbFromFaderPct,
+    trimOffsetFromGroupFaderDb,
+} from './x32-monitors-group-trim';
+import {
+    applyChannelMuteVisual,
+    commitChannelMute,
+    getSendControlRoot,
+    isStripMonitorMuted,
+    sendControlConfig,
+} from './x32-monitors-send-api';
 
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -58,8 +70,8 @@ function applyStripLevel(strip, levelDb) {
     }
 }
 
-function syncGroupStripLevel(groupStrip, levelDb) {
-    const pct = dbToFaderPct(levelDb);
+function syncGroupStripFaderDisplay(groupStrip, displayDb) {
+    const pct = dbToFaderPct(displayDb);
     const handle = groupStrip.querySelector('[data-group-fader-handle]');
     const level = groupStrip.querySelector('[data-group-fader-level]');
 
@@ -68,7 +80,7 @@ function syncGroupStripLevel(groupStrip, levelDb) {
     }
 
     if (level) {
-        level.textContent = formatLevelDisplay(levelDb);
+        level.textContent = formatLevelDisplay(displayDb);
     }
 }
 
@@ -98,8 +110,12 @@ class MonitorsGroupControl {
         this.activeLabel = '';
         this.viewMode = 'all';
         this.dragState = null;
+        this.groupBaselines = new Map();
+        this.groupBaselineAverageDb = new Map();
+        this.groupTrimDb = new Map();
 
         this.bind();
+        this.refreshChannelMuteVisuals();
         this.syncAssignmentLabels();
         this.updatePickUi();
         this.setViewMode('all');
@@ -132,42 +148,177 @@ class MonitorsGroupControl {
         return '';
     }
 
-    averageGroupLevelDb(channelNumbers) {
-        const levels = channelNumbers
-            .map((number) => this.stripForChannel(number))
-            .filter(Boolean)
-            .map((strip) => readStripLevelDb(strip));
-
-        if (levels.length === 0) {
-            return 0;
-        }
-
-        return levels.reduce((sum, level) => sum + level, 0) / levels.length;
+    baselineForGroup(key) {
+        return this.groupBaselines.get(key) ?? null;
     }
 
-    applyGroupLevel(key, levelDb) {
+    averageBaselineForGroup(key) {
+        return this.groupBaselineAverageDb.get(key) ?? 0;
+    }
+
+    groupFaderDisplayForKey(key) {
+        return this.averageBaselineForGroup(key) + (this.groupTrimDb.get(key) ?? 0);
+    }
+
+    captureGroupBaseline(key) {
+        const baseline = new Map();
+
         for (const number of this.channelsForGroup(key)) {
             const strip = this.stripForChannel(number);
+
+            if (strip) {
+                baseline.set(number, readStripLevelDb(strip));
+            }
+        }
+
+        const averageDb = baseline.size > 0
+            ? [...baseline.values()].reduce((sum, level) => sum + level, 0) / baseline.size
+            : 0;
+
+        this.groupBaselines.set(key, baseline);
+        this.groupBaselineAverageDb.set(key, averageDb);
+        this.groupTrimDb.set(key, 0);
+        this.syncGroupStripFaderDisplayForKey(key);
+    }
+
+    syncGroupStripFaderDisplayForKey(key) {
+        const groupStrip = this.groupStripForKey(key);
+
+        if (groupStrip) {
+            syncGroupStripFaderDisplay(groupStrip, this.groupFaderDisplayForKey(key));
+        }
+    }
+
+    applyGroupTrim(key, trimOffsetDb) {
+        const baseline = this.baselineForGroup(key);
+
+        if (!baseline || baseline.size === 0) {
+            return;
+        }
+
+        this.groupTrimDb.set(key, trimOffsetDb);
+
+        const levels = applyGroupTrimLevels(Object.fromEntries(baseline), trimOffsetDb);
+
+        for (const [channel, levelDb] of Object.entries(levels)) {
+            const strip = this.stripForChannel(Number(channel));
 
             if (strip) {
                 applyStripLevel(strip, levelDb);
             }
         }
 
-        const groupStrip = this.groupStripForKey(key);
-
-        if (groupStrip) {
-            syncGroupStripLevel(groupStrip, levelDb);
-        }
+        this.syncGroupStripFaderDisplayForKey(key);
     }
 
     syncGroupStripDisplays() {
         for (const groupStrip of this.groupStrips) {
             const key = groupStrip.getAttribute('data-group-key') ?? '';
-            const channels = this.channelsForGroup(key);
 
-            syncGroupStripLevel(groupStrip, this.averageGroupLevelDb(channels));
+            syncGroupStripFaderDisplay(groupStrip, this.groupFaderDisplayForKey(key));
+            this.syncGroupMuteVisual(groupStrip, key);
         }
+    }
+
+    muteEnabledChannelsForGroup(key) {
+        return this.channelsForGroup(key).filter((number) => {
+            const strip = this.stripForChannel(number);
+
+            return strip?.dataset.sendMuteEnabled === 'true';
+        });
+    }
+
+    groupMuteState(key) {
+        const channels = this.muteEnabledChannelsForGroup(key);
+
+        if (channels.length === 0) {
+            return 'none';
+        }
+
+        const mutedCount = channels.filter((number) => isStripMonitorMuted(this.stripForChannel(number))).length;
+
+        if (mutedCount === 0) {
+            return 'off';
+        }
+
+        if (mutedCount === channels.length) {
+            return 'all';
+        }
+
+        return 'partial';
+    }
+
+    syncGroupMuteVisual(groupStrip, key) {
+        const button = groupStrip.querySelector('[data-group-mute]');
+
+        if (!button) {
+            return;
+        }
+
+        const channels = this.muteEnabledChannelsForGroup(key);
+        const hasMembers = channels.length > 0;
+        const { available } = sendControlConfig(getSendControlRoot());
+
+        button.hidden = !hasMembers;
+        button.disabled = !available || !hasMembers;
+
+        const state = this.groupMuteState(key);
+
+        button.classList.toggle('is-muted', state === 'all');
+        button.classList.toggle('is-partial-muted', state === 'partial');
+        button.setAttribute('aria-pressed', state === 'all' ? 'true' : 'false');
+
+        if (state === 'all') {
+            button.title = `Unmute all channels in ${groupStrip.getAttribute('data-group-label') ?? 'group'}`;
+        } else if (state === 'partial') {
+            button.title = `Mute all channels in ${groupStrip.getAttribute('data-group-label') ?? 'group'} (some channels are muted)`;
+        } else {
+            button.title = `Mute all channels in ${groupStrip.getAttribute('data-group-label') ?? 'group'}`;
+        }
+
+        groupStrip.classList.remove('is-group-mute-error');
+        delete groupStrip.dataset.groupMuteError;
+    }
+
+    async commitGroupMute(key) {
+        const root = getSendControlRoot();
+        const channels = this.muteEnabledChannelsForGroup(key);
+        const groupStrip = this.groupStripForKey(key);
+
+        if (!root || channels.length === 0 || !groupStrip) {
+            return;
+        }
+
+        const state = this.groupMuteState(key);
+        const targetMuted = state !== 'all';
+        const results = [];
+
+        for (const number of channels) {
+            const strip = this.stripForChannel(number);
+
+            if (!strip) {
+                continue;
+            }
+
+            results.push(await commitChannelMute(root, strip, targetMuted));
+        }
+
+        const successes = results.filter((result) => result?.success);
+        const failures = results.filter((result) => !result?.success);
+
+        this.syncGroupMuteVisual(groupStrip, key);
+
+        if (failures.length > 0) {
+            groupStrip.classList.add('is-group-mute-error');
+            groupStrip.dataset.groupMuteError = failures.length === results.length
+                ? 'Group mute failed — no channels were confirmed by the console.'
+                : `Group mute incomplete — ${successes.length} of ${results.length} channels confirmed.`;
+
+            return;
+        }
+
+        groupStrip.classList.remove('is-group-mute-error');
+        delete groupStrip.dataset.groupMuteError;
     }
 
     syncAssignmentLabels() {
@@ -212,6 +363,10 @@ class MonitorsGroupControl {
         for (const number of channelNumbers) {
             this.pickedChannels.delete(number);
         }
+
+        this.groupBaselines.delete(key);
+        this.groupBaselineAverageDb.delete(key);
+        this.groupTrimDb.delete(key);
 
         this.syncAssignmentLabels();
         this.syncGroupStripDisplays();
@@ -444,6 +599,7 @@ class MonitorsGroupControl {
         }
 
         this.pickedChannels.clear();
+        this.captureGroupBaseline(key);
         this.syncAssignmentLabels();
         this.syncGroupStripDisplays();
         this.refreshStripVisibility();
@@ -452,11 +608,20 @@ class MonitorsGroupControl {
     }
 
     focusGroup(key) {
+        const previousKey = this.activeKey;
+        const fromAllChannelsView = this.viewMode === 'all';
+
         this.activeKey = key;
         const button = this.groupButtonForKey(key);
         this.activeLabel = key === ''
             ? ''
             : (button?.getAttribute('data-group-label') ?? '');
+
+        if (key !== '' && this.channelsForGroup(key).length > 0) {
+            if (key !== previousKey || fromAllChannelsView) {
+                this.captureGroupBaseline(key);
+            }
+        }
 
         for (const candidate of this.selectButtons) {
             const isActive = candidate.getAttribute('data-group-key') === key;
@@ -470,6 +635,13 @@ class MonitorsGroupControl {
         }
 
         this.updatePickUi();
+        this.syncGroupStripDisplays();
+    }
+
+    refreshChannelMuteVisuals() {
+        for (const strip of this.channelStrips) {
+            applyChannelMuteVisual(strip, isStripMonitorMuted(strip));
+        }
     }
 
     handleGroupButtonClick(key) {
@@ -506,6 +678,10 @@ class MonitorsGroupControl {
                 }
 
                 if (event.target.closest('[data-channel-fader-control]')) {
+                    return;
+                }
+
+                if (event.target.closest('[data-channel-mute]')) {
                     return;
                 }
 
@@ -546,6 +722,12 @@ class MonitorsGroupControl {
                 this.clearGroup(groupStrip.getAttribute('data-group-key') ?? '');
             });
 
+            groupStrip.querySelector('[data-group-mute]')?.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.commitGroupMute(groupStrip.getAttribute('data-group-key') ?? '');
+            });
+
             const track = groupStrip.querySelector('[data-group-fader-track]');
             const handle = groupStrip.querySelector('[data-group-fader-handle]');
 
@@ -555,10 +737,16 @@ class MonitorsGroupControl {
 
             handle.addEventListener('pointerdown', (event) => {
                 event.preventDefault();
+                const groupKey = groupStrip.getAttribute('data-group-key') ?? '';
+
+                if (!this.baselineForGroup(groupKey)) {
+                    this.captureGroupBaseline(groupKey);
+                }
+
                 handle.setPointerCapture(event.pointerId);
                 this.dragState = {
                     pointerId: event.pointerId,
-                    groupKey: groupStrip.getAttribute('data-group-key') ?? '',
+                    groupKey,
                     track,
                 };
             });
@@ -571,8 +759,11 @@ class MonitorsGroupControl {
 
             const rect = this.dragState.track.getBoundingClientRect();
             const pct = clamp(((rect.bottom - event.clientY) / rect.height) * 100, 0, 100);
+            const groupKey = this.dragState.groupKey;
+            const faderDb = trimOffsetDbFromFaderPct(pct);
+            const trimOffsetDb = trimOffsetFromGroupFaderDb(faderDb, this.averageBaselineForGroup(groupKey));
 
-            this.applyGroupLevel(this.dragState.groupKey, faderPctToDb(pct));
+            this.applyGroupTrim(groupKey, trimOffsetDb);
         });
 
         document.addEventListener('pointerup', (event) => {

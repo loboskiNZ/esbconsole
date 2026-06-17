@@ -1,7 +1,7 @@
 # PH043.01 — X32 Configuration Domain Discovery Audit
 
-**Status:** Audit complete (read-only)  
-**Date:** 2026-06-17  
+**Status:** Audit complete (read-only); PH043.06 send-control readiness appended  
+**Date:** 2026-06-17 (PH043.01); 2026-06-17 (PH043.06)  
 **Authority:** `docs/x32/PH043_X32_CONFIGURATION_CONTRACT.md`  
 **Related:** `docs/x32/PH042_X32_ROUTING_DISCOVERY_CONTRACT.md`, `docs/x32/PH042_ROUTING_DISCOVERY_AUDIT.md`, `docs/x32/PH042_X32_ROUTING_OSC_ADDRESS_AUDIT.md`  
 **Scope:** PH043.01 audit only — no application code changes
@@ -182,7 +182,7 @@ Learn stores a **single JSON summary** (not yet split per PH043 contract):
 | Bus | Sends-on-fader | Bus layer SOF settings | Unknown | No | No | No | Requires investigation |
 | Bus | Assigned outputs | `/outputs/*` (PH042) | Doc-verified | No* | Partial* | Partial | *Routing domain — derived in routing builder, not bus config page |
 | Bus | Primary purpose | — | Derived | No | No | Partial | Operator labels inferred from names in routing IEM section only |
-| Bus | Fader / mute | `/bus/NN/mix/fader`, `/mix/on` | In codebase | Yes | Yes | Partial | Review table; not dedicated bus workspace |
+| Bus | Fader / mute | `/bus/NN/mix/fader`, `/bus/NN/mix/on` | In codebase | Yes | Yes | Yes (monitor bus workspace PH043.09) | Fader: `X32FaderScale` linear [0…1]; on int 0/1 — mute UI = `on === 0` |
 | Bus | Master EQ on | `/bus/NN/eq/on` | Doc-verified (Maillot OSC) | Yes (PH043.04) | Yes | Yes (monitor bus workspace) | Enum OFF/ON (int 0/1) |
 | Bus | EQ band type | `/bus/NN/eq/1…6/type` | Doc-verified | Yes (PH043.04) | Yes | Yes | int 0–13: LCut, LShv, PEQ, VEQ, HShv, HCut, BU6…LR24 |
 | Bus | EQ band frequency | `/bus/NN/eq/1…6/f` | Doc-verified | Yes (PH043.04) | Yes | Yes | logf [20, 20000, 201] Hz |
@@ -391,18 +391,216 @@ Validate against real X32 operation; defect correction only (same pattern as PH0
 
 ---
 
-## Confirmation
+## PH043.06 — Monitor Send Control Readiness Audit
+
+**Status:** Audit complete (read-only)  
+**Date:** 2026-06-17  
+**Route audited:** `/shows/{show}/console/bus/{bus}/layout`  
+**Authority:** `docs/x32/PH043_X32_CONFIGURATION_CONTRACT.md` Area 2, `docs/x32/DECISION_LOG.md` X32-DEC-003, X32-DEC-004  
+**Scope:** Readiness only — no OSC writes, no UI behaviour changes, no save/apply controls
+
+### Executive Summary
+
+The PH043.05 monitor send matrix learn pipeline provides **sufficient verified read infrastructure** to support PH043.07 live writes for **send level** and **send on/mute** on any bus index 01–16. Scaling, OSC path helpers, decoders, learned field envelopes, and monitor workspace UI fields already exist for these two parameters.
+
+**Send pan, send type/tap, pan follow, and grouped fader writes are not ready** for PH043.07 initial implementation. Pan/type paths are odd-bus-only; stereo bus link state is learned but not applied to send write semantics; `tapToType` encoder and pan-follow UI are absent; grouped fader control is DOM-only with no persistence or OSC dispatch.
+
+**Recommended PH043.07 scope:** Per-channel send level and send on writes for the selected monitor bus only (see X32-DEC-004).
+
+### Sources Inspected (PH043.06)
+
+| Layer | Files |
+|---|---|
+| Learn capture | `X32MonitorSendMatrixLearnCapture`, `OscUdpX32ConsoleSnapshotReader::attachChannelBusSends` |
+| Decode / scale | `X32ChannelBusSendOscDecoder`, `X32FaderScale`, `X32OscParameterScale` |
+| Assembly | `X32ConfigurationLearnAssembler::buildChannelSends` |
+| Workspace UI | `X32MonitorsWorkspaceBuilder`, `_monitors-fader-track.blade.php`, `x32-monitors-group-control.js` |
+| OSC paths | `X32OscAddressMap::channelBusSend*` |
+| Write precedent (channel strip — not sends) | `ShowConsoleControlService`, `X32InputChannelControlMap` |
+| Bus stereo link learn | `OscUdpX32ConsoleSnapshotReader::readBusLinkMap`, `X32ConfigurationLearnAssembler::buildBuses` |
+| Tests | `X32MonitorSendMatrixLearnCaptureTest`, `X32ChannelBusSendOscDecoderTest`, `X32ConfigurationLearnAssemblerTest`, `X32FaderScaleTest`, `X32MonitorSendControlReadinessTest` |
+
+### Field Readiness Matrix
+
+Paths below are **read-verified in PH043.05** unless noted. Write path column follows Patrick Gilles Maillot X32/M32 OSC Remote Protocol convention: **same path, typed value** (corroborated by existing channel fader/mute writes in `X32InputChannelControlMap`). Live desk write round-trip for send paths is **not yet proven in this project** — marked *assumed same path, unproven live*.
+
+#### 1. Channel-to-bus send level
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | **Yes** — all 32×16 via `X32MonitorSendMatrixLearnCapture::captureSend` |
+| OSC write path | *Assumed same:* `/ch/{01…32}/mix/{01…16}/level` — **unproven live** |
+| Scaling confirmed? | **Yes** — `level [0.0…1.0(+10dB), 161]` → `X32FaderScale` (same as channel/bus faders) |
+| Min/max confirmed? | **Yes** — linear `0.0` (−90 dB display floor) … `1.0` (+10 dB); `quantizeLinear` for write grid |
+| Enum mapping | N/A (float) |
+| Decoder available? | **Yes** — direct float read + `linearToDb` |
+| Encoder required? | **Yes** — `dbToLinear` + `quantizeLinear` (exists; no send-specific wrapper yet) |
+| UI field available? | **Yes** — Channels card fader track + `level_display` from learned send (`X32MonitorsWorkspaceBuilder`) |
+| Safe for PH043.07? | **READY FOR PH043.07** |
+| Remaining unknowns | Live write round-trip on desk; baseline/snapshot persistence strategy for send level after write |
+
+#### 2. Channel-to-bus send on / monitor mute
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | **Yes** — all 32×16 |
+| OSC write path | *Assumed same:* `/ch/{01…32}/mix/{01…16}/on` — **unproven live** |
+| Scaling confirmed? | **Yes** — int enum `0` = off, `1` = on |
+| Min/max confirmed? | **Yes** — `0` or `1` only |
+| Enum mapping confirmed? | **Yes** — `on === 1` → send active; monitor UI mute = `!on` (not inverted like channel strip `/mix/on`) |
+| Decoder available? | **Yes** — direct int |
+| Encoder required? | **Yes** — int `0`/`1`; **must not** use channel mute `invert_osc` |
+| UI field available? | **Yes** — mute button state derived from learned send on |
+| Safe for PH043.07? | **READY FOR PH043.07** |
+| Remaining unknowns | Live write round-trip; confirm monitor mute toggle maps to send `on` not channel `mix/on` |
+
+#### 3. Channel-to-bus send pan (odd buses only)
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | **Yes** — odd buses 01, 03, …, 15 only (`busSupportsSendPan`) |
+| OSC write path | *Assumed same:* `/ch/{01…32}/mix/{01,03…15}/pan` — **unproven live** |
+| Scaling confirmed? | **Yes** — linf `[-100, 100, 2]` via `X32OscParameterScale::decodeLinf` / `encodeLinf` |
+| Min/max confirmed? | **Yes** — −100 … +100, 2-step quantize |
+| Enum mapping | N/A |
+| Decoder available? | **Yes** — `decodePan` / `encodePan` |
+| Encoder required? | **Yes** — `encodePan` exists |
+| UI field available? | **Partial** — detail panel row when learned; no interactive pan control |
+| Safe for PH043.07? | **NOT READY — NEEDS MORE DISCOVERY** |
+| Remaining unknowns | Stereo-linked bus pan write side-effects on even partner; live write proof; odd-bus-only guard in write service |
+
+#### 4. Channel-to-bus send type / tap (odd buses only)
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | **Yes** — odd buses only |
+| OSC write path | *Assumed same:* `/ch/{01…32}/mix/{01,03…15}/type` — **unproven live** |
+| Scaling confirmed? | **Yes** — int `0`–`5` |
+| Min/max confirmed? | **Yes** |
+| Enum mapping confirmed? | **Yes (read)** — `typeToTap`: in_lc, pre_eq, post_eq, pre_fader, post_fader, grp |
+| Decoder available? | **Yes** — `typeToTap` |
+| Encoder required? | **Yes** — `tapToType` **missing** |
+| UI field available? | **Partial** — read-only detail row for tap |
+| Safe for PH043.07? | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** |
+| Remaining unknowns | `tapToType` encoder; operator need on monitor page; live write proof |
+
+#### 5. Pan follow (odd buses ≥ 03 only)
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | **Yes** — buses 03, 05, …, 15 (`busSupportsSendPanFollow`); not bus 01 |
+| OSC write path | *Assumed same:* `/ch/{01…32}/mix/{03,05…15}/panFollow` — **unproven live** |
+| Scaling confirmed? | **Yes** — int `0`/`1` |
+| Enum mapping confirmed? | **Yes (read)** |
+| Decoder available? | **Yes** — direct int |
+| Encoder required? | Trivial int `0`/`1` |
+| UI field available? | **No** — learned/stored; not rendered PH043.05 |
+| Safe for PH043.07? | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** |
+| Remaining unknowns | Interaction with channel pan and stereo bus link; no operator UI |
+
+#### 6. Grouped fader write
+
+| Question | Finding |
+|---|---|
+| OSC read path verified? | N/A — uses per-channel learned send levels |
+| OSC write path | Would require N× `/level` writes — **not implemented** |
+| UI field available? | **Yes (UI-only)** — `x32-monitors-group-control.js` adjusts DOM locally |
+| Safe for PH043.07? | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** |
+| Remaining unknowns | Batch write strategy, undo, xremote budget, group assignment persistence (excluded PH043.05) |
+
+### Verified OSC Paths (PH043.05 — no invented paths)
+
+| Parameter | OSC path | Bus indices |
+|---|---|---|
+| Send on | `/ch/{01…32}/mix/{01…16}/on` | All 16 |
+| Send level | `/ch/{01…32}/mix/{01…16}/level` | All 16 |
+| Send pan | `/ch/{01…32}/mix/{01,03,05,07,09,11,13,15}/pan` | Odd only |
+| Send type | `/ch/{01…32}/mix/{01,03,05,07,09,11,13,15}/type` | Odd only |
+| Pan follow | `/ch/{01…32}/mix/{03,05,07,09,11,13,15}/panFollow` | Odd ≥ 03 |
+
+Helpers: `X32OscAddressMap::channelBusSendOn|Level|Pan|Type|PanFollow`.
+
+### Scale / Range Summary
+
+| Parameter | Documented scale | Project implementation | Round-trip tested |
+|---|---|---|---|
+| Level | `[0.0…1.0(+10dB), 161]` | `X32FaderScale` | **Yes** (`X32FaderScaleTest`, `X32MonitorSendControlReadinessTest`) |
+| On | int 0/1 | direct int | **Yes** (readiness test) |
+| Pan | linf `[-100, 100, 2]` | `X32OscParameterScale` + `X32ChannelBusSendOscDecoder` | **Yes** (encode/decode pan) |
+| Type | int 0–5 | `TYPE_LABELS` + `typeToTap` | **Yes** (all six labels) |
+| Pan follow | int 0/1 | direct int | Read only |
+
+### Stereo Bus / Odd-Even Audit
+
+| Question | Answer |
+|---|---|
+| Odd/even bus pairs represented correctly? | **Yes (read)** — even buses store level+on only; pan/tap envelopes use `reason: osc_path_not_on_even_bus_send` |
+| Pan only on odd buses? | **Yes** — `busSupportsSendPan` = odd 1–16 |
+| `/type` only on odd buses? | **Yes** — same guard as pan |
+| What happens for even buses? | Level and on learned; pan/tap explicitly `not_learned` with even-bus reason — not silently omitted |
+| Bus linking learned? | **Yes** — `/config/buslink/{1-2}` … `{15-16}` → `capture.bus_links` → `configuration.buses[n].stereo_link` |
+| Bus linking required before pan writes? | **Likely yes for safe pan writes** — link state not consulted by monitor workspace; writing odd-bus pan on a stereo-linked pair may affect both channels — **unproven** |
+| Level/on writes safe for mono and stereo contexts? | **Yes (initial assessment)** — each bus index has independent `/level` and `/on` paths regardless of link; even buses are first-class write targets |
+| PH043.07 restrict to level/on only? | **Yes** — per X32-DEC-004 |
+
+### Write-Readiness Classification
+
+| Future write action | Classification | Rationale |
+|---|---|---|
+| Send level write | **READY FOR PH043.07** | Full read path, scale, UI, path helpers; channel fader write precedent |
+| Send on/mute write | **READY FOR PH043.07** | Full read path, enum, UI; distinct from channel mute invert semantics |
+| Send pan write | **NOT READY — NEEDS MORE DISCOVERY** | Odd-bus-only + stereo link side-effects unproven live |
+| Send type/tap write | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** | Missing `tapToType`; read-only UI; low monitor-page priority |
+| Pan follow write | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** | No UI; buses ≥ 03 only; interaction unknown |
+| Grouped fader write | **DEFER — OUT OF INITIAL LIVE CONTROL SCOPE** | UI-only; needs batch level writes + persistence |
+
+### Recommended PH043.07 Implementation Scope
+
+1. **Add** `MonitorSendControlMap` (or extend address map) for send level/on only — paths from `X32OscAddressMap`, scale from `X32FaderScale`, on enum without invert.
+2. **Wire** bus workspace Channels card fader + mute to OSC write for **selected bus** only — no changes to routing page or overview strip controls.
+3. **Validate** live round-trip on real X32 for level and on before enabling batch/group features.
+4. **Persist** written values to active baseline/snapshot send envelopes (mirror `ShowConsoleControlService` pattern).
+5. **Exclude** pan, type, panFollow, group fader writes. Bus master fader/mute and bus EQ writes are implemented separately in PH043.08–PH043.09.
+
+### PH043.09 — Monitor Bus Master Live Control
 
 | Check | Result |
 |---|---|
-| Application code modified | **No** |
-| UI modified | **No** |
-| Tests modified | **No** |
-| Commits made | **No** |
+| Bus master fader OSC path | **Confirmed** — `/bus/{01…16}/mix/fader` via `X32OscAddressMap::busFader` |
+| Bus master on/mute OSC path | **Confirmed** — `/bus/{01…16}/mix/on` via `X32OscAddressMap::busOn` |
+| Fader scale | `X32FaderScale::quantizeLinear` — same as channel/bus faders |
+| On/mute semantics | `on === 1` → bus active (unmuted); UI mute = `on === 0` — **not** inverted like channel strip `/ch/NN/mix/on` |
+| Read-back pattern | `setFloat`/`setInt` → `queryFloat`/`queryOn` (8 retries for on) — UI updates from confirmed value only |
+| Route scope | Selected monitor bus from `/shows/{show}/console/bus/{bus}/layout` only — body cannot override bus |
+| Runtime gate | `runtime_mode: live` required |
+| Write endpoint | `POST .../console/bus/{bus}/master` — parameters `level`, `mute` only |
+| Excluded | Main LR, matrix, channel master, send fader, EQ, group fader, pan, tap, persistence |
+
+### PH043.06 Confirmation
+
+| Check | Result |
+|---|---|
+| OSC write commands added | **No** |
+| Write services / controller actions added | **No** |
+| Save/apply UI added | **No** |
+| Monitor page behaviour changed | **No** |
+| Readiness verification tests added | **Yes** — `X32MonitorSendControlReadinessTest` |
+| Architectural decision recorded | **Yes** — X32-DEC-004 |
+
+---
+
+## Confirmation (PH043.01)
+
+| Check | Result |
+|---|---|
+| Application code modified | **No** (PH043.01 only) |
+| UI modified | **No** (PH043.01 only) |
+| Tests modified | **No** (PH043.01 only) |
+| Commits made | **No** (PH043.01 only) |
 | Git diff scope | Untracked docs only: `PH043_X32_CONFIGURATION_CONTRACT.md` (prior), `PH043_CONFIGURATION_DISCOVERY_AUDIT.md` (this file) |
 
 ---
 
 ## Rollback Notes
 
-Documentation only. Delete `docs/x32/PH043_CONFIGURATION_DISCOVERY_AUDIT.md` to revert this audit deliverable.
+Documentation only (PH043.01). PH043.06 adds audit section + X32-DEC-004 + readiness tests — revert `docs/x32/PH043_CONFIGURATION_DISCOVERY_AUDIT.md` § PH043.06, `docs/x32/DECISION_LOG.md` X32-DEC-004, and `backend/tests/Unit/X32MonitorSendControlReadinessTest.php`.

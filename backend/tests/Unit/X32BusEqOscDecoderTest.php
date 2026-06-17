@@ -40,6 +40,14 @@ class X32BusEqOscDecoderTest extends TestCase
     }
 
     #[Test]
+    public function it_maps_mode_labels_back_to_osc_type_enums(): void
+    {
+        $this->assertSame(2, X32BusEqOscDecoder::modeToType('PEQ'));
+        $this->assertSame(1, X32BusEqOscDecoder::modeToType('lshv'));
+        $this->assertNull(X32BusEqOscDecoder::modeToType('INVALID'));
+    }
+
+    #[Test]
     public function fixture_bus_one_uses_documented_osc_paths(): void
     {
         $fixture = X32BusEqLearnCapture::fixtureBusOne();

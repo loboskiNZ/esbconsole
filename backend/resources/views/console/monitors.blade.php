@@ -11,6 +11,11 @@
     $channelSettings = $monitorsWorkspace['channel_settings'];
     $groupControl = $monitorsWorkspace['group_control'];
     $busMaster = $monitorsWorkspace['bus_master'];
+    $monitorSendControl = $monitorSendControl ?? ['available' => false, 'reason' => null, 'update_url' => '', 'bus_number' => $activeBusNumber];
+    $monitorBusMasterControl = $monitorBusMasterControl ?? ['available' => false, 'reason' => null, 'update_url' => '', 'bus_number' => $activeBusNumber];
+    $sendControlAvailable = ($monitorSendControl['available'] ?? false) === true;
+    $eqControlAvailable = ($monitorEqControl['available'] ?? false) === true && ($eq['learned'] ?? false) === true;
+    $busMasterControlAvailable = ($monitorBusMasterControl['available'] ?? false) === true && ($busMaster['learned'] ?? false) === true;
     $faderScaleMarks = X32FaderScale::consoleScaleMarks();
     $faderUnityPct = X32FaderScale::unityMarkPercent();
 @endphp
@@ -25,7 +30,21 @@
             'activeTab' => 'monitor',
         ])
 
-        <div class="vx32-routing-workspace vx32-monitors-workspace">
+        <div
+            class="vx32-routing-workspace vx32-monitors-workspace"
+            data-monitors-send-control
+            data-send-control-url="{{ $monitorSendControl['update_url'] ?? '' }}"
+            data-bus-master-control-url="{{ $monitorBusMasterControl['update_url'] ?? '' }}"
+            data-active-bus="{{ $monitorSendControl['bus_number'] ?? $activeBusNumber }}"
+            data-live-control="{{ $sendControlAvailable ? 'true' : 'false' }}"
+            data-bus-master-live-control="{{ $busMasterControlAvailable ? 'true' : 'false' }}"
+            @if (! $sendControlAvailable && ! empty($monitorSendControl['reason']))
+                data-send-control-reason="{{ $monitorSendControl['reason'] }}"
+            @endif
+            @if (! $busMasterControlAvailable && ! empty($monitorBusMasterControl['reason']))
+                data-bus-master-control-reason="{{ $monitorBusMasterControl['reason'] }}"
+            @endif
+        >
             <header class="vx32-routing-workspace__header">
                 <div class="vx32-routing-workspace__header-left">
                     <span class="vx32-routing-workspace__context">{{ $header['context'] }}</span>
@@ -46,7 +65,18 @@
             <div class="vx32-monitors-workspace__body">
                 <div class="vx32-monitors-main vx32-monitors-main--eq-collapsed" data-monitors-main>
                     <div class="vx32-monitors-main__stack">
-                    <section class="vx32-routing-detail__panel vx32-monitors-eq is-collapsed" aria-labelledby="monitors-eq-title" data-eq-panel>
+                    <section
+                        class="vx32-routing-detail__panel vx32-monitors-eq is-collapsed"
+                        aria-labelledby="monitors-eq-title"
+                        data-eq-panel
+                        data-monitors-eq-control
+                        data-eq-control-url="{{ $monitorEqControl['update_url'] ?? '' }}"
+                        data-eq-live-control="{{ ($monitorEqControl['available'] ?? false) ? 'true' : 'false' }}"
+                        data-eq-learned="{{ ($eq['learned'] ?? false) ? 'true' : 'false' }}"
+                        @if (! $eqControlAvailable && ! empty($monitorEqControl['reason']))
+                            data-eq-control-reason="{{ $monitorEqControl['reason'] }}"
+                        @endif
+                    >
                         <header class="vx32-monitors-eq__head">
                             <div class="vx32-monitors-eq__head-bar">
                                 <h2 id="monitors-eq-title" class="vx32-routing-detail__panel-title">{{ $eq['title'] }}</h2>
@@ -63,6 +93,9 @@
                                 <div class="vx32-monitors-eq__head-main">
                                     <p class="vx32-monitors-eq__scope">{{ $eq['scope_hint'] }}</p>
                                     <p class="vx32-monitors-eq__layout-note">{{ $eq['layout_note'] }}</p>
+                                    @if (! $eqControlAvailable && ! empty($monitorEqControl['reason']))
+                                        <p class="vx32-monitors-eq__control-notice">{{ $monitorEqControl['reason'] }}</p>
+                                    @endif
                                 </div>
                                 <div class="vx32-monitors-eq__head-actions">
                                     <span @class([
@@ -73,8 +106,9 @@
                                     <button
                                         type="button"
                                         class="vx32-monitors-eq__toggle {{ $eq['enabled'] ? 'is-on' : '' }}"
-                                        disabled
-                                        title="Display only — bus master EQ bypass"
+                                        data-eq-master-toggle
+                                        @if (! $eqControlAvailable) disabled @endif
+                                        title="{{ $eqControlAvailable ? 'Bus master EQ on/bypass' : ($monitorEqControl['reason'] ?? 'Bus master EQ control unavailable') }}"
                                         aria-label="Bus master EQ bypass · {{ $eq['enabled_display'] }}"
                                     >{{ $eq['enabled_display'] }}</button>
                                 </div>
@@ -169,7 +203,7 @@
 
                                         <label class="vx32-monitors-eq__field vx32-monitors-eq__field--mode">
                                             <span class="vx32-monitors-eq__field-label">Mode</span>
-                                            <select class="vx32-monitors-eq__field-select" data-eq-mode-select title="Bus EQ mode">
+                                            <select class="vx32-monitors-eq__field-select" data-eq-mode-select title="Bus EQ mode" @if (! $eqControlAvailable) disabled @endif>
                                                 @foreach ($band['mode_options'] as $modeOption)
                                                     <option value="{{ $modeOption }}" @selected($modeOption === $band['mode'])>{{ $modeOption }}</option>
                                                 @endforeach
@@ -178,17 +212,17 @@
 
                                         <label class="vx32-monitors-eq__field" data-eq-field="frequency" @if (! $band['frequency_visible']) hidden @endif>
                                             <span class="vx32-monitors-eq__field-label">Freq</span>
-                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="frequency" value="{{ $band['frequency_input'] }}" inputmode="decimal" spellcheck="false">
+                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="frequency" value="{{ $band['frequency_input'] }}" inputmode="decimal" spellcheck="false" @if (! $eqControlAvailable) disabled @endif>
                                         </label>
 
                                         <label class="vx32-monitors-eq__field" data-eq-field="gain" @if (! $band['gain_visible']) hidden @endif>
                                             <span class="vx32-monitors-eq__field-label">Gain</span>
-                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="gain" value="{{ $band['gain_input'] }}" inputmode="decimal" spellcheck="false">
+                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="gain" value="{{ $band['gain_input'] }}" inputmode="decimal" spellcheck="false" @if (! $eqControlAvailable) disabled @endif>
                                         </label>
 
                                         <label class="vx32-monitors-eq__field" data-eq-field="q" @if (! $band['q_visible']) hidden @endif>
                                             <span class="vx32-monitors-eq__field-label">Q</span>
-                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="q" value="{{ $band['q_input'] }}" inputmode="decimal" spellcheck="false">
+                                            <input type="text" class="vx32-monitors-eq__field-input" data-eq-input="q" value="{{ $band['q_input'] }}" inputmode="decimal" spellcheck="false" @if (! $eqControlAvailable) disabled @endif>
                                         </label>
                                     </article>
                                 @endforeach
@@ -235,12 +269,21 @@
                                         data-group-clear
                                         title="Clear all channels from {{ $group['label'] }}"
                                     >Clear</button>
+                                    <button
+                                        type="button"
+                                        class="vx32-monitors-strip__mute vx32-monitors-group-strip__mute"
+                                        data-group-mute
+                                        hidden
+                                        title="Mute all channels in {{ $group['label'] }}"
+                                        aria-label="Group mute · {{ $group['label'] }}"
+                                    >M</button>
                                     @include('console._monitors-fader-track', [
-                                        'handleBottomPct' => 50,
+                                        'handleBottomPct' => $faderUnityPct,
                                         'trackAttributes' => ['data-group-fader-track' => ''],
                                         'handleAttributes' => ['data-group-fader-handle' => ''],
                                     ])
                                     <span class="vx32-monitors-strip__level" data-group-fader-level>0.0</span>
+                                    <span class="vx32-monitors-group-strip__trim-note">Group trim · visual only</span>
                                 </article>
                             @endforeach
                             @foreach ($channels['strips'] as $strip)
@@ -264,6 +307,8 @@
                                     data-channel-strip
                                     data-channel="{{ $strip['number'] }}"
                                     data-group-pick-target
+                                    data-send-level-enabled="{{ $sendControlAvailable && $strip['send_learned'] ? 'true' : 'false' }}"
+                                    data-send-mute-enabled="{{ $sendControlAvailable && $strip['send_on_learned'] ? 'true' : 'false' }}"
                                     data-level-db="{{ $strip['send_learned'] && is_numeric($strip['level_db'] ?? null) ? number_format((float) $strip['level_db'], 2, '.', '') : '' }}"
                                     data-channel-color-index="{{ $strip['color_index'] }}"
                                     style="--channel-color: {{ $strip['color_css'] }}; --channel-color-text: {{ $strip['color_text'] }};"
@@ -274,10 +319,17 @@
                                     <span class="vx32-monitors-strip__group-badge" data-group-control-badge hidden></span>
                                     <button
                                         type="button"
-                                        class="vx32-monitors-strip__mute"
-                                        disabled
+                                        @class([
+                                            'vx32-monitors-strip__mute',
+                                            'is-muted' => $strip['mute'],
+                                        ])
+                                        @unless($sendControlAvailable && $strip['send_on_learned'])
+                                            disabled
+                                        @endunless
                                         title="{{ $strip['mute_scope_label'] }}"
                                         aria-label="{{ $strip['mute_scope_label'] }}"
+                                        aria-pressed="{{ $strip['mute'] ? 'true' : 'false' }}"
+                                        data-channel-mute
                                         {{ $strip['mute'] ? 'data-muted' : '' }}
                                     >M</button>
                                     @include('console._monitors-fader-track', [
@@ -296,6 +348,10 @@
                             <article
                                 class="vx32-monitors-strip vx32-monitors-bus-master-strip"
                                 data-bus-master-strip
+                                data-bus-master-level-enabled="{{ $busMasterControlAvailable ? 'true' : 'false' }}"
+                                data-bus-master-mute-enabled="{{ $busMasterControlAvailable ? 'true' : 'false' }}"
+                                data-level-db="{{ $busMaster['level_db'] !== null ? number_format((float) $busMaster['level_db'], 2, '.', '') : '' }}"
+                                data-confirmed-muted="{{ $busMaster['mute'] ? 'true' : 'false' }}"
                                 aria-label="{{ $busMaster['title'] }} · {{ $busMaster['bus_name'] }}"
                                 title="{{ $busMaster['scope_hint'] }}"
                             >
@@ -303,10 +359,14 @@
                                 <span class="vx32-monitors-strip__name">{{ $busMaster['title'] }}</span>
                                 <button
                                     type="button"
-                                    class="vx32-monitors-strip__mute"
-                                    disabled
-                                    title="Monitor bus mute · {{ $busMaster['bus_name'] }}"
+                                    class="vx32-monitors-strip__mute {{ $busMaster['mute'] ? 'is-muted' : '' }}"
+                                    data-bus-master-mute
+                                    @unless($busMasterControlAvailable)
+                                        disabled
+                                    @endunless
+                                    title="{{ $busMasterControlAvailable ? 'Monitor bus mute · '.$busMaster['bus_name'] : ($monitorBusMasterControl['reason'] ?? 'Monitor bus master mute unavailable') }}"
                                     aria-label="Monitor bus mute · {{ $busMaster['bus_name'] }}"
+                                    aria-pressed="{{ $busMaster['mute'] ? 'true' : 'false' }}"
                                     {{ $busMaster['mute'] ? 'data-muted' : '' }}
                                 >M</button>
                                 @include('console._monitors-fader-track', [

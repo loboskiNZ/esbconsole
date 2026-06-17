@@ -40,14 +40,21 @@ class OscUdpX32OscConsoleClient implements X32OscConsoleClientInterface
         return $this->codec->parseStringResponse($response);
     }
 
+    public function queryOn(string $host, int $port, string $path): int
+    {
+        $response = $this->transceive($host, $port, $this->codec->buildQuery($path), $path);
+
+        return $this->codec->parseOnResponse($response);
+    }
+
     public function setFloat(string $host, int $port, string $path, float $value): void
     {
-        $this->transceive($host, $port, $this->codec->buildFloat($path, $value), $path);
+        $this->sendOnly($host, $port, $this->codec->buildFloat($path, $value));
     }
 
     public function setInt(string $host, int $port, string $path, int $value): void
     {
-        $this->transceive($host, $port, $this->codec->buildInt($path, $value), $path);
+        $this->sendOnly($host, $port, $this->codec->buildInt($path, $value));
     }
 
     public function sendPacket(string $host, int $port, string $payload): void

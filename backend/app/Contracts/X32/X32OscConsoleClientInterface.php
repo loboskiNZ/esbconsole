@@ -8,6 +8,8 @@ interface X32OscConsoleClientInterface
 
     public function queryInt(string $host, int $port, string $path): int;
 
+    public function queryOn(string $host, int $port, string $path): int;
+
     public function queryString(string $host, int $port, string $path): string;
 
     public function setFloat(string $host, int $port, string $path, float $value): void;
