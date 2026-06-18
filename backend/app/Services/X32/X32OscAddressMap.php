@@ -132,6 +132,48 @@ class X32OscAddressMap
         return sprintf('/fxrtn/%02d/mix/fader', self::clamp($index, 1, 8));
     }
 
+    public static function fxType(int $slot): string
+    {
+        return sprintf('/fx/%d/type', self::clamp($slot, 1, 8));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function fxTypePathCandidates(int $slot): array
+    {
+        $slot = self::clamp($slot, 1, 8);
+
+        return array_values(array_unique([
+            sprintf('/fx/%d/type', $slot),
+            sprintf('/fx/%02d/type', $slot),
+        ]));
+    }
+
+    public static function fxParameter(int $slot, int $parameterNumber): string
+    {
+        return sprintf(
+            '/fx/%d/par/%02d',
+            self::clamp($slot, 1, 8),
+            self::clamp($parameterNumber, 1, 64),
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function fxParameterPathCandidates(int $slot, int $parameterNumber): array
+    {
+        $slot = self::clamp($slot, 1, 8);
+        $parameterNumber = self::clamp($parameterNumber, 1, 64);
+
+        return array_values(array_unique([
+            sprintf('/fx/%d/par/%02d', $slot, $parameterNumber),
+            sprintf('/fx/%02d/par/%02d', $slot, $parameterNumber),
+            sprintf('/fx/%d/par/%d', $slot, $parameterNumber),
+        ]));
+    }
+
     public static function sceneRecall(): string
     {
         return '/-action/goscene';

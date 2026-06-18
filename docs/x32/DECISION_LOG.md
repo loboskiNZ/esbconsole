@@ -151,4 +151,72 @@ PH043.09 initial scope **excludes**: Main LR, matrix, channel master, send level
 
 ---
 
-End of X32 Decision Log — X32-DEC-001, X32-DEC-002, X32-DEC-003, X32-DEC-004, X32-DEC-005
+## X32-DEC-006 — PH044 Effects Managed as Show/Song-Aware Packages
+
+| Field | Value |
+|-------|-------|
+| **Decision ID** | X32-DEC-006 |
+| **Title** | PH044 Effects Managed as Show/Song-Aware Packages |
+| **Status** | Approved (PH044.01) |
+
+### Decision
+
+Effects will be managed as **show/song-aware effect packages**, not raw FX-slot editing first. Operators and runtime automation work with named packages (e.g. Standard Vocal, Reggae Dub) that map to verified algorithm codes and slot deployment plans — not ad-hoc per-parameter slot surgery as the primary workflow.
+
+**Algorithm changes** are **between-song or explicit transition-cue operations only**. Algorithm changes must **not** be performed during an active song. Parameter tweaks within an already-loaded algorithm may be permitted mid-song when safety audit classifies them as low-risk (see `docs/x32/PH044_EFFECTS_DISCOVERY_AUDIT.md` §5).
+
+**Algorithm ID** (four-letter OSC code + slot-group type enum, e.g. `HALL` / enum `0` on FX1–4) is the **canonical X32 effect identity**. **FX slot** (`FX1`…`FX8`) is the **deployment location** only. FX1–4 and FX5–8 use **different type enum tables** — enum integers are not globally portable.
+
+PH044.01 scope excludes Effects UI, Laravel OSC write services, FX learn implementation, and migrations.
+
+### Evidence
+
+`docs/x32/PH044_EFFECTS_DISCOVERY_AUDIT.md`; `docs/x32/PH044_EFFECTS_ALGORITHM_CATALOGUE.md`; Maillot X32/M32 OSC Remote Protocol — `/fx/[1…8]/type`, `/fx/[1…8]/par/[01…64]`, appendix Effects enums table; legacy `index.js` `/fx/{slot}/type` sync precedent.
+
+---
+
+## X32-DEC-007 — PH044 Effects Domain Persisted as Package Model
+
+| Field | Value |
+|-------|-------|
+| **Decision ID** | X32-DEC-007 |
+| **Title** | PH044 Effects Domain Persisted as Package Model |
+| **Status** | Approved (PH044.03) |
+
+### Decision
+
+Effects domain state is persisted as **definitions**, **packages**, **package items**, and **song effect assignments** — not as raw FX-slot rows. Tables: `effect_definitions`, `effect_packages`, `effect_package_items`, `song_effect_assignments`.
+
+Song assignments express **intent** (which packages a song requests) before runtime X32 deployment exists. Slot allocation, OSC deployment, and musical clock integration remain future phases.
+
+Reference catalogue data (six named packages and verified effect definitions) lives in `EffectReferenceSeeder` — not in application logic and not as demo song data.
+
+### Evidence
+
+`docs/x32/PH044_EFFECTS_DOMAIN_MODEL.md`; migration `2026_06_18_100000_ph044_effects_domain_schema.php`; X32-DEC-006 package architecture.
+
+---
+
+## X32-DEC-008 — PH044 Allocation Engine Is Read-Only Plan Generation
+
+| Field | Value |
+|-------|-------|
+| **Decision ID** | X32-DEC-008 |
+| **Title** | PH044 Allocation Engine Is Read-Only Plan Generation |
+| **Status** | Approved (PH044.04) |
+
+### Decision
+
+`EffectsAllocationResolver` produces a read-only **allocation plan** from song assignments and permanent packages. It does **not** write OSC, switch algorithms, or deploy to the X32.
+
+Slot assignment respects `x32_slot_group`, preferred slots, required/optional membership, package priority, and duplicate definition deduplication. Plan status is `READY`, `READY_WITH_WARNINGS`, or `BLOCKED`.
+
+Hybrid effects consume an FX slot only when the package item specifies `preferred_slot_number` (explicit slot deployment). Main/channel processing effects are listed under `non_slot_effects`.
+
+### Evidence
+
+`docs/x32/PH044_EFFECTS_ALLOCATION_ENGINE.md`; `App\Services\Effects\EffectsAllocationResolver`; PH044.01 safety and slot-group rules.
+
+---
+
+End of X32 Decision Log — X32-DEC-001, X32-DEC-002, X32-DEC-003, X32-DEC-004, X32-DEC-005, X32-DEC-006, X32-DEC-007, X32-DEC-008

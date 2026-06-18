@@ -7,6 +7,7 @@ use Database\Factories\SongFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Song extends Model
@@ -65,5 +66,25 @@ class Song extends Model
     public function performanceAssignments(): HasMany
     {
         return $this->hasMany(PerformanceAssignment::class);
+    }
+
+    public function songEffectAssignments(): HasMany
+    {
+        return $this->hasMany(SongEffectAssignment::class)->orderBy('priority');
+    }
+
+    public function effectPackages(): BelongsToMany
+    {
+        return $this->belongsToMany(EffectPackage::class, 'song_effect_assignments')
+            ->withPivot([
+                'priority',
+                'assignment_type',
+                'enabled',
+                'fallback_console_recall_name',
+                'fallback_console_recall_type',
+                'notes',
+            ])
+            ->withTimestamps()
+            ->orderBy('song_effect_assignments.priority');
     }
 }

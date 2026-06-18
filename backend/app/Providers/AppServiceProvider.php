@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\X32\X32ConsoleSnapshotReaderInterface;
 use App\Contracts\X32\X32OscConsoleClientInterface;
+use App\Services\Effects\DeployEffectPackageItemService;
 use App\Services\X32\FakeX32ConsoleSnapshotReader;
 use App\Services\X32\FakeX32OscConsoleClient;
 use App\Services\X32\OscUdpX32ConsoleSnapshotReader;
@@ -36,9 +37,22 @@ class AppServiceProvider extends ServiceProvider
 
             return new OscUdpX32OscConsoleClient(
                 new X32OscMessageCodec,
-                timeoutSeconds: 0.2,
+                timeoutSeconds: (float) config('services.x32.osc_timeout_seconds', 2.0),
             );
         });
+
+        $this->app->when(DeployEffectPackageItemService::class)
+            ->needs(X32OscConsoleClientInterface::class)
+            ->give(function ($app) {
+                if ($app->runningUnitTests()) {
+                    return $app->make(FakeX32OscConsoleClient::class);
+                }
+
+                return new OscUdpX32OscConsoleClient(
+                    new X32OscMessageCodec,
+                    timeoutSeconds: (float) config('services.x32.fx_deploy_osc_timeout_seconds', 3.0),
+                );
+            });
 
         $this->app->singleton(OscUdpX32ConsoleSnapshotReader::class, function ($app) {
             return new OscUdpX32ConsoleSnapshotReader(

@@ -51,6 +51,21 @@ Route::middleware(['auth', 'verified', 'director'])->group(function () {
         ->whereNumber('busNumber')
         ->name('shows.monitors');
     Route::get('/shows/{show}/console/configuration', [ConsoleController::class, 'configurationForShow'])->name('shows.console.configuration');
+    Route::get('/shows/{show}/console/effects', [ConsoleController::class, 'effectsForShow'])->name('shows.console.effects');
+    Route::get('/shows/{show}/console/effects/newfxpackage', [ConsoleController::class, 'newEffectPackageForShow'])->name('shows.console.effects.new-package');
+    Route::post('/shows/{show}/console/effects/newfxpackage', [ConsoleController::class, 'storeEffectPackageForShow'])->name('shows.console.effects.store-package');
+    Route::get('/shows/{show}/console/effects/packages/{package}/edit', [ConsoleController::class, 'editEffectPackageForShow'])->name('shows.console.effects.edit-package');
+    Route::patch('/shows/{show}/console/effects/packages/{package}', [ConsoleController::class, 'updateEffectPackageForShow'])->name('shows.console.effects.update-package');
+    Route::delete('/shows/{show}/console/effects/packages/{package}', [ConsoleController::class, 'destroyEffectPackageForShow'])->name('shows.console.effects.destroy-package');
+    Route::get('/shows/{show}/console/effects/packages/{package}/add-effect', [ConsoleController::class, 'addEffectToPackageForShow'])->name('shows.console.effects.add-effect');
+    Route::post('/shows/{show}/console/effects/packages/{package}/add-effect', [ConsoleController::class, 'storeEffectToPackageForShow'])->name('shows.console.effects.store-effect');
+    Route::get('/shows/{show}/console/effects/package-items/{item}/edit', [ConsoleController::class, 'editEffectPackageItemForShow'])->name('shows.console.effects.edit-package-item');
+    Route::patch('/shows/{show}/console/effects/package-items/{item}', [ConsoleController::class, 'updateEffectPackageItemForShow'])->name('shows.console.effects.update-package-item');
+    Route::delete('/shows/{show}/console/effects/package-items/{item}', [ConsoleController::class, 'destroyEffectPackageItemForShow'])->name('shows.console.effects.destroy-package-item');
+    Route::patch('/shows/{show}/console/effects/parameters/{parameter}', [ConsoleController::class, 'updateEffectPackageParameter'])->name('shows.console.effects.update-parameter');
+    Route::post('/shows/{show}/console/effects/package-items/{item}/slot', [ConsoleController::class, 'updateEffectPackageItemSlot'])->name('shows.console.effects.update-package-item-slot');
+    Route::post('/shows/{show}/console/effects/package-items/{item}/deploy', [ConsoleController::class, 'deployEffectPackageItem'])->name('shows.console.effects.deploy-package-item');
+    Route::post('/shows/{show}/console/effects/package-items/{item}/routing-plan', [ConsoleController::class, 'updateEffectPackageItemRoutingPlan'])->name('shows.console.effects.update-package-item-routing-plan');
     Route::post('/shows/{show}/console/save', [ConsoleController::class, 'saveForShow'])->name('shows.console.save');
     Route::post('/shows/{show}/console/parameters', [ConsoleController::class, 'updateParameter'])->name('shows.console.parameters.update');
     Route::post('/shows/{show}/console/controls', [ConsoleController::class, 'updateControl'])->name('shows.console.controls.update');

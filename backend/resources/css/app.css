@@ -4915,3 +4915,1068 @@ a.vx32-monitors-strip__name:hover {
     }
 }
 
+/* ── Effects workspace shell (PH044.05A) ── */
+
+.vx32-effects-workspace__grid {
+    display: grid;
+    grid-template-columns: 25% 50% 25%;
+    flex: 1 1 auto;
+    gap: 0.75rem;
+    min-height: 0;
+    height: 0;
+    padding: 0.75rem;
+    overflow: hidden;
+}
+
+.vx32-effects-workspace__col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.vx32-effects-workspace__card {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid rgb(39 39 42);
+    border-radius: 8px;
+    background: rgb(18 18 20);
+}
+
+.vx32-effects-workspace__card-header {
+    flex-shrink: 0;
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid rgb(39 39 42);
+}
+
+.vx32-effects-workspace__card-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 800;
+    color: rgb(250 250 250);
+}
+
+.vx32-effects-workspace__card-subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(161 161 170);
+}
+
+.vx32-effects-workspace__card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 0.75rem 0.85rem;
+    overflow: auto;
+}
+
+.vx32-effects-workspace__package-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vx32-effects-workspace__package-row-inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.vx32-effects-workspace__package-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.vx32-effects-workspace__package-action {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(212 212 216);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 999px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.vx32-effects-workspace__package-action--danger {
+    color: rgb(254 202 202);
+    border-color: rgb(127 29 29 / 0.65);
+    background: rgb(69 10 10 / 0.45);
+}
+
+.vx32-effects-workspace__package-delete-form {
+    margin: 0;
+}
+
+.vx32-effects-workspace__effect-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.55rem;
+}
+
+.vx32-effects-workspace__effect-deploy {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.vx32-effects-workspace__effect-deploy-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(224 242 254);
+    background: rgb(12 74 110 / 0.55);
+    border: 1px solid rgb(14 116 144 / 0.75);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.vx32-effects-workspace__effect-deploy-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.vx32-effects-workspace__effect-deploy-status {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgb(161 161 170);
+}
+
+.vx32-effects-workspace__effect-deploy-status--ready {
+    color: rgb(125 211 252);
+}
+
+.vx32-effects-workspace__effect-deploy-status--deploying {
+    color: rgb(250 204 21);
+}
+
+.vx32-effects-workspace__effect-deploy-status--deployed {
+    color: rgb(134 239 172);
+}
+
+.vx32-effects-workspace__effect-deploy-status--failed {
+    color: rgb(252 165 165);
+}
+
+.vx32-effects-workspace__effect-deploy-error {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.6875rem;
+    color: rgb(252 165 165);
+}
+
+.vx32-effects-workspace__effect-delete-form {
+    margin: 0;
+}
+
+.vx32-effects-workspace__effect-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: rgb(254 202 202);
+    background: rgb(69 10 10 / 0.45);
+    border: 1px solid rgb(127 29 29 / 0.65);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.vx32-effects-form__checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    color: rgb(212 212 216);
+}
+
+.vx32-effects-workspace__effect-card-actions .vx32-routing-detail__configure {
+    opacity: 1;
+    cursor: pointer;
+    color: rgb(212 212 216);
+    text-decoration: none;
+}
+
+.vx32-effects-workspace__package-row {
+    padding: 0.65rem 0;
+    border-bottom: 1px solid rgb(39 39 42 / 0.85);
+}
+
+.vx32-effects-workspace__package-row:last-child {
+    border-bottom: 0;
+}
+
+.vx32-effects-workspace__package-row-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    margin-bottom: 0.35rem;
+}
+
+.vx32-effects-workspace__package-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: rgb(244 244 245);
+}
+
+.vx32-effects-workspace__badge {
+    display: inline-flex;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(186 230 253);
+    background: rgb(8 47 73 / 0.65);
+    border: 1px solid rgb(56 189 248 / 0.45);
+    border-radius: 999px;
+}
+
+.vx32-effects-workspace__package-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__detail-section + .vx32-effects-workspace__detail-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgb(39 39 42 / 0.85);
+}
+
+.vx32-effects-workspace__detail-heading {
+    margin: 0 0 0.45rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(161 161 170);
+}
+
+.vx32-effects-workspace__detail-list {
+    margin: 0;
+    padding-left: 1rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgb(212 212 216);
+}
+
+.vx32-effects-workspace__placeholder-text {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: rgb(113 113 122);
+}
+
+@media (max-width: 1024px) {
+    .vx32-effects-workspace__grid {
+        grid-template-columns: 1fr;
+        height: auto;
+        overflow: visible;
+    }
+
+    .vx32-effects-workspace__col {
+        min-height: min(18rem, 45dvh);
+        overflow: visible;
+    }
+
+    .vx32-effects-workspace__card {
+        min-height: min(18rem, 45dvh);
+    }
+}
+
+.vx32-effects-workspace__card-header--actions {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.vx32-effects-workspace__detail-header-main {
+    min-width: 0;
+}
+
+.vx32-effects-workspace__new-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(219 234 254);
+    text-decoration: none;
+    background: rgb(29 78 216);
+    border: 1px solid rgb(59 130 246);
+    border-radius: 999px;
+}
+
+.vx32-effects-workspace__new-btn:hover {
+    background: rgb(37 99 235);
+}
+
+.vx32-effects-workspace__package-link {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.vx32-effects-workspace__package-row.is-selected {
+    background: rgb(30 58 138 / 0.25);
+    border-radius: 6px;
+}
+
+.vx32-effects-workspace__parameter-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.vx32-effects-workspace__parameter-group + .vx32-effects-workspace__parameter-group {
+    margin-top: 0.75rem;
+}
+
+.vx32-effects-workspace__parameter-group-title {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgb(212 212 216);
+}
+
+.vx32-effects-workspace__parameter-type {
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-form-workspace__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 1rem;
+    overflow: auto;
+}
+
+.vx32-effects-form {
+    max-width: 42rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.vx32-effects-form__field,
+.vx32-effects-form__fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.vx32-effects-form__fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.vx32-effects-form__legend,
+.vx32-effects-form__label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: rgb(212 212 216);
+}
+
+.vx32-effects-form__input,
+.vx32-effects-form__textarea,
+.vx32-effects-form__select {
+    width: 100%;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.875rem;
+    color: rgb(244 244 245);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+}
+
+.vx32-effects-form__selector-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.vx32-effects-form__selector-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.vx32-effects-form__hint {
+    margin: 0 0 0.65rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-combobox {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.vx32-effects-combobox__dropdown {
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    left: 0;
+    overflow: hidden;
+    border: 1px solid rgb(63 63 70);
+    border-radius: 6px;
+    background: rgb(18 18 20);
+    box-shadow: 0 12px 28px rgb(0 0 0 / 0.35);
+}
+
+.vx32-effects-combobox__list {
+    max-height: 14rem;
+    margin: 0;
+    padding: 0.25rem 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.vx32-effects-combobox__option,
+.vx32-effects-combobox__empty {
+    padding: 0.5rem 0.65rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+}
+
+.vx32-effects-combobox__option {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    color: rgb(228 228 231);
+    cursor: pointer;
+}
+
+.vx32-effects-combobox__option-primary {
+    font-weight: 700;
+    color: rgb(244 244 245);
+}
+
+.vx32-effects-combobox__option-help {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-combobox__option:hover,
+.vx32-effects-combobox__option.is-highlighted {
+    background: rgb(30 58 138 / 0.45);
+    color: rgb(244 244 245);
+}
+
+.vx32-effects-combobox__option:hover .vx32-effects-combobox__option-help,
+.vx32-effects-combobox__option.is-highlighted .vx32-effects-combobox__option-help {
+    color: rgb(186 230 253);
+}
+
+.vx32-effects-workspace__effect-detail-cards {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+}
+
+.vx32-effects-workspace__package-overview {
+    margin: 0 0 0.85rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: rgb(161 161 170);
+}
+
+.vx32-routing-detail__input-card--effect {
+    border-top: 3px solid rgb(59 130 246);
+}
+
+.vx32-effects-workspace__effect-card-headings {
+    min-width: 0;
+}
+
+.vx32-effects-workspace__effect-card-technical {
+    margin: 0.3rem 0 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__slot-allocation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.65rem;
+    margin: 0 0 0.65rem;
+    padding: 0.45rem 0.5rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-effects-workspace__slot-allocation--allocated {
+    border-color: rgb(59 130 246 / 0.45);
+}
+
+.vx32-effects-workspace__slot-allocation--conflict {
+    border-color: rgb(250 204 21 / 0.55);
+    background: rgb(39 32 12 / 0.35);
+}
+
+.vx32-effects-workspace__slot-allocation-label {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.vx32-effects-workspace__slot-allocation-title {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(161 161 170);
+    white-space: nowrap;
+}
+
+.vx32-effects-workspace__slot-allocation-select {
+    min-width: 7.5rem;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(228 228 231);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 4px;
+}
+
+.vx32-effects-workspace__slot-allocation-select:focus {
+    outline: none;
+    border-color: rgb(59 130 246);
+    box-shadow: 0 0 0 1px rgb(59 130 246 / 0.35);
+}
+
+.vx32-effects-workspace__slot-allocation-select.is-saving {
+    border-color: rgb(250 204 21);
+}
+
+.vx32-effects-workspace__slot-allocation-select.is-saved {
+    border-color: rgb(74 222 128);
+}
+
+.vx32-effects-workspace__slot-allocation-select.is-error {
+    border-color: rgb(248 113 113);
+}
+
+.vx32-effects-workspace__slot-allocation-helper {
+    margin: 0;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__slot-allocation-pill {
+    margin: 0;
+    padding: 0.2rem 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: rgb(191 219 254);
+    background: rgb(30 58 138 / 0.45);
+    border: 1px solid rgb(59 130 246 / 0.45);
+    border-radius: 999px;
+}
+
+.vx32-effects-workspace__slot-allocation-error {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(252 165 165);
+}
+
+.vx32-effects-workspace__slot-allocation-summary {
+    flex: 1 1 100%;
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: rgb(191 219 254);
+}
+
+.vx32-effects-workspace__routing-plan {
+    margin: 0 0 0.65rem;
+    padding: 0.5rem 0.55rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-effects-workspace__routing-plan-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(161 161 170);
+}
+
+.vx32-effects-workspace__routing-plan-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    margin-bottom: 0.55rem;
+}
+
+.vx32-effects-workspace__routing-plan-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+}
+
+.vx32-effects-workspace__routing-plan-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.vx32-effects-workspace__routing-plan-field--target-sections {
+    width: 100%;
+}
+
+.vx32-effects-workspace__routing-plan-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+}
+
+.vx32-effects-workspace__routing-plan-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: rgb(212 212 216);
+    background: rgb(18 18 20);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.vx32-effects-workspace__routing-plan-checkbox input {
+    margin: 0;
+    accent-color: rgb(59 130 246);
+}
+
+.vx32-effects-workspace__routing-plan-checkbox input.is-saving,
+.vx32-effects-workspace__routing-plan-checkbox input.is-saved,
+.vx32-effects-workspace__routing-plan-checkbox input.is-error {
+    outline: 1px solid currentColor;
+}
+
+.vx32-effects-workspace__routing-plan-footer {
+    display: flex;
+    align-items: stretch;
+    gap: 0.45rem;
+}
+
+.vx32-effects-workspace__routing-plan-field--notes {
+    flex: 0 0 50%;
+    width: 50%;
+    max-width: 50%;
+}
+
+.vx32-effects-workspace__routing-plan-field--notes .vx32-effects-workspace__routing-plan-textarea {
+    flex: 1;
+    min-height: 4.5rem;
+    resize: vertical;
+}
+
+.vx32-effects-workspace__routing-plan-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__routing-plan-input,
+.vx32-effects-workspace__routing-plan-textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 0.3rem 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(228 228 231);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 4px;
+}
+
+.vx32-effects-workspace__routing-plan-input--number {
+    width: 5rem;
+}
+
+.vx32-effects-workspace__routing-plan-level-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.vx32-effects-workspace__routing-plan-unit {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__routing-plan-input:focus,
+.vx32-effects-workspace__routing-plan-textarea:focus {
+    outline: none;
+    border-color: rgb(59 130 246);
+    box-shadow: 0 0 0 1px rgb(59 130 246 / 0.35);
+}
+
+.vx32-effects-workspace__routing-plan-input.is-saving,
+.vx32-effects-workspace__routing-plan-textarea.is-saving {
+    border-color: rgb(250 204 21);
+}
+
+.vx32-effects-workspace__routing-plan-input.is-saved,
+.vx32-effects-workspace__routing-plan-textarea.is-saved {
+    border-color: rgb(74 222 128);
+}
+
+.vx32-effects-workspace__routing-plan-input.is-error,
+.vx32-effects-workspace__routing-plan-textarea.is-error {
+    border-color: rgb(248 113 113);
+}
+
+.vx32-effects-workspace__routing-plan-summary {
+    display: grid;
+    flex: 1 1 auto;
+    width: auto;
+    max-width: 50%;
+    gap: 0.3rem;
+    margin: 0 0 0 auto;
+    align-content: start;
+    justify-items: end;
+    text-align: right;
+}
+
+.vx32-effects-workspace__routing-plan-summary-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    align-items: baseline;
+    width: 100%;
+}
+
+.vx32-effects-workspace__routing-plan-summary dt {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__routing-plan-summary dd {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(228 228 231);
+}
+
+.vx32-effects-workspace__routing-plan-error {
+    margin: 0.45rem 0 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(252 165 165);
+}
+
+.vx32-effects-workspace__effect-card-empty {
+    margin: 0 0 0.55rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-workspace__parameter-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 0.55rem;
+}
+
+.vx32-effects-workspace__parameter-card {
+    display: flex;
+    flex: 0 1 auto;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0.4rem 0.45rem;
+    background: rgb(12 12 14);
+    border: 1px solid rgb(39 39 42);
+    border-radius: 6px;
+}
+
+.vx32-effects-workspace__parameter-card-label {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+    line-height: 1.25;
+}
+
+.vx32-effects-workspace__parameter-card-control {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.vx32-effects-workspace__parameter-card-input {
+    box-sizing: content-box;
+    width: 6ch;
+    max-width: 6ch;
+    flex: 0 0 6ch;
+    padding: 0.3rem 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(228 228 231);
+    background: rgb(24 24 27);
+    border: 1px solid rgb(63 63 70);
+    border-radius: 4px;
+}
+
+.vx32-effects-workspace__parameter-card-input:focus {
+    outline: none;
+    border-color: rgb(59 130 246);
+    box-shadow: 0 0 0 1px rgb(59 130 246 / 0.35);
+}
+
+.vx32-effects-workspace__parameter-card-input.is-saving {
+    border-color: rgb(250 204 21);
+}
+
+.vx32-effects-workspace__parameter-card-input.is-saved {
+    border-color: rgb(74 222 128);
+}
+
+.vx32-effects-workspace__parameter-card-input.is-error {
+    border-color: rgb(248 113 113);
+}
+
+.vx32-effects-workspace__parameter-card-unit {
+    flex: 0 0 auto;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-combobox__empty {
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-form__add-btn,
+.vx32-effects-form__remove-btn,
+.vx32-effects-form__submit-btn,
+.vx32-effects-form__cancel-link {
+    font-size: 0.8125rem;
+    font-weight: 700;
+}
+
+.vx32-effects-form__add-btn {
+    align-self: flex-start;
+    padding: 0.45rem 0.7rem;
+    color: rgb(186 230 253);
+    background: transparent;
+    border: 1px dashed rgb(56 189 248 / 0.45);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.vx32-effects-form__remove-btn {
+    padding: 0.45rem 0.65rem;
+    color: rgb(252 165 165);
+    background: transparent;
+    border: 1px solid rgb(248 113 113 / 0.45);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.vx32-effects-form__submit-btn {
+    align-self: flex-start;
+    padding: 0.55rem 1rem;
+    color: rgb(219 234 254);
+    background: rgb(29 78 216);
+    border: 1px solid rgb(59 130 246);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.vx32-effects-form__cancel-link {
+    color: rgb(161 161 170);
+    text-decoration: none;
+}
+
+.vx32-effects-form__error {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: rgb(252 165 165);
+}
+
+.vx32-effects-deployment-plan__meta {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+}
+
+.vx32-effects-deployment-plan__meta-row {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.35rem;
+    align-items: baseline;
+}
+
+.vx32-effects-deployment-plan__meta-row dt {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-deployment-plan__meta-row dd {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(228 228 231);
+}
+
+.vx32-effects-deployment-plan__table-wrap {
+    overflow-x: auto;
+}
+
+.vx32-effects-deployment-plan__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.6875rem;
+}
+
+.vx32-effects-deployment-plan__table th,
+.vx32-effects-deployment-plan__table td {
+    padding: 0.35rem 0.3rem;
+    border-bottom: 1px solid rgb(39 39 42);
+    text-align: left;
+    vertical-align: top;
+}
+
+.vx32-effects-deployment-plan__table th {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(113 113 122);
+}
+
+.vx32-effects-deployment-plan__status {
+    display: inline-flex;
+    padding: 0.1rem 0.35rem;
+    border-radius: 999px;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.vx32-effects-deployment-plan__status--ready {
+    color: rgb(187 247 208);
+    background: rgb(20 83 45 / 0.45);
+}
+
+.vx32-effects-deployment-plan__status--available {
+    color: rgb(161 161 170);
+    background: rgb(39 39 42);
+}
+
+.vx32-effects-deployment-plan__status--reserved {
+    color: rgb(254 215 170);
+    background: rgb(124 45 18 / 0.45);
+}
+
+.vx32-effects-deployment-plan__status--conflict {
+    color: rgb(254 202 202);
+    background: rgb(127 29 29 / 0.45);
+}
+
+.vx32-effects-deployment-plan__list {
+    margin: 0;
+    padding-left: 1rem;
+    font-size: 0.75rem;
+    color: rgb(212 212 216);
+}
+
+.vx32-effects-deployment-plan__list--conflicts {
+    color: rgb(254 202 202);
+}
+
+.vx32-effects-deployment-plan__overall-status {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.vx32-effects-deployment-plan__overall-status--ready {
+    color: rgb(134 239 172);
+}
+
+.vx32-effects-deployment-plan__overall-status--ready_with_warnings {
+    color: rgb(253 224 71);
+}
+
+.vx32-effects-deployment-plan__overall-status--blocked {
+    color: rgb(248 113 113);
+}
+

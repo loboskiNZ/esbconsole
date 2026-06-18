@@ -39,4 +39,9 @@ return [
         'osc_debug' => (bool) env('CONSOLE_LEARN_OSC_DEBUG', false),
     ],
 
+    'x32' => [
+        'osc_timeout_seconds' => (float) env('X32_OSC_TIMEOUT_SECONDS', 2.0),
+        'fx_deploy_osc_timeout_seconds' => (float) env('X32_FX_DEPLOY_OSC_TIMEOUT_SECONDS', 3.0),
+    ],
+
 ];
