@@ -203,6 +203,147 @@
     min-height: 100dvh;
 }
 
+.esb-portal__background-layer {
+    transition: opacity 2.4s ease-in-out;
+}
+
+.esb-onboarding__back {
+    color: var(--esb-muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: color 0.25s ease;
+}
+
+.esb-onboarding__back:hover {
+    color: var(--esb-gold);
+}
+
+.esb-onboarding__weapon-summary {
+    background: rgba(9, 5, 6, 0.35);
+}
+
+.esb-onboarding__weapon-summary-label {
+    color: var(--esb-gold);
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.esb-onboarding__weapon-primary {
+    color: var(--esb-ink);
+    font-size: 1.15rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.esb-onboarding__weapon-badge {
+    display: inline-flex;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 178, 62, 0.2);
+    color: var(--esb-gold);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.esb-onboarding__weapon-additional-label {
+    color: rgba(233, 203, 160, 0.75);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.esb-onboarding__weapon-additional-list {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.esb-onboarding__weapon-additional-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--esb-muted);
+}
+
+.esb-onboarding__weapon-remove {
+    color: rgba(255, 178, 62, 0.85);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.esb-onboarding__weapon-remove:hover {
+    color: var(--esb-gold);
+}
+
+.esb-onboarding__instrument-chip--primary {
+    border-color: rgba(255, 178, 62, 0.85);
+    background: rgba(255, 178, 62, 0.22);
+    color: var(--esb-ink);
+}
+
+.esb-onboarding__reset {
+    color: rgba(233, 203, 160, 0.75);
+    font-size: 0.88rem;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.esb-onboarding__reset:hover {
+    color: var(--esb-gold);
+}
+
+.esb-onboarding__country-list {
+    position: absolute;
+    z-index: 20;
+    left: 0;
+    right: 0;
+    top: calc(100% + 0.35rem);
+    max-height: 14rem;
+    overflow-y: auto;
+    border-radius: 0.9rem;
+    border: 1px solid var(--esb-line);
+    background: rgba(9, 5, 6, 0.94);
+    backdrop-filter: blur(12px);
+}
+
+.esb-onboarding__country-option {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: var(--esb-ink);
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.esb-onboarding__country-option:hover {
+    background: rgba(255, 178, 62, 0.12);
+}
+
+.esb-onboarding__country-meta {
+    color: rgba(233, 203, 160, 0.65);
+    font-size: 0.82rem;
+    white-space: nowrap;
+}
+
+.esb-onboarding__phone-code {
+    margin-left: 0.35rem;
+    color: var(--esb-gold);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
 .esb-onboarding__sr-only {
     position: absolute;
     width: 1px;
@@ -441,6 +582,10 @@
     }
 
     .esb-onboarding__instrument-chip {
+        transition: none !important;
+    }
+
+    .esb-portal__background-layer {
         transition: none !important;
     }
 }

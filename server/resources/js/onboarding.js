@@ -5,6 +5,12 @@ import {
     validateRequired,
     validateUsername,
 } from './onboarding-validators';
+import {
+    BACKGROUND_ROTATION_MAX_MS,
+    BACKGROUND_ROTATION_MIN_MS,
+    SCAFFOLD_COUNTRIES,
+    SCAFFOLD_INSTRUMENTS,
+} from './onboarding-scaffold-data';
 
 const prefersReducedMotion = () =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,40 +20,26 @@ const delay = (ms) =>
 
 const motionDelay = (ms) => (prefersReducedMotion() ? 0 : ms);
 
-/** Temporary UI scaffold — not canonical instrument_reference data (PH048B). */
-export const SCAFFOLD_INSTRUMENTS = [
-    { id: 'scaffold-electric-guitar', name: 'Electric Guitar' },
-    { id: 'scaffold-acoustic-guitar', name: 'Acoustic Guitar' },
-    { id: 'scaffold-bass', name: 'Bass Guitar' },
-    { id: 'scaffold-drums', name: 'Drums' },
-    { id: 'scaffold-keys', name: 'Keys' },
-    { id: 'scaffold-vocals', name: 'Vocals' },
-    { id: 'scaffold-trumpet', name: 'Trumpet' },
-    { id: 'scaffold-saxophone', name: 'Saxophone' },
-    { id: 'scaffold-trombone', name: 'Trombone' },
-    { id: 'scaffold-percussion', name: 'Percussion' },
-];
-
 const INTRO_CARDS = [
     {
         title: 'Create Your Identity',
-        body: 'You will create the credentials used to access the ESB Studio.',
+        body: 'Claim your place inside the Studio — credentials that belong only to you.',
     },
     {
         title: 'Tell Us Who You Are',
-        body: 'We collect legal identity information required for travel, accommodation, touring and administration.',
+        body: 'The road takes names. We honour yours as it travels.',
     },
     {
         title: 'Choose Your Persona',
-        body: 'Tell us what the world should call you.',
+        body: 'The world will know you by something true — or something legendary.',
     },
     {
         title: 'Choose Your Weapon',
-        body: 'Tell us what instrument you play.',
+        body: 'Every shadow needs its sound. Yours may be one voice or many.',
     },
     {
         title: 'Enter the Studio',
-        body: 'Once complete, you will gain access to the ESB Studio.',
+        body: 'When you are ready, the door opens.',
     },
 ];
 
@@ -55,8 +47,8 @@ const STEP_FIELDS = {
     2: ['username', 'password', 'passwordConfirm', 'humanVerification'],
     3: ['firstName', 'middleName', 'surname'],
     4: ['stageName'],
-    5: ['primaryInstrument', 'additionalInstruments'],
-    6: ['email', 'telephone', 'city', 'country'],
+    5: ['weapons'],
+    6: ['email', 'country', 'city', 'telephone'],
 };
 
 const STEP_TITLES = {
@@ -78,7 +70,9 @@ const FUTURE_TASKS = [
     'Touring information',
 ];
 
-export function portalOnboarding(token = '') {
+export { SCAFFOLD_INSTRUMENTS, SCAFFOLD_COUNTRIES };
+
+export function portalOnboarding(token = '', backgroundImages = []) {
     return {
         token,
         step: 1,
@@ -91,8 +85,14 @@ export function portalOnboarding(token = '') {
         overlayVisible: false,
         logoVisible: false,
         contentVisible: false,
+        backgroundImages: backgroundImages.length > 0 ? backgroundImages : [],
+        backgroundIndex: 0,
+        backgroundRotationTimer: null,
+        countryQuery: '',
+        countryDropdownOpen: false,
         introCards: INTRO_CARDS,
         scaffoldInstruments: SCAFFOLD_INSTRUMENTS,
+        scaffoldCountries: SCAFFOLD_COUNTRIES,
         futureTasks: FUTURE_TASKS,
         form: {
             honeypot: '',
@@ -107,9 +107,11 @@ export function portalOnboarding(token = '') {
             primaryInstrument: '',
             additionalInstruments: [],
             email: '',
-            telephone: '',
-            city: '',
             country: '',
+            countryIso3: '',
+            countryPhoneCode: '',
+            city: '',
+            telephone: '',
         },
 
         init() {
@@ -117,6 +119,14 @@ export function portalOnboarding(token = '') {
 
             if (image?.complete && image.naturalWidth > 0) {
                 this.onBackgroundLoaded();
+            }
+
+            this.scheduleBackgroundRotation();
+        },
+
+        destroy() {
+            if (this.backgroundRotationTimer) {
+                window.clearTimeout(this.backgroundRotationTimer);
             }
         },
 
@@ -134,6 +144,55 @@ export function portalOnboarding(token = '') {
 
         get progressPercent() {
             return Math.round((this.step / 8) * 100);
+        },
+
+        get canGoBack() {
+            if (this.step === 1 && this.introCardIndex === 0) {
+                return false;
+            }
+
+            return this.step > 1 || this.introCardIndex > 0;
+        },
+
+        get filteredCountries() {
+            const query = this.countryQuery.trim().toLowerCase();
+
+            if (!query) {
+                return this.scaffoldCountries.slice(0, 8);
+            }
+
+            return this.scaffoldCountries.filter((country) =>
+                country.name.toLowerCase().includes(query)
+                || country.iso3.toLowerCase().includes(query),
+            );
+        },
+
+        get telephoneHint() {
+            return this.form.countryPhoneCode
+                ? `Include your number — country code ${this.form.countryPhoneCode} is already known.`
+                : 'Enter your telephone number.';
+        },
+
+        scheduleBackgroundRotation() {
+            if (this.backgroundRotationTimer) {
+                window.clearTimeout(this.backgroundRotationTimer);
+            }
+
+            if (prefersReducedMotion() || this.backgroundImages.length < 2) {
+                return;
+            }
+
+            const dwell = BACKGROUND_ROTATION_MIN_MS
+                + Math.floor(Math.random() * (BACKGROUND_ROTATION_MAX_MS - BACKGROUND_ROTATION_MIN_MS));
+
+            this.backgroundRotationTimer = window.setTimeout(() => {
+                this.backgroundIndex = (this.backgroundIndex + 1) % this.backgroundImages.length;
+                this.scheduleBackgroundRotation();
+            }, dwell);
+        },
+
+        isBackgroundActive(index) {
+            return this.backgroundIndex === index;
         },
 
         async onBackgroundLoaded() {
@@ -155,6 +214,48 @@ export function portalOnboarding(token = '') {
 
             await delay(motionDelay(600));
             this.introCardsVisible = true;
+        },
+
+        goBack() {
+            this.fieldError = '';
+
+            if (this.step === 1 && this.introCardIndex > 0) {
+                this.introCardIndex -= 1;
+                return;
+            }
+
+            if (this.step === 2 && this.fieldIndex > 0) {
+                this.fieldIndex -= 1;
+                return;
+            }
+
+            if (this.step === 2 && this.fieldIndex === 0) {
+                this.step = 1;
+                this.introCardIndex = this.introCards.length - 1;
+                return;
+            }
+
+            if (this.step === 8) {
+                this.step = 7;
+                return;
+            }
+
+            if (this.step === 7) {
+                this.step = 6;
+                this.fieldIndex = (STEP_FIELDS[6]?.length ?? 1) - 1;
+                return;
+            }
+
+            if (this.fieldIndex > 0) {
+                this.fieldIndex -= 1;
+                return;
+            }
+
+            if (this.step > 2) {
+                this.step -= 1;
+                const previousFields = STEP_FIELDS[this.step] ?? [];
+                this.fieldIndex = Math.max(previousFields.length - 1, 0);
+            }
         },
 
         advanceIntroCard() {
@@ -213,24 +314,24 @@ export function portalOnboarding(token = '') {
                 case 'stageName':
                     this.fieldError = validateRequired(this.form.stageName, 'Stage name');
                     break;
-                case 'primaryInstrument':
+                case 'weapons':
                     if (!this.form.primaryInstrument) {
-                        this.fieldError = 'Choose your primary instrument.';
+                        this.fieldError = 'Choose your primary weapon.';
                     }
-                    break;
-                case 'additionalInstruments':
                     break;
                 case 'email':
                     this.fieldError = validateEmail(this.form.email);
+                    break;
+                case 'country':
+                    if (!this.form.country || !this.form.countryIso3) {
+                        this.fieldError = 'Select your country from the list.';
+                    }
                     break;
                 case 'telephone':
                     this.fieldError = validateRequired(this.form.telephone, 'Telephone number');
                     break;
                 case 'city':
                     this.fieldError = validateRequired(this.form.city, 'City');
-                    break;
-                case 'country':
-                    this.fieldError = validateRequired(this.form.country, 'Country');
                     break;
                 default:
                     break;
@@ -261,24 +362,76 @@ export function portalOnboarding(token = '') {
             }
         },
 
-        toggleAdditionalInstrument(id) {
-            const selected = this.form.additionalInstruments;
-            const index = selected.indexOf(id);
-
-            if (index === -1) {
-                this.form.additionalInstruments = [...selected, id];
+        setPrimaryWeapon(id) {
+            if (this.form.primaryInstrument === id) {
                 return;
             }
 
-            this.form.additionalInstruments = selected.filter((item) => item !== id);
+            this.form.additionalInstruments = this.form.additionalInstruments.filter(
+                (item) => item !== id,
+            );
+
+            if (this.form.primaryInstrument) {
+                const previous = this.form.primaryInstrument;
+
+                if (!this.form.additionalInstruments.includes(previous)) {
+                    this.form.additionalInstruments = [...this.form.additionalInstruments, previous];
+                }
+            }
+
+            this.form.primaryInstrument = id;
+            this.form.additionalInstruments = this.form.additionalInstruments.filter(
+                (item) => item !== id,
+            );
         },
 
-        isAdditionalSelected(id) {
+        toggleAdditionalWeapon(id) {
+            if (id === this.form.primaryInstrument) {
+                return;
+            }
+
+            if (this.form.additionalInstruments.includes(id)) {
+                this.form.additionalInstruments = this.form.additionalInstruments.filter(
+                    (item) => item !== id,
+                );
+                return;
+            }
+
+            this.form.additionalInstruments = [...this.form.additionalInstruments, id];
+        },
+
+        removeAdditionalWeapon(id) {
+            this.form.additionalInstruments = this.form.additionalInstruments.filter(
+                (item) => item !== id,
+            );
+        },
+
+        clearWeapons() {
+            this.form.primaryInstrument = '';
+            this.form.additionalInstruments = [];
+        },
+
+        isAdditionalWeapon(id) {
             return this.form.additionalInstruments.includes(id);
         },
 
         instrumentName(id) {
             return this.scaffoldInstruments.find((item) => item.id === id)?.name ?? id;
+        },
+
+        onCountryInput() {
+            this.countryDropdownOpen = true;
+            this.form.country = '';
+            this.form.countryIso3 = '';
+            this.form.countryPhoneCode = '';
+        },
+
+        selectCountry(country) {
+            this.form.country = country.name;
+            this.form.countryIso3 = country.iso3;
+            this.form.countryPhoneCode = country.phoneCode;
+            this.countryQuery = country.name;
+            this.countryDropdownOpen = false;
         },
 
         enterStudio() {

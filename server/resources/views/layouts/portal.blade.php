@@ -15,18 +15,26 @@
     </head>
     <body @yield('body-attributes')>
         <div class="fixed inset-0 -z-20 overflow-hidden" aria-hidden="true">
-            <img
-                @isset($backgroundRef) x-ref="backgroundImage" @endisset
-                src="{{ asset('images/portal/ESB-Lobofest3.jpg') }}"
-                alt=""
-                @isset($backgroundLoad)
-                    class="esb-portal__background-image absolute inset-0 h-full w-full transition-opacity duration-[1400ms] ease-out"
-                    :class="bgVisible ? 'opacity-100' : 'opacity-0'"
-                    @load="onBackgroundLoaded()"
-                @else
+            @isset($backgroundLoad)
+                <template x-for="(image, index) in backgroundImages" :key="image">
+                    <img
+                        :src="image"
+                        alt=""
+                        class="esb-portal__background-image absolute inset-0 h-full w-full esb-portal__background-layer"
+                        :class="[
+                            isBackgroundActive(index) && bgVisible ? 'opacity-100' : 'opacity-0',
+                        ]"
+                        x-ref="index === 0 ? 'backgroundImage' : undefined"
+                        @load="index === 0 ? onBackgroundLoaded() : null"
+                    >
+                </template>
+            @else
+                <img
+                    src="{{ asset('images/portal/ESB-Lobofest3.jpg') }}"
+                    alt=""
                     class="esb-portal__background-image absolute inset-0 h-full w-full opacity-100"
-                @endisset
-            >
+                >
+            @endisset
             <div
                 @isset($backgroundLoad)
                     class="esb-portal__overlay absolute inset-0"

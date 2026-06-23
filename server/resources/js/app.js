@@ -4,5 +4,5 @@ import { portalOnboarding } from './onboarding';
 
 window.Alpine = Alpine;
 Alpine.data('portalLanding', portalLanding);
-Alpine.data('portalOnboarding', (token = '') => portalOnboarding(token));
+Alpine.data('portalOnboarding', (token = '', backgroundImages = []) => portalOnboarding(token, backgroundImages));
 Alpine.start();

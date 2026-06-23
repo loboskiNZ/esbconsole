@@ -16,7 +16,7 @@ class PortalOnboardingTest extends TestCase
         $response = $this->get('/invite/test-token');
 
         $response->assertOk();
-        $response->assertSee('You are here because you have been invited', false);
+        $response->assertSee('Someone believes you belong here', false);
         $response->assertSee('Begin Your Journey', false);
         $response->assertSee('portalOnboarding', false);
     }
@@ -72,6 +72,42 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('8–50 characters', false);
     }
 
+    public function test_onboarding_scaffold_includes_back_navigation_and_weapon_refinements(): void
+    {
+        $response = $this->get('/invite/test-token');
+
+        $response->assertSee('goBack()', false);
+        $response->assertSee('canGoBack', false);
+        $response->assertSee('Primary weapon', false);
+        $response->assertSee('Additional weapons', false);
+        $response->assertSee('Start again', false);
+        $response->assertSee('setPrimaryWeapon', false);
+
+        $scaffoldData = file_get_contents(resource_path('js/onboarding-scaffold-data.js'));
+        $this->assertNotFalse($scaffoldData);
+        $this->assertStringContainsString('Tenor Sax', $scaffoldData);
+        $this->assertStringContainsString('Cuatro', $scaffoldData);
+    }
+
+    public function test_onboarding_scaffold_includes_country_typeahead_and_background_rotation(): void
+    {
+        $response = $this->get('/invite/test-token');
+
+        $response->assertSee('selectCountry', false);
+        $response->assertSee('countryQuery', false);
+        $response->assertSee('backgroundImages', false);
+        $response->assertSee('ESB-Lobofest3.jpg', false);
+
+        $scaffoldData = file_get_contents(resource_path('js/onboarding-scaffold-data.js'));
+        $onboardingJs = file_get_contents(resource_path('js/onboarding.js'));
+
+        $this->assertNotFalse($scaffoldData);
+        $this->assertNotFalse($onboardingJs);
+        $this->assertStringContainsString('New Zealand', $scaffoldData);
+        $this->assertStringContainsString('NZL', $scaffoldData);
+        $this->assertStringContainsString('scheduleBackgroundRotation', $onboardingJs);
+    }
+
     public function test_no_demo_seeders_were_added_for_onboarding_scaffold(): void
     {
         $this->assertFileDoesNotExist(database_path('seeders/OnboardingScaffoldSeeder.php'));
@@ -90,6 +126,7 @@ class PortalOnboardingTest extends TestCase
 
         $this->assertNotFalse($css);
         $this->assertStringContainsString('esb-onboarding__progress-fill', $css);
+        $this->assertStringContainsString('esb-portal__background-layer', $css);
         $this->assertStringContainsString('prefers-reduced-motion: reduce', $css);
     }
 }

@@ -7,7 +7,7 @@
 
 @section('body-attributes')
     class="esb-portal esb-portal--onboarding antialiased"
-    x-data="portalOnboarding(@js($token))"
+    x-data="portalOnboarding(@js($token), @js($backgroundImages))"
     x-cloak
 @endsection
 
@@ -25,9 +25,19 @@
             Enter the Studio.
         </p>
         <header
-            class="mx-auto w-full max-w-3xl text-center transition-opacity duration-700"
+            class="relative mx-auto w-full max-w-3xl text-center transition-opacity duration-700"
             :class="contentVisible ? 'opacity-100' : 'opacity-0'"
         >
+            <button
+                type="button"
+                x-show="canGoBack"
+                x-transition.opacity
+                class="esb-onboarding__back absolute left-0 top-0 inline-flex items-center gap-2"
+                @click="goBack()"
+            >
+                <span aria-hidden="true">←</span>
+                <span>Back</span>
+            </button>
             <p class="esb-portal__eyebrow mb-2">Your invitation</p>
             <h1 class="esb-portal__title" x-text="stepTitle"></h1>
             <div class="esb-onboarding__progress mt-5" aria-hidden="true">
@@ -56,7 +66,13 @@
                     class="esb-onboarding__lead mx-auto max-w-lg"
                     :class="contentVisible ? 'opacity-100' : 'opacity-0'"
                 >
-                    You are here because you have been invited to join Ed and the Shadow Boys.
+                    Someone believes you belong here. This invitation is yours — a door opening into Ed and the Shadow Boys.
+                </p>
+                <p
+                    class="esb-onboarding__helper mx-auto mt-4 max-w-md"
+                    :class="contentVisible ? 'opacity-100' : 'opacity-0'"
+                >
+                    Opportunity awaits. Arrival is close. Step inside when you are ready.
                 </p>
 
                 <div
@@ -120,12 +136,14 @@
                     </template>
 
                     <template x-if="step === 5">
-                        <p class="esb-onboarding__helper mb-4">
-                            Every member contributes something unique. Tell us what instrument you play.
-                        </p>
-                        <p class="esb-onboarding__scaffold-note mb-6">
-                            Instrument options below are temporary UI scaffold only — not production data.
-                        </p>
+                        <div class="mb-6">
+                            <p class="esb-onboarding__helper">
+                                Every member carries their own sound — one weapon or many. Choose what you bring to the shadows.
+                            </p>
+                            <p class="esb-onboarding__scaffold-note mt-4">
+                                Instrument options are temporary UI scaffold only — not production data.
+                            </p>
+                        </div>
                     </template>
 
                     {{-- Username --}}
@@ -211,35 +229,74 @@
                         <input id="onboarding-stage-name" type="text" class="esb-portal__input" x-model="form.stageName" @keydown.enter.prevent="continueField()">
                     </div>
 
-                    {{-- Instruments --}}
-                    <div x-show="step === 5 && currentField === 'primaryInstrument'">
-                        <p class="esb-portal__label mb-4">Primary instrument</p>
-                        <div class="esb-onboarding__instrument-grid">
+                    {{-- Weapons (single screen) --}}
+                    <div x-show="step === 5 && currentField === 'weapons'">
+                        <template x-if="form.primaryInstrument">
+                            <div class="esb-onboarding__weapon-summary mb-6 rounded-xl border border-[var(--esb-line)] p-4">
+                                <p class="esb-onboarding__weapon-summary-label">Your arsenal</p>
+                                <p class="esb-onboarding__weapon-primary mt-2">
+                                    <span x-text="instrumentName(form.primaryInstrument)"></span>
+                                    <span class="esb-onboarding__weapon-badge">Primary</span>
+                                </p>
+                                <template x-if="form.additionalInstruments.length > 0">
+                                    <div class="mt-3">
+                                        <p class="esb-onboarding__weapon-additional-label">Additional</p>
+                                        <ul class="esb-onboarding__weapon-additional-list mt-2">
+                                            <template x-for="id in form.additionalInstruments" :key="`summary-${id}`">
+                                                <li class="esb-onboarding__weapon-additional-item">
+                                                    <span x-text="instrumentName(id)"></span>
+                                                    <button
+                                                        type="button"
+                                                        class="esb-onboarding__weapon-remove"
+                                                        @click="removeAdditionalWeapon(id)"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <p class="esb-portal__label mb-3">Primary weapon</p>
+                        <div class="esb-onboarding__instrument-grid mb-6">
                             <template x-for="instrument in scaffoldInstruments" :key="instrument.id">
                                 <button
                                     type="button"
                                     class="esb-onboarding__instrument-chip"
-                                    :class="form.primaryInstrument === instrument.id ? 'esb-onboarding__instrument-chip--active' : ''"
-                                    @click="form.primaryInstrument = instrument.id"
+                                    :class="form.primaryInstrument === instrument.id ? 'esb-onboarding__instrument-chip--primary' : ''"
+                                    @click="setPrimaryWeapon(instrument.id)"
                                     x-text="instrument.name"
                                 ></button>
                             </template>
                         </div>
-                    </div>
-                    <div x-show="step === 5 && currentField === 'additionalInstruments'">
-                        <p class="esb-portal__label mb-4">Additional instruments <span class="esb-onboarding__optional">(optional)</span></p>
+
+                        <p class="esb-portal__label mb-3">
+                            Additional weapons
+                            <span class="esb-onboarding__optional">(optional)</span>
+                        </p>
                         <div class="esb-onboarding__instrument-grid">
                             <template x-for="instrument in scaffoldInstruments" :key="`add-${instrument.id}`">
                                 <button
                                     type="button"
                                     class="esb-onboarding__instrument-chip"
-                                    :class="isAdditionalSelected(instrument.id) ? 'esb-onboarding__instrument-chip--active' : ''"
+                                    :class="isAdditionalWeapon(instrument.id) ? 'esb-onboarding__instrument-chip--active' : ''"
                                     :disabled="form.primaryInstrument === instrument.id"
-                                    @click="toggleAdditionalInstrument(instrument.id)"
+                                    @click="toggleAdditionalWeapon(instrument.id)"
                                     x-text="instrument.name"
                                 ></button>
                             </template>
                         </div>
+
+                        <button
+                            type="button"
+                            class="esb-onboarding__reset mt-5"
+                            @click="clearWeapons()"
+                        >
+                            Start again
+                        </button>
                     </div>
 
                     {{-- Contact fields --}}
@@ -247,17 +304,56 @@
                         <label class="esb-portal__label mb-3 block" for="onboarding-email">Email address</label>
                         <input id="onboarding-email" type="email" class="esb-portal__input" x-model="form.email" autocomplete="email" @keydown.enter.prevent="continueField()">
                     </div>
-                    <div x-show="step === 6 && currentField === 'telephone'">
-                        <label class="esb-portal__label mb-3 block" for="onboarding-telephone">Telephone number</label>
-                        <input id="onboarding-telephone" type="tel" class="esb-portal__input" x-model="form.telephone" autocomplete="tel" @keydown.enter.prevent="continueField()">
+                    <div
+                        x-show="step === 6 && currentField === 'country'"
+                        class="relative"
+                    >
+                        <label class="esb-portal__label mb-3 block" for="onboarding-country">Country</label>
+                        <input
+                            id="onboarding-country"
+                            type="text"
+                            class="esb-portal__input"
+                            x-model="countryQuery"
+                            autocomplete="country-name"
+                            placeholder="Start typing your country…"
+                            @input="onCountryInput()"
+                            @focus="countryDropdownOpen = true"
+                            @keydown.enter.prevent="filteredCountries[0] ? selectCountry(filteredCountries[0]) : null"
+                        >
+                        <ul
+                            x-show="countryDropdownOpen && filteredCountries.length > 0"
+                            x-transition.opacity
+                            class="esb-onboarding__country-list"
+                            role="listbox"
+                        >
+                            <template x-for="country in filteredCountries" :key="country.iso3">
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="esb-onboarding__country-option"
+                                        @click="selectCountry(country)"
+                                    >
+                                        <span x-text="country.name"></span>
+                                        <span class="esb-onboarding__country-meta" x-text="`${country.iso3} · ${country.phoneCode}`"></span>
+                                    </button>
+                                </li>
+                            </template>
+                        </ul>
+                        <p class="esb-onboarding__rules mt-3">Temporary country scaffold — aligns with future canonical country data.</p>
                     </div>
                     <div x-show="step === 6 && currentField === 'city'">
                         <label class="esb-portal__label mb-3 block" for="onboarding-city">City</label>
                         <input id="onboarding-city" type="text" class="esb-portal__input" x-model="form.city" autocomplete="address-level2" @keydown.enter.prevent="continueField()">
                     </div>
-                    <div x-show="step === 6 && currentField === 'country'">
-                        <label class="esb-portal__label mb-3 block" for="onboarding-country">Country</label>
-                        <input id="onboarding-country" type="text" class="esb-portal__input" x-model="form.country" autocomplete="country-name" @keydown.enter.prevent="continueField()">
+                    <div x-show="step === 6 && currentField === 'telephone'">
+                        <label class="esb-portal__label mb-3 block" for="onboarding-telephone">
+                            Telephone number
+                            <template x-if="form.countryPhoneCode">
+                                <span class="esb-onboarding__phone-code" x-text="form.countryPhoneCode"></span>
+                            </template>
+                        </label>
+                        <input id="onboarding-telephone" type="tel" class="esb-portal__input" x-model="form.telephone" autocomplete="tel" @keydown.enter.prevent="continueField()">
+                        <p class="esb-onboarding__rules mt-3" x-text="telephoneHint"></p>
                     </div>
 
                     <p
