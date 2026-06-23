@@ -37,13 +37,47 @@ class PortalProfileTest extends TestCase
         $response->assertSee('Keys', false);
         $response->assertSee('New Zealand', false);
         $response->assertSee('Edit', false);
-        $response->assertSee('esb-studio__identity-card', false);
+        $response->assertSee('esb-studio__identity-widget', false);
+        $response->assertSee('esb-studio__layout', false);
+        $response->assertSee('esb-studio__workspace', false);
+        $response->assertSee('esb-studio__sidebar', false);
+        $response->assertSee('Studio modules', false);
         $response->assertDontSee($person->legalName(), false);
         $response->assertDontSee($person->email, false);
         $response->assertDontSee($person->phone, false);
         $response->assertDontSee('Readiness score', false);
         $response->assertDontSee('Profile completeness', false);
         $response->assertDontSee('Performance readiness', false);
+    }
+
+    public function test_studio_workspace_layout_is_primary_content_area(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/studio');
+
+        $response->assertOk();
+        $response->assertSeeInOrder([
+            'esb-studio__sidebar',
+            'esb-studio__workspace',
+        ], false);
+        $response->assertSee('esb-studio__workspace-intro', false);
+        $response->assertSee('esb-studio__workspace-grid', false);
+        $response->assertSee('Welcome', false);
+        $response->assertSee('Information for later', false);
+    }
+
+    public function test_studio_mobile_layout_stacks_profile_before_workspace(): void
+    {
+        $user = User::factory()->create();
+
+        $html = $this->actingAs($user)->get('/studio')->getContent();
+        $sidebarPos = strpos($html, 'esb-studio__sidebar');
+        $workspacePos = strpos($html, 'esb-studio__workspace');
+
+        $this->assertNotFalse($sidebarPos);
+        $this->assertNotFalse($workspacePos);
+        $this->assertLessThan($workspacePos, $sidebarPos);
     }
 
     public function test_no_photo_placeholder_uses_esb_branding_and_no_image_label(): void

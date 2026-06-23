@@ -559,6 +559,54 @@
 
 /* Studio scaffold (PH048B) */
 
+.esb-studio__page-header {
+    text-align: left;
+}
+
+.esb-studio__layout {
+    display: grid;
+    gap: 1.25rem;
+    align-items: start;
+}
+
+@media (min-width: 768px) {
+    .esb-studio__layout {
+        grid-template-columns: minmax(11.5rem, 24%) minmax(0, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+.esb-studio__sidebar {
+    min-width: 0;
+}
+
+.esb-studio__workspace {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.esb-studio__workspace-intro {
+    padding: 1.25rem 1.35rem;
+}
+
+.esb-studio__workspace-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+    .esb-studio__workspace-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.esb-studio__card {
+    padding: 1.25rem 1.35rem;
+    border-radius: 1rem;
+}
+
 .esb-studio__card-title {
     font-size: 1.15rem;
     font-weight: 700;
@@ -651,7 +699,8 @@
     background: rgba(255, 178, 62, 0.08);
 }
 
-.esb-studio__identity-card {
+.esb-studio__identity-card,
+.esb-studio__identity-widget {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -662,6 +711,53 @@
         radial-gradient(circle at top, rgba(255, 178, 62, 0.1), transparent 58%),
         var(--esb-panel);
     border: 1px solid rgba(255, 178, 62, 0.14);
+}
+
+.esb-studio__identity-widget {
+    gap: 0.75rem;
+    padding: 1.1rem 0.95rem 1rem;
+    border-radius: 1rem;
+    text-align: center;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-portrait {
+    width: 5.5rem;
+    height: 5.5rem;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-placeholder-figure {
+    width: 2.35rem;
+    height: 3rem;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-placeholder-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-body {
+    width: 100%;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-name {
+    margin-top: 0.2rem;
+    font-size: 1.1rem;
+    line-height: 1.2;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-instruments {
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-country {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+}
+
+.esb-studio__identity-widget .esb-studio__identity-edit-link {
+    font-size: 0.78rem;
 }
 
 .esb-studio__identity-portrait {
