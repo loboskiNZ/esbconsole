@@ -215,6 +215,58 @@ class PortalStudioChartsTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_charts_index_does_not_500_when_library_tables_missing(): void
+    {
+        \Illuminate\Support\Facades\Schema::dropIfExists('song_instrument_parts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('charts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('instrument_parts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('songs');
+
+        $user = User::factory()->create();
+        $trumpetRef = InstrumentReference::query()->where('slug', 'scaffold-trumpet')->firstOrFail();
+        $user->person->instruments()->attach($trumpetRef->id, ['is_primary' => true]);
+
+        $this->actingAs($user)->get('/studio/charts')
+            ->assertOk()
+            ->assertSee('No matching charts are available for your instruments yet.', false)
+            ->assertDontSee('Readiness score', false)
+            ->assertDontSee('completion', false)
+            ->assertDontSee('practice', false);
+    }
+
+    public function test_charts_index_does_not_500_when_library_storage_root_missing(): void
+    {
+        config(['filesystems.disks.library.root' => '/tmp/esb-missing-library-root-'.uniqid()]);
+
+        $user = User::factory()->create();
+        $trumpetRef = InstrumentReference::query()->where('slug', 'scaffold-trumpet')->firstOrFail();
+        $user->person->instruments()->attach($trumpetRef->id, ['is_primary' => true]);
+
+        $this->seedSongWithCharts(
+            name: 'Storage Root Missing Song',
+            chartSetups: [
+                ['part' => 'Trumpet', 'title' => 'Trumpet Chart'],
+            ],
+        );
+
+        $this->actingAs($user)->get('/studio/charts')
+            ->assertOk()
+            ->assertSee('Storage Root Missing Song', false);
+    }
+
+    public function test_chart_file_returns_not_found_when_library_tables_missing(): void
+    {
+        \Illuminate\Support\Facades\Schema::dropIfExists('song_instrument_parts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('charts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('instrument_parts');
+        \Illuminate\Support\Facades\Schema::dropIfExists('songs');
+
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/studio/charts/files/1')
+            ->assertNotFound();
+    }
+
     /**
      * @param  list<array{part: string, title: string, filename?: string}>  $chartSetups
      */

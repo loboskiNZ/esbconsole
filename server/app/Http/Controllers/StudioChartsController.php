@@ -62,7 +62,13 @@ class StudioChartsController extends Controller
         $disk = (string) config('portal.library_chart_disk', 'library');
         $path = $chart->storage_reference;
 
-        if ($path === null || ! Storage::disk($disk)->exists($path)) {
+        try {
+            $diskAvailable = $path !== null && Storage::disk($disk)->exists($path);
+        } catch (\Throwable) {
+            $diskAvailable = false;
+        }
+
+        if (! $diskAvailable) {
             abort(404);
         }
 

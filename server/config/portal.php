@@ -41,7 +41,7 @@ return [
     |
     */
 
-    'library_connection' => env('PORTAL_LIBRARY_CONNECTION'),
+    'library_connection' => env('PORTAL_LIBRARY_CONNECTION') ?: null,
 
     'library_chart_disk' => env('PORTAL_LIBRARY_CHART_DISK', 'library'),
 

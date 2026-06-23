@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Library\Chart;
+use App\Models\Library\Song;
+use App\Support\StudioLibraryAvailability;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Route::bind('song', function (string $value): Song {
+            abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
+
+            return Song::query()->findOrFail($value);
+        });
+
+        Route::bind('chart', function (string $value): Chart {
+            abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
+
+            return Chart::query()->findOrFail($value);
+        });
     }
 }

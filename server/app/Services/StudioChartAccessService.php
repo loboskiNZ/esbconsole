@@ -7,19 +7,30 @@ use App\Models\Library\Song;
 use App\Models\Library\SongInstrumentPart;
 use App\Models\Person;
 use App\Support\PersonInstrumentPartMatcher;
+use App\Support\StudioLibraryAvailability;
 use Illuminate\Support\Collection;
 
 class StudioChartAccessService
 {
     public function __construct(
         private readonly PersonInstrumentPartMatcher $matcher,
+        private readonly StudioLibraryAvailability $library,
     ) {}
+
+    public function libraryIsAvailable(): bool
+    {
+        return $this->library->isAvailable();
+    }
 
     /**
      * @return list<int>
      */
     public function matchingInstrumentPartIds(Person $person): array
     {
+        if (! $this->library->isAvailable()) {
+            return [];
+        }
+
         return $this->matcher->matchingInstrumentPartIds($person, (int) config('portal.band_id', 1));
     }
 
@@ -28,6 +39,10 @@ class StudioChartAccessService
      */
     public function songsForPerson(Person $person): Collection
     {
+        if (! $this->library->isAvailable()) {
+            return collect();
+        }
+
         $partIds = $this->matchingInstrumentPartIds($person);
 
         if ($partIds === []) {
@@ -53,6 +68,10 @@ class StudioChartAccessService
      */
     public function chartLinksForPersonAndSong(Person $person, Song $song): Collection
     {
+        if (! $this->library->isAvailable()) {
+            return collect();
+        }
+
         $partIds = $this->matchingInstrumentPartIds($person);
 
         if ($partIds === []) {
@@ -73,6 +92,10 @@ class StudioChartAccessService
 
     public function personCanAccessChart(Person $person, Chart $chart): bool
     {
+        if (! $this->library->isAvailable()) {
+            return false;
+        }
+
         $partIds = $this->matchingInstrumentPartIds($person);
 
         if ($partIds === []) {
