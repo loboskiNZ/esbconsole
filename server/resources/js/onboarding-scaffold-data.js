@@ -48,3 +48,5 @@ export const SCAFFOLD_COUNTRIES = [
 /** Background rotation interval (ms) — meaningful dwell before slow fade. */
 export const BACKGROUND_ROTATION_MIN_MS = 20_000;
 export const BACKGROUND_ROTATION_MAX_MS = 30_000;
+
+/** Operator imagery lives in /public/images/bandpics/ — discovered server-side for onboarding. */

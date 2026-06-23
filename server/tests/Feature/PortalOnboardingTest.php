@@ -96,6 +96,7 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('selectCountry', false);
         $response->assertSee('countryQuery', false);
         $response->assertSee('backgroundImages', false);
+        $response->assertSee('bandpics', false);
         $response->assertSee('ESB-Lobofest3.jpg', false);
 
         $scaffoldData = file_get_contents(resource_path('js/onboarding-scaffold-data.js'));
