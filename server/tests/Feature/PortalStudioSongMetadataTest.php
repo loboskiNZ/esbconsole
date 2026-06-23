@@ -56,6 +56,34 @@ class PortalStudioSongMetadataTest extends TestCase
             ->assertDontSee('evaluation', false);
     }
 
+    public function test_studio_displays_extended_authoring_metadata_read_only(): void
+    {
+        $user = User::factory()->create();
+        $trumpetRef = InstrumentReference::query()->where('slug', 'scaffold-trumpet')->firstOrFail();
+        $user->person->instruments()->attach($trumpetRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithMetadata([
+            'name' => 'Extended Metadata Song',
+            'genre' => 'Soul',
+            'style' => 'Mid-tempo',
+            'tempo_feel' => 'Groovy',
+            'count_in' => 1,
+            'mood_intention' => 'Keep it warm.',
+            'performance_feel' => 'Loose pocket.',
+            'reference_title' => 'Reference track',
+        ]);
+
+        $this->actingAs($user)->get(route('studio.charts.show', $song))
+            ->assertOk()
+            ->assertSee('Soul', false)
+            ->assertSee('Groovy', false)
+            ->assertSee('1-bar count-in', false)
+            ->assertSee('Keep it warm.', false)
+            ->assertSee('Reference track', false)
+            ->assertDontSee('checkout', false)
+            ->assertDontSee('Synchronise', false);
+    }
+
     public function test_mood_fallback_when_mood_id_is_null(): void
     {
         $metadata = app(StudioSongMetadata::class)->forSong(
@@ -83,7 +111,7 @@ class PortalStudioSongMetadataTest extends TestCase
     }
 
     /**
-     * @param  array{name: string, bpm?: int, director_notes?: string}  $overrides
+     * @param  array<string, mixed>  $overrides
      */
     private function seedSongWithMetadata(array $overrides): Song
     {
@@ -103,6 +131,15 @@ class PortalStudioSongMetadataTest extends TestCase
             'musical_key_id' => $musicalKeyId,
             'mood_id' => $moodId,
             'director_notes' => $overrides['director_notes'] ?? null,
+            'genre' => $overrides['genre'] ?? null,
+            'style' => $overrides['style'] ?? null,
+            'tempo_feel' => $overrides['tempo_feel'] ?? null,
+            'count_in' => $overrides['count_in'] ?? null,
+            'mood_intention' => $overrides['mood_intention'] ?? null,
+            'performance_feel' => $overrides['performance_feel'] ?? null,
+            'arrangement_comments' => $overrides['arrangement_comments'] ?? null,
+            'reference_title' => $overrides['reference_title'] ?? null,
+            'reference_url' => $overrides['reference_url'] ?? null,
             'status' => 'ready',
         ]);
 

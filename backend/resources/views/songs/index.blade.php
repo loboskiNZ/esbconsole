@@ -26,7 +26,7 @@
                                         </a>
                                         <p class="text-sm text-gray-500">{{ $song->status }}@if($song->bpm) · {{ $song->bpm }} BPM @endif</p>
                                     </div>
-                                    <a href="{{ route('songs.show', $song) }}" class="text-sm text-gray-600 hover:text-gray-800">Open →</a>
+                                    <a href="{{ route('songs.show', $song) }}" class="text-sm text-gray-600 hover:text-gray-800">Workspace →</a>
                                 </li>
                             @endforeach
                         </ul>

@@ -31,9 +31,19 @@ class Song extends Model
         'time_signature_id',
         'musical_key_id',
         'mood_id',
+        'genre',
+        'style',
+        'tempo_feel',
+        'count_in',
         'description',
         'notes',
         'director_notes',
+        'mood_intention',
+        'performance_feel',
+        'arrangement_comments',
+        'reference_url',
+        'reference_title',
+        'reference_notes',
         'status',
     ];
 
@@ -41,6 +51,7 @@ class Song extends Model
     {
         return [
             'bpm' => 'integer',
+            'count_in' => 'integer',
         ];
     }
 

@@ -1134,6 +1134,43 @@
     white-space: pre-wrap;
 }
 
+.esb-studio__song-brief-sub {
+    margin-top: 0.65rem;
+    color: var(--esb-ink);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    font-size: 0.92rem;
+}
+
+.esb-studio__song-brief-label {
+    display: block;
+    color: var(--esb-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.15rem;
+}
+
+.esb-studio__song-reference {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(233, 203, 160, 0.12);
+}
+
+.esb-studio__song-reference-link {
+    display: inline-block;
+    margin-top: 0.35rem;
+    color: var(--esb-accent);
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.esb-studio__song-reference-link:hover {
+    text-decoration: underline;
+}
+
 .esb-studio__song-detail-panel {
     margin-top: 1rem;
 }

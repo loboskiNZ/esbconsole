@@ -21,8 +21,18 @@ class StudioSongMetadata
      *     mood_label: string,
      *     mood_colour_hex: string,
      *     mood_accent_colour_hex: string,
+     *     genre: ?string,
+     *     style: ?string,
+     *     tempo_feel: ?string,
+     *     count_in: ?int,
      *     director_notes: ?string,
-     *     has_metadata: bool
+     *     mood_intention: ?string,
+     *     performance_feel: ?string,
+     *     arrangement_comments: ?string,
+     *     reference_title: ?string,
+     *     reference_url: ?string,
+     *     has_metadata: bool,
+     *     has_brief: bool
      * }
      */
     public function forSong(Song $song): array
@@ -32,6 +42,11 @@ class StudioSongMetadata
         /** @var SongMood|null $mood */
         $mood = $song->mood;
 
+        $hasBrief = filled($song->director_notes)
+            || filled($song->mood_intention)
+            || filled($song->performance_feel)
+            || filled($song->arrangement_comments);
+
         return [
             'bpm' => $song->bpm !== null ? (int) $song->bpm : null,
             'time_signature' => $song->timeSignature?->label,
@@ -39,11 +54,24 @@ class StudioSongMetadata
             'mood_label' => $mood?->name ?? self::DEFAULT_MOOD_LABEL,
             'mood_colour_hex' => $mood?->colour_hex ?? self::DEFAULT_MOOD_COLOUR,
             'mood_accent_colour_hex' => $mood?->accent_colour_hex ?? self::DEFAULT_MOOD_ACCENT,
+            'genre' => $song->genre,
+            'style' => $song->style,
+            'tempo_feel' => $song->tempo_feel,
+            'count_in' => $song->count_in !== null ? (int) $song->count_in : null,
             'director_notes' => $song->director_notes,
+            'mood_intention' => $song->mood_intention,
+            'performance_feel' => $song->performance_feel,
+            'arrangement_comments' => $song->arrangement_comments,
+            'reference_title' => $song->reference_title,
+            'reference_url' => $song->reference_url,
             'has_metadata' => $song->bpm !== null
                 || $song->timeSignature !== null
                 || $song->musicalKey !== null
-                || filled($song->director_notes),
+                || filled($song->genre)
+                || filled($song->style)
+                || filled($song->tempo_feel)
+                || $song->count_in !== null,
+            'has_brief' => $hasBrief,
         ];
     }
 }
