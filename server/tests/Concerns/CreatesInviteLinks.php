@@ -9,7 +9,7 @@ trait CreatesInviteLinks
 {
     protected function createInviteLinkToken(array $attributes = []): string
     {
-        $token = bin2hex(random_bytes(32));
+        $token = InviteLink::generateRawToken();
 
         InviteLink::create(array_merge([
             'name' => 'Test Invite',

@@ -10,16 +10,17 @@ class InviteOnboardingController extends Controller
 {
     public function show(string $token)
     {
-        $invite = InviteLink::query()
-            ->where('token_hash', InviteLink::hashToken($token))
-            ->first();
+        $invite = InviteLink::findValidByToken($token);
 
         if ($invite === null) {
-            return response()->view('onboarding.invite-invalid', status: Response::HTTP_NOT_FOUND);
-        }
+            $exists = InviteLink::query()
+                ->where('token_hash', InviteLink::hashToken($token))
+                ->exists();
 
-        if (! $invite->isValid()) {
-            return response()->view('onboarding.invite-invalid', status: Response::HTTP_GONE);
+            return response()->view(
+                'onboarding.invite-invalid',
+                status: $exists ? Response::HTTP_GONE : Response::HTTP_NOT_FOUND,
+            );
         }
 
         return view('onboarding.invite', [

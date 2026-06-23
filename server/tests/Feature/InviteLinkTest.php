@@ -61,22 +61,77 @@ class InviteLinkTest extends TestCase
 
     public function test_raw_token_is_not_stored(): void
     {
-        $token = bin2hex(random_bytes(32));
+        $rawToken = InviteLink::generateRawToken();
 
         InviteLink::create([
             'name' => 'Hash only',
-            'token_hash' => InviteLink::hashToken($token),
+            'token_hash' => InviteLink::hashToken($rawToken),
             'expires_at' => Carbon::now()->addDays(30),
         ]);
 
         $row = DB::table('invite_links')->first();
 
         $this->assertNotNull($row);
-        $this->assertSame(InviteLink::hashToken($token), $row->token_hash);
-        $this->assertNotSame($token, $row->token_hash);
+        $this->assertSame(InviteLink::hashToken($rawToken), $row->token_hash);
+        $this->assertNotSame($rawToken, $row->token_hash);
 
         $serialized = json_encode($row, JSON_THROW_ON_ERROR);
-        $this->assertStringNotContainsString($token, $serialized);
+        $this->assertStringNotContainsString($rawToken, $serialized);
+    }
+
+    public function test_raw_token_is_generated_and_distinguishable_from_stored_hash(): void
+    {
+        $rawToken = InviteLink::generateRawToken();
+
+        $this->assertNotSame(InviteLink::hashToken($rawToken), $rawToken);
+        $this->assertMatchesRegularExpression('/^[A-Za-z0-9\-_]+$/', $rawToken);
+        $this->assertDoesNotMatchRegularExpression('/^[a-f0-9]{64}$/', $rawToken);
+    }
+
+    public function test_make_invite_command_outputs_raw_token_not_stored_hash(): void
+    {
+        Artisan::call('esb:make-invite', [
+            'name' => 'Chapter 1 Test',
+            '--days' => 30,
+        ]);
+
+        $invite = InviteLink::first();
+        $this->assertNotNull($invite);
+
+        preg_match('#/invite/([A-Za-z0-9\-_]+)#', Artisan::output(), $matches);
+        $this->assertArrayHasKey(1, $matches);
+
+        $rawTokenFromOutput = $matches[1];
+
+        $this->assertSame(InviteLink::hashToken($rawTokenFromOutput), $invite->token_hash);
+        $this->assertNotSame($rawTokenFromOutput, $invite->token_hash);
+        $this->assertStringNotContainsString($invite->token_hash, Artisan::output());
+    }
+
+    public function test_make_invite_command_output_raw_token_opens_onboarding(): void
+    {
+        Artisan::call('esb:make-invite', [
+            'name' => 'Chapter 1 Test',
+            '--days' => 30,
+        ]);
+
+        preg_match('#/invite/([A-Za-z0-9\-_]+)#', Artisan::output(), $matches);
+        $this->assertArrayHasKey(1, $matches);
+
+        $response = $this->get('/invite/'.$matches[1]);
+
+        $response->assertOk();
+        $response->assertSee('Someone believes you belong here', false);
+        $response->assertSee('Begin Your Journey', false);
+    }
+
+    public function test_stored_hash_used_in_url_is_rejected(): void
+    {
+        $rawToken = $this->createInviteLinkToken();
+        $storedHash = InviteLink::first()->token_hash;
+
+        $this->get('/invite/'.$rawToken)->assertOk();
+        $this->get('/invite/'.$storedHash)->assertNotFound();
     }
 
     public function test_make_invite_command_creates_invite_link_with_hashed_token(): void
@@ -98,7 +153,6 @@ class InviteLinkTest extends TestCase
         $this->assertStringContainsString('Invite link created:', $output);
         $this->assertStringContainsString('/invite/', $output);
         $this->assertStringContainsString('Expires:', $output);
-        $this->assertStringNotContainsString($invite->token_hash, $output);
     }
 
     public function test_make_invite_command_supports_thirty_day_expiry(): void

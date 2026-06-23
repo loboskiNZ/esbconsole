@@ -31,6 +31,11 @@ class InviteLink extends Model
         ];
     }
 
+    public static function generateRawToken(): string
+    {
+        return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
+    }
+
     public static function hashToken(string $token): string
     {
         return hash('sha256', $token);

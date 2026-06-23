@@ -14,16 +14,16 @@ class MakeInviteCommand extends Command
 
     public function handle(): int
     {
-        $token = bin2hex(random_bytes(32));
+        $rawToken = InviteLink::generateRawToken();
         $expiresAt = Carbon::now()->addDays((int) $this->option('days'));
 
         InviteLink::create([
             'name' => $this->argument('name'),
-            'token_hash' => InviteLink::hashToken($token),
+            'token_hash' => InviteLink::hashToken($rawToken),
             'expires_at' => $expiresAt,
         ]);
 
-        $url = rtrim((string) config('app.url'), '/').'/invite/'.$token;
+        $url = rtrim((string) config('app.url'), '/').'/invite/'.$rawToken;
 
         $this->line('Invite link created:');
         $this->line('');

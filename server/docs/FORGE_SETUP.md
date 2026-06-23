@@ -304,6 +304,24 @@ php artisan test
 
 Production PostgreSQL is not required for `composer validate` / `about` / `route:list`.
 
+### Create a Chapter 1 invite link (PH048C)
+
+Run **as user `forge`** (Forge → Site → **Commands**, or SSH as `forge`).
+
+**Important:** Forge Commands must chain `cd` and `php` with `&&` on **one line**. Without `&&`, bash passes `php` as a second argument to `cd` (`cd: too many arguments`).
+
+```bash
+cd /home/forge/band.edandtheshadowboys.com/current/server && php artisan esb:make-invite 'Chapter 1 Test' --days=30
+```
+
+Or use the helper script (no manual `cd`):
+
+```bash
+bash /home/forge/band.edandtheshadowboys.com/current/server/deploy/make-invite.sh
+```
+
+The command prints the full invite URL once. Raw tokens are never stored — only a SHA-256 hash in `invite_links`.
+
 ---
 
 ## 7. Explicit non-scope (this phase)
@@ -327,6 +345,7 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
 | `/up` returns 200 but `/` returns 500 | Missing `APP_KEY` or session DB error | `tail -50 storage/logs/laravel.log`; ensure `APP_KEY=base64:…` in `.env` (`php artisan key:generate --force` in `server/`); confirm migrations ran (`sessions` table exists) |
 | Automated deploy from workstation | Deploy hook not configured | Forge → Site → **Deployments** → **Deploy hook**; copy URL into `server/deploy/.env` as `FORGE_DEPLOY_HOOK_URL`; run `./server/deploy/remote-deploy.sh` |
+| `cd: too many arguments` in Forge Command | `cd` and `php artisan` on one line without `&&` | Use `cd …/server && php artisan …` or `bash …/server/deploy/make-invite.sh` (see §6) |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |
 | Git clone fails on Forge | Deploy key missing | Add `band-portal-forge-deploy.pub` to GitHub deploy keys |
