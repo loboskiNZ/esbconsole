@@ -27,20 +27,7 @@
             <div class="mt-10 grid gap-6 md:grid-cols-2">
                 @if ($person)
                     <section class="esb-portal__panel esb-studio__identity-card md:col-span-2">
-                        <div class="esb-studio__identity-portrait" aria-hidden="true">
-                            <div class="esb-studio__identity-shine"></div>
-                            @if ($person->hasProfilePhoto())
-                                <img
-                                    src="{{ route('studio.profile.photo') }}"
-                                    alt=""
-                                    class="esb-studio__identity-photo"
-                                >
-                            @else
-                                <div class="esb-studio__identity-placeholder">
-                                    <span>{{ $photoInitials }}</span>
-                                </div>
-                            @endif
-                        </div>
+                        @include('studio.profile._portrait', ['person' => $person])
 
                         <div class="esb-studio__identity-body text-center">
                             <p class="esb-portal__eyebrow">My Profile</p>

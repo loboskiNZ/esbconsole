@@ -40,7 +40,9 @@ class PersonProfileService
             ];
 
             if ($photo !== null) {
-                $updates['profile_photo_path'] = $this->photoService->store($person, $photo);
+                $paths = $this->photoService->store($person, $photo);
+                $updates['profile_photo_path'] = $paths['original'];
+                $updates['profile_photo_display_path'] = $paths['display'];
             }
 
             $person->update($updates);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\InstrumentReference;
-use App\Services\PersonProfilePhotoService;
 use App\Services\PersonProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
@@ -26,20 +25,27 @@ class ProfileController extends Controller
         $primary = $person->instruments->first(
             fn ($instrument) => (bool) $instrument->pivot->is_primary,
         );
+        $instruments = InstrumentReference::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         return view('studio.profile.edit', [
             'user' => $user,
             'person' => $person,
-            'instruments' => InstrumentReference::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(),
+            'instruments' => $instruments,
+            'instrumentOptions' => $instruments
+                ->map(fn (InstrumentReference $instrument) => [
+                    'id' => $instrument->slug,
+                    'name' => $instrument->name,
+                ])
+                ->values()
+                ->all(),
             'primaryInstrumentSlug' => $primary?->slug ?? '',
             'additionalInstrumentSlugs' => $person->instruments
                 ->filter(fn ($instrument) => ! $instrument->pivot->is_primary)
                 ->pluck('slug')
                 ->all(),
-            'photoInitials' => app(PersonProfilePhotoService::class)->initials($person),
         ]);
     }
 
@@ -67,17 +73,18 @@ class ProfileController extends Controller
         }
 
         $person = $user->person()->firstOrFail();
+        $path = $person->profilePhotoServePath();
 
-        if (! $person->hasProfilePhoto()) {
+        if ($path === null) {
             abort(404);
         }
 
         $disk = (string) config('portal.profile_photo_disk', 'local');
 
-        if (! Storage::disk($disk)->exists($person->profile_photo_path)) {
+        if (! Storage::disk($disk)->exists($path)) {
             abort(404);
         }
 
-        return Storage::disk($disk)->response($person->profile_photo_path);
+        return Storage::disk($disk)->response($path);
     }
 }

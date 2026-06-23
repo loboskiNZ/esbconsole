@@ -5,10 +5,13 @@ namespace App\Services;
 use App\Models\Person;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 
 class PersonProfilePhotoService
 {
+    public function __construct(
+        private readonly ProfilePhotoDisplayGenerator $displayGenerator,
+    ) {}
+
     public function disk(): string
     {
         return (string) config('portal.profile_photo_disk', 'local');
@@ -19,43 +22,48 @@ class PersonProfilePhotoService
         return 'portal/profile-photos/'.$person->id;
     }
 
-    public function store(Person $person, UploadedFile $file): string
+    /**
+     * @return array{original: string, display: string}
+     */
+    public function store(Person $person, UploadedFile $file): array
     {
         $disk = $this->disk();
         $prefix = $this->storagePrefix($person);
         $extension = strtolower($file->extension() ?: $file->guessExtension() ?: 'jpg');
-        $path = $prefix.'/profile.'.$extension;
+        $originalPath = $prefix.'/original.'.$extension;
+        $displayPath = $prefix.'/display.jpg';
 
-        if ($person->profile_photo_path !== null) {
-            Storage::disk($disk)->delete($person->profile_photo_path);
-        }
+        $this->deleteExisting($person);
 
-        Storage::disk($disk)->putFileAs($prefix, $file, 'profile.'.$extension);
+        Storage::disk($disk)->putFileAs($prefix, $file, 'original.'.$extension);
 
-        return $path;
+        $sourceAbsolute = Storage::disk($disk)->path($originalPath);
+        $displayAbsolute = Storage::disk($disk)->path($displayPath);
+
+        $this->displayGenerator->createFromFile($sourceAbsolute, $displayAbsolute);
+
+        return [
+            'original' => $originalPath,
+            'display' => $displayPath,
+        ];
     }
 
-    public function delete(?string $path): void
+    public function deleteExisting(Person $person): void
     {
-        if ($path === null || $path === '') {
-            return;
+        $disk = $this->disk();
+        $paths = array_filter([
+            $person->profile_photo_path,
+            $person->profile_photo_display_path,
+        ]);
+
+        foreach ($paths as $path) {
+            Storage::disk($disk)->delete($path);
         }
 
-        Storage::disk($this->disk())->delete($path);
-    }
+        $legacyPrefix = $this->storagePrefix($person);
 
-    public function initials(Person $person): string
-    {
-        $name = trim((string) $person->artistic_name);
-
-        if ($name === '') {
-            $name = $person->legal_first_name;
+        foreach (['jpg', 'jpeg', 'png', 'webp'] as $extension) {
+            Storage::disk($disk)->delete($legacyPrefix.'/profile.'.$extension);
         }
-
-        $parts = preg_split('/\s+/u', $name, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-        return Str::upper(collect($parts)->take(2)->map(
-            fn (string $part) => Str::substr($part, 0, 1),
-        )->implode(''));
     }
 }

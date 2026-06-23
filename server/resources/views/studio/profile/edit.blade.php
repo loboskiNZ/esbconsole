@@ -4,7 +4,7 @@
 
 @section('body-attributes')
     class="esb-portal esb-portal--studio antialiased"
-    x-data="profileEditor(@js(old('bio', $person->bio ?? '')), @js($primaryInstrumentSlug), @js(old('additional_instruments', $additionalInstrumentSlugs)))"
+    x-data="profileEditor(@js(old('bio', $person->bio ?? '')), @js(old('primary_instrument', $primaryInstrumentSlug)), @js(old('additional_instruments', $additionalInstrumentSlugs)), @js($instrumentOptions))"
 @endsection
 
 @section('content')
@@ -42,20 +42,7 @@
                     <div>
                         <label class="esb-portal__label mb-3 block" for="profile-photo">Profile photo</label>
                         <div class="flex items-center gap-4">
-                            <div class="esb-studio__identity-portrait esb-studio__identity-portrait--editor" aria-hidden="true">
-                                <div class="esb-studio__identity-shine"></div>
-                                @if ($person->hasProfilePhoto())
-                                    <img
-                                        src="{{ route('studio.profile.photo') }}"
-                                        alt=""
-                                        class="esb-studio__identity-photo"
-                                    >
-                                @else
-                                    <div class="esb-studio__identity-placeholder">
-                                        <span>{{ $photoInitials }}</span>
-                                    </div>
-                                @endif
-                            </div>
+                            @include('studio.profile._portrait', ['person' => $person, 'editorPortrait' => true])
                             <div class="min-w-0 flex-1">
                                 <input
                                     id="profile-photo"
@@ -64,7 +51,7 @@
                                     accept="image/jpeg,image/png,image/webp"
                                     class="esb-portal__input"
                                 >
-                                <p class="esb-studio__card-note mt-2">JPG, PNG, or WebP. Max {{ (int) config('portal.profile_photo_max_kb', 5120) / 1024 }} MB.</p>
+                                <p class="esb-studio__card-note mt-2">JPG, PNG, or WebP. High-quality originals up to 25 MB.</p>
                             </div>
                         </div>
                     </div>
@@ -160,41 +147,79 @@
                             </template>
                         </p>
 
-                        <div x-show="instrumentsOpen" x-cloak class="space-y-5">
-                            <fieldset>
-                                <legend class="esb-portal__label mb-3 block">Primary instrument</legend>
-                                <div class="esb-studio__instrument-grid">
-                                    @foreach ($instruments as $instrument)
-                                        <label class="esb-studio__instrument-option">
-                                            <input
-                                                type="radio"
-                                                name="primary_instrument"
-                                                value="{{ $instrument->slug }}"
-                                                x-model="primaryInstrumentSlug"
-                                                required
-                                            >
-                                            <span>{{ $instrument->name }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
-                            </fieldset>
+                        <div x-show="instrumentsOpen" x-cloak>
+                            <input type="hidden" name="primary_instrument" :value="primaryInstrumentSlug">
 
-                            <fieldset>
-                                <legend class="esb-portal__label mb-3 block">Additional instruments <span class="esb-studio__card-note">(optional)</span></legend>
-                                <div class="esb-studio__instrument-grid">
-                                    @foreach ($instruments as $instrument)
-                                        <label class="esb-studio__instrument-option">
-                                            <input
-                                                type="checkbox"
-                                                name="additional_instruments[]"
-                                                value="{{ $instrument->slug }}"
-                                                x-model="additionalInstrumentSlugs"
-                                            >
-                                            <span>{{ $instrument->name }}</span>
-                                        </label>
-                                    @endforeach
+                            <template x-for="slug in additionalInstrumentSlugs" :key="slug">
+                                <input type="hidden" name="additional_instruments[]" :value="slug">
+                            </template>
+
+                            <template x-if="primaryInstrumentSlug">
+                                <div class="esb-onboarding__weapon-summary mb-6 rounded-xl border border-[var(--esb-line)] p-4">
+                                    <p class="esb-onboarding__weapon-summary-label">Your arsenal</p>
+                                    <p class="esb-onboarding__weapon-primary mt-2">
+                                        <span x-text="instrumentName(primaryInstrumentSlug)"></span>
+                                        <span class="esb-onboarding__weapon-badge">Primary</span>
+                                    </p>
+                                    <template x-if="additionalInstrumentSlugs.length > 0">
+                                        <div class="mt-3">
+                                            <p class="esb-onboarding__weapon-additional-label">Additional</p>
+                                            <ul class="esb-onboarding__weapon-additional-list mt-2">
+                                                <template x-for="id in additionalInstrumentSlugs" :key="`summary-${id}`">
+                                                    <li class="esb-onboarding__weapon-additional-item">
+                                                        <span x-text="instrumentName(id)"></span>
+                                                        <button
+                                                            type="button"
+                                                            class="esb-onboarding__weapon-remove"
+                                                            @click="removeAdditionalWeapon(id)"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
                                 </div>
-                            </fieldset>
+                            </template>
+
+                            <p class="esb-portal__label mb-3">Primary weapon</p>
+                            <div class="esb-onboarding__instrument-grid mb-6">
+                                <template x-for="instrument in scaffoldInstruments" :key="instrument.id">
+                                    <button
+                                        type="button"
+                                        class="esb-onboarding__instrument-chip"
+                                        :class="primaryInstrumentSlug === instrument.id ? 'esb-onboarding__instrument-chip--primary' : ''"
+                                        @click="setPrimaryWeapon(instrument.id)"
+                                        x-text="instrument.name"
+                                    ></button>
+                                </template>
+                            </div>
+
+                            <p class="esb-portal__label mb-3">
+                                Additional weapons
+                                <span class="esb-onboarding__optional">(optional)</span>
+                            </p>
+                            <div class="esb-onboarding__instrument-grid">
+                                <template x-for="instrument in scaffoldInstruments" :key="`add-${instrument.id}`">
+                                    <button
+                                        type="button"
+                                        class="esb-onboarding__instrument-chip"
+                                        :class="isAdditionalWeapon(instrument.id) ? 'esb-onboarding__instrument-chip--active' : ''"
+                                        :disabled="primaryInstrumentSlug === instrument.id"
+                                        @click="toggleAdditionalWeapon(instrument.id)"
+                                        x-text="instrument.name"
+                                    ></button>
+                                </template>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="esb-onboarding__reset mt-5"
+                                @click="clearWeapons()"
+                            >
+                                Start again
+                            </button>
                         </div>
                     </div>
 

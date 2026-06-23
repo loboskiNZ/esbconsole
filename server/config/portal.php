@@ -26,6 +26,8 @@ return [
 
     'profile_photo_disk' => env('PORTAL_PROFILE_PHOTO_DISK', 'local'),
 
-    'profile_photo_max_kb' => (int) env('PORTAL_PROFILE_PHOTO_MAX_KB', 5120),
+    'profile_photo_max_kb' => (int) env('PORTAL_PROFILE_PHOTO_MAX_KB', 25600),
+
+    'profile_photo_display_max_edge' => (int) env('PORTAL_PROFILE_PHOTO_DISPLAY_MAX_EDGE', 960),
 
 ];

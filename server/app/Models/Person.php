@@ -32,6 +32,7 @@ class Person extends Model
         'country',
         'bio',
         'profile_photo_path',
+        'profile_photo_display_path',
         'dietary_requirements',
         'notes',
     ];
@@ -88,7 +89,20 @@ class Person extends Model
 
     public function hasProfilePhoto(): bool
     {
-        return filled($this->profile_photo_path);
+        return filled($this->profilePhotoServePath());
+    }
+
+    public function profilePhotoServePath(): ?string
+    {
+        if (filled($this->profile_photo_display_path)) {
+            return $this->profile_photo_display_path;
+        }
+
+        if (filled($this->profile_photo_path)) {
+            return $this->profile_photo_path;
+        }
+
+        return null;
     }
 
     public function instrumentSummary(): string

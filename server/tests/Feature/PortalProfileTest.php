@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\InstrumentReference;
-use App\Models\Person;
 use App\Models\User;
 use App\Support\ProfileBio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,6 +44,32 @@ class PortalProfileTest extends TestCase
         $response->assertDontSee('Readiness score', false);
         $response->assertDontSee('Profile completeness', false);
         $response->assertDontSee('Performance readiness', false);
+    }
+
+    public function test_no_photo_placeholder_uses_esb_branding_and_no_image_label(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/studio');
+
+        $response->assertOk();
+        $response->assertSee('No image', false);
+        $response->assertSee('esb-studio__identity-placeholder--no-image', false);
+        $response->assertSee('Logo_ESB_BLACKBG.png', false);
+        $response->assertSee('esb-studio__identity-placeholder-figure', false);
+    }
+
+    public function test_profile_editor_uses_onboarding_instrument_markup(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/studio/profile/edit')
+            ->assertOk()
+            ->assertSee('esb-onboarding__instrument-chip', false)
+            ->assertSee('esb-onboarding__instrument-grid', false)
+            ->assertSee('setPrimaryWeapon', false)
+            ->assertSee('toggleAdditionalWeapon', false)
+            ->assertSee('Show instruments', false);
     }
 
     public function test_unauthenticated_user_cannot_access_profile_editor(): void
@@ -105,7 +130,7 @@ class PortalProfileTest extends TestCase
         $this->assertNull($person->fresh()->bio);
     }
 
-    public function test_user_can_upload_profile_photo(): void
+    public function test_user_can_upload_profile_photo_with_original_and_display_paths(): void
     {
         Storage::fake('local');
         config(['portal.profile_photo_disk' => 'local']);
@@ -128,21 +153,64 @@ class PortalProfileTest extends TestCase
         ])->assertRedirect(route('studio'));
 
         $person->refresh();
-        $this->assertNotNull($person->profile_photo_path);
-        $this->assertStringStartsWith('portal/profile-photos/'.$person->id.'/', $person->profile_photo_path);
+        $this->assertStringEndsWith('/original.jpg', $person->profile_photo_path);
+        $this->assertStringEndsWith('/display.jpg', $person->profile_photo_display_path);
         Storage::disk('local')->assertExists($person->profile_photo_path);
+        Storage::disk('local')->assertExists($person->profile_photo_display_path);
 
         $this->actingAs($user)->get(route('studio.profile.photo'))->assertOk();
     }
 
-    public function test_profile_editor_renders_instrument_toggle(): void
+    public function test_twenty_megabyte_profile_photo_upload_is_accepted(): void
     {
-        $user = User::factory()->create();
+        Storage::fake('local');
+        config(['portal.profile_photo_disk' => 'local']);
 
-        $this->actingAs($user)->get('/studio/profile/edit')
-            ->assertOk()
-            ->assertSee('Show instruments', false)
-            ->assertSee('profileEditor', false);
+        $user = User::factory()->create();
+        $person = $user->person;
+        $vocals = InstrumentReference::query()->where('slug', 'scaffold-vocals')->firstOrFail();
+        $person->instruments()->attach($vocals->id, ['is_primary' => true]);
+
+        $file = UploadedFile::fake()->image('band-photo.jpg', 1200, 1200)->size(20 * 1024);
+
+        $this->actingAs($user)->put('/studio/profile', [
+            'stage_name' => $person->artistic_name,
+            'email' => $person->email,
+            'telephone' => $person->phone,
+            'city' => $person->city,
+            'country' => $person->country,
+            'primary_instrument' => 'scaffold-vocals',
+            'profile_photo' => $file,
+        ])->assertRedirect(route('studio'));
+
+        $person->refresh();
+        $this->assertNotNull($person->profile_photo_path);
+        $this->assertNotNull($person->profile_photo_display_path);
+    }
+
+    public function test_invalid_profile_photo_format_is_rejected(): void
+    {
+        Storage::fake('local');
+        config(['portal.profile_photo_disk' => 'local']);
+
+        $user = User::factory()->create();
+        $person = $user->person;
+        $vocals = InstrumentReference::query()->where('slug', 'scaffold-vocals')->firstOrFail();
+        $person->instruments()->attach($vocals->id, ['is_primary' => true]);
+
+        $file = UploadedFile::fake()->create('notes.pdf', 100, 'application/pdf');
+
+        $this->actingAs($user)->put('/studio/profile', [
+            'stage_name' => $person->artistic_name,
+            'email' => $person->email,
+            'telephone' => $person->phone,
+            'city' => $person->city,
+            'country' => $person->country,
+            'primary_instrument' => 'scaffold-vocals',
+            'profile_photo' => $file,
+        ])->assertSessionHasErrors('profile_photo');
+
+        $this->assertNull($person->fresh()->profile_photo_path);
     }
 
     public function test_profile_update_only_affects_authenticated_users_person(): void
