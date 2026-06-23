@@ -72,8 +72,6 @@ $FORGE_PHP artisan studio:normalize-library-chart-permissions
 
 $ACTIVATE_RELEASE()
 
-$FORGE_PHP artisan studio:verify-chart-file-access 14 3 || {
-  echo "WARNING: chart file access verification failed for chart 14 (see output above)." >&2
-}
+$FORGE_PHP artisan studio:verify-chart-file-access 14 3
 
 $RESTART_QUEUES()

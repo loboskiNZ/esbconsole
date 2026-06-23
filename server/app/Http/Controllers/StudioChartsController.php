@@ -7,6 +7,7 @@ use App\Models\Library\Song;
 use App\Services\StudioChartAccessService;
 use App\Support\StudioLibraryChartStorage;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -65,6 +66,12 @@ class StudioChartsController extends Controller
         $path = $chart->storage_reference;
 
         if ($path === null || ! $chartStorage->exists($path)) {
+            Log::warning('studio.chart_file_missing', [
+                'chart_id' => $chart->id,
+                'storage_reference' => $path,
+                'absolute_path' => $path !== null ? $chartStorage->absolutePath($path) : null,
+                'readable' => $path !== null && is_readable($chartStorage->absolutePath($path)),
+            ]);
             abort(404);
         }
 
