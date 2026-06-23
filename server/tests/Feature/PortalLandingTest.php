@@ -18,8 +18,8 @@ class PortalLandingTest extends TestCase
         $response = $this->get('/');
 
         $response->assertSee('Welcome to the Ed and the Shadow Boys Portal', false);
-        $response->assertSee(asset('images/portal/band-background.png'), false);
-        $response->assertSee(asset('images/portal/esb-logo.png'), false);
+        $response->assertSee(asset('images/portal/ESB-Lobofest3.jpg'), false);
+        $response->assertSee(asset('images/portal/Logo_ESB_BLACKBG.png'), false);
     }
 
     public function test_portal_landing_page_scaffolds_staged_login_journey(): void

@@ -22,7 +22,7 @@
         <div class="fixed inset-0 -z-20 overflow-hidden" aria-hidden="true">
             <img
                 x-ref="backgroundImage"
-                src="{{ asset('images/portal/band-background.png') }}"
+                src="{{ asset('images/portal/ESB-Lobofest3.jpg') }}"
                 alt=""
                 class="esb-portal__background-image absolute inset-0 h-full w-full transition-opacity duration-[1400ms] ease-out"
                 :class="bgVisible ? 'opacity-100' : 'opacity-0'"
@@ -40,7 +40,7 @@
             aria-hidden="true"
         >
             <img
-                src="{{ asset('images/portal/esb-logo.png') }}"
+                src="{{ asset('images/portal/Logo_ESB_BLACKBG.png') }}"
                 alt=""
                 class="esb-portal__logo esb-portal-logo object-contain"
                 :class="logoVisible ? 'opacity-[0.14]' : 'opacity-0'"
