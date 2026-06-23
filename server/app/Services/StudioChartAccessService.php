@@ -63,6 +63,47 @@ class StudioChartAccessService
             ->get();
     }
 
+    public function songCountForPerson(Person $person): int
+    {
+        return $this->songsForPerson($person)->count();
+    }
+
+    public function chartCountForPerson(Person $person): int
+    {
+        return (int) $this->songsForPerson($person)->sum('my_chart_count');
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function partNamesForPersonAndSong(Person $person, Song $song): array
+    {
+        if (! $this->library->isAvailable()) {
+            return [];
+        }
+
+        $partIds = $this->matchingInstrumentPartIds($person);
+
+        if ($partIds === []) {
+            return [];
+        }
+
+        abort_unless($song->band_id === (int) config('portal.band_id', 1), 404);
+
+        return SongInstrumentPart::query()
+            ->where('song_id', $song->id)
+            ->whereIn('instrument_part_id', $partIds)
+            ->whereNotNull('chart_id')
+            ->with('instrumentPart')
+            ->get()
+            ->map(fn (SongInstrumentPart $link) => $link->instrumentPart?->name)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+    }
+
     /**
      * @return Collection<int, SongInstrumentPart>
      */

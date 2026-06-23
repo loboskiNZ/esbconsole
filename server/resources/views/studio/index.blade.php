@@ -28,52 +28,171 @@
                 @endif
 
                 <div class="esb-studio__workspace">
-                    <section class="esb-portal__panel esb-studio__workspace-intro">
-                        <h2 class="esb-studio__card-title">Welcome</h2>
-                        <p class="esb-studio__card-body mt-2">
-                            Welcome inside{{ $person?->artistic_name ? ', '.$person->artistic_name : '' }}.
-                            This is your member home.
-                        </p>
-                        <p class="esb-studio__card-body mt-3">
-                            You are signed in as <strong>{{ $user->username }}</strong>.
-                            Things you can update are available from your profile when you are ready.
-                        </p>
+                    <section class="esb-studio__hero" aria-labelledby="studio-hero-title">
+                        <div class="esb-studio__hero-copy">
+                            <h2 id="studio-hero-title" class="esb-studio__hero-title">Welcome to Studio</h2>
+                            <p class="esb-studio__hero-lead">
+                                This is your rehearsal workspace.
+                            </p>
+                            <p class="esb-studio__hero-body">
+                                Access charts, performances and schedules.
+                            </p>
+                        </div>
+
+                        <div class="esb-studio__hero-actions">
+                            <article
+                                class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--charts"
+                                x-data="studioChartsLauncher(@js(route('studio.charts.search')))"
+                                @click.outside="open = false"
+                            >
+                                <div class="esb-studio__hero-card-shine" aria-hidden="true"></div>
+
+                                <div class="esb-studio__hero-card-head">
+                                    @include('studio.partials.icons.music-stand')
+                                    <div>
+                                        <h3 class="esb-studio__hero-card-title">All Charts</h3>
+                                        <p class="esb-studio__hero-card-tagline">Your rehearsal library</p>
+                                    </div>
+                                </div>
+
+                                <dl class="esb-studio__hero-counts">
+                                    <div>
+                                        <dt class="sr-only">Songs</dt>
+                                        <dd>{{ number_format($songCount) }} Songs</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="sr-only">Charts</dt>
+                                        <dd>{{ number_format($chartCount) }} Charts</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="esb-studio__hero-search">
+                                    <label class="sr-only" for="studio-chart-search">Search songs</label>
+                                    <input
+                                        id="studio-chart-search"
+                                        type="search"
+                                        class="esb-portal__input esb-studio__hero-search-input"
+                                        placeholder="Search songs"
+                                        autocomplete="off"
+                                        spellcheck="false"
+                                        x-model="query"
+                                        @keydown="onSearchKeydown($event)"
+                                        role="combobox"
+                                        aria-autocomplete="list"
+                                        :aria-expanded="open ? 'true' : 'false'"
+                                        aria-controls="studio-chart-search-results"
+                                        :aria-activedescendant="activeIndex >= 0 ? resultId(activeIndex) : null"
+                                    >
+
+                                    <ul
+                                        id="studio-chart-search-results"
+                                        class="esb-studio__hero-search-results"
+                                        role="listbox"
+                                        x-show="open"
+                                        x-cloak
+                                    >
+                                        <template x-for="(result, index) in results" :key="result.song_id">
+                                            <li
+                                                :id="resultId(index)"
+                                                role="option"
+                                                class="esb-studio__hero-search-result"
+                                                :class="{ 'esb-studio__hero-search-result--active': index === activeIndex }"
+                                                @mouseenter="activeIndex = index"
+                                                @mousedown.prevent="selectResult(result)"
+                                            >
+                                                <span class="esb-studio__hero-search-result-title" x-text="result.name"></span>
+                                                <span
+                                                    class="esb-studio__hero-search-result-parts"
+                                                    x-show="result.parts && result.parts.length"
+                                                    x-text="result.parts.join(' · ')"
+                                                ></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+
+                                <div class="esb-studio__hero-card-foot">
+                                    <a
+                                        href="{{ route('studio.charts.index') }}"
+                                        class="esb-portal__button esb-portal__button--primary esb-studio__hero-action"
+                                    >
+                                        View
+                                    </a>
+                                </div>
+                            </article>
+
+                            <article class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary">
+                                <div class="esb-studio__hero-card-head">
+                                    <svg class="esb-studio__hero-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <path d="M7 4h10v3H7V4Z" stroke="currentColor" stroke-width="1.5" />
+                                        <path d="M6 7h12v13H6V7Z" stroke="currentColor" stroke-width="1.5" />
+                                        <path d="M9 11h6M9 14h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                    </svg>
+                                    <div>
+                                        <h3 class="esb-studio__hero-card-title">Shows</h3>
+                                        <p class="esb-studio__hero-card-tagline">Upcoming shows</p>
+                                    </div>
+                                </div>
+                                <p class="esb-studio__hero-card-body">
+                                    Your performance calendar will appear here when shows are synced to the portal.
+                                </p>
+                                <div class="esb-studio__hero-card-foot">
+                                    <span class="esb-studio__hero-placeholder-action">Open</span>
+                                </div>
+                            </article>
+
+                            <article class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary">
+                                <div class="esb-studio__hero-card-head">
+                                    <svg class="esb-studio__hero-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5" />
+                                        <path d="M12 7.5v5l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                                    </svg>
+                                    <div>
+                                        <h3 class="esb-studio__hero-card-title">Schedule</h3>
+                                        <p class="esb-studio__hero-card-tagline">Rehearsals schedule</p>
+                                    </div>
+                                </div>
+                                <p class="esb-studio__hero-card-body">
+                                    Rehearsal dates and call times will land here.
+                                </p>
+                                <div class="esb-studio__hero-card-foot">
+                                    <span class="esb-studio__hero-placeholder-action">Open</span>
+                                </div>
+                            </article>
+                        </div>
                     </section>
 
-                    <div class="esb-studio__workspace-grid">
-                        <a href="{{ route('studio.charts.index') }}" class="esb-portal__panel esb-studio__card esb-studio__module-card">
-                            <h2 class="esb-studio__card-title">Charts</h2>
-                            <p class="esb-studio__card-body mt-3">
-                                View your song charts
-                            </p>
-                        </a>
+                    <section class="esb-studio__secondary" aria-labelledby="studio-secondary-title">
+                        <h2 id="studio-secondary-title" class="esb-studio__secondary-title">Information</h2>
 
-                        <section class="esb-portal__panel esb-studio__card">
-                            <h2 class="esb-studio__card-title">Information for later</h2>
-                            <ul class="esb-studio__list mt-3">
-                                <li>Passport information</li>
-                                <li>Bank account details</li>
-                                <li>Touring information</li>
-                            </ul>
-                            <p class="esb-studio__card-note mt-4">Coming in later phases.</p>
-                        </section>
+                        <div class="esb-studio__secondary-grid">
+                            <section class="esb-portal__panel esb-studio__card esb-studio__secondary-card">
+                                <h3 class="esb-studio__card-title">Band notices</h3>
+                                <p class="esb-studio__card-body mt-3">
+                                    Announcements, rehearsal updates, and touring notes will land here.
+                                </p>
+                                <p class="esb-studio__card-note mt-4">Coming in later phases.</p>
+                            </section>
 
-                        <section class="esb-portal__panel esb-studio__card">
-                            <h2 class="esb-studio__card-title">Upcoming shows</h2>
-                            <p class="esb-studio__card-body mt-3">
-                                Your performance calendar will appear here when shows are synced to the portal.
-                            </p>
-                            <p class="esb-studio__card-note mt-4">Placeholder.</p>
-                        </section>
+                            <section class="esb-portal__panel esb-studio__card esb-studio__secondary-card">
+                                <h3 class="esb-studio__card-title">Travel information</h3>
+                                <p class="esb-studio__card-body mt-3">
+                                    Tour travel details and logistics will appear here.
+                                </p>
+                                <p class="esb-studio__card-note mt-4">Coming in later phases.</p>
+                            </section>
 
-                        <section class="esb-portal__panel esb-studio__card">
-                            <h2 class="esb-studio__card-title">Band notices</h2>
-                            <p class="esb-studio__card-body mt-3">
-                                Announcements, rehearsal updates, and touring notes will land here.
-                            </p>
-                            <p class="esb-studio__card-note mt-4">Placeholder.</p>
-                        </section>
-                    </div>
+                            <section class="esb-portal__panel esb-studio__card esb-studio__secondary-card">
+                                <h3 class="esb-studio__card-title">Tour information</h3>
+                                <ul class="esb-studio__list mt-3">
+                                    <li>Passport information</li>
+                                    <li>Bank account details</li>
+                                    <li>Touring information</li>
+                                </ul>
+                                <p class="esb-studio__card-note mt-4">Coming in later phases.</p>
+                            </section>
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>

@@ -4,6 +4,7 @@ use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingRegistrationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/studio', [StudioController::class, 'index'])->name('studio');
+    Route::get('/studio/charts/search', StudioChartSearchController::class)->name('studio.charts.search');
     Route::get('/studio/charts', [StudioChartsController::class, 'index'])->name('studio.charts.index');
     Route::get('/studio/charts/{song}', [StudioChartsController::class, 'show'])->name('studio.charts.show');
     Route::get('/studio/charts/files/{chart}', [StudioChartsController::class, 'chartFile'])->name('studio.charts.file');

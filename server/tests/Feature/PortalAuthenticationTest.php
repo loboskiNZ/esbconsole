@@ -294,7 +294,8 @@ class PortalAuthenticationTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('The Studio', false);
-        $response->assertSee($user->username, false);
+        $response->assertSee('Welcome to Studio', false);
+        $response->assertSee('All Charts', false);
     }
 
     public function test_login_with_username_and_password_works(): void

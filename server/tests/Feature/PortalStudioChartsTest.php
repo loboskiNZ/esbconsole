@@ -34,9 +34,10 @@ class PortalStudioChartsTest extends TestCase
 
         $this->actingAs($user)->get('/studio')
             ->assertOk()
-            ->assertSee('Charts', false)
-            ->assertSee('View your song charts', false)
+            ->assertSee('All Charts', false)
+            ->assertSee('Your rehearsal library', false)
             ->assertSee(route('studio.charts.index'), false)
+            ->assertSee('esb-studio__hero-search', false)
             ->assertDontSee('Readiness score', false)
             ->assertDontSee('Profile completeness', false)
             ->assertDontSee('Performance readiness', false)

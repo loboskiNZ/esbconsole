@@ -11,7 +11,7 @@
         <header class="esb-studio__chrome-header">
             <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
             <h1 class="esb-portal__title">Charts</h1>
-            <p class="esb-studio__card-body mt-2">View your song charts</p>
+            <p class="esb-studio__card-body mt-2">Your rehearsal library</p>
         </header>
 
         <div class="esb-studio__shell-body">

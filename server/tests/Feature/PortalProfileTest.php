@@ -79,12 +79,10 @@ class PortalProfileTest extends TestCase
             'esb-studio__sidebar',
             'esb-studio__workspace',
         ], false);
-        $response->assertSee('esb-studio__workspace-intro', false);
-        $response->assertSee('esb-studio__workspace-grid', false);
-        $response->assertSee('Welcome', false);
-        $response->assertSee('Charts', false);
-        $response->assertSee('View your song charts', false);
-        $response->assertSee('Information for later', false);
+        $response->assertSee('esb-studio__hero', false);
+        $response->assertSee('All Charts', false);
+        $response->assertSee('Your rehearsal library', false);
+        $response->assertDontSee('Information for later', false);
     }
 
     public function test_studio_mobile_layout_stacks_profile_before_workspace(): void

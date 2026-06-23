@@ -2,16 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\StudioChartAccessService;
+use Illuminate\View\View;
+
 class StudioController extends Controller
 {
-    public function index()
+    public function index(StudioChartAccessService $chartAccess): View
     {
         $user = auth()->user();
         $person = $user?->load(['person.instruments'])->person;
 
+        $songCount = 0;
+        $chartCount = 0;
+
+        if ($person !== null) {
+            $songCount = $chartAccess->songCountForPerson($person);
+            $chartCount = $chartAccess->chartCountForPerson($person);
+        }
+
         return view('studio.index', [
             'user' => $user,
             'person' => $person,
+            'songCount' => $songCount,
+            'chartCount' => $chartCount,
         ]);
     }
 }
