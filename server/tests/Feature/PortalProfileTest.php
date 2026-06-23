@@ -42,7 +42,7 @@ class PortalProfileTest extends TestCase
         $response->assertSee('esb-studio__layout', false);
         $response->assertSee('esb-studio__workspace', false);
         $response->assertSee('esb-studio__sidebar', false);
-        $response->assertSee('Studio modules', false);
+        $response->assertDontSee('Studio modules', false);
         $response->assertDontSee('max-w-6xl', false);
         $response->assertDontSee($person->legalName(), false);
         $response->assertDontSee($person->email, false);
@@ -82,6 +82,8 @@ class PortalProfileTest extends TestCase
         $response->assertSee('esb-studio__workspace-intro', false);
         $response->assertSee('esb-studio__workspace-grid', false);
         $response->assertSee('Welcome', false);
+        $response->assertSee('Charts', false);
+        $response->assertSee('View your song charts', false);
         $response->assertSee('Information for later', false);
     }
 

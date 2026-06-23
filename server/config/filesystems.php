@@ -38,6 +38,14 @@ return [
             'report' => false,
         ],
 
+        'library' => [
+            'driver' => 'local',
+            'root' => env('PORTAL_LIBRARY_STORAGE_ROOT', base_path('../backend/storage/app/private')),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

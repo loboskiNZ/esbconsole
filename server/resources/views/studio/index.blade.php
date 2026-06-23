@@ -41,6 +41,13 @@
                     </section>
 
                     <div class="esb-studio__workspace-grid">
+                        <a href="{{ route('studio.charts.index') }}" class="esb-portal__panel esb-studio__card esb-studio__module-card">
+                            <h2 class="esb-studio__card-title">Charts</h2>
+                            <p class="esb-studio__card-body mt-3">
+                                View your song charts
+                            </p>
+                        </a>
+
                         <section class="esb-portal__panel esb-studio__card">
                             <h2 class="esb-studio__card-title">Information for later</h2>
                             <ul class="esb-studio__list mt-3">
@@ -63,14 +70,6 @@
                             <h2 class="esb-studio__card-title">Band notices</h2>
                             <p class="esb-studio__card-body mt-3">
                                 Announcements, rehearsal updates, and touring notes will land here.
-                            </p>
-                            <p class="esb-studio__card-note mt-4">Placeholder.</p>
-                        </section>
-
-                        <section class="esb-portal__panel esb-studio__card">
-                            <h2 class="esb-studio__card-title">Studio modules</h2>
-                            <p class="esb-studio__card-body mt-3">
-                                Songs, charts, performances, messages, rehearsal, and media will open here as they arrive.
                             </p>
                             <p class="esb-studio__card-note mt-4">Placeholder.</p>
                         </section>
