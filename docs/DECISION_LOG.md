@@ -313,4 +313,44 @@ Login credentials must never be stored on Person. Passport, banking, travel, onb
 
 ---
 
-End of Decision Log — PH047A
+## PH048A — ESB Band Portal Narrative Onboarding Experience Governance
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 178 | **Narrative Onboarding:** The ESB Band Portal onboarding experience is a guided narrative journey — not a traditional registration form. Users must feel welcomed, curious, excited, valued, and invited into something special. Artistic, immersive, cinematic, memorable. Progressive storytelling; one field at a time; avoid large forms, corporate language, and generic "sign up" patterns. | Establishes experience-first initiation before implementation; differentiates ESB Band Portal from enterprise SaaS onboarding. |
+| 179 | **Chapter-Based Onboarding Structure:** Onboarding is divided into eight chapters accessed via `/invite/{token}`: (1) Welcome to the Shadows, (2) Claim Your Identity, (3) Your True Name, (4) Choose Your Persona, (5) Choose Your Weapon, (6) Find Your Way Home, (7) The Road Ahead, (8) Enter the Studio. Each chapter uses cinematic transitions, alpha fades, and progressive reveals. | Storyboard structure for PH048A scaffold and future implementation. |
+| 180 | **ESB Studio As Post-Onboarding Destination:** ESB Studio is the onboarding arrival surface, member home page, future login destination, and primary authenticated portal landing page. Not a separate domain entity — a UX destination surfacing Person-linked member content. | Replaces generic "dashboard" framing; gives members a named creative home. |
+| 181 | **Email Verification Required For Studio Access:** `bookings@edandtheshadowboys.com` sends verification behind the scenes. Status: Email Pending Verification. If incomplete after 24 hours, user may authenticate but cannot access ESB Studio — show Verify Your Email with resend, instructions, and support. Verification required before Studio access. Email remains Person contact data (PH047) — not login identifier. | Balances early onboarding completion with contact verification before full portal access. |
+
+### PH048A — Invitation architecture (documented)
+
+| Requirement | Statement |
+|-------------|-----------|
+| Linked to Person | `person_id` FK |
+| Expiry | `expiry_date` / expires_at |
+| Single use | `accepted_at` on completion |
+| Revocable | Administrator revocation |
+| Provenance | `created_by` tracked |
+| Status lifecycle | Draft → Sent → Accepted / Expired / Revoked |
+| Management UI | Planned; implementation later |
+
+### PH048A — Out of scope
+
+Authentication implementation, User creation, invitation validation, database writes, password storage, email sending, session handling, profile persistence.
+
+PH048A establishes the **experience scaffold** only.
+
+### PH048A — Validation (no conflicts)
+
+| Prior | PH048A position |
+|-------|-----------------|
+| **PH045** Band People schema | No conflict — Chapters 3–6 map to existing Person / `instrument_reference` / `person_instruments` fields |
+| **PH046 / PH046.01A** landing scaffold | No conflict — public landing remains for returning members; invite flow uses `/invite/{token}` narrative journey |
+| **PH047** Person/User separation | Reinforced — Ch 2 → User; Ch 3–6 → Person |
+| **PH047A** username/password rules | Reinforced — Ch 2 enforces Decisions 176–177 in progressive UX |
+| **Charter** Live Show View Priority #1 | No conflict — Band Portal is cloud personnel surface; ESB Studio ≠ Live Show View |
+| **Laravel foundations** | No conflict — PH048A is documentation/scaffold only |
+
+---
+
+End of Decision Log — PH048A

@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH047A Amended (Authentication Policy Finalisation)  
+Status: PH048A Amended (Narrative Onboarding Experience Governance)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -330,17 +330,59 @@ Passwords are authentication secrets — never recoverable, never encrypted, nev
 
 ### Definition
 
-A time-limited, single-use, revocable token authorising creation of a **User** account linked to a specific **Person**.
+A time-limited, single-use, revocable token authorising the **narrative onboarding journey** and eventual creation of a **User** account linked to a specific **Person**.
+
+Entry URL pattern: `https://band.edandtheshadowboys.com/invite/{token}`
 
 ### Governance
 
 | Rule | Statement |
 |------|-----------|
 | Token | Cryptographically random; not guessable |
-| Lifetime | Time-limited; expires |
-| Use | Single-use on acceptance |
+| Lifetime | Time-limited; expires (`expiry_date`) |
+| Use | Single-use on acceptance (`accepted_at`) |
 | Revocation | Administrator may revoke before acceptance |
 | Storage | Token hash only at rest — not plaintext in logs |
+| Person link | Must reference exactly one Person (`person_id`) |
+| Provenance | Track `created_by` (administrator User) |
+
+### Invitation status lifecycle (PH048A — future implementation)
+
+| Status | Meaning |
+|--------|---------|
+| **Draft** | Created; not yet sent |
+| **Sent** | Delivered to invitee |
+| **Accepted** | Onboarding completed; User created and linked |
+| **Expired** | Past expiry date |
+| **Revoked** | Administrator cancelled |
+
+An **invitation management interface** is planned as part of the onboarding ecosystem (implementation later).
+
+### Narrative onboarding (PH048A)
+
+The invitation token opens the **eight-chapter onboarding journey** (Decision 179). This is a UX experience — not a domain aggregate. Data captured during chapters maps to **User** (Chapter 2 credentials) and **Person** (Chapters 3–6 profile fields) per PH047 separation rules.
+
+Full chapter specification: `docs/UX_MODEL.md` PH048A.
+
+---
+
+## ESB Studio (UX destination — PH048A)
+
+### Definition
+
+The **authenticated member home** of the Band Portal — onboarding arrival surface (Chapter 8), future login destination, and primary portal landing page for invited members.
+
+### Ownership / Source of Truth
+
+- **UX destination** — not a separate database entity.
+- Surfaces Person-linked member content and progressive profile completion prompts.
+- Requires authenticated User with linked Person; **email verification** required for access after 24h pending (Decision 181).
+
+### Must Not Be Confused With
+
+- **Live Show View** — local runtime performance execution (Priority #1 elsewhere in the platform).
+- **Director preparation surfaces** — show authoring and performance preparation.
+- **Person** — Studio is a portal surface; Person remains the canonical profile record.
 
 ---
 

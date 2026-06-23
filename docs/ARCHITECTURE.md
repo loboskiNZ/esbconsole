@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH047A Amended (Authentication Policy Finalisation)  
+Status: PH048A Amended (Narrative Onboarding Experience Governance)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -408,7 +408,7 @@ Cloud deployment and Local Show Runtime full stack remain future phases.
 | Attribute | Value |
 |-----------|-------|
 | **URL** | `https://band.edandtheshadowboys.com` |
-| **Purpose** | Band People onboarding, production personnel self-service, and future collaboration surfaces |
+| **Purpose** | Band People narrative onboarding, production personnel self-service, ESB Studio member home |
 | **Database** | Shared PostgreSQL with canonical `people` schema (M3a) — same logical database as Director local app |
 | **Auth consumer** | First implementation of M1 identity domain for portal members |
 
@@ -429,6 +429,31 @@ Login credentials **never** belong on Person. Sensitive Person fields remain in 
 | **Password** | 177 | 8–50 chars; upper + lower + number + symbol; Laravel `Hash` only |
 
 PH048 Authentication Implementation may proceed under these policies. Full rules: `docs/DECISION_LOG.md` PH047A.
+
+### Narrative onboarding experience (PH048A)
+
+| Attribute | Value |
+|-----------|-------|
+| **Experience type** | Guided narrative journey — not registration form (Decision 178) |
+| **Entry** | `https://band.edandtheshadowboys.com/invite/{token}` |
+| **Structure** | Eight chapters — progressive storytelling (Decision 179) |
+| **Destination** | ESB Studio — member home and post-login landing (Decision 180) |
+| **Email gate** | Verification from `bookings@edandtheshadowboys.com` required for Studio access after 24h (Decision 181) |
+| **PH048A scope** | UX/experience scaffold only — no auth, persistence, or email implementation |
+
+Chapter-to-entity mapping:
+
+| Chapter | Domain write target (future) |
+|---------|------------------------------|
+| 2 — Claim Your Identity | User (username, password hash) |
+| 3 — Your True Name | Person (legal name) |
+| 4 — Choose Your Persona | Person (stage/artistic name) |
+| 5 — Choose Your Weapon | Person ↔ Instrument Reference |
+| 6 — Find Your Way Home | Person (email, phone, city, country) |
+| 7 — The Road Ahead | None — expectations only |
+| 8 — Enter the Studio | UX transition to ESB Studio |
+
+Full storyboard: `docs/UX_MODEL.md` PH048A. Route map: `docs/INFORMATION_ARCHITECTURE.md`.
 
 ### Band Portal deployment policy (PH047)
 
@@ -461,4 +486,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH047A
+End of Architecture — PH048A

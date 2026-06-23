@@ -1,6 +1,6 @@
 # Information Architecture
 
-Status: PH047A Amended (Authentication Policy Finalisation)  
+Status: PH048A Amended (Narrative Onboarding Experience Governance)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical navigation structure, hierarchy, and visibility rules for the Live Performance Orchestration System
 
@@ -206,6 +206,9 @@ Live Show View receives shortest path from Performance selection. Master Library
 | Musicians | Musician, Device, Performance |
 | Band People | Person, Person Secure Field, Person File, Instrument Reference, Person IEM Setting |
 | Band Portal (login) | User (authentication only) |
+| Band Portal (onboarding Ch 1–8) | Person Invitation (proposed), User, Person, Instrument Reference |
+| ESB Studio | User, Person (member home — PH048A) |
+| Band Portal (email verification) | Person (email contact), User (access gate) |
 | Band Portal (invitation) | Person Invitation (proposed), Person |
 | Band Portal (onboarding) | Person, Person File, Person IEM Setting, onboarding progress (proposed) |
 | Assignments | Assignment, Musician, Instrument Part, Performance |
@@ -232,7 +235,7 @@ Live Show View receives shortest path from Performance selection. Master Library
 
 ---
 
-## Band Portal Information Architecture (PH047)
+## Band Portal Information Architecture (PH047 / PH048A)
 
 Band Portal (`band.edandtheshadowboys.com`) is a **cloud-only** surface. It does not replace Local Show Runtime or Director Local preparation flows.
 
@@ -240,9 +243,11 @@ Band Portal (`band.edandtheshadowboys.com`) is a **cloud-only** surface. It does
 
 | Surface | Visibility | Auth |
 |---------|------------|------|
-| Landing / staged login | Public | Username → password scaffold (PH046.01A); credentials not yet enforced |
-| Invitation accept | Token link (unlisted) | Creates User linked to Person |
-| Authenticated portal | Post-login | Session (Laravel) |
+| Landing / staged login | Public | Username → password scaffold (PH046.01A); returning members → ESB Studio when implemented |
+| Narrative onboarding | `/invite/{token}` (unlisted) | Invitation-driven journey (PH048A); no self-registration |
+| Email verification gate | Authenticated, unverified | Blocks ESB Studio after 24h (Decision 181) |
+| ESB Studio | Authenticated + verified | Member home (Decision 180) |
+| Authenticated portal | Post-login | Session (Laravel) — future phases |
 
 ### Staged login UX (current scaffold)
 
@@ -261,23 +266,65 @@ Invalid username examples to reject in UX: `Matt Guitar`, `matt-guitar`, `matt@e
 
 Invalid password examples to reject: `password`, `Password1`, `password1!`. Valid: `ShadowBoy1!`, `Lobo2026#`.
 
+### Narrative onboarding route map (PH048A)
+
+```text
+/invite/{token}
+  → Ch 1  Welcome to the Shadows
+  → Ch 2  Claim Your Identity          (User credentials)
+  → Ch 3  Your True Name               (Person legal name)
+  → Ch 4  Choose Your Persona          (Person stage name)
+  → Ch 5  Choose Your Weapon           (Person ↔ Instrument Reference)
+  → Ch 6  Find Your Way Home           (Person contact)
+  → Ch 7  The Road Ahead               (expectations — no data capture)
+  → Ch 8  Enter the Studio             (ESB Studio destination)
+```
+
+```mermaid
+flowchart LR
+    subgraph public [Public]
+        LAND["/  Landing"]
+        INV["/invite/{token}"]
+    end
+    subgraph onboarding [Onboarding Chapters 1-8]
+        CH1[Welcome]
+        CH2[Identity]
+        CH3[True Name]
+        CH4[Persona]
+        CH5[Weapon]
+        CH6[Way Home]
+        CH7[Road Ahead]
+        CH8[Enter Studio]
+    end
+    subgraph member [Authenticated Member]
+        STUDIO["/studio  ESB Studio"]
+        VERIFY["/verify-email  Gate"]
+    end
+    LAND -->|returning login| STUDIO
+    INV --> CH1 --> CH2 --> CH3 --> CH4 --> CH5 --> CH6 --> CH7 --> CH8 --> STUDIO
+    STUDIO -->|unverified 24h+| VERIFY
+    VERIFY -->|verified| STUDIO
+```
+
+Full chapter UX: `docs/UX_MODEL.md` PH048A.
+
 ### Approved flows (documented — not implemented)
 
 ```
 Administrator → Band People → select/create Person → send invitation
-Invitee → open token URL → choose username + password → User created → Person linked
-Invitee → progressive onboarding (profile, travel, documents, instruments, IEM)
-Member → username + password login → authenticated portal home
+Invitee → /invite/{token} → narrative onboarding (Ch 1–8) → ESB Studio
+Invitee → progressive profile completion (passport, banking, etc. — later)
+Member → username + password login → ESB Studio (or Verify Your Email gate)
 ```
 
-### Navigation hierarchy (post-auth — proposed)
+### Navigation hierarchy (post-auth — PH048A)
 
 | Level | Scope | Primary user |
 |-------|-------|--------------|
-| Portal home | Band member dashboard | Invited Person / User |
+| **ESB Studio** | Member home; post-onboarding destination | Invited Person / User |
 | My profile | Person record (self-service permitted fields) | Member |
-| Onboarding | Progressive Person completion | New invitee |
-| Administration | Person list, invitations, User access | Administrator |
+| Onboarding continuation | Progressive Person completion (passport, banking, bio, etc.) | Member |
+| Invitation management | Person list, invitations, status | Administrator |
 
 Band Portal navigation is **Person-centric** for profile data and **User-centric** only for account/security settings (username change policy TBD; password change when implemented).
 
@@ -290,4 +337,4 @@ Band Portal navigation is **Person-centric** for profile data and **User-centric
 
 ---
 
-End of Information Architecture — PH047A
+End of Information Architecture — PH048A

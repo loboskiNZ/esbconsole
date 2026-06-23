@@ -1,6 +1,6 @@
 # UX Model
 
-Status: PH003 Finalised  
+Status: PH048A Amended (Narrative Onboarding Experience Governance)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical user experience, screen behaviour, and operational workflows for the Live Performance Orchestration System
 
@@ -531,6 +531,267 @@ Canonical screen inventory.
 
 Every screen, workflow, and interaction must be traceable to at least one principle. Conflicts resolve in favour of higher-priority principles (Show First > Musician Guidance > Minimal Cognitive Load > … > Preparation Supports Performance).
 
+**Band Portal exception (PH048A):** Principles 1–8 govern the Live Performance Orchestration System (Director, Local Show Runtime, show day). Band Portal narrative onboarding is a **separate cloud surface** governed by Decisions **178–181** and PH048A below. Band Portal UX serves member initiation and personnel administration — not live show execution.
+
 ---
 
-End of UX Model — PH003
+## PH048A — ESB Band Portal Narrative Onboarding Experience
+
+Authority: Decisions **178–181** (`docs/DECISION_LOG.md` PH048A)
+
+**Scope:** UX and experience design only. No authentication, invitations, database writes, email sending, or session handling in this phase.
+
+### Core UX principle (Decision 178)
+
+The ESB Band Portal onboarding experience is a **guided narrative journey** — not a traditional registration form.
+
+Users arrive via invitation and must feel they are **entering a new world**: welcomed, curious, excited, valued, invited into something special.
+
+| Mandate | Avoid |
+|---------|-------|
+| Artistic, immersive, cinematic, memorable | Generic corporate registration language |
+| Progressive storytelling | Large forms |
+| One field at a time | "Sign up" experiences |
+| Cinematic cards, alpha fades, progressive reveals | Enterprise onboarding patterns |
+
+### Entry point
+
+Users arrive via invitation URL:
+
+```text
+https://band.edandtheshadowboys.com/invite/{token}
+```
+
+The invitation token is part of the onboarding narrative. Token validation and persistence are **out of scope** for PH048A scaffold.
+
+### Chapter structure (Decision 179)
+
+Onboarding is divided into **eight chapters**. Progress feels like moving through a story, not completing forms.
+
+```mermaid
+flowchart TD
+    INV["/invite/{token}"] --> CH1["Ch 1 — Welcome to the Shadows"]
+    CH1 --> CH2["Ch 2 — Claim Your Identity"]
+    CH2 --> CH3["Ch 3 — Your True Name"]
+    CH3 --> CH4["Ch 4 — Choose Your Persona"]
+    CH4 --> CH5["Ch 5 — Choose Your Weapon"]
+    CH5 --> CH6["Ch 6 — Find Your Way Home"]
+    CH6 --> CH7["Ch 7 — The Road Ahead"]
+    CH7 --> CH8["Ch 8 — Enter the Studio"]
+    CH8 --> STUDIO["ESB Studio"]
+    STUDIO --> VERIFY{"Email verified?"}
+    VERIFY -->|Yes| HOME["Member home"]
+    VERIFY -->|No after 24h| BLOCK["Verify Your Email gate"]
+```
+
+### Storyboard overview
+
+```mermaid
+journey
+    title ESB Band Portal Onboarding Journey
+    section Welcome
+      Cinematic intro cards: 5
+      Begin Your Journey: 5: Invitee
+    section Identity
+      Username: 4: Invitee
+      Password: 4: Invitee
+      Human verification: 3: Invitee
+    section Person
+      Legal name: 4: Invitee
+      Stage name: 5: Invitee
+      Instruments: 5: Invitee
+      Contact details: 4: Invitee
+    section Arrival
+      Future tasks explained: 5: Invitee
+      Enter the Studio: 5: Invitee
+```
+
+---
+
+### Chapter 1 — Welcome to the Shadows
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Introduce ESB; explain why the invitee is here and what happens next |
+| **Title** | Welcome to the Shadows |
+| **Tone** | Cinematic cards — slide and fade; not a traditional slideshow |
+
+**Opening message:** The user is present because they have been invited to join Ed and the Shadow Boys. Explain why they are here, what will happen, what information will be requested, and why.
+
+| Card | Headline | Message |
+|------|----------|---------|
+| 1 | Create Your Identity | You will create the credentials used to access the ESB Studio. |
+| 2 | Tell Us Who You Are | We collect legal identity information required for travel, accommodation, touring and administration. |
+| 3 | Choose Your Persona | Tell us what the world should call you. |
+| 4 | Choose Your Weapon | Tell us what instrument you play. |
+| 5 | Enter the Studio | Once complete, you will gain access to the ESB Studio. |
+
+**Final action:** `Begin Your Journey`
+
+---
+
+### Chapter 2 — Claim Your Identity
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Create authentication credentials (User entity — PH047) |
+| **Pattern** | One field at a time; each fades in after previous completion |
+| **Security** | Honeypot field; human verification; progressive appearance |
+
+**Sequence:**
+
+```text
+Username → Password → Confirm Password → Human Verification
+```
+
+| Field | Rules (Decision 176 / 177) |
+|-------|---------------------------|
+| Username | 3–32 chars; letters and numbers only; no symbols or spaces; case-insensitive; stored lowercase |
+| Password | 8–50 chars; uppercase + lowercase + number + symbol required |
+| Confirm Password | Must match password |
+
+No full form visible at once.
+
+---
+
+### Chapter 3 — Your True Name
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Capture legal travel identity (Person entity — PH045) |
+| **Explanation** | Used exactly as it appears on travel documentation — required for flights, accommodation, touring logistics, official administration |
+
+**Sequence:** `First Name` → `Middle Name` → `Surname`
+
+Multiple middle names may be entered together in the middle name field. One field at a time.
+
+---
+
+### Chapter 4 — Choose Your Persona
+
+| Attribute | Value |
+|-----------|-------|
+| **Title** | What Should the World Call You? |
+| **Purpose** | Capture stage identity (Person artistic/stage name) |
+| **Explanation** | Some members use their own name; some use something entirely different. The choice is theirs. |
+| **Field** | Stage Name — single focus |
+
+---
+
+### Chapter 5 — Choose Your Weapon
+
+| Attribute | Value |
+|-----------|-------|
+| **Title** | Choose Your Weapon |
+| **Purpose** | Capture musical identity |
+| **Explanation** | Every member contributes something unique. Tell us what instrument you play. |
+| **Data** | Canonical `instrument_reference` / `person_instruments` many-to-many (PH045) |
+| **UX** | Expressive selection — avoid generic enterprise dropdown where possible |
+
+---
+
+### Chapter 6 — Find Your Way Home
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Capture communication details (Person contact fields) |
+
+**Sequence:** `Email Address` → `Telephone Number` → `City` → `Country`
+
+One field at a time. Progressive reveal.
+
+---
+
+### Chapter 7 — The Road Ahead
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Set expectations — reassuring, not administrative |
+| **Tone** | Onboarding is not fully complete today |
+
+**Future profile tasks (not required today):**
+
+- Passport information
+- Bank account details
+- Artist image
+- Biography
+- Additional touring information
+
+These will be required before touring and operational activities.
+
+---
+
+### Chapter 8 — Enter the Studio
+
+| Attribute | Value |
+|-----------|-------|
+| **Title** | Enter the Studio |
+| **Purpose** | Reward and destination (Decision 180) |
+
+The user gains access to **ESB Studio** — the post-onboarding member home, future login destination, and primary authenticated portal landing page.
+
+---
+
+### ESB Studio (Decision 180)
+
+| Role | Statement |
+|------|-----------|
+| **Onboarding destination** | Chapter 8 arrival surface |
+| **Member home** | Primary authenticated landing after onboarding |
+| **Future login destination** | Returning members authenticate to Studio (not re-onboard) |
+| **Primary portal landing** | Replaces generic "dashboard" framing |
+
+ESB Studio is a **UX destination** — not a separate domain entity. It surfaces Person-linked member content and progressive profile completion.
+
+---
+
+### Email verification (Decision 181)
+
+| Attribute | Value |
+|-----------|-------|
+| **Sender** | `bookings@edandtheshadowboys.com` (behind the scenes) |
+| **Trigger** | After Chapter 6 email capture (implementation phase) |
+| **Pending status** | Email Pending Verification |
+
+**Gate rule:** If verification remains incomplete **after 24 hours**, the user may authenticate but **may not access ESB Studio**. Instead show **Verify Your Email** with resend verification, instructions, and support guidance.
+
+Verification must occur before Studio access is granted.
+
+Email remains a **contact identifier on Person** (PH047) — not a login identifier. Verification governs **Studio access**, not authentication identity.
+
+---
+
+### Invitation management (planned — not PH048A)
+
+Administrator invitation interface is part of the onboarding ecosystem (implementation later).
+
+| Status | Meaning |
+|--------|---------|
+| Draft | Created, not yet sent |
+| Sent | Delivered to invitee |
+| Accepted | Onboarding completed / User created |
+| Expired | Past expiry date |
+| Revoked | Administrator cancelled |
+
+Tracked fields: `person_id`, expiry, `accepted_at`, `created_by`, status.
+
+---
+
+### PH048A out of scope
+
+| Not in PH048A |
+|---------------|
+| Authentication implementation |
+| User creation |
+| Invitation validation |
+| Database writes |
+| Password storage |
+| Email sending |
+| Session handling |
+| Profile persistence |
+
+PH048A establishes the **experience scaffold** only. Implementation follows in later phases (PH048+).
+
+---
+
+End of UX Model — PH048A
