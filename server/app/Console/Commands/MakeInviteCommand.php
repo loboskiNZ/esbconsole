@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Models\InviteLink;
+use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
+
+class MakeInviteCommand extends Command
+{
+    protected $signature = 'esb:make-invite {name} {--days=30 : Number of days until the invite expires}';
+
+    protected $description = 'Create a shared invite link for Chapter 1 onboarding';
+
+    public function handle(): int
+    {
+        $token = bin2hex(random_bytes(32));
+        $expiresAt = Carbon::now()->addDays((int) $this->option('days'));
+
+        InviteLink::create([
+            'name' => $this->argument('name'),
+            'token_hash' => InviteLink::hashToken($token),
+            'expires_at' => $expiresAt,
+        ]);
+
+        $url = rtrim((string) config('app.url'), '/').'/invite/'.$token;
+
+        $this->line('Invite link created:');
+        $this->line('');
+        $this->line($url);
+        $this->line('');
+        $this->line('Expires:');
+        $this->line($expiresAt->format('Y-m-d H:i'));
+
+        return self::SUCCESS;
+    }
+}

@@ -5,15 +5,20 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Tests\Concerns\CreatesInviteLinks;
 use Tests\TestCase;
 
 class PortalOnboardingTest extends TestCase
 {
+    use CreatesInviteLinks;
     use RefreshDatabase;
 
-    public function test_invite_route_loads_for_scaffold_token(): void
+    public function test_invite_route_loads_for_valid_token(): void
     {
-        $response = $this->get('/invite/test-token');
+        $token = $this->createInviteLinkToken();
+
+        $response = $this->get('/invite/'.$token);
 
         $response->assertOk();
         $response->assertSee('Someone believes you belong here', false);
@@ -34,16 +39,26 @@ class PortalOnboardingTest extends TestCase
 
     public function test_invite_route_does_not_create_database_records(): void
     {
+        $token = $this->createInviteLinkToken();
+
         $tables = ['users', 'sessions', 'cache', 'jobs'];
 
         foreach ($tables as $table) {
             $this->assertSame(0, DB::table($table)->count(), "Expected zero rows in {$table} before request.");
         }
 
-        $this->get('/invite/test-token')->assertOk();
+        $inviteCountBefore = DB::table('invite_links')->count();
+
+        $this->get('/invite/'.$token)->assertOk();
 
         foreach ($tables as $table) {
             $this->assertSame(0, DB::table($table)->count(), "Expected zero rows in {$table} after invite scaffold request.");
+        }
+
+        $this->assertSame($inviteCountBefore, DB::table('invite_links')->count());
+
+        if (Schema::hasTable('people')) {
+            $this->assertSame(0, DB::table('people')->count());
         }
     }
 
@@ -58,7 +73,9 @@ class PortalOnboardingTest extends TestCase
 
     public function test_onboarding_scaffold_includes_journey_steps_and_validation_copy(): void
     {
-        $response = $this->get('/invite/test-token');
+        $token = $this->createInviteLinkToken();
+
+        $response = $this->get('/invite/'.$token);
 
         $response->assertSee('Claim Your Identity', false);
         $response->assertSee('Your True Name', false);
@@ -74,7 +91,9 @@ class PortalOnboardingTest extends TestCase
 
     public function test_onboarding_scaffold_includes_back_navigation_and_weapon_refinements(): void
     {
-        $response = $this->get('/invite/test-token');
+        $token = $this->createInviteLinkToken();
+
+        $response = $this->get('/invite/'.$token);
 
         $response->assertSee('goBack()', false);
         $response->assertSee('canGoBack', false);
@@ -91,7 +110,9 @@ class PortalOnboardingTest extends TestCase
 
     public function test_onboarding_scaffold_includes_country_typeahead_and_background_rotation(): void
     {
-        $response = $this->get('/invite/test-token');
+        $token = $this->createInviteLinkToken();
+
+        $response = $this->get('/invite/'.$token);
 
         $response->assertSee('selectCountry', false);
         $response->assertSee('countryQuery', false);
