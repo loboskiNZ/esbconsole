@@ -69,7 +69,8 @@ PH009 implementation **must follow** this document.
 
 | Layer | Technology | Status |
 |-------|------------|--------|
-| **Backend** | Laravel 11+ | Planned PH009 |
+| **PHP** | **8.4** | Project runtime baseline (`/backend`, `/server`) |
+| **Backend** | Laravel 13+ | PH009 implemented in `/backend` |
 | **Database** | PostgreSQL 16+ | Planned PH009 |
 | **Cache / queue** | **Valkey 7+** (Redis-compatible) | Planned PH009 |
 | **Realtime** | Laravel Reverb / WebSockets | Planned post-foundation; **not PH009** |

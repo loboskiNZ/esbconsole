@@ -20,7 +20,7 @@ Repository layout:
 | **Project type** | Laravel |
 | **Web directory** | `/server/public` |
 | **Repository root** | Monorepo root (clone full `esbconsole` repo) |
-| **PHP version** | **8.4** (match `server/composer.json`: `^8.4`) |
+| **PHP version** | **8.4** (project runtime baseline; match `composer.json` `^8.4` in `/server` and `/backend`) |
 | **Laravel version** | **13.x** (match `laravel/framework`: `^13.8`) |
 
 ### Why `/server/public`

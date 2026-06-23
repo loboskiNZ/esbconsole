@@ -12,7 +12,7 @@ This directory is the **Band Portal** in the monorepo:
 
 | Component | Version |
 |-----------|---------|
-| PHP | `^8.4` (Forge); `/backend` remains `^8.3` local foundation baseline |
+| PHP | `^8.4` (project runtime baseline; Forge and local Laravel apps) |
 | Laravel | `^13.8` |
 
 Minimum production dependencies: `laravel/framework`, `laravel/tinker` only.

@@ -372,7 +372,8 @@ First implementable slice and stack baseline are defined in `docs/FOUNDATION_IMP
 
 | Component | Choice |
 |-----------|--------|
-| Backend | Laravel 11+ |
+| PHP | **8.4** (Forge, local dev, `/backend`, `/server`) |
+| Backend | Laravel 13+ |
 | Database | PostgreSQL 16+ |
 | Cache/queue | Valkey 7+ (Redis-compatible) |
 | Local dev | Docker Compose (app, postgres, valkey) |

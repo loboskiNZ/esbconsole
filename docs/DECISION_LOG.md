@@ -244,6 +244,14 @@
 | 158 | `instrument_reference` is **not band-scoped** in current implementation; `people` is band-scoped. | Global personnel instrument catalog; band scoping on Person records. |
 | 159 | Person Files use `file_path` metadata in M3a; full Spaces bucket/key alignment with `file_assets` governance is follow-up. | Initial schema stores managed path reference; canonical object storage integration deferred. |
 
+## PH046 — PHP 8.4 Runtime Baseline
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 160 | Project PHP runtime baseline is **8.4** for `/backend` (local foundation) and `/server` (Forge Band Portal). Composer constraints use `^8.4` with platform `8.4.0`. | Unified deploy and dev target; Forge PHP 8.4; avoids documenting or requiring PHP 8.5. |
+| 161 | Laravel **13.8+** remains the framework baseline on PHP 8.4 for both Laravel apps. | No framework drift between local and cloud apps. |
+| 162 | `/client/` has no Composer PHP constraint; Node 20 runtime is unchanged. | Client is not a PHP application. |
+
 ---
 
-End of Decision Log — PH045
+End of Decision Log — PH046

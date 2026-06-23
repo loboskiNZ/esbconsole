@@ -4,7 +4,7 @@ Parallel Laravel foundation slice for the Live Performance Orchestration System.
 
 ## Prerequisites
 
-- PHP 8.2+
+- PHP 8.4+
 - Composer
 - Docker (for PostgreSQL 16 + Valkey 7)
 
