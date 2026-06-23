@@ -267,6 +267,125 @@ class PortalStudioChartsTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_alto_sax_musician_sees_alto_sax_songs_in_charts_index(): void
+    {
+        $user = User::factory()->create();
+        $altoSaxRef = InstrumentReference::query()->where('slug', 'scaffold-alto-sax')->firstOrFail();
+        $user->person->instruments()->attach($altoSaxRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithCharts(
+            name: 'Moondance',
+            chartSetups: [
+                ['part' => 'Alto Sax', 'title' => 'Moondance Alto Sax'],
+                ['part' => 'Tenor Sax', 'title' => 'Moondance Tenor Sax'],
+                ['part' => 'Trumpet', 'title' => 'Moondance Trumpet'],
+            ],
+        );
+
+        $this->actingAs($user)->get('/studio/charts')
+            ->assertOk()
+            ->assertSee('Moondance', false)
+            ->assertSee('1 chart', false)
+            ->assertDontSee('Moondance Tenor Sax', false)
+            ->assertDontSee('Moondance Trumpet', false)
+            ->assertSee(route('studio.charts.show', $song), false)
+            ->assertDontSee('Readiness score', false)
+            ->assertDontSee('completion', false);
+    }
+
+    public function test_alto_sax_musician_sees_alto_sax_chart_on_song_detail(): void
+    {
+        $user = User::factory()->create();
+        $altoSaxRef = InstrumentReference::query()->where('slug', 'scaffold-alto-sax')->firstOrFail();
+        $user->person->instruments()->attach($altoSaxRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithCharts(
+            name: 'Take Five',
+            chartSetups: [
+                ['part' => 'Alto Sax', 'title' => 'Take Five Alto'],
+                ['part' => 'Guitar', 'title' => 'Take Five Guitar'],
+                ['part' => 'Bass', 'title' => 'Take Five Bass'],
+                ['part' => 'Drums', 'title' => 'Take Five Drums'],
+            ],
+        );
+
+        $this->actingAs($user)->get(route('studio.charts.show', $song))
+            ->assertOk()
+            ->assertSee('My Charts', false)
+            ->assertSee('Take Five Alto', false)
+            ->assertSee('Alto Sax', false)
+            ->assertDontSee('Take Five Guitar', false)
+            ->assertDontSee('Take Five Bass', false)
+            ->assertDontSee('Take Five Drums', false);
+    }
+
+    public function test_alto_sax_musician_can_download_alto_sax_chart(): void
+    {
+        $user = User::factory()->create();
+        $altoSaxRef = InstrumentReference::query()->where('slug', 'scaffold-alto-sax')->firstOrFail();
+        $user->person->instruments()->attach($altoSaxRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithCharts(
+            name: 'Alto Feature',
+            chartSetups: [
+                ['part' => 'Alto Sax', 'title' => 'Alto Feature Chart', 'filename' => 'alto_sax.pdf'],
+            ],
+        );
+
+        $chart = Chart::query()->where('song_id', $song->id)->firstOrFail();
+        Storage::disk('library')->put($chart->storage_reference, '%PDF-1.4 alto sax chart');
+
+        $this->actingAs($user)->get(route('studio.charts.file', $chart))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_alto_sax_musician_cannot_download_other_instrument_charts(): void
+    {
+        $user = User::factory()->create();
+        $altoSaxRef = InstrumentReference::query()->where('slug', 'scaffold-alto-sax')->firstOrFail();
+        $user->person->instruments()->attach($altoSaxRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithCharts(
+            name: 'Mixed Brass',
+            chartSetups: [
+                ['part' => 'Tenor Sax', 'title' => 'Tenor Only'],
+                ['part' => 'Trumpet', 'title' => 'Trumpet Only'],
+                ['part' => 'Guitar', 'title' => 'Guitar Only'],
+            ],
+        );
+
+        foreach (Chart::query()->where('song_id', $song->id)->get() as $chart) {
+            Storage::disk('library')->put($chart->storage_reference, '%PDF-1.4 blocked');
+            $this->actingAs($user)->get(route('studio.charts.file', $chart))->assertForbidden();
+        }
+    }
+
+    public function test_alto_sax_musician_matches_eb_variant_catalog_part_name(): void
+    {
+        $user = User::factory()->create();
+        $altoSaxRef = InstrumentReference::query()->where('slug', 'scaffold-alto-sax')->firstOrFail();
+        $user->person->instruments()->attach($altoSaxRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithCharts(
+            name: 'Eb Alto Song',
+            chartSetups: [
+                ['part' => 'Alto Sax in Eb', 'title' => 'Eb Alto Chart'],
+                ['part' => 'Tenor Sax', 'title' => 'Tenor Chart'],
+            ],
+        );
+
+        $this->actingAs($user)->get('/studio/charts')
+            ->assertOk()
+            ->assertSee('Eb Alto Song', false)
+            ->assertSee('1 chart', false);
+
+        $this->actingAs($user)->get(route('studio.charts.show', $song))
+            ->assertOk()
+            ->assertSee('Eb Alto Chart', false)
+            ->assertDontSee('Tenor Chart', false);
+    }
+
     /**
      * @param  list<array{part: string, title: string, filename?: string}>  $chartSetups
      */
