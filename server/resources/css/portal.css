@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+:root {
+    --esb-ink: #fff7ea;
+    --esb-muted: #e9cba0;
+    --esb-gold: #ffb23e;
+    --esb-night: #090506;
+    --esb-wine: #43101f;
+    --esb-line: rgba(255, 247, 234, 0.18);
+    --esb-panel: rgba(255, 247, 234, 0.08);
+}
+
+.esb-portal {
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--esb-ink);
+}
+
+.esb-portal--desktop {
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.esb-portal__background-image {
+    object-fit: cover;
+    object-position: center 35%;
+}
+
+.esb-portal__overlay {
+    background:
+        radial-gradient(circle at top left, rgba(228, 91, 38, 0.28), transparent 34rem),
+        radial-gradient(circle at 82% 12%, rgba(255, 178, 62, 0.12), transparent 28rem),
+        linear-gradient(140deg, rgba(9, 5, 6, 0.72), rgba(67, 16, 31, 0.82) 58%, rgba(19, 5, 8, 0.88));
+    transition: opacity 1.2s ease;
+}
+
+.esb-portal__logo,
+.esb-portal-logo {
+    width: min(60vmin, 42rem);
+    height: min(60vmin, 42rem);
+    opacity: 0.14;
+    animation: esb-logo-rotate 600s linear infinite;
+    transition: opacity 1.6s ease;
+}
+
+.esb-portal__welcome {
+    transition:
+        opacity 1.4s ease,
+        transform 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.esb-portal__welcome--settled {
+    transform: translateY(-12vh);
+}
+
+.esb-portal__eyebrow {
+    color: var(--esb-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.esb-portal__title {
+    font-size: clamp(1.35rem, 3.2vw, 2.1rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    text-align: center;
+    text-wrap: balance;
+}
+
+.esb-portal__panel {
+    background: var(--esb-panel);
+    border: 1px solid var(--esb-line);
+    backdrop-filter: blur(18px);
+}
+
+.esb-portal__label {
+    color: var(--esb-muted);
+    font-size: 1.05rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.esb-portal__input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid var(--esb-line);
+    background: rgba(9, 5, 6, 0.55);
+    color: var(--esb-ink);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.esb-portal__input::placeholder {
+    color: rgba(233, 203, 160, 0.55);
+}
+
+.esb-portal__input:focus {
+    border-color: rgba(255, 178, 62, 0.65);
+    box-shadow: 0 0 0 3px rgba(255, 178, 62, 0.15);
+}
+
+.esb-portal__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 3rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: 999px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.esb-portal__button--primary {
+    background: var(--esb-gold);
+    color: #1b0900;
+}
+
+.esb-portal__button--primary:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.esb-portal__link {
+    color: var(--esb-muted);
+    font-size: 0.92rem;
+    text-decoration: none;
+    border-bottom: 1px solid var(--esb-line);
+    transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.esb-portal__link:hover {
+    color: var(--esb-gold);
+    border-color: rgba(255, 178, 62, 0.45);
+}
+
+.esb-portal-fade-enter {
+    transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.esb-portal-fade-enter-start {
+    opacity: 0;
+    transform: translateY(0.75rem);
+}
+
+.esb-portal-fade-enter-end {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@keyframes esb-logo-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .esb-portal__logo,
+    .esb-portal-logo {
+        animation: none !important;
+    }
+
+    .esb-portal__welcome,
+    .esb-portal__overlay,
+    .esb-portal-fade-enter {
+        transition: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .esb-portal--desktop {
+        min-height: 100dvh;
+        height: auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .esb-portal__welcome--settled {
+        transform: translateY(-4vh);
+    }
+
+    .esb-portal__logo {
+        width: min(72vmin, 24rem);
+        height: min(72vmin, 24rem);
+    }
+}
