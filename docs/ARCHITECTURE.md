@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH048A Amended (Narrative Onboarding Experience Governance)  
+Status: PH054 Amended (Cloud Studio ↔ Live Stage Synchronisation Model)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -98,6 +98,66 @@ Offline-capable live performance execution environment.
 - Operates with no internet connectivity
 
 **Role:** Execute the show. Authoritative during performance.
+
+## Cloud Studio and Live Stage Architecture
+
+Formal decision record: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`  
+Decision summary: `docs/DECISION_LOG.md` PH054 / Decision 182
+
+The platform operates two peer authoring environments for song-related assets. These names are mandatory in new documentation and implementation.
+
+### Cloud Studio
+
+| Attribute | Detail |
+|-----------|--------|
+| **Definition** | Server-hosted environment |
+| **Primary surfaces** | Musician portal (Band Portal / ESB Studio), director and authorised user management |
+| **Hosting** | Cloud (Forge / managed PostgreSQL / Spaces) |
+| **Role** | Collaboration, distribution, musician access to songs, charts, and performance preparation materials |
+| **Connectivity** | Normally online |
+| **Authoring** | May create and edit songs, metadata, charts, briefs, and related assets — subject to checkout rules |
+
+Cloud Studio is **not** permanent overwrite authority for song assets.
+
+### Live Stage
+
+| Attribute | Detail |
+|-----------|--------|
+| **Definition** | Local performance environment |
+| **Primary surfaces** | Director Local preparation host; Local Show Runtime for rehearsal and performance |
+| **Hosting** | Local machine / Docker stack |
+| **Role** | Rehearsal and performance system (X32, Ableton, Live Show View, Soundcheck) |
+| **Connectivity** | Offline-capable — assume ~50% of the time without internet |
+| **Authoring** | May create and edit songs, metadata, charts, briefs, and related assets — subject to checkout rules |
+
+Live Stage is **not** permanent overwrite authority for song assets.
+
+### Synchronisation Model
+
+Song asset synchronisation between Cloud Studio and Live Stage follows ADR-001:
+
+| Rule | Requirement |
+|------|-------------|
+| **Initiation** | Live Stage initiates synchronisation |
+| **Checkout** | Required before edit; records environment, user, timestamp, version |
+| **Offline edits** | Pending local changes with base version, local version, changed fields/assets, origin |
+| **Version comparison** | Base version, current Cloud Studio version, current Live Stage version |
+| **Diff** | Required before merge |
+| **Conflict resolution** | Operator-controlled; field-level where practical; **no last-write-wins** |
+| **Silent overwrite** | Prohibited while another environment holds checkout or has diverged versions |
+
+### Responsibilities Summary
+
+| Concern | Cloud Studio | Live Stage |
+|---------|--------------|------------|
+| Musician portal access | ✅ primary | read via sync |
+| Rehearsal / performance execution | not in path | ✅ primary |
+| Song / chart / metadata authoring | ✅ peer | ✅ peer |
+| Offline operation | not required | ✅ required |
+| Sync initiation | receives / responds | ✅ initiates |
+| Runtime timeline (performance) | not involved | Ableton authoritative |
+
+This section governs **song asset authoring and synchronisation** only. Runtime performance authority (Ableton timeline, Local Show Runtime execution during live performance) is unchanged — see Runtime Authority Model above and `docs/RUNTIME_MODEL.md`.
 
 ## Environment Flow
 
@@ -455,6 +515,18 @@ Chapter-to-entity mapping:
 
 Full storyboard: `docs/UX_MODEL.md` PH048A. Route map: `docs/INFORMATION_ARCHITECTURE.md`.
 
+### ESB Studio facilitation policy (PH049)
+
+| Attribute | Value |
+|-----------|-------|
+| **Role** | Facilitation and preparation platform (Decision 178A) |
+| **Permitted** | Factual presentation — assignments, charts, notes, plans, rehearsal materials, performances, admin requirements, messages/activity |
+| **Prohibited** | Scoring, ranking, grading, or inferring musician/performance/rehearsal readiness, quality, engagement, productivity, or participation |
+| **Judgement** | Readiness interpretation remains human — musical director, band leadership, rehearsal process, professional judgement |
+| **PH049 scope** | Governance only — no Studio feature implementation in this phase |
+
+Full UX rules: `docs/UX_MODEL.md` PH049. Decision record: `docs/DECISION_LOG.md` PH049.
+
 ### Band Portal deployment policy (PH047)
 
 | Rule | Statement |
@@ -486,4 +558,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH048A
+End of Architecture — PH049

@@ -353,4 +353,92 @@ PH048A establishes the **experience scaffold** only.
 
 ---
 
-End of Decision Log — PH048A
+## PH049 — ESB Studio Musician Evaluation Prohibition
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 178A | **Musician Evaluation Prohibition:** The ESB Studio is a facilitation and preparation platform. The Studio shall not calculate, display, infer, score, rank, evaluate, grade, review, or estimate: musician readiness; performance readiness; rehearsal readiness; musician quality; musician engagement; musician productivity; musician participation scores; practice scores; performance ratings; or league tables / rankings. The Studio may present factual information including: songs assigned to a performance; charts available; charts updated; notes added; running plans; rehearsal materials; upcoming performances; administrative requirements; and messages and activity. Interpretation of whether a musician is ready for rehearsal or performance is exclusively a human responsibility — musical director, band leadership, rehearsal process, and professional judgement. The platform exists to facilitate preparation, collaboration, communication, and access to resources. The platform shall not attempt to measure artistic capability, artistic readiness, or artistic performance. | Prevents gamification, surveillance, or algorithmic judgement of musicians in the Band Portal; preserves human artistic authority in rehearsal and performance decisions. |
+
+### PH049 — Prohibited in ESB Studio
+
+| Category | Prohibited |
+|----------|------------|
+| Readiness inference | Musician, performance, or rehearsal readiness scores or indicators |
+| Quality judgement | Musician quality, engagement, or productivity ratings |
+| Participation metrics | Participation scores, practice scores, performance ratings |
+| Comparative ranking | League tables, leaderboards, rankings |
+
+### PH049 — Permitted factual presentation
+
+| Category | Examples |
+|----------|----------|
+| Assignment facts | Songs assigned to a performance |
+| Chart facts | Charts available; charts updated |
+| Collaboration | Notes added; messages and activity |
+| Planning | Running plans; rehearsal materials |
+| Calendar | Upcoming performances |
+| Administration | Administrative requirements |
+
+### PH049 — Human interpretation boundary
+
+Whether a musician is ready for rehearsal or performance is determined by musical director, band leadership, rehearsal process, and professional judgement — not by ESB Studio.
+
+### PH049 — Validation (no conflicts)
+
+| Prior | PH049 position |
+|-------|-----------------|
+| **Decision 180** ESB Studio destination | Reinforced — Studio is a facilitation and preparation surface, not an evaluation engine |
+| **Decisions 035, 047, 048** collaborative Readiness | No conflict — Soundcheck/Readiness is a collaborative, human-gated process on the Performance execution layer (Director/Soundcheck), not automated musician scoring in ESB Studio |
+| **Decisions 021, 022** Readiness gate | No conflict — operational Performance readiness ≠ Studio musician evaluation |
+| **Charter** Live Show View Priority #1 | No conflict — ESB Studio is Band Portal cloud surface; Live Show View remains separate |
+| **PH048A** narrative onboarding | No conflict — onboarding captures identity; Studio presents factual preparation content only |
+
+---
+
+End of Decision Log — PH049
+
+---
+
+## PH054 — Cloud Studio ↔ Live Stage Synchronisation Model
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 182 | **Cloud Studio and Live Stage are peer authoring environments.** Song, chart, metadata, brief, and related asset edits require checkout before modification. Synchronisation is version-aware (base version, current cloud version, current Live Stage version), initiated by Live Stage, produces diffs, and resolves conflicts through operator decision — no last-write-wins. Live Stage must operate offline (~50% connectivity assumption); no critical rehearsal or performance workflow may depend on cloud connectivity. Neither environment is permanent overwrite authority. | Prevents silent overwrites between cloud and local authoring; preserves offline-first rehearsal and performance while enabling safe bidirectional song management. |
+
+### PH054 — Key principles
+
+| Principle | Requirement |
+|-----------|-------------|
+| **Offline-capable Live Stage** | Live Stage operates without internet; connectivity not guaranteed during rehearsal or performance |
+| **Explicit synchronisation** | Sync is a deliberate operator-initiated process — not background silent merge |
+| **Checkout-aware editing** | Songs and related assets must be checked out before edit; checkout records environment, user, timestamp, version |
+| **Version-based conflict detection** | Compare base, cloud, and Live Stage versions — timestamp alone is insufficient |
+| **Operator-controlled conflict resolution** | Diff presented; operator chooses resolution; field-level review where practical |
+| **No last-write-wins** | Automatic overwrite of concurrent edits is prohibited |
+
+### PH054 — Terminology
+
+| Term | Definition |
+|------|------------|
+| **Cloud Studio** | Server environment — musician portal, cloud-hosted collaboration, song/chart/performance management |
+| **Live Stage** | Local performance environment — rehearsal/performance runtime, offline-capable |
+
+Use these terms consistently. Do not introduce alternative environment names.
+
+### PH054 — Formal ADR
+
+Full decision record: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`
+
+### PH054 — Validation (no conflicts)
+
+| Prior | PH054 position |
+|-------|----------------|
+| **Decisions 022, 051, 053** (cloud canonical) | Amended for **song asset authoring** — peer checkout/version model; publish and sync-before-show for operational deployment unchanged |
+| **Decision 178A** (musician evaluation prohibition) | No conflict — sync/conflict review is operator preparation workflow, not musician scoring |
+| **Charter** offline / show must go on | Reinforced — Live Stage offline-first |
+| **Ableton runtime authority** | No conflict — timeline authority unchanged |
+| **PH053 song metadata** | Compatible — metadata fields subject to checkout/version sync when implemented |
+
+---
+
+End of Decision Log — PH054

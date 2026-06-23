@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH010.01 Amended (Song/Cue Identity Governance)
+Status: PH054 Amended (Cloud Studio ↔ Live Stage Synchronisation Model)
 
 ## Authority Order
 
@@ -41,6 +41,27 @@ The platform coordinates:
 - Monitoring
 - Soundcheck
 - Performance execution
+
+## Environment Terminology (PH054)
+
+Use these names consistently in documentation and implementation:
+
+| Term | Meaning |
+|------|---------|
+| **Cloud Studio** | Server environment — musician portal, cloud-hosted collaboration, song/chart/performance management (`/server/`, Forge-hosted) |
+| **Live Stage** | Local performance environment — rehearsal and performance runtime, offline-capable (`/backend/`, Local Show Runtime) |
+
+Do **not** introduce alternative terms for these environments.
+
+Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`
+
+### Synchronisation warnings (PH054)
+
+When designing or implementing song-management features:
+
+- **Do not assume Cloud Studio is overwrite authority.** Cloud Studio and Live Stage are peer authoring environments.
+- **Do not assume permanent connectivity.** Live Stage may be offline ~50% of the time; no critical rehearsal or performance workflow may depend on cloud access.
+- **Do not design synchronisation using last-write-wins.** Require checkout, version comparison, diff generation, and operator-controlled conflict resolution.
 
 ## Non-Negotiable Rules
 
