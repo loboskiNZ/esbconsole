@@ -1,6 +1,6 @@
 # Data Architecture & Persistence Model
 
-Status: PH007 Finalised  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical data ownership, persistence authority, sync boundaries, and lifecycle rules before database schema design
 
@@ -48,6 +48,9 @@ Goals:
 | 9 | **Files are managed assets.** Metadata + object references — not ad hoc local-only paths. |
 | 10 | **Runtime cue state is local/live.** Cloud does not control or store live cue progression. |
 | 11 | **Production assets are not Git assets.** `/resources/`, `/songs/`, `/charts/`, and `/uploads/` are managed production/runtime folders — not version-controlled in Git. |
+| 12 | **Band People is one shared schema.** Person domain tables are canonical for local app and website — no duplicate local-only or website-only personnel structures. |
+| 13 | **Sensitive personnel data is encrypted at rest.** Bank account, passport number, and Air New Zealand points use Person Secure Fields — not plain-text columns. |
+| 14 | **Production documents are generated artifacts.** Stage plots, tech riders, input lists, monitor plans, and festival packs derive from canonical data; they are outputs, not parallel master personnel schemas. |
 
 ---
 
@@ -92,7 +95,13 @@ For each entity: canonical owner, primary edit environment, cloud presence, loca
 |--------|-----------------|--------------------------|----------------|------------------------|----------------|-------|
 | **Band** | Cloud (published) | Director Local / Administrator | Yes | Yes (cached) | Director → Cloud → Runtime | Top-level scope; rarely changes |
 | **User** | Cloud | Cloud / Administrator | Yes | Auth cache only | Cloud → all clients | Auth identity; not a Musician |
-| **Musician** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Global person record |
+| **Musician** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Operational roster entity |
+| **Person** | Cloud (published) | Director Local / Website | Yes | Yes (cached) | Director → Cloud → Runtime | Band People / production personnel; shared schema |
+| **Person Secure Field** | Cloud (published) | Director Local / Website | Yes | Yes (cached) | Director → Cloud → Runtime | Encrypted at rest; not plain text |
+| **Person File** | Cloud (published) | Director Local / Website | Yes | Yes (cached) | Director → Cloud → Runtime | Private by default; managed storage |
+| **Instrument Reference** | Cloud (published) | Director Local / Website | Yes | Yes (cached) | Director → Cloud → Runtime | Personnel instrument catalog |
+| **Person Instrument** | Cloud (published) | Director Local / Website | Yes | Yes (cached) | Director → Cloud → Runtime | Person ↔ Instrument Reference |
+| **Person IEM Setting** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Preference template only |
 | **Device** | Cloud (published) | Director Local / Musician (self) | Yes | Yes (cached) | Bidirectional (musician self-service permitted) | Belongs to Musician |
 | **Instrument Part** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Global role catalog |
 | **Capability** | Cloud (published) | Director Local | Yes | Yes (cached) | Director → Cloud → Runtime | Musician eligibility |
@@ -125,6 +134,12 @@ For each entity: canonical owner, primary edit environment, cloud presence, loca
 | Band | Cloud-canonical |
 | User | Cloud-canonical |
 | Musician | Cloud-canonical |
+| Person | Cloud-canonical |
+| Person Secure Field | Cloud-canonical |
+| Person File | Cloud-canonical |
+| Instrument Reference | Cloud-canonical |
+| Person Instrument | Cloud-canonical |
+| Person IEM Setting | Cloud-canonical |
 | Device | Hybrid with explicit sync rules |
 | Instrument Part | Cloud-canonical |
 | Capability | Cloud-canonical |
@@ -345,18 +360,29 @@ Logical schema for file persistence: `docs/DATABASE_ARCHITECTURE.md` §12.
 
 **Laravel authentication** is approved for user identity and session management.
 
-### User vs Musician
+### User vs Musician vs Person
 
 | Concept | Definition |
 |---------|------------|
 | **User** | Authentication identity — login credentials, roles, permissions. |
-| **Musician** | Domain entity — performance person, global asset. |
+| **Musician** | Operational domain entity — performance roster, Devices, Capabilities, Assignments. |
+| **Person** | Production personnel profile — legal identity, travel, documents, onboarding, IEM templates. |
 
-Users and Musicians are **related but not identical**:
+Users, Musicians, and Persons are **related but distinct**:
 
 - A Musician may have a linked User account (for device login).
+- A Person record holds Band People / production personnel data shared with website workflows.
+- **Musician ↔ Person mapping is not yet implemented** — follow-up phase.
 - Not every User is a Musician (Director, Tech, Administrator).
 - Not every Musician requires a User (guest/sub — policy decision at implementation).
+
+### Person data security
+
+| Rule | Statement |
+|------|-----------|
+| **Encrypted fields** | Bank account, passport number, Air New Zealand points stored in Person Secure Fields only — encrypted at rest. |
+| **Private files** | Person Files default to non-public; passport photos and travel documents require access control. |
+| **IEM templates** | Person IEM Settings are preference templates — not authoritative live console bus settings. |
 
 ### Role Permissions
 

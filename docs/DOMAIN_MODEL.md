@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH027 Amended (Snippet Domain Reconciliation)  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -9,6 +9,7 @@ Purpose: Canonical entity definitions for the Live Performance Orchestration Sys
 ```
 Band
 ├── Musicians
+├── People (Production Personnel)
 ├── Devices
 ├── Instrument Parts
 ├── Songs
@@ -37,7 +38,7 @@ Band
 
 | Layer | Entities |
 |-------|----------|
-| Master Library (global, reusable) | Band, Musician, Device, Instrument Part, Capability, Song, SongInstrumentPart, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
+| Master Library (global, reusable) | Band, Musician, Person, Device, Instrument Part, Instrument Reference, Capability, Song, SongInstrumentPart, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
 | Operational (show execution) | Show, Performance, Soundcheck, Readiness, Assignment, Local Runtime, Sync State, Ableton Protocol State |
 
 Shows reference master assets. Assets are not duplicated per Show.
@@ -75,6 +76,166 @@ Example: Ed and the Shadow Boys.
 
 ---
 
+## Person (Production Personnel)
+
+### Definition
+
+A band-scoped production personnel record holding legal identity, contact, location, dietary, onboarding documents, instrument preferences, and IEM preference templates. Supports travel, onboarding, festival applications, website/private exports, and generation of production artifacts (stage plots, tech riders, input lists, monitor plans, festival packs).
+
+Person is the canonical **Band People / Production Personnel** domain — shared by the local app and website from one database structure.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library (Person record and child collections).
+- **Scope:** Band-scoped; same schema in cloud, Director local, and Local Show Runtime (cached replica).
+- **Sync:** Cloud-canonical after publish; no local-only or website-only schema fork.
+
+### Key Relationships
+
+- Belongs to: Band.
+- Has many: Person Secure Fields, Person Files, Person Instruments, Person IEM Settings.
+- Belongs to many: Instrument Reference (via Person Instruments).
+- **Not yet linked to Musician** — mapping is a follow-up phase.
+
+### Child Entities
+
+| Entity | Purpose |
+|--------|---------|
+| **Person Secure Field** | Encrypted at-rest storage for bank account, passport number, Air New Zealand points |
+| **Person File** | Access-controlled document storage (passport photo, visa, contract, invoice, other); private by default |
+| **Person Instrument** | Person ↔ Instrument Reference association with role label and primary flag |
+| **Person IEM Setting** | Named IEM preference template — not live console bus settings |
+
+### Lifecycle Notes
+
+- Created and maintained during onboarding and ongoing production administration.
+- Persists across Shows and Performances as master personnel data.
+- Sensitive values never stored in plain text on the Person record itself.
+- Production artifacts (Stage Plot, Tech Rider, input lists, monitor plans, festival packs) are **generated from** canonical Person and related production data — not stored as duplicate personnel schemas.
+
+### Must Not Be Confused With
+
+- **Musician** — operational runtime roster entity for Performances, Assignments, Devices, and Capabilities.
+- **User** — authentication identity; not a Person or Musician by default.
+- **Instrument Part** — operational performance role catalog for Assignments and Capabilities.
+- **Instrument Reference** — personnel/onboarding instrument catalog; separate from Instrument Part for now.
+- **Person IEM Setting** — preference template only; live console bus settings are performance/runtime scoped and may copy from a selected template when applied.
+
+---
+
+## Person Secure Field
+
+### Definition
+
+An encrypted value associated with a Person for a specific sensitive field type: bank account, passport number, or Air New Zealand points.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library; stored encrypted at rest in `person_secure_fields`.
+- **Encryption:** Laravel application encryption with recorded `encryption_key_context`; plaintext must not appear in default serialization.
+
+### Key Relationships
+
+- Belongs to: Person (one row per person per field type).
+
+### Must Not Be Confused With
+
+- **Person File** — binary document storage; secure fields are structured encrypted values.
+- **Person profile columns** — legal name, email, phone remain on Person; only designated sensitive types use secure fields.
+
+---
+
+## Person File
+
+### Definition
+
+A managed file record associated with a Person: passport photo, visa, contract, invoice document, or other onboarding/travel document.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library metadata; binary content in managed object storage (not Git).
+- **Access:** Private by default (`is_public = false`); not publicly accessible without explicit access control.
+
+### Key Relationships
+
+- Belongs to: Person.
+
+### Must Not Be Confused With
+
+- **Chart / Stage Plot / Tech Rider file assets** — show production documents, not person onboarding files.
+- **Public website assets** — Person Files require access control; exports are generated artifacts, not default-public storage.
+
+---
+
+## Instrument Reference
+
+### Definition
+
+A shared catalog entry describing an instrument name and optional family (e.g. Electric Guitar, strings). Used for personnel instrument associations during onboarding and production administration.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library (Instrument Reference catalog).
+
+### Key Relationships
+
+- Has many: Person Instruments.
+- **Separate from Instrument Part** — mapping between catalogs may be required in a follow-up phase.
+
+### Must Not Be Confused With
+
+- **Instrument Part** — operational performance role definition (Lead Vocal, Drums, etc.) scoped to Band and used by Capability and Assignment.
+- **Person Instrument** — the link between a Person and an Instrument Reference.
+
+---
+
+## Person Instrument
+
+### Definition
+
+The association of a Person with an Instrument Reference, optionally labelled with a role and primary flag.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library (Person ↔ Instrument Reference).
+
+### Key Relationships
+
+- Belongs to: Person, Instrument Reference.
+
+### Must Not Be Confused With
+
+- **Capability** — Musician ↔ Instrument Part eligibility for operational assignments.
+- **Assignment** — operational Musician ↔ Instrument Part mapping for a Performance.
+
+---
+
+## Person IEM Setting
+
+### Definition
+
+A named in-ear monitor preference template for a Person: level presets for vocal, own instrument, band, click, tracks, reverb, and ambient mixes.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Master library (template only).
+
+### Key Relationships
+
+- Belongs to: Person.
+
+### Lifecycle Notes
+
+- Templates are preference defaults for onboarding and preparation.
+- When a person is assigned to a performance console bus, a selected Person IEM Setting may be **copied/applied** into performance-specific bus settings — templates are not live console state.
+
+### Must Not Be Confused With
+
+- **Monitor Assignment / console bus settings** — live routing and mix state during Soundcheck and performance.
+- **Mix Move** — reusable X32 parameter group asset for cue Actions.
+
+---
+
 ## Musician
 
 ### Definition
@@ -102,6 +263,7 @@ A person who performs with the band. A global, reusable asset representing ident
 
 ### Must Not Be Confused With
 
+- **Person** — production personnel profile, onboarding, travel, and document domain; Musician is the operational roster entity.
 - **Instrument Part** — a role definition (e.g. Lead Vocal), not a person.
 - **Assignment** — the operational binding of a Musician to an Instrument Part for a Performance/Song/Cue.
 - **Device** — hardware used to connect; belongs to Musician but is not the Musician.
@@ -163,6 +325,7 @@ Examples: Lead Vocal, Harmony Vocal, Backing Vocal, Electric Guitar, Acoustic Gu
 
 ### Must Not Be Confused With
 
+- **Instrument Reference** — personnel/onboarding instrument catalog; Instrument Part is the operational performance role catalog.
 - **Musician** — a person, not a role slot.
 - **Capability** — the link stating a Musician *can* perform an Instrument Part.
 - **Assignment** — the operational decision that a Musician *will* perform an Instrument Part for a given context.
@@ -655,6 +818,8 @@ An Assignment may be scoped to:
 
 A production document describing physical stage layout: instrument positions, risers, sightlines, and spatial relationships for a Show or production variant.
 
+**Artifact rule:** Stage plots are **generated artifacts** from canonical production data (including Person, Musician, Assignment, and Instrument Part context where applicable). The stored Stage Plot file asset is the published output — not a parallel personnel schema.
+
 ### Ownership / Source of Truth
 
 - **Authoritative:** Master library (Stage Plot asset, associated with Show or Production Configuration).
@@ -682,6 +847,8 @@ A production document describing physical stage layout: instrument positions, ri
 ### Definition
 
 A production document describing technical requirements for a Show: backline, inputs, power, monitoring, lighting requirements, and venue needs.
+
+**Artifact rule:** Tech riders, input lists, monitor plans, and festival packs are **generated artifacts** from canonical production data (Person, Musician, Assignments, Instrument Parts, and related configuration). Stored file assets are published outputs — not duplicate local-only or website-only personnel schemas.
 
 ### Ownership / Source of Truth
 

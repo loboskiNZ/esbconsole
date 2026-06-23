@@ -1,6 +1,6 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH010.01 Amended (Song/Cue Identity Governance)  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
@@ -51,6 +51,8 @@ Database design **must follow** `docs/DATA_ARCHITECTURE.md`. Physical implementa
 | 10 | **All future schema changes use migrations.** No ad hoc DDL; no manual production schema edits outside migration workflow. |
 | 11 | **Phase-aware authority.** Draft, published, synced, live, and archived states determine read/write authority per environment. |
 | 12 | **The show must go on.** Schema design must not introduce performance-blocking cloud dependencies. |
+| 13 | **Band People is shared canonical schema.** The Person domain uses one database structure for local app and website; no local-only or website-only personnel schema fork. |
+| 14 | **Production artifacts are generated outputs.** Stage plots, tech riders, input lists, monitor plans, and festival packs are derived from canonical data — not parallel personnel tables. |
 
 ---
 
@@ -99,10 +101,21 @@ Each domain defines a bounded area of persistence responsibility.
 |-----------|-------|
 | **Purpose** | Top-level scope for all master library and operational data. |
 | **Entities** | Band |
-| **Primary relationships** | Band owns Songs, Shows, Musicians, Devices, Instrument Parts, Mix Moves, Light Modes, Production Configurations |
+| **Primary relationships** | Band owns Songs, Shows, Musicians, People, Devices, Instrument Parts, Mix Moves, Light Modes, Production Configurations |
 | **Cloud** | Canonical after publish |
 | **Local runtime** | Cached Active Band context |
 | **Notes** | Rarely changes; all queries scoped by Band |
+
+### Band People / Production Personnel Domain
+
+| Attribute | Value |
+|-----------|-------|
+| **Purpose** | Canonical personnel onboarding, travel, documents, instrument preferences, and IEM templates — shared by local app and website. |
+| **Entities** | Person, Person Secure Field, Person File, Instrument Reference, Person Instrument, Person IEM Setting |
+| **Primary relationships** | Person belongs to Band; Person has secure fields, files, instruments, IEM settings; Person Instrument links Person ↔ Instrument Reference |
+| **Cloud** | Canonical after publish |
+| **Local runtime** | Cached replica (same schema — not a fork) |
+| **Notes** | Musician remains the operational roster entity; Person ↔ Musician mapping is follow-up. Person IEM Settings are templates only — not live console bus state. Sensitive values encrypted at rest via Person Secure Fields. Person Files private by default. Instrument Reference is separate from Instrument Part. |
 
 ### Music Library Domain
 
@@ -223,6 +236,12 @@ Each domain defines a bounded area of persistence responsibility.
 | **Band** | Band / Organisation | Band | ✅ canonical | ✅ cached |
 | **User** | Identity | — (flat) | ✅ canonical | auth cache |
 | **Musician** | Band / Organisation | Musician* | ✅ canonical | ✅ cached |
+| **Person** | Band People / Production Personnel | Person** | ✅ canonical | ✅ cached |
+| **Person Secure Field** | Band People / Production Personnel | Person** | ✅ canonical | ✅ cached |
+| **Person File** | Band People / Production Personnel | Person** | ✅ canonical | ✅ cached |
+| **Instrument Reference** | Band People / Production Personnel | — (catalog) | ✅ canonical | ✅ cached |
+| **Person Instrument** | Band People / Production Personnel | Person** | ✅ canonical | ✅ cached |
+| **Person IEM Setting** | Band People / Production Personnel | Person** | ✅ canonical | ✅ cached |
 | **Device** | Band / Organisation | Musician* | ✅ hybrid | ✅ cached |
 | **Instrument Part** | Production Asset | Band (catalog) | ✅ canonical | ✅ cached |
 | **Capability** | Production Asset | Musician* | ✅ canonical | ✅ cached |
@@ -247,6 +266,21 @@ Each domain defines a bounded area of persistence responsibility.
 | **Sync State** | Sync | Published Package | ✅ hybrid | ✅ local copy |
 
 \*Musician aggregate includes Devices and Capabilities as child collections.
+
+\*\*Person aggregate includes Person Secure Fields, Person Files, Person Instruments, and Person IEM Settings as child collections.
+
+### Physical tables (Band People domain — implemented)
+
+| Logical entity | Physical table | Notes |
+|----------------|----------------|-------|
+| Person | `people` | Band-scoped; `public_id` for sync/API |
+| Person Secure Field | `person_secure_fields` | `encrypted_value` at rest; unique `(person_id, field_type)` |
+| Person File | `person_files` | `is_public` defaults false |
+| Instrument Reference | `instrument_reference` | Shared catalog; not band-scoped |
+| Person Instrument | `person_instruments` | Pivot with role metadata |
+| Person IEM Setting | `person_iem_settings` | Template levels only |
+
+Implementation: migration `2026_06_23_110000_create_band_people_schema.php` (commit `2d53043`).
 
 ---
 
@@ -300,12 +334,21 @@ Domain definitions: `docs/DOMAIN_MODEL.md`
 - **Invariant:** Assignments reference Musicians available for this Performance; locked during `live` state
 - **Lifecycle gate:** Soundcheck → Readiness → live execution
 
-### Musician (identity / person / device / preference aggregate)
+### Musician (operational roster / device / capability aggregate)
 
 - **Root:** Musician
 - **Contains:** Devices, Capabilities (Musician ↔ Instrument Part eligibility)
 - **References:** User link (optional)
 - **Invariant:** Device belongs to one Musician; Capability declares eligibility only — not operational assignment
+- **Distinction:** Musician is the **operational** domain entity for Performances and Assignments. Person (Band People) holds production personnel profile data; Musician ↔ Person mapping is follow-up.
+
+### Person (production personnel aggregate)
+
+- **Root:** Person
+- **Contains:** Person Secure Fields, Person Files, Person Instruments, Person IEM Settings
+- **References:** Band (required); Instrument Reference via Person Instruments
+- **Invariant:** Sensitive field types stored encrypted in Person Secure Fields — never plain text on Person; Person Files private by default; one secure field row per `(person_id, field_type)`; Person IEM Settings are templates — not live console bus settings
+- **Scope:** Same schema in cloud, Director local, and Local Show Runtime — no website-only fork
 
 ### Production Configuration (reusable production setup aggregate)
 
@@ -329,9 +372,21 @@ Domain definitions: `docs/DOMAIN_MODEL.md`
 
 ```
 Band
-├── owns → Musicians, Devices (via Musician), Instrument Parts
+├── owns → Musicians, People, Devices (via Musician), Instrument Parts
+├── owns → Instrument Reference (personnel catalog; separate from Instrument Parts)
 ├── owns → Songs, Mix Moves, Light Modes, Production Configurations
 └── owns → Shows → referenced by Performances
+```
+
+### Person (Band People) relationships
+
+```
+Person
+├── belongs to → Band
+├── has many → Person Secure Fields (encrypted at rest)
+├── has many → Person Files (private by default)
+├── has many → Person Instruments → references → Instrument Reference
+└── has many → Person IEM Settings (templates only)
 ```
 
 ### Song relationships

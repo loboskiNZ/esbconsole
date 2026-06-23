@@ -1,6 +1,6 @@
 # Information Architecture
 
-Status: PH003 Finalised  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical navigation structure, hierarchy, and visibility rules for the Live Performance Orchestration System
 
@@ -139,6 +139,12 @@ Master Library
 │   ├─ Cues
 │   └─ Actions
 ├─ Musicians
+├─ Band People
+│   ├─ People (profiles)
+│   ├─ Secure Fields (encrypted)
+│   ├─ Files (private by default)
+│   ├─ Instrument Reference
+│   └─ IEM Templates
 ├─ Devices
 ├─ Instrument Parts
 ├─ Capabilities
@@ -155,6 +161,8 @@ Master Library
 | Supports Shows | Assets are created/maintained here; Shows reference them. |
 | Not show-time | Master Library editing is not available during live performance. |
 | Director primary | Director is primary user; Administrator for band-level access. |
+| Band People shared | Band People screens use canonical `people` schema — same data model for local admin and website/festival workflows; not a separate website database. |
+| Artifacts generated | Stage Plot, Tech Rider, festival pack, and export outputs are generated from canonical data — not separate personnel navigation trees. |
 
 ---
 
@@ -196,6 +204,7 @@ Live Show View receives shortest path from Performance selection. Master Library
 | Console | Mix Move, Action |
 | Lights | Light Mode, Action |
 | Musicians | Musician, Device, Performance |
+| Band People | Person, Person Secure Field, Person File, Instrument Reference, Person IEM Setting |
 | Assignments | Assignment, Musician, Instrument Part, Performance |
 | Monitor Assignments | Musician, Instrument Part, Performance |
 | Stage Plot | Stage Plot, Show |

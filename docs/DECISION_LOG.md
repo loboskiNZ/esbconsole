@@ -228,6 +228,22 @@
 | 147 | JSON report is primary output; human summary optional via `--summary` or when `--output` writes file. | Machine-readable report for PH032 tooling; stdout remains valid JSON when piping. |
 | 148 | Report builder enriches PH030 plan with shared chart detection, duplicate mapping detection, and unresolved role analysis. | Full PH029 §10 dry-run report requirements without duplicating parser logic. |
 
+## PH045 — Band People Canonical Schema Reconciliation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 149 | Band People / Production Personnel is **canonical shared schema** — one PostgreSQL structure for local app and website; no local-only or website-only personnel tables. | Single source of truth for onboarding, travel, festival, and export workflows. |
+| 150 | Physical tables: `people`, `person_secure_fields`, `person_files`, `instrument_reference`, `person_instruments`, `person_iem_settings`. | Implemented in migration `2026_06_23_110000_create_band_people_schema.php` (commit `2d53043`). |
+| 151 | Bank account, passport number, and Air New Zealand points stored **encrypted at rest** in `person_secure_fields` via Laravel application encryption with `encryption_key_context`. | Sensitive values must not be plain text; default serialization hides ciphertext. |
+| 152 | `person_files.is_public` defaults **false**; passport photos and travel documents require access control. | Private-by-default document governance. |
+| 153 | `person_iem_settings` are **preference templates only** — not live console bus settings. Selected templates may be copied/applied to performance bus settings later. | Separates onboarding preferences from runtime monitor state. |
+| 154 | **`musicians` remains the operational domain** for Performances, Assignments, Devices, and Capabilities. Musician ↔ Person mapping is a **follow-up phase** — not implemented in PH045. | Avoids breaking operational runtime paths; Person is additive personnel layer. |
+| 155 | **`instrument_reference` and `instrument_parts` are separate catalogs.** Person Instruments use Instrument Reference; Capabilities use Instrument Part. Mapping may be required later. | Onboarding catalog vs operational role catalog serve different workflows. |
+| 156 | Stage plots, tech riders, input lists, monitor plans, and festival packs are **generated artifacts** from canonical production data — not parallel personnel schemas. | Artifacts are outputs; canonical data lives in Person, Musician, Assignment, and related entities. |
+| 157 | Existing Band People UI routes (`/people`) currently operate on **`musicians`** table — UI reconciliation to `people` is follow-up. | Schema precedes UI migration; documented to prevent architecture drift assumptions. |
+| 158 | `instrument_reference` is **not band-scoped** in current implementation; `people` is band-scoped. | Global personnel instrument catalog; band scoping on Person records. |
+| 159 | Person Files use `file_path` metadata in M3a; full Spaces bucket/key alignment with `file_assets` governance is follow-up. | Initial schema stores managed path reference; canonical object storage integration deferred. |
+
 ---
 
-End of Decision Log — PH031
+End of Decision Log — PH045

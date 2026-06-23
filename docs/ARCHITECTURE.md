@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH008 Finalised  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -299,11 +299,25 @@ Entity layers and ownership classes are defined in `docs/DATA_ARCHITECTURE.md`.
 
 | Layer | Entities | Authority Class |
 |-------|----------|-----------------|
-| Master Library | Band, Musician, Device, Instrument Part, Capability, Song, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider | Cloud-canonical (after publish) |
+| Master Library | Band, Musician, Person, Device, Instrument Part, Instrument Reference, Capability, Song, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider | Cloud-canonical (after publish) |
 | Operational | Show, Performance, Assignment, Monitor Assignment, Soundcheck, Readiness | Hybrid (phase-dependent) |
 | Runtime | Ableton Protocol State, Runtime State, Sync State | Derived/runtime-only or hybrid |
 
 See `docs/DOMAIN_MODEL.md` for entity definitions.
+
+### Band People / Production Personnel (PH045)
+
+Band People is **canonical shared data** — one PostgreSQL schema for the local app and website.
+
+| Rule | Statement |
+|------|-----------|
+| **Shared schema** | `people`, `person_secure_fields`, `person_files`, `instrument_reference`, `person_instruments`, `person_iem_settings` — no local-only or website-only duplicate tables. |
+| **Musician vs Person** | `musicians` remains the operational domain (Performances, Assignments, Devices). `people` holds production personnel profiles; mapping is follow-up. |
+| **Encryption** | Bank account, passport number, Air New Zealand points encrypted at rest via `person_secure_fields`. |
+| **Private files** | `person_files.is_public` defaults false. |
+| **IEM templates** | `person_iem_settings` are preference templates — not live console bus settings. |
+| **Catalogs** | `instrument_reference` (personnel) and `instrument_parts` (operational roles) are separate; mapping may follow. |
+| **Generated artifacts** | Stage plots, tech riders, input lists, monitor plans, festival packs are outputs generated from canonical data. |
 
 ## Database Architecture Summary
 

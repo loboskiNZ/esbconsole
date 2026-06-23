@@ -1,6 +1,6 @@
 # Physical Database & Migration Plan
 
-Status: PH010.01 Amended (Song/Cue Identity Migration Planning)  
+Status: PH045 Amended (Band People Schema Reconciliation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Physical database technology choices, migration strategy, initial schema plan, and delivery governance before any database implementation
 
@@ -191,6 +191,7 @@ Migrations are organised into domain groups. Each group may comprise one or more
 | M1 | **Identity / access** | users, roles, permissions, role_user, musician_user_links |
 | M2 | **Band / organisation** | bands |
 | M3 | **Musicians / devices** | musicians, devices |
+| M3a | **Band People / production personnel** | people, person_secure_fields, person_files, instrument_reference, person_instruments, person_iem_settings |
 | M4 | **Instrument parts / capabilities** | instrument_parts, capabilities |
 | M5 | **Production assets** | mix_moves, light_modes, production_configurations |
 | M6 | **Songs / cues / actions** | songs, cues, actions, action_references |
@@ -214,8 +215,9 @@ M1  Identity / access
     ↓
 M2  Band / organisation
     ↓
-M3  Musicians / devices          M4  Instrument parts / capabilities
+M3  Musicians / devices          M3a Band People / personnel
     ↓                                ↓
+M4  Instrument parts / capabilities
 M5  Production assets (mix_moves, light_modes, production_configurations)
     ↓
 M6  Songs / cues / actions  ←── references M4 (instrument parts), M5 (mix_moves, light_modes)
@@ -243,6 +245,9 @@ M14 Supporting indexes and constraints
 |------------|--------|
 | Band before all master assets | Band scoping FK on every tenant table |
 | Musicians before Assignments | Assignment maps Musician |
+| Band (M2) before People (M3a) | `people.band_id` FK |
+| People before Person child tables | Secure fields, files, instruments, IEM settings FK to `people` |
+| Instrument Reference before Person Instruments | `person_instruments.instrument_id` FK |
 | Instrument Parts before Capabilities, Assignments | Role catalog prerequisite |
 | Songs before Cues before Actions | Aggregate hierarchy |
 | File assets after Charts | Chart owns file reference |
@@ -266,6 +271,24 @@ M14 Supporting indexes and constraints
 | **Audit prefix** | `audit_*` or `*_audits` |
 | **No abbreviations** | `instrument_parts` not `inst_parts` |
 | **Band scoping** | `band_id` FK on all tenant-scoped tables |
+| **Singular reference tables** | `instrument_reference` — shared catalog table name as implemented |
+
+### M3a Band People — implemented schema (PH045)
+
+Migration `2026_06_23_110000_create_band_people_schema.php` (commit `2d53043`).
+
+| Table | Purpose |
+|-------|---------|
+| `people` | Band-scoped production personnel profile |
+| `person_secure_fields` | Encrypted sensitive values (`bank_account`, `passport_number`, `air_new_zealand_points`) |
+| `person_files` | Access-controlled documents; `is_public` default false |
+| `instrument_reference` | Personnel instrument catalog (not `instrument_parts`) |
+| `person_instruments` | Person ↔ Instrument Reference pivot |
+| `person_iem_settings` | IEM preference templates (not live bus settings) |
+
+**Governance:** Same migration runs in cloud, Director local, and Local Show Runtime — no website-only fork.
+
+**Follow-up (not in M3a):** Musician ↔ Person link; Instrument Reference ↔ Instrument Part mapping.
 
 ---
 
