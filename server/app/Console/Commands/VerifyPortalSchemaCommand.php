@@ -22,7 +22,7 @@ class VerifyPortalSchemaCommand extends Command
         'people' => [
             'id', 'public_id', 'band_id', 'legal_first_name', 'legal_middle_names',
             'legal_last_name', 'artistic_name', 'email', 'phone', 'gender', 'pronouns',
-            'city', 'country', 'dietary_requirements', 'notes', 'created_at', 'updated_at',
+            'city', 'country', 'bio', 'profile_photo_path', 'dietary_requirements', 'notes', 'created_at', 'updated_at',
         ],
         'person_secure_fields' => [
             'id', 'person_id', 'field_type', 'encrypted_value', 'encryption_key_context',

@@ -4,14 +4,19 @@ namespace App\Services;
 
 use App\Models\InstrumentReference;
 use App\Models\Person;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 class PersonProfileService
 {
+    public function __construct(
+        private readonly PersonProfilePhotoService $photoService,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $payload
      */
-    public function update(Person $person, array $payload): Person
+    public function update(Person $person, array $payload, ?UploadedFile $photo = null): Person
     {
         $primarySlug = (string) $payload['primary_instrument'];
         $additionalSlugs = array_values(array_unique(array_filter(
@@ -24,14 +29,21 @@ class PersonProfileService
             ->get()
             ->keyBy('slug');
 
-        return DB::transaction(function () use ($person, $payload, $primarySlug, $additionalSlugs, $instrumentMap): Person {
-            $person->update([
+        return DB::transaction(function () use ($person, $payload, $photo, $primarySlug, $additionalSlugs, $instrumentMap): Person {
+            $updates = [
                 'artistic_name' => trim((string) $payload['stage_name']),
                 'email' => trim((string) $payload['email']),
                 'phone' => trim((string) $payload['telephone']),
                 'city' => trim((string) $payload['city']),
                 'country' => trim((string) $payload['country']),
-            ]);
+                'bio' => $this->normalizeBio($payload['bio'] ?? null),
+            ];
+
+            if ($photo !== null) {
+                $updates['profile_photo_path'] = $this->photoService->store($person, $photo);
+            }
+
+            $person->update($updates);
 
             $person->instruments()->detach();
 
@@ -47,5 +59,16 @@ class PersonProfileService
 
             return $person->fresh(['instruments']);
         });
+    }
+
+    private function normalizeBio(mixed $bio): ?string
+    {
+        if (! is_string($bio)) {
+            return null;
+        }
+
+        $trimmed = trim($bio);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }

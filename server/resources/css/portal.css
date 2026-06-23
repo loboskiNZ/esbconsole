@@ -651,6 +651,120 @@
     background: rgba(255, 178, 62, 0.08);
 }
 
+.esb-studio__identity-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem 1.5rem 1.75rem;
+    border-radius: 1.25rem;
+    background:
+        radial-gradient(circle at top, rgba(255, 178, 62, 0.1), transparent 58%),
+        var(--esb-panel);
+    border: 1px solid rgba(255, 178, 62, 0.14);
+}
+
+.esb-studio__identity-portrait {
+    position: relative;
+    width: 9.5rem;
+    height: 9.5rem;
+    flex-shrink: 0;
+}
+
+.esb-studio__identity-portrait--editor {
+    width: 6.5rem;
+    height: 6.5rem;
+}
+
+.esb-studio__identity-shine {
+    position: absolute;
+    inset: -0.35rem;
+    border-radius: 9999px;
+    background: conic-gradient(
+        from 0deg,
+        rgba(255, 178, 62, 0.05),
+        rgba(255, 178, 62, 0.55),
+        rgba(255, 120, 40, 0.2),
+        rgba(255, 178, 62, 0.05)
+    );
+    animation: esb-studio-identity-shine 7s linear infinite;
+    filter: blur(0.5px);
+}
+
+.esb-studio__identity-photo,
+.esb-studio__identity-placeholder {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    object-fit: cover;
+    border: 2px solid rgba(255, 178, 62, 0.35);
+    box-shadow:
+        0 0 0 1px rgba(0, 0, 0, 0.35),
+        0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.esb-studio__identity-placeholder {
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(circle at 30% 20%, rgba(255, 178, 62, 0.22), transparent 55%),
+        rgba(12, 10, 8, 0.88);
+    color: var(--esb-ink);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.esb-studio__identity-name {
+    margin-top: 0.35rem;
+    font-size: clamp(1.75rem, 4vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--esb-ink);
+    letter-spacing: -0.03em;
+}
+
+.esb-studio__identity-instruments {
+    margin-top: 0.65rem;
+    color: rgba(255, 214, 150, 0.92);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.esb-studio__identity-country {
+    margin-top: 0.35rem;
+    color: var(--esb-muted);
+    font-size: 0.95rem;
+}
+
+.esb-studio__identity-edit-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem 0.35rem;
+    color: rgba(255, 198, 110, 0.95);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.esb-studio__identity-edit-link:hover {
+    color: #ffd27a;
+}
+
+@keyframes esb-studio-identity-shine {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .esb-onboarding__progress-fill {
         transition: none !important;
@@ -662,5 +776,10 @@
 
     .esb-portal__background-layer {
         transition: none !important;
+    }
+
+    .esb-studio__identity-shine {
+        animation: none !important;
+        background: rgba(255, 178, 62, 0.22);
     }
 }

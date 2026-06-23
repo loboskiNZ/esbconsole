@@ -30,6 +30,8 @@ class Person extends Model
         'pronouns',
         'city',
         'country',
+        'bio',
+        'profile_photo_path',
         'dietary_requirements',
         'notes',
     ];
@@ -82,5 +84,25 @@ class Person extends Model
     public function additionalInstruments()
     {
         return $this->instruments->filter(fn ($instrument) => ! $instrument->pivot->is_primary)->values();
+    }
+
+    public function hasProfilePhoto(): bool
+    {
+        return filled($this->profile_photo_path);
+    }
+
+    public function instrumentSummary(): string
+    {
+        $names = $this->instruments
+            ->sortByDesc(fn ($instrument) => (bool) $instrument->pivot->is_primary)
+            ->pluck('name')
+            ->filter()
+            ->values();
+
+        if ($names->isEmpty()) {
+            return '';
+        }
+
+        return $names->join(' · ');
     }
 }

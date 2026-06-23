@@ -14,4 +14,18 @@ return [
 
     'band_id' => (int) env('PORTAL_BAND_ID', 1),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Profile photos
+    |--------------------------------------------------------------------------
+    |
+    | Stored on the local private disk by default. Served only through the
+    | authenticated profile photo route — not via public URLs.
+    |
+    */
+
+    'profile_photo_disk' => env('PORTAL_PROFILE_PHOTO_DISK', 'local'),
+
+    'profile_photo_max_kb' => (int) env('PORTAL_PROFILE_PHOTO_MAX_KB', 5120),
+
 ];

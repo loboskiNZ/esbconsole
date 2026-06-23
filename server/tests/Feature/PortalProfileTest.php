@@ -5,20 +5,27 @@ namespace Tests\Feature;
 use App\Models\InstrumentReference;
 use App\Models\Person;
 use App\Models\User;
+use App\Support\ProfileBio;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PortalProfileTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_authenticated_user_sees_my_profile_card(): void
+    public function test_authenticated_user_sees_compact_identity_card(): void
     {
         $user = User::factory()->create();
         $person = $user->person;
         $vocals = InstrumentReference::query()->where('slug', 'scaffold-vocals')->firstOrFail();
         $keys = InstrumentReference::query()->where('slug', 'scaffold-keys')->firstOrFail();
 
+        $person->update([
+            'artistic_name' => 'Shadow Singer',
+            'country' => 'New Zealand',
+        ]);
         $person->instruments()->attach($vocals->id, ['is_primary' => true]);
         $person->instruments()->attach($keys->id, ['is_primary' => false]);
 
@@ -26,11 +33,15 @@ class PortalProfileTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('My Profile', false);
-        $response->assertSee($person->artistic_name, false);
-        $response->assertSee($person->legalName(), false);
-        $response->assertSee($person->email, false);
+        $response->assertSee('Shadow Singer', false);
         $response->assertSee('Vocals', false);
         $response->assertSee('Keys', false);
+        $response->assertSee('New Zealand', false);
+        $response->assertSee('Edit', false);
+        $response->assertSee('esb-studio__identity-card', false);
+        $response->assertDontSee($person->legalName(), false);
+        $response->assertDontSee($person->email, false);
+        $response->assertDontSee($person->phone, false);
         $response->assertDontSee('Readiness score', false);
         $response->assertDontSee('Profile completeness', false);
         $response->assertDontSee('Performance readiness', false);
@@ -54,6 +65,7 @@ class PortalProfileTest extends TestCase
             'telephone' => '+64 21 111 2222',
             'city' => 'Christchurch',
             'country' => 'New Zealand',
+            'bio' => 'Playing shadows since day one.',
             'primary_instrument' => 'scaffold-drums',
             'additional_instruments' => ['scaffold-percussion'],
         ]);
@@ -64,9 +76,73 @@ class PortalProfileTest extends TestCase
         $this->assertSame('Updated Stage', $person->artistic_name);
         $this->assertSame('updated@example.com', $person->email);
         $this->assertSame('Christchurch', $person->city);
+        $this->assertSame('Playing shadows since day one.', $person->bio);
         $this->assertSame('scaffold-drums', $person->primaryInstrument()?->slug);
         $this->assertCount(2, $person->instruments);
         $this->assertSame(1, $person->instruments->where(fn ($i) => $i->pivot->is_primary)->count());
+    }
+
+    public function test_bio_over_one_hundred_words_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        $person = $user->person;
+        $vocals = InstrumentReference::query()->where('slug', 'scaffold-vocals')->firstOrFail();
+        $person->instruments()->attach($vocals->id, ['is_primary' => true]);
+
+        $bio = implode(' ', array_fill(0, ProfileBio::MAX_WORDS + 1, 'word'));
+
+        $response = $this->actingAs($user)->put('/studio/profile', [
+            'stage_name' => $person->artistic_name,
+            'email' => $person->email,
+            'telephone' => $person->phone,
+            'city' => $person->city,
+            'country' => $person->country,
+            'bio' => $bio,
+            'primary_instrument' => 'scaffold-vocals',
+        ]);
+
+        $response->assertSessionHasErrors('bio');
+        $this->assertNull($person->fresh()->bio);
+    }
+
+    public function test_user_can_upload_profile_photo(): void
+    {
+        Storage::fake('local');
+        config(['portal.profile_photo_disk' => 'local']);
+
+        $user = User::factory()->create();
+        $person = $user->person;
+        $vocals = InstrumentReference::query()->where('slug', 'scaffold-vocals')->firstOrFail();
+        $person->instruments()->attach($vocals->id, ['is_primary' => true]);
+
+        $file = UploadedFile::fake()->image('profile.jpg', 400, 400);
+
+        $this->actingAs($user)->put('/studio/profile', [
+            'stage_name' => $person->artistic_name,
+            'email' => $person->email,
+            'telephone' => $person->phone,
+            'city' => $person->city,
+            'country' => $person->country,
+            'primary_instrument' => 'scaffold-vocals',
+            'profile_photo' => $file,
+        ])->assertRedirect(route('studio'));
+
+        $person->refresh();
+        $this->assertNotNull($person->profile_photo_path);
+        $this->assertStringStartsWith('portal/profile-photos/'.$person->id.'/', $person->profile_photo_path);
+        Storage::disk('local')->assertExists($person->profile_photo_path);
+
+        $this->actingAs($user)->get(route('studio.profile.photo'))->assertOk();
+    }
+
+    public function test_profile_editor_renders_instrument_toggle(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/studio/profile/edit')
+            ->assertOk()
+            ->assertSee('Show instruments', false)
+            ->assertSee('profileEditor', false);
     }
 
     public function test_profile_update_only_affects_authenticated_users_person(): void
