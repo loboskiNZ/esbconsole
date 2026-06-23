@@ -70,7 +70,11 @@ class FolderChartImportTest extends TestCase
         $this->assertSame('Vocals', $matcher->matchStem('Vocal')->canonicalName);
         $this->assertSame('Horns', $matcher->matchStem('Horns')->canonicalName);
         $this->assertSame('Backing Vocals', $matcher->matchStem('BVs')->canonicalName);
+        $this->assertSame('Alto Sax', $matcher->matchStem('BAND Man of constant sorrow - Alto Sax')->canonicalName);
+        $this->assertSame('Trombone', $matcher->matchStem('Reggaeton De Otepoti (TROMBONE)')->canonicalName);
+        $this->assertSame('Bass', $matcher->matchStem('Band electronic love - Bass Guitar')->canonicalName);
         $this->assertFalse($matcher->matchStem('Mystery Part')->matched);
+        $this->assertFalse($matcher->matchStem('BAND havent found - Full Score')->matched);
     }
 
     public function test_dry_run_reports_without_database_or_storage_writes(): void
