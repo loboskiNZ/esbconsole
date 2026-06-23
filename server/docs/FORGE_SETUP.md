@@ -62,10 +62,15 @@ Keep Forge’s zero-downtime hooks and queue restart. Only change **paths** for 
 **Add** before composer (release root):
 
 ```bash
+mkdir -p $FORGE_SITE_PATH/storage/framework/{cache/data,sessions,views,testing}
+mkdir -p $FORGE_SITE_PATH/storage/{app/public,logs}
+
 ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
 rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
 ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_DIRECTORY/server/storage
 ```
+
+`server/config/view.php` uses `storage_path('framework/views')` without `realpath()` so `config:cache` does not bake a null compiled path on first deploy.
 
 Full adapted script (`server/deploy/forge-deploy.sh`):
 
@@ -73,6 +78,9 @@ Full adapted script (`server/deploy/forge-deploy.sh`):
 $CREATE_RELEASE()
 
 cd $FORGE_RELEASE_DIRECTORY
+
+mkdir -p $FORGE_SITE_PATH/storage/framework/{cache/data,sessions,views,testing}
+mkdir -p $FORGE_SITE_PATH/storage/{app/public,logs}
 
 ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
 rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
@@ -220,3 +228,5 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |
 | Git clone fails on Forge | Deploy key missing | Add `band-portal-forge-deploy.pub` to GitHub deploy keys |
+| `views` FAIL: “View path not found” during `optimize` | `config:cache` baked null `view.compiled` before storage dirs existed | Pull latest; add `mkdir -p` for shared storage; `server/config/view.php` fix |
+| `npm ci` EUSAGE: no package-lock.json | Missing `server/package-lock.json` | Pull latest (lock file committed) |
