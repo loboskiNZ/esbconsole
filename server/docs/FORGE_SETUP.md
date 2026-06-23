@@ -130,6 +130,10 @@ $FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autol
 
 cd $FORGE_RELEASE_DIRECTORY/server
 
+if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
+  $FORGE_PHP artisan key:generate --force
+fi
+
 npm ci || npm install
 npm run build
 
@@ -165,6 +169,7 @@ Create `/server/.env` on the Forge server (**never commit**). Copy from `server/
 | `DB_DATABASE` | Yes | Forge/DO database name |
 | `DB_USERNAME` | Yes | Database user |
 | `DB_PASSWORD` | Yes | Database password |
+| `DB_SSLMODE` | Yes (DO managed PG) | `require` for DigitalOcean Managed PostgreSQL |
 | `SESSION_DRIVER` | Yes | `database` (baseline migrations include sessions table) |
 | `SESSION_SECURE_COOKIE` | Yes | `true` behind HTTPS |
 | `CACHE_STORE` | Yes | `database` until Redis is provisioned |
@@ -228,6 +233,51 @@ cp server/deploy/keys/band-portal-forge.pub server/deploy/band-portal-forge-depl
 
 3. **Never** commit `band-portal-forge` (private key) or `.env`.
 
+### Operator SSH (workstation → Forge server)
+
+Separate from the **Git deploy key** above. This lets you (and Cursor) SSH as `forge@` for deploys, logs, and artisan.
+
+| File | Committed? | Purpose |
+|------|------------|---------|
+| `server/deploy/keys/band-portal-operator` | **No** | Private key for your Mac → Forge SSH |
+| `server/deploy/band-portal-operator.pub` | **Yes** | Public key to add in Forge |
+| `server/deploy/ssh-config.snippet` | **Yes** | `Host esb-band` block for `~/.ssh/config` |
+
+**One-time setup**
+
+1. Forge → **Account** → **SSH Keys** → Add key  
+   Paste contents of `server/deploy/band-portal-operator.pub`:
+
+   ```text
+   ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8rls7JzpHdSQrOCygsqkEi0N9YKkPI6G70wDACjpRy operator-band.edandtheshadowboys.com
+   ```
+
+2. Append `server/deploy/ssh-config.snippet` to `~/.ssh/config` (or merge the `Host esb-band` block).
+
+3. Verify:
+
+   ```bash
+   ssh esb-band "hostname && ls /home/forge/band.edandtheshadowboys.com/current/server/public/index.php"
+   ```
+
+**Deploy from workstation**
+
+Option A — **Deploy hook** (recommended for Cursor automation):
+
+1. Forge → Site → **Deployments** → **Deploy hook** → copy URL  
+2. `cp server/deploy/.env.example server/deploy/.env` and set `FORGE_DEPLOY_HOOK_URL=…`  
+3. Run:
+
+   ```bash
+   ./server/deploy/remote-deploy.sh --push
+   ```
+
+Option B — **SSH** (runs Forge’s zero-downtime deploy script on the server):
+
+```bash
+./server/deploy/remote-deploy.sh
+```
+
 ---
 
 ## 6. Local verification (operator workstation)
@@ -266,6 +316,8 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 | 404 / “No input file specified” on `/` or `/up` | Nginx **web root** not `server/public` | Forge Meta → Web Directory = `server/public`; restart nginx; verify `index.php` path via SSH (see §1) |
 | 404 on all routes (after root fixed) | Deploy failed before `$ACTIVATE_RELEASE()` | Fix deploy script; redeploy; confirm `current/server/vendor` exists |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
+| `/up` returns 200 but `/` returns 500 | Missing `APP_KEY` or session DB error | `tail -50 storage/logs/laravel.log`; ensure `APP_KEY=base64:…` in `.env` (`php artisan key:generate --force` in `server/`); confirm migrations ran (`sessions` table exists) |
+| Automated deploy from workstation | Deploy hook not configured | Forge → Site → **Deployments** → **Deploy hook**; copy URL into `server/deploy/.env` as `FORGE_DEPLOY_HOOK_URL`; run `./server/deploy/remote-deploy.sh` |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |
 | Git clone fails on Forge | Deploy key missing | Add `band-portal-forge-deploy.pub` to GitHub deploy keys |

@@ -1,0 +1,16 @@
+# Band Portal — Laravel Forge (append to ~/.ssh/config)
+#
+# After create-esbops-user.sh on the server, use Host esb-band-ops (key-only, deploy sudo).
+# Or use esb-band with User forge if your key is on the forge account in Forge.
+
+Host esb-band
+    HostName 134.199.173.4
+    User forge
+    IdentityFile /Volumes/WORKER/machines/x32-controller/server/deploy/keys/band-portal-operator
+    IdentitiesOnly yes
+
+Host esb-band-ops
+    HostName 134.199.173.4
+    User esbops
+    IdentityFile /Volumes/WORKER/machines/x32-controller/server/deploy/keys/band-portal-operator
+    IdentitiesOnly yes

@@ -2,4 +2,7 @@
 keys/
 *.pem
 band-portal-forge
+band-portal-operator
 !band-portal-forge-deploy.pub
+!band-portal-operator.pub
+.env
