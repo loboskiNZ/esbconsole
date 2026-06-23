@@ -1,0 +1,5 @@
+# Never commit private deploy keys
+keys/
+*.pem
+band-portal-forge
+!band-portal-forge-deploy.pub
