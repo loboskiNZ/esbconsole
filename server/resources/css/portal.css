@@ -219,6 +219,10 @@
     min-height: 100dvh;
 }
 
+.esb-portal--studio .esb-portal__logo {
+    opacity: 0.06;
+}
+
 .esb-portal__background-layer {
     transition: opacity 2.4s ease-in-out;
 }
@@ -559,6 +563,64 @@
 
 /* Studio scaffold (PH048B) */
 
+.esb-studio__shell {
+    width: 100%;
+    max-width: none;
+}
+
+.esb-studio__chrome-header {
+    flex-shrink: 0;
+    padding: 1.25rem 1rem 1rem;
+    border-bottom: 1px solid rgba(255, 178, 62, 0.12);
+    background: rgba(8, 6, 5, 0.42);
+    backdrop-filter: blur(10px);
+}
+
+.esb-studio__shell-body {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+    padding: 1rem 1rem 1.25rem;
+    min-width: 0;
+}
+
+.esb-studio__chrome-footer {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.85rem 1rem 1rem;
+    border-top: 1px solid rgba(255, 178, 62, 0.1);
+    background: rgba(8, 6, 5, 0.35);
+}
+
+@media (min-width: 640px) {
+    .esb-studio__chrome-header {
+        padding-inline: 1.25rem;
+    }
+
+    .esb-studio__shell-body {
+        padding-inline: 1.25rem;
+    }
+
+    .esb-studio__chrome-footer {
+        padding-inline: 1.25rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .esb-studio__chrome-header {
+        padding-inline: 1.5rem;
+    }
+
+    .esb-studio__shell-body {
+        padding-inline: 1.5rem;
+    }
+
+    .esb-studio__chrome-footer {
+        padding-inline: 1.5rem;
+    }
+}
+
 .esb-studio__page-header {
     text-align: left;
 }
@@ -567,6 +629,7 @@
     display: grid;
     gap: 1.25rem;
     align-items: start;
+    width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -584,6 +647,7 @@
     display: grid;
     gap: 1rem;
     min-width: 0;
+    width: 100%;
 }
 
 .esb-studio__workspace-intro {
@@ -594,11 +658,24 @@
     display: grid;
     gap: 1rem;
     grid-template-columns: minmax(0, 1fr);
+    width: 100%;
 }
 
 @media (min-width: 640px) {
     .esb-studio__workspace-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1280px) {
+    .esb-studio__workspace-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1536px) {
+    .esb-studio__workspace-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 

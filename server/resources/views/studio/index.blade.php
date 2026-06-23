@@ -7,20 +7,20 @@
 @endsection
 
 @section('content')
-    <main class="relative z-10 min-h-dvh px-4 py-6 sm:px-6 sm:py-8">
-        <div class="mx-auto w-full max-w-6xl">
-            <header class="esb-studio__page-header">
-                <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-                <h1 class="esb-portal__title">The Studio</h1>
-            </header>
+    <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
+        <header class="esb-studio__chrome-header">
+            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
+            <h1 class="esb-portal__title">The Studio</h1>
+        </header>
 
+        <div class="esb-studio__shell-body">
             @if (session('profile_updated'))
-                <p class="esb-portal__success mt-4" role="status">
+                <p class="esb-portal__success mb-4" role="status">
                     Your profile details have been saved.
                 </p>
             @endif
 
-            <div class="esb-studio__layout mt-6 sm:mt-8">
+            <div class="esb-studio__layout">
                 @if ($person)
                     <aside class="esb-studio__sidebar">
                         @include('studio.profile._identity-widget', ['person' => $person])
@@ -77,15 +77,15 @@
                     </div>
                 </div>
             </div>
-
-            <div class="esb-studio__footer mt-8 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-end">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="esb-portal__button esb-portal__button--secondary">
-                        Log out
-                    </button>
-                </form>
-            </div>
         </div>
+
+        <footer class="esb-studio__chrome-footer">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                    Log out
+                </button>
+            </form>
+        </footer>
     </main>
 @endsection

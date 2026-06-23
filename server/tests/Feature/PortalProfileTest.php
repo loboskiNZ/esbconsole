@@ -38,16 +38,34 @@ class PortalProfileTest extends TestCase
         $response->assertSee('New Zealand', false);
         $response->assertSee('Edit', false);
         $response->assertSee('esb-studio__identity-widget', false);
+        $response->assertSee('esb-studio__shell', false);
         $response->assertSee('esb-studio__layout', false);
         $response->assertSee('esb-studio__workspace', false);
         $response->assertSee('esb-studio__sidebar', false);
         $response->assertSee('Studio modules', false);
+        $response->assertDontSee('max-w-6xl', false);
         $response->assertDontSee($person->legalName(), false);
         $response->assertDontSee($person->email, false);
         $response->assertDontSee($person->phone, false);
         $response->assertDontSee('Readiness score', false);
         $response->assertDontSee('Profile completeness', false);
         $response->assertDontSee('Performance readiness', false);
+    }
+
+    public function test_studio_uses_full_viewport_workspace_shell(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get('/studio');
+
+        $response->assertOk();
+        $response->assertSee('esb-studio__shell', false);
+        $response->assertSee('esb-studio__chrome-header', false);
+        $response->assertSee('esb-studio__shell-body', false);
+        $response->assertSee('esb-studio__chrome-footer', false);
+        $response->assertDontSee('max-w-6xl', false);
+        $response->assertDontSee('max-w-5xl', false);
+        $response->assertDontSee('mx-auto w-full max-w', false);
     }
 
     public function test_studio_workspace_layout_is_primary_content_area(): void
