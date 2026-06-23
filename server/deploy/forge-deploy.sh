@@ -9,6 +9,36 @@ cd $FORGE_RELEASE_DIRECTORY
 mkdir -p $FORGE_SITE_PATH/storage/framework/{cache/data,sessions,views,testing}
 mkdir -p $FORGE_SITE_PATH/storage/{app/public,logs}
 
+# Studio chart library — private shared storage (outside public web root)
+LIBRARY_STORAGE_ROOT="$FORGE_SITE_PATH/storage/app/library"
+LIBRARY_INCOMING="$LIBRARY_STORAGE_ROOT/incoming"
+mkdir -p "$LIBRARY_STORAGE_ROOT/charts" "$LIBRARY_INCOMING"
+chmod 750 "$LIBRARY_STORAGE_ROOT"
+chmod 750 "$LIBRARY_STORAGE_ROOT/charts"
+chmod 777 "$LIBRARY_INCOMING"
+
+if [ -f "$LIBRARY_INCOMING/charts.tar.gz" ]; then
+  tar -xzf "$LIBRARY_INCOMING/charts.tar.gz" -C "$LIBRARY_STORAGE_ROOT"
+  rm -f "$LIBRARY_INCOMING/charts.tar.gz"
+fi
+
+if [ -d "$LIBRARY_INCOMING/charts" ]; then
+  rsync -a "$LIBRARY_INCOMING/charts/" "$LIBRARY_STORAGE_ROOT/charts/"
+  rm -rf "$LIBRARY_INCOMING/charts"
+fi
+
+if ! grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+  echo "PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT" >> "$FORGE_SITE_PATH/.env"
+fi
+
+if ! grep -qE '^PORTAL_LIBRARY_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+  echo "PORTAL_LIBRARY_CONNECTION=library" >> "$FORGE_SITE_PATH/.env"
+fi
+
+if ! grep -qE '^PORTAL_LIBRARY_CHART_DISK=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+  echo "PORTAL_LIBRARY_CHART_DISK=library" >> "$FORGE_SITE_PATH/.env"
+fi
+
 # Forge links .env and storage at release root; Laravel lives in server/
 ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
 rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
