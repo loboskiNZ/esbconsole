@@ -209,6 +209,9 @@ Live Show View receives shortest path from Performance selection. Master Library
 | Band Portal (onboarding Ch 1–8) | Person Invitation (proposed), User, Person, Instrument Reference |
 | ESB Studio | User, Person (member home — PH048A) |
 | Band Portal (email verification) | Person (email contact), User (access gate) |
+| Band Portal (onboarding Ch 1–8) | Person Invitation (proposed), User, Person, Instrument Reference |
+| ESB Studio | User, Person (member home — PH048A) |
+| Band Portal (email verification) | Person (email contact), User (access gate) |
 | Band Portal (invitation) | Person Invitation (proposed), Person |
 | Band Portal (onboarding) | Person, Person File, Person IEM Setting, onboarding progress (proposed) |
 | Assignments | Assignment, Musician, Instrument Part, Performance |
