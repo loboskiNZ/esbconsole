@@ -304,6 +304,14 @@ php artisan test
 
 Production PostgreSQL is not required for `composer validate` / `about` / `route:list`.
 
+### Troubleshooting: login fails / data disappears after deploy
+
+If the Forge site `.env` has **no** `DB_CONNECTION`, Laravel defaults to **SQLite** at `server/database/database.sqlite` inside each release directory. That file is **not** shared across zero-downtime releases, so users, invites, and sessions vanish on every deploy.
+
+**Fix:** In Forge → Site → **Environment**, add the managed PostgreSQL credentials (see §2), including `DB_PASSWORD` and `DB_SSLMODE=require`, then redeploy. The deploy script aborts if `DB_CONNECTION` is missing.
+
+After the first successful PostgreSQL deploy, run migrations (the deploy script runs `php artisan migrate --force` automatically). Create a new invite link if onboarding data was lost.
+
 ### Create a Chapter 1 invite link (PH048C)
 
 Run **as user `forge`** (Forge → Site → **Commands**, or SSH as `forge`).

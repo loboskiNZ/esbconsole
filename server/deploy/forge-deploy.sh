@@ -18,6 +18,17 @@ $FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autol
 
 cd $FORGE_RELEASE_DIRECTORY/server
 
+if ! grep -qE '^DB_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+  echo "ERROR: DB_CONNECTION is not set in $FORGE_SITE_PATH/.env" >&2
+  echo "Laravel will fall back to ephemeral SQLite inside each release (data lost on deploy)." >&2
+  echo "Add PostgreSQL credentials to the Forge site Environment tab, then redeploy." >&2
+  exit 1
+fi
+
+if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
+  $FORGE_PHP artisan key:generate --force
+fi
+
 npm ci || npm install
 npm run build
 
