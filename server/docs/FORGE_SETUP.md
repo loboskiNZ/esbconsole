@@ -20,7 +20,7 @@ Repository layout:
 | **Project type** | Laravel |
 | **Web directory** | `/server/public` |
 | **Repository root** | Monorepo root (clone full `esbconsole` repo) |
-| **PHP version** | **8.3** (match `server/composer.json`: `^8.3`) |
+| **PHP version** | **8.4** (match `server/composer.json`: `^8.4`) |
 | **Laravel version** | **13.x** (match `laravel/framework`: `^13.8`) |
 
 ### Why `/server/public`
@@ -163,6 +163,6 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 |---------|--------------|-----|
 | 404 on all routes | Wrong web root | Set web directory to `/server/public` |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
-| Composer platform error | PHP version mismatch | Forge PHP 8.3+ |
+| Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |
 | Git clone fails on Forge | Deploy key missing | Add `band-portal-forge-deploy.pub` to GitHub deploy keys |
