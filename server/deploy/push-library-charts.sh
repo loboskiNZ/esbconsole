@@ -26,6 +26,9 @@ echo "Uploading chart files …"
 ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_INCOMING' '/home/forge/band.edandtheshadowboys.com/storage/app/library/charts'"
 rsync -avz --no-times "${SOURCE}/" "${REMOTE_HOST}:/home/forge/band.edandtheshadowboys.com/storage/app/library/charts/"
 
+echo "Normalizing chart directory permissions for PHP-FPM …"
+ssh "$REMOTE_HOST" "find '/home/forge/band.edandtheshadowboys.com/storage/app/library/charts' -type d -exec chmod 755 {} +; find '/home/forge/band.edandtheshadowboys.com/storage/app/library/charts' -type f -exec chmod 644 {} +"
+
 echo "Packaging charts tarball for deploy promotion …"
 TMP_TAR="$(mktemp /tmp/esb-charts.XXXXXX.tar.gz)"
 tar -czf "$TMP_TAR" -C "$(dirname "$SOURCE")" "$(basename "$SOURCE")"

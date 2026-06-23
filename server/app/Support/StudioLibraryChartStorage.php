@@ -9,11 +9,9 @@ class StudioLibraryChartStorage
 {
     public function diskRoot(): string
     {
-        $root = config('portal.library_storage_root');
-
-        if (! filled($root)) {
-            $root = storage_path('app/library');
-        }
+        $root = config('portal.library_storage_root')
+            ?: config('filesystems.disks.library.root')
+            ?: storage_path('app/library');
 
         return rtrim((string) $root, '/');
     }
@@ -44,11 +42,17 @@ class StudioLibraryChartStorage
             return false;
         }
 
+        $absolutePath = $this->absolutePath($storageReference);
+
+        if (is_readable($absolutePath)) {
+            return true;
+        }
+
         try {
             return Storage::disk((string) config('portal.library_chart_disk', 'library'))
                 ->exists($this->diskRelativePath($storageReference));
         } catch (\Throwable) {
-            return is_readable($this->absolutePath($storageReference));
+            return false;
         }
     }
 

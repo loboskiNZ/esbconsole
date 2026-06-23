@@ -13,8 +13,8 @@ mkdir -p $FORGE_SITE_PATH/storage/{app/public,logs}
 LIBRARY_STORAGE_ROOT="$FORGE_SITE_PATH/storage/app/library"
 LIBRARY_INCOMING="$LIBRARY_STORAGE_ROOT/incoming"
 mkdir -p "$LIBRARY_STORAGE_ROOT/charts" "$LIBRARY_INCOMING"
-chmod 750 "$LIBRARY_STORAGE_ROOT"
-chmod 750 "$LIBRARY_STORAGE_ROOT/charts"
+chmod 755 "$LIBRARY_STORAGE_ROOT"
+chmod 755 "$LIBRARY_STORAGE_ROOT/charts"
 chmod 777 "$LIBRARY_INCOMING"
 
 if [ -f "$LIBRARY_INCOMING/charts.tar.gz" ]; then
@@ -68,7 +68,12 @@ $FORGE_PHP artisan optimize
 $FORGE_PHP artisan storage:link
 $FORGE_PHP artisan migrate --force
 $FORGE_PHP artisan studio:library-promote-incoming
+$FORGE_PHP artisan studio:normalize-library-chart-permissions
 
 $ACTIVATE_RELEASE()
+
+$FORGE_PHP artisan studio:verify-chart-file-access 14 3 || {
+  echo "WARNING: chart file access verification failed for chart 14 (see output above)." >&2
+}
 
 $RESTART_QUEUES()

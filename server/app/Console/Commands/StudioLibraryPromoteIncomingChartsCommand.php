@@ -56,6 +56,8 @@ class StudioLibraryPromoteIncomingChartsCommand extends Command
             File::deleteDirectory($incomingCharts);
         }
 
+        $this->call('studio:normalize-library-chart-permissions');
+
         $this->info('Incoming chart promotion complete.');
 
         return self::SUCCESS;
