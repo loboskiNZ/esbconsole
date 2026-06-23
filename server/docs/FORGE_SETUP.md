@@ -43,7 +43,47 @@ That is **expected**. Uncheck it, finish site setup, then use the deploy script 
 
 ### Why `/server/public`
 
-The Band Portal Laravel application lives under `/server/`. Nginx must point the site document root at **`/server/public`**, not `/public` at repo root.
+The Band Portal Laravel application lives under `/server/`. Nginx must point the site document root at **`server/public`**, not `/public` at repo root.
+
+### Web directory (critical — fixes “No input file specified”)
+
+In Forge → **Sites** → `band.edandtheshadowboys.com` → **Meta** → **Web Directory**:
+
+| Setting | Correct value | Wrong values |
+|---------|---------------|--------------|
+| Web Directory | `server/public` | `public`, `/public`, `/server/public`, repo root |
+
+- **No leading slash** — use `server/public`, not `/server/public`
+- Forge zero-downtime deploys serve from `current/`; web directory is **relative to `current`**, so nginx resolves:
+
+  `/home/forge/band.edandtheshadowboys.com/current/server/public`
+
+If web directory is `public`, nginx looks for `current/public/index.php` (does not exist) → PHP returns **“No input file specified.”**
+
+After changing Web Directory, click **Update** and **Restart Nginx** on the server (Forge → Server → Nginx → Restart, or site **Actions**).
+
+**Verify on the server (SSH):**
+
+```bash
+# Must exist
+ls -la /home/forge/band.edandtheshadowboys.com/current/server/public/index.php
+
+# Nginx root must end in .../current/server/public
+sudo grep -E '^\s*root ' /etc/nginx/sites-enabled/band.edandtheshadowboys.com
+
+# Local health check on the droplet
+curl -sS -H "Host: band.edandtheshadowboys.com" http://127.0.0.1/up
+```
+
+Expected `curl` output: JSON `{"status":"ok",...}` or similar — not `No input file specified`.
+
+If Meta is correct but `root` in nginx is still wrong, open **Sites** → **Nginx Configuration** and ensure the `root` line is:
+
+```nginx
+root /home/forge/band.edandtheshadowboys.com/current/server/public;
+```
+
+Then save and reload nginx.
 
 ### Deploy script (adapt yours — do not drop Forge macros)
 
@@ -223,7 +263,8 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 |---------|--------------|-----|
 | “Your project does not contain a composer.json file” | Forge ran Composer at **repo root** before shim existed | Pull latest `main` (root `composer.json` added); replace deploy script with `server/deploy/forge-deploy.sh` |
 | “Composer could not find composer.json in …/releases/…” | Deploy runs at release root before root shim existed | Pull latest `main`; keep your script structure, add `.env`/`storage` symlinks into `server/` |
-| 404 on all routes | Wrong web root | Set web directory to `server/public` |
+| 404 / “No input file specified” on `/` or `/up` | Nginx **web root** not `server/public` | Forge Meta → Web Directory = `server/public`; restart nginx; verify `index.php` path via SSH (see §1) |
+| 404 on all routes (after root fixed) | Deploy failed before `$ACTIVATE_RELEASE()` | Fix deploy script; redeploy; confirm `current/server/vendor` exists |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |
