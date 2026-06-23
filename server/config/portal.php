@@ -45,4 +45,16 @@ return [
 
     'library_chart_disk' => env('PORTAL_LIBRARY_CHART_DISK', 'library'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Private chart PDF root (shared Forge storage — never public web root)
+    |--------------------------------------------------------------------------
+    |
+    | Must point to .../storage/app/library — not .../library/charts.
+    | storage_reference values already include the charts/ prefix.
+    |
+    */
+
+    'library_storage_root' => env('PORTAL_LIBRARY_STORAGE_ROOT'),
+
 ];

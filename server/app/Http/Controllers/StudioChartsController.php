@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Services\StudioChartAccessService;
+use App\Support\StudioLibraryChartStorage;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -48,8 +48,11 @@ class StudioChartsController extends Controller
         ]);
     }
 
-    public function chartFile(Chart $chart, StudioChartAccessService $chartAccess): Response|StreamedResponse
-    {
+    public function chartFile(
+        Chart $chart,
+        StudioChartAccessService $chartAccess,
+        StudioLibraryChartStorage $chartStorage,
+    ): Response|StreamedResponse {
         $user = auth()->user();
         abort_unless($user !== null && $user->person_id !== null, 403);
 
@@ -59,23 +62,18 @@ class StudioChartsController extends Controller
             abort(403);
         }
 
-        $disk = (string) config('portal.library_chart_disk', 'library');
         $path = $chart->storage_reference;
 
-        try {
-            $diskAvailable = $path !== null && Storage::disk($disk)->exists($path);
-        } catch (\Throwable) {
-            $diskAvailable = false;
-        }
-
-        if (! $diskAvailable) {
+        if ($path === null || ! $chartStorage->exists($path)) {
             abort(404);
         }
 
         $filename = $chart->original_filename ?: basename($path);
 
-        return Storage::disk($disk)->response($path, $filename, [
-            'Content-Type' => $chart->mime_type ?: 'application/pdf',
-        ]);
+        return $chartStorage->response(
+            $path,
+            $filename,
+            $chart->mime_type ?: 'application/pdf',
+        );
     }
 }

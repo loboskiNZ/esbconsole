@@ -27,7 +27,9 @@ if [ -d "$LIBRARY_INCOMING/charts" ]; then
   rm -rf "$LIBRARY_INCOMING/charts"
 fi
 
-if ! grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+if grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
+  sed -i "s|^PORTAL_LIBRARY_STORAGE_ROOT=.*|PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT|" "$FORGE_SITE_PATH/.env"
+else
   echo "PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT" >> "$FORGE_SITE_PATH/.env"
 fi
 
