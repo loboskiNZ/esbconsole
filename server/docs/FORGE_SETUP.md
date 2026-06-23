@@ -312,6 +312,27 @@ If the Forge site `.env` has **no** `DB_CONNECTION`, Laravel defaults to **SQLit
 
 After the first successful PostgreSQL deploy, run migrations (the deploy script runs `php artisan migrate --force` automatically). Create a new invite link if onboarding data was lost.
 
+### Studio chart library storage (PH051.3.1)
+
+Chart metadata lives in PostgreSQL. Chart PDFs live in **private shared storage** — never under `server/public`.
+
+| Setting | Value |
+|---------|-------|
+| `PORTAL_LIBRARY_STORAGE_ROOT` | `/home/forge/band.edandtheshadowboys.com/storage/app/library` |
+| `PORTAL_LIBRARY_CONNECTION` | `library` |
+| `PORTAL_LIBRARY_CHART_DISK` | `library` |
+
+The Forge deploy script creates `storage/app/library/charts/` (private) and `storage/app/library/incoming/` (upload staging).
+
+**Sync chart PDFs from Director/backend:**
+
+```bash
+./server/deploy/push-library-charts.sh --deploy   # esb-band-ops SSH + deploy extract
+./server/deploy/rsync-library-charts.sh         # direct rsync (forge@ SSH)
+```
+
+Source defaults to `backend/storage/app/private/charts/`.
+
 ### Create a Chapter 1 invite link (PH048C)
 
 Run **as user `forge`** (Forge → Site → **Commands**, or SSH as `forge`).

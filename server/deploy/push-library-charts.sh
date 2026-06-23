@@ -22,12 +22,15 @@ if [[ ! -d "$SOURCE" ]]; then
   exit 1
 fi
 
-echo "Packaging charts from $SOURCE …"
+echo "Uploading chart files …"
+ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_INCOMING' '/home/forge/band.edandtheshadowboys.com/storage/app/library/charts'"
+rsync -avz "${SOURCE}/" "${REMOTE_HOST}:/home/forge/band.edandtheshadowboys.com/storage/app/library/charts/"
+
+echo "Packaging charts tarball for deploy promotion …"
 TMP_TAR="$(mktemp /tmp/esb-charts.XXXXXX.tar.gz)"
 tar -czf "$TMP_TAR" -C "$(dirname "$SOURCE")" "$(basename "$SOURCE")"
 
-echo "Uploading to ${REMOTE_HOST}:${REMOTE_TAR} …"
-ssh "$REMOTE_HOST" "mkdir -p '$REMOTE_INCOMING'"
+echo "Uploading tarball to ${REMOTE_HOST}:${REMOTE_TAR} …"
 scp "$TMP_TAR" "${REMOTE_HOST}:${REMOTE_TAR}"
 rm -f "$TMP_TAR"
 

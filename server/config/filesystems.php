@@ -40,11 +40,7 @@ return [
 
         'library' => [
             'driver' => 'local',
-            'root' => env('PORTAL_LIBRARY_STORAGE_ROOT') ?: (
-                is_dir(base_path('../backend/storage/app/private'))
-                    ? base_path('../backend/storage/app/private')
-                    : storage_path('app/library')
-            ),
+            'root' => env('PORTAL_LIBRARY_STORAGE_ROOT', storage_path('app/library')),
             'serve' => false,
             'throw' => false,
             'report' => false,

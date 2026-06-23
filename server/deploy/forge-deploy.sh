@@ -65,6 +65,7 @@ npm run build
 $FORGE_PHP artisan optimize
 $FORGE_PHP artisan storage:link
 $FORGE_PHP artisan migrate --force
+$FORGE_PHP artisan studio:library-promote-incoming
 
 $ACTIVATE_RELEASE()
 
