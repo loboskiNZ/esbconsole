@@ -16,7 +16,7 @@
     </head>
     <body
         class="esb-portal esb-portal--desktop antialiased"
-        x-data="portalLanding()"
+        x-data="portalLanding(@js(old('username', '')), @js($errors->has('login')))"
         x-cloak
     >
         {{-- Stage 1: Background --}}
@@ -91,6 +91,9 @@
                             Your Studio account has been created. Log in to enter The Studio.
                         </p>
                     @endif
+
+                    <input type="hidden" name="username" :value="username">
+
                     <template x-if="loginStep === 'username'">
                         <div>
                             <p class="esb-portal__label mb-4">Enter your username</p>
@@ -99,7 +102,6 @@
                             <input
                                 id="portal-username"
                                 type="text"
-                                name="username"
                                 autocomplete="username"
                                 class="esb-portal__input mb-4"
                                 placeholder="Username"

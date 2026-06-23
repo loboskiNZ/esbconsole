@@ -323,6 +323,29 @@ class PortalAuthenticationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_failed_login_restores_password_step_with_username(): void
+    {
+        User::factory()->create([
+            'username' => 'knownuser',
+            'password' => 'Password1!',
+        ]);
+
+        $response = $this->from('/')->post('/login', [
+            'username' => 'knownuser',
+            'password' => 'WrongPass1!',
+        ]);
+
+        $response->assertRedirect('/');
+        $response->assertSessionHasErrors('login');
+        $response->assertSessionHas('_old_input');
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('knownuser', false)
+            ->assertSee('Enter your password', false)
+            ->assertSee('type="hidden" name="username"', false);
+    }
+
     public function test_instrument_reference_catalog_exists_without_seeders(): void
     {
         $this->assertGreaterThan(0, InstrumentReference::count());

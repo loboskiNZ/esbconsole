@@ -6,7 +6,9 @@ const delay = (ms) =>
 
 const motionDelay = (ms) => (prefersReducedMotion() ? 0 : ms);
 
-export function portalLanding() {
+export function portalLanding(restoreUsername = '', loginFailed = false) {
+    const restoredUsername = typeof restoreUsername === 'string' ? restoreUsername : '';
+
     return {
         bgLoaded: false,
         bgVisible: false,
@@ -15,11 +17,11 @@ export function portalLanding() {
         welcomeVisible: false,
         welcomeSettled: false,
         loginVisible: false,
-        loginStep: 'username',
-        username: '',
+        loginStep: restoredUsername !== '' ? 'password' : 'username',
+        username: restoredUsername,
         password: '',
-        showLoginButton: false,
-        showForgotPassword: false,
+        showLoginButton: restoredUsername !== '' && loginFailed,
+        showForgotPassword: restoredUsername !== '' && loginFailed,
 
         init() {
             const image = this.$refs.backgroundImage;
@@ -87,18 +89,15 @@ export function portalLanding() {
         },
 
         submitLogin(event) {
-            event.preventDefault();
-
             if (this.loginStep === 'username') {
+                event.preventDefault();
                 this.continueFromUsername();
                 return;
             }
 
             if (! this.username.trim() || ! this.password) {
-                return;
+                event.preventDefault();
             }
-
-            this.$refs.loginForm.submit();
         },
     };
 }
