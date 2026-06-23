@@ -11,19 +11,16 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Tests\Concerns\CreatesLibrarySchema;
 use Tests\TestCase;
 
 class PortalStudioChartsTest extends TestCase
 {
-    use CreatesLibrarySchema;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->createLibrarySchema();
         config([
             'portal.band_id' => 1,
             'portal.library_chart_disk' => 'library',

@@ -23,6 +23,11 @@ class StudioLibraryAvailability
         return filled($connection) ? (string) $connection : null;
     }
 
+    public function schemaConnectionName(): string
+    {
+        return $this->connectionName() ?? (string) config('database.default');
+    }
+
     public function isAvailable(): bool
     {
         if ($this->available !== null) {
@@ -30,9 +35,7 @@ class StudioLibraryAvailability
         }
 
         try {
-            $schema = $this->connectionName() !== null
-                ? Schema::connection($this->connectionName())
-                : Schema::connection(config('database.default'));
+            $schema = Schema::connection($this->schemaConnectionName());
 
             foreach (self::REQUIRED_TABLES as $table) {
                 if (! $schema->hasTable($table)) {

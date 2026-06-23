@@ -13,6 +13,7 @@ class SongInstrumentPart extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'public_id',
         'song_id',
         'instrument_part_id',
         'chart_id',

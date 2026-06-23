@@ -35,13 +35,13 @@ return [
     | Governed music library (read-only from portal)
     |--------------------------------------------------------------------------
     |
-    | When portal and Director share PostgreSQL, leave library_connection null
-    | so library models use the default connection. Chart PDFs are served from
-    | private storage — never via public URLs.
+    | When portal and Director share PostgreSQL, set PORTAL_LIBRARY_CONNECTION=library
+    | and leave LIBRARY_DB_* unset so the library connection uses portal DB creds.
+    | Chart PDFs are served from private storage — never via public URLs.
     |
     */
 
-    'library_connection' => env('PORTAL_LIBRARY_CONNECTION') ?: null,
+    'library_connection' => env('PORTAL_LIBRARY_CONNECTION', 'library'),
 
     'library_chart_disk' => env('PORTAL_LIBRARY_CHART_DISK', 'library'),
 

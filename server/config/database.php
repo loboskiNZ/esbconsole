@@ -99,6 +99,46 @@ return [
             'sslmode' => env('DB_SSLMODE', 'prefer'),
         ],
 
+        /*
+        |--------------------------------------------------------------------------
+        | Governed music library (Studio read connection)
+        |--------------------------------------------------------------------------
+        |
+        | Defaults to the portal database credentials. When the master library
+        | lives in a separate PostgreSQL database, set LIBRARY_DB_* env vars.
+        |
+        */
+
+        'library' => [
+            'driver' => 'pgsql',
+            'url' => env('LIBRARY_DB_URL'),
+            'host' => env('LIBRARY_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('LIBRARY_DB_PORT', env('DB_PORT', '5432')),
+            'database' => env('LIBRARY_DB_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('LIBRARY_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('LIBRARY_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('LIBRARY_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
+        ],
+
+        'library_source' => [
+            'driver' => 'pgsql',
+            'url' => env('LIBRARY_SYNC_SOURCE_URL'),
+            'host' => env('LIBRARY_SYNC_SOURCE_HOST', env('LIBRARY_DB_HOST', env('DB_HOST', '127.0.0.1'))),
+            'port' => env('LIBRARY_SYNC_SOURCE_PORT', env('LIBRARY_DB_PORT', env('DB_PORT', '5432'))),
+            'database' => env('LIBRARY_SYNC_SOURCE_DATABASE', env('LIBRARY_DB_DATABASE', env('DB_DATABASE', 'laravel'))),
+            'username' => env('LIBRARY_SYNC_SOURCE_USERNAME', env('LIBRARY_DB_USERNAME', env('DB_USERNAME', 'root'))),
+            'password' => env('LIBRARY_SYNC_SOURCE_PASSWORD', env('LIBRARY_DB_PASSWORD', env('DB_PASSWORD', ''))),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('LIBRARY_SYNC_SOURCE_SSLMODE', env('LIBRARY_DB_SSLMODE', env('DB_SSLMODE', 'prefer'))),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
