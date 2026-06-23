@@ -17,10 +17,19 @@ class Chart extends Model
     protected $fillable = [
         'song_id',
         'title',
+        'original_filename',
         'storage_reference',
         'checksum',
+        'mime_type',
+        'file_size',
         'notes',
+        'import_batch_id',
     ];
+
+    public function importBatch(): BelongsTo
+    {
+        return $this->belongsTo(ImportBatch::class);
+    }
 
     public function song(): BelongsTo
     {
