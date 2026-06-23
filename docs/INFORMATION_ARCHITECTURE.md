@@ -1,6 +1,6 @@
 # Information Architecture
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical navigation structure, hierarchy, and visibility rules for the Live Performance Orchestration System
 
@@ -205,6 +205,9 @@ Live Show View receives shortest path from Performance selection. Master Library
 | Lights | Light Mode, Action |
 | Musicians | Musician, Device, Performance |
 | Band People | Person, Person Secure Field, Person File, Instrument Reference, Person IEM Setting |
+| Band Portal (login) | User (authentication only) |
+| Band Portal (invitation) | Person Invitation (proposed), Person |
+| Band Portal (onboarding) | Person, Person File, Person IEM Setting, onboarding progress (proposed) |
 | Assignments | Assignment, Musician, Instrument Part, Performance |
 | Monitor Assignments | Musician, Instrument Part, Performance |
 | Stage Plot | Stage Plot, Show |
@@ -224,7 +227,53 @@ Live Show View receives shortest path from Performance selection. Master Library
 | Musician Device View | Local Show Runtime | Yes |
 | Active Show preparation | Director Local / Cloud | No (sync before show) |
 | Master Library | Director Local / Cloud | No |
+| Band Portal (public) | Cloud (`/server/`) | No |
+| Band Portal (authenticated) | Cloud (`/server/`) | No |
 
 ---
 
-End of Information Architecture — PH003
+## Band Portal Information Architecture (PH047)
+
+Band Portal (`band.edandtheshadowboys.com`) is a **cloud-only** surface. It does not replace Local Show Runtime or Director Local preparation flows.
+
+### Entry surfaces
+
+| Surface | Visibility | Auth |
+|---------|------------|------|
+| Landing / staged login | Public | Username → password scaffold (PH046.01A); credentials not yet enforced |
+| Invitation accept | Token link (unlisted) | Creates User linked to Person |
+| Authenticated portal | Post-login | Session (Laravel) |
+
+### Staged login UX (current scaffold)
+
+PH046.01A landing implements a **staged** login presentation (username step → password step). Authentication is **not yet implemented**. The **Forgot password** affordance is visible in scaffold only — **must remain non-functional** until PH047 implementation reaches the approved forgot-password phase.
+
+### Approved flows (documented — not implemented)
+
+```
+Administrator → Band People → select/create Person → send invitation
+Invitee → open token URL → choose username + password → User created → Person linked
+Invitee → progressive onboarding (profile, travel, documents, instruments, IEM)
+Member → username + password login → authenticated portal home
+```
+
+### Navigation hierarchy (post-auth — proposed)
+
+| Level | Scope | Primary user |
+|-------|-------|--------------|
+| Portal home | Band member dashboard | Invited Person / User |
+| My profile | Person record (self-service permitted fields) | Member |
+| Onboarding | Progressive Person completion | New invitee |
+| Administration | Person list, invitations, User access | Administrator |
+
+Band Portal navigation is **Person-centric** for profile data and **User-centric** only for account/security settings (username change policy TBD; password change when implemented).
+
+### Separation rules
+
+- Screens that edit travel, passport, banking, instruments, or IEM data operate on **Person** — never on User.
+- Screens that manage login identifier or password operate on **User** — never on Person.
+- Administrator invitation management operates on **Person Invitation** + **Person** — not by writing credentials onto Person.
+
+---
+
+End of Information Architecture — PH047

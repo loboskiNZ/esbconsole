@@ -1,6 +1,6 @@
 # Band Portal — Laravel Forge Setup
 
-Status: Infrastructure baseline (pre-feature)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Site: **https://band.edandtheshadowboys.com**  
 Repository layout:
 
@@ -262,6 +262,14 @@ Separate from the **Git deploy key** above. This lets you (and Cursor) SSH as `f
 
 **Deploy from workstation**
 
+### Deployment policy (PH047)
+
+| Rule | Statement |
+|------|-----------|
+| **Default** | After pushing Band Portal changes to `main`, run `./server/deploy/remote-deploy.sh --push` (or verify deploy hook completed) |
+| **Manual Forge deploy** | Operator uses Forge **Deploy Now** only for **emergency recovery** or **explicit infrastructure intervention** |
+| **Verification** | Confirm `curl -sS https://band.edandtheshadowboys.com/up` returns healthy status |
+
 Option A — **Deploy hook** (recommended for Cursor automation):
 
 1. Forge → Site → **Deployments** → **Deploy hook** → copy URL  
@@ -300,7 +308,8 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 
 ## 7. Explicit non-scope (this phase)
 
-- Band People onboarding UI
+- Band People onboarding UI (beyond landing scaffold)
+- Authentication implementation (PH047 governs; follow-up)
 - Invitation system
 - Website template integration from `/mockup/`
 - Shared schema migrations from `/backend/` (follow-up sync phase)

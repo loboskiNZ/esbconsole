@@ -1,6 +1,6 @@
 # Data Architecture & Persistence Model
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical data ownership, persistence authority, sync boundaries, and lifecycle rules before database schema design
 
@@ -356,22 +356,34 @@ Logical schema for file persistence: `docs/DATABASE_ARCHITECTURE.md` §12.
 
 ## 10. User/Auth Data Model
 
-### Approved Authentication
+### Approved Authentication (PH047)
 
 **Laravel authentication** is approved for user identity and session management.
 
-### User vs Musician vs Person
+**Band Portal** (`band.edandtheshadowboys.com` / `/server/`) is the first consumer of the shared identity domain.
 
-| Concept | Definition |
-|---------|------------|
-| **User** | Authentication identity — login credentials, roles, permissions. |
-| **Musician** | Operational domain entity — performance roster, Devices, Capabilities, Assignments. |
-| **Person** | Production personnel profile — legal identity, travel, documents, onboarding, IEM templates. |
+| Decision | Statement |
+|----------|-----------|
+| **Login method** | Username + password (local credentials) |
+| **Login identifier** | `username` on User — not email |
+| **Email** | Profile/contact data on Person unless a future decision approves email login |
+| **Account creation** | Invitation flow only — no self-registration |
+| **Password storage** | Laravel `Hash` only — hashed, never encrypted reversibly |
+| **Forgot password** | Unavailable in UX until the staged login flow reaches an approved implementation phase |
+
+### User vs Musician vs Person (PH047)
+
+| Concept | Definition | Stores |
+|---------|------------|--------|
+| **User** | Authentication identity — portal login credentials, access state, roles/permissions. | `username`, password hash, session linkage — **not** travel, passport, banking, instruments, or IEM data |
+| **Musician** | Operational domain entity — performance roster, Devices, Capabilities, Assignments. | Runtime roster data |
+| **Person** | Production personnel profile — legal identity, travel, documents, onboarding, IEM templates. | Profile, travel, dietary, instruments, files, IEM templates — **not** login credentials |
 
 Users, Musicians, and Persons are **related but distinct**:
 
-- A Musician may have a linked User account (for device login).
-- A Person record holds Band People / production personnel data shared with website workflows.
+- **User must link to Person** for Band Portal member accounts (direct `person_id` FK preferred).
+- **Login details must never be stored on Person** — no username, password, hash, or invitation token on `people` or Person child tables.
+- A Musician may have a linked User account (for device login) — separate from Person ↔ User linkage.
 - **Musician ↔ Person mapping is not yet implemented** — follow-up phase.
 - Not every User is a Musician (Director, Tech, Administrator).
 - Not every Musician requires a User (guest/sub — policy decision at implementation).
@@ -381,8 +393,29 @@ Users, Musicians, and Persons are **related but distinct**:
 | Rule | Statement |
 |------|-----------|
 | **Encrypted fields** | Bank account, passport number, Air New Zealand points stored in Person Secure Fields only — encrypted at rest. |
+| **Encryption keys** | Dedicated environment encryption keys may be used for Person secure fields — **not** for login passwords. |
+| **APP_KEY** | Laravel application key — **not** a password storage strategy. |
 | **Private files** | Person Files default to non-public; passport photos and travel documents require access control. |
 | **IEM templates** | Person IEM Settings are preference templates — not authoritative live console bus settings. |
+
+### Invitation flow (approved — not implemented)
+
+1. Administrator creates or selects a **Person**.
+2. Administrator sends a **Person Invitation** (random, time-limited, single-use, revocable token).
+3. Invitee opens token link on Band Portal.
+4. Invitee creates **username** and **password**.
+5. **User** record is created and linked to Person.
+6. Person onboarding continues progressively.
+
+### Proposed future persistence (document only)
+
+| Entity / table | Purpose |
+|----------------|---------|
+| `users` | Canonical auth table (extend M1 with `username`, `person_id`) |
+| `person_user_links` | Only if many-to-many User↔Person is later approved; default is direct FK |
+| `person_invitations` | Invitation tokens (hash at rest), expiry, revocation |
+| `onboarding_sessions` / `onboarding_progress` | Optional progressive onboarding state — follow-up |
+| `password_reset_tokens` | Laravel conventions when forgot-password phase is approved |
 
 ### Role Permissions
 
@@ -579,6 +612,7 @@ Initial lifecycle states for governed entities and packages.
 | **Performance lock** | Performance in `live` state blocks inbound cloud sync. |
 | **File governance** | All production files are managed assets with metadata and object references. |
 | **Musician boundary** | Musician edits constrained to permitted self-service scope. |
+| **Person/User boundary** | Login credentials on User only; Person profile and secure fields never store auth data (PH047). |
 | **Runtime isolation** | Runtime state never canonical in cloud during live performance. |
 | **Explicit sync only** | No background silent sync of show-critical data during performance. |
 | **Show must go on** | Data architecture must not introduce performance-blocking dependencies. |

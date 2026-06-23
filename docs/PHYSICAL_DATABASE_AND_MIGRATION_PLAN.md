@@ -1,6 +1,6 @@
 # Physical Database & Migration Plan
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Physical database technology choices, migration strategy, initial schema plan, and delivery governance before any database implementation
 
@@ -188,7 +188,8 @@ Migrations are organised into domain groups. Each group may comprise one or more
 
 | # | Domain group | Logical tables (conceptual) |
 |---|--------------|----------------------------|
-| M1 | **Identity / access** | users, roles, permissions, role_user, musician_user_links |
+| M1 | **Identity / access** | users (`username`, `person_id`, password hash), roles, permissions, role_user, musician_user_links, sessions |
+| M1b | **Band Portal invitations** (proposed) | person_invitations; optional onboarding_progress; password_reset_tokens when forgot-password approved |
 | M2 | **Band / organisation** | bands |
 | M3 | **Musicians / devices** | musicians, devices |
 | M3a | **Band People / production personnel** | people, person_secure_fields, person_files, instrument_reference, person_instruments, person_iem_settings |
@@ -212,6 +213,8 @@ Order respects foreign key dependencies (parent before child):
 
 ```
 M1  Identity / access
+    ↓
+M1b Band Portal invitations (proposed — after M1 users + M3a people)
     ↓
 M2  Band / organisation
     ↓
@@ -247,6 +250,8 @@ M14 Supporting indexes and constraints
 | Musicians before Assignments | Assignment maps Musician |
 | Band (M2) before People (M3a) | `people.band_id` FK |
 | People before Person child tables | Secure fields, files, instruments, IEM settings FK to `people` |
+| Users (M1) before Person Invitations (M1b) | `person_invitations.person_id` FK; invitation creates User |
+| People (M3a) before `users.person_id` | User links to existing Person |
 | Instrument Reference before Person Instruments | `person_instruments.instrument_id` FK |
 | Instrument Parts before Capabilities, Assignments | Role catalog prerequisite |
 | Songs before Cues before Actions | Aggregate hierarchy |
@@ -285,6 +290,21 @@ Migration `2026_06_23_110000_create_band_people_schema.php` (commit `2d53043`).
 | `instrument_reference` | Personnel instrument catalog (not `instrument_parts`) |
 | `person_instruments` | Person ↔ Instrument Reference pivot |
 | `person_iem_settings` | IEM preference templates (not live bus settings) |
+
+**PH047 constraint:** `people` and all M3a child tables **must not** gain username, password, password hash, invitation token, or session columns. Authentication belongs in M1 `users` and M1b `person_invitations`.
+
+### M1 / M1b Identity — proposed extensions (PH047 — not implemented)
+
+| Table | Purpose | Key columns (conceptual) |
+|-------|---------|--------------------------|
+| `users` | Band Portal + shared auth | `username` (unique login), `password` (hash), `person_id` (FK → `people`), `band_id`, standard Laravel timestamps |
+| `person_invitations` | Invitation flow | `person_id`, `token` (hash at rest), `expires_at`, `revoked_at`, `accepted_at`, `invited_by_user_id` |
+| `password_reset_tokens` | Forgot password (deferred) | Laravel default schema when approved |
+| `onboarding_progress` | Optional progressive onboarding | `person_id`, step key, completed_at — follow-up only |
+
+Alternative `portal_users` table is **not recommended** unless strict application isolation is later required — prefer single M1 `users` table with `username` login identifier.
+
+`person_user_links` pivot is **not required** if one-to-one User↔Person is maintained via `users.person_id`.
 
 **Governance:** Same migration runs in cloud, Director local, and Local Show Runtime — no website-only fork.
 
@@ -504,7 +524,7 @@ Audit tables live primarily on **cloud** for long-term retention. Runtime captur
 | **Band** | One initial Band ("Ed and the Shadow Boys") | Required scope root |
 | **Roles** | Director, Musician, Tech, Administrator | Permission foundation |
 | **Permissions** | CRUD scopes per role | Laravel Spatie or native — implementation choice |
-| **Admin user** | One Director/Admin bootstrap user | Created via artisan command — **not hard-coded email in migration** |
+| **Admin user** | One Director/Admin bootstrap user | Created via artisan command — **not hard-coded email in migration**; PH047: bootstrap uses `username` + password hash |
 | **System states** | Lifecycle enum reference data if lookup tables used | Optional |
 
 ### Explicitly NOT seeded without approval

@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -8,6 +8,7 @@ Purpose: Canonical entity definitions for the Live Performance Orchestration Sys
 
 ```
 Band
+├── Users (authentication — Band Portal)
 ├── Musicians
 ├── People (Production Personnel)
 ├── Devices
@@ -38,7 +39,7 @@ Band
 
 | Layer | Entities |
 |-------|----------|
-| Master Library (global, reusable) | Band, Musician, Person, Device, Instrument Part, Instrument Reference, Capability, Song, SongInstrumentPart, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
+| Master Library (global, reusable) | Band, User, Musician, Person, Device, Instrument Part, Instrument Reference, Capability, Song, SongInstrumentPart, Chart, Snippet, Cue, Action, Mix Move, Light Mode, Production Configuration, Stage Plot, Tech Rider |
 | Operational (show execution) | Show, Performance, Soundcheck, Readiness, Assignment, Local Runtime, Sync State, Ableton Protocol State |
 
 Shows reference master assets. Assets are not duplicated per Show.
@@ -111,12 +112,13 @@ Person is the canonical **Band People / Production Personnel** domain — shared
 - Created and maintained during onboarding and ongoing production administration.
 - Persists across Shows and Performances as master personnel data.
 - Sensitive values never stored in plain text on the Person record itself.
+- **Login credentials must never be stored on Person** — no username, password, password hash, invitation token, or access-state columns on `people` or Person child tables.
 - Production artifacts (Stage Plot, Tech Rider, input lists, monitor plans, festival packs) are **generated from** canonical Person and related production data — not stored as duplicate personnel schemas.
 
 ### Must Not Be Confused With
 
+- **User** — authentication identity for Band Portal login; links to Person but does not replace Person.
 - **Musician** — operational runtime roster entity for Performances, Assignments, Devices, and Capabilities.
-- **User** — authentication identity; not a Person or Musician by default.
 - **Instrument Part** — operational performance role catalog for Assignments and Capabilities.
 - **Instrument Reference** — personnel/onboarding instrument catalog; separate from Instrument Part for now.
 - **Person IEM Setting** — preference template only; live console bus settings are performance/runtime scoped and may copy from a selected template when applied.
@@ -233,6 +235,86 @@ A named in-ear monitor preference template for a Person: level presets for vocal
 
 - **Monitor Assignment / console bus settings** — live routing and mix state during Soundcheck and performance.
 - **Mix Move** — reusable X32 parameter group asset for cue Actions.
+
+---
+
+## User (Band Portal Authentication)
+
+### Definition
+
+The **authentication identity** for Band Portal (`band.edandtheshadowboys.com` / `/server/`). Stores portal login credentials, access state, and session linkage — not production personnel profile data.
+
+### Ownership / Source of Truth
+
+- **Authoritative:** Cloud identity domain (shared PostgreSQL — same canonical database as Band People).
+- **First consumer:** Band Portal (`/server/`). Director local app may share the identity domain in a later phase.
+
+### Key Relationships
+
+- **Must link to exactly one Person** for Band Portal member accounts (direct `person_id` FK preferred; `person_user_links` pivot only if many-to-many is later approved).
+- **Must not link to Musician by default** — Musician ↔ User linkage remains a separate operational concern (PH007 M1 `musician_user` pivot).
+- May hold roles/permissions for portal access (Administrator, invited member, etc.) — role model follows M1 identity domain.
+
+### Stores (authentication only)
+
+| Field class | Examples | Storage rule |
+|-------------|----------|--------------|
+| Login identifier | `username` | Unique; used for Band Portal login |
+| Credential | `password` | **Hashed only** via Laravel `Hash` — never encrypted reversibly, never displayed |
+| Access state | active, suspended, email_verified_at (if used) | On User record |
+| Session / remember token | Laravel session conventions | Standard framework tables |
+
+### Must Not Store on User
+
+Travel, passport, banking, dietary, instrument preferences, IEM templates, person files, or any Person secure-field payloads. Those belong on **Person** and **Person Secure Fields**.
+
+### Must Not Be Confused With
+
+- **Person** — canonical human/profile record; not an authentication record.
+- **Musician** — operational roster entity for live performance workflows.
+- **Person Invitation** — time-limited account-creation artefact; not a User until accepted.
+
+### Approved Account Creation Path (PH047)
+
+1. Administrator creates or selects a **Person**.
+2. Administrator sends a **Person Invitation** (time-limited token).
+3. Invitee opens token link on Band Portal.
+4. Invitee chooses **username** and **password**.
+5. **User** record is created, linked to Person.
+6. Person onboarding continues progressively (profile, travel, documents, instruments, IEM templates).
+
+Self-registration without invitation is **not** approved for Band Portal in PH047.
+
+### Login Model (PH047)
+
+- **Approved:** Local username + password login on Band Portal.
+- **Username** is the login identifier.
+- **Email** on Person remains profile/contact data unless a future decision approves email login.
+
+### Password Rules (PH047)
+
+- Passwords are **hashed** with Laravel password hashing — not encrypted.
+- No custom reversible password encryption key.
+- `APP_KEY` is **not** a password storage strategy.
+- Passwords must never be decrypted or displayed.
+
+---
+
+## Person Invitation (proposed — not implemented)
+
+### Definition
+
+A time-limited, single-use, revocable token authorising creation of a **User** account linked to a specific **Person**.
+
+### Governance
+
+| Rule | Statement |
+|------|-----------|
+| Token | Cryptographically random; not guessable |
+| Lifetime | Time-limited; expires |
+| Use | Single-use on acceptance |
+| Revocation | Administrator may revoke before acceptance |
+| Storage | Token hash only at rest — not plaintext in logs |
 
 ---
 

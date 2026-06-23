@@ -1,6 +1,6 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
@@ -88,12 +88,12 @@ Each domain defines a bounded area of persistence responsibility.
 
 | Attribute | Value |
 |-----------|-------|
-| **Purpose** | Authentication identities, roles, permissions, and User–Musician linkage. |
-| **Entities** | User, role/permission records, session references, User↔Musician link |
-| **Primary relationships** | User may link to zero or one Musician; Users hold roles (Director, Musician, Tech, Administrator) |
+| **Purpose** | Authentication identities, roles, permissions, User↔Person linkage (Band Portal), and User↔Musician linkage (operational). |
+| **Entities** | User, Person Invitation (proposed), role/permission records, session references, User↔Musician link, User↔Person link |
+| **Primary relationships** | User **must** link to exactly one Person for Band Portal accounts; User may link to zero or one Musician; Users hold roles (Director, Musician, Tech, Administrator) |
 | **Cloud** | Authoritative for Users, roles, credentials (Laravel auth) |
 | **Local runtime** | Auth cache/session only; no canonical User creation at show time |
-| **Notes** | User ≠ Musician. See §13. |
+| **Notes** | User ≠ Person ≠ Musician. Person holds profile data only — no login fields. See §13. |
 
 ### Band / Organisation Domain
 
@@ -115,7 +115,7 @@ Each domain defines a bounded area of persistence responsibility.
 | **Primary relationships** | Person belongs to Band; Person has secure fields, files, instruments, IEM settings; Person Instrument links Person ↔ Instrument Reference |
 | **Cloud** | Canonical after publish |
 | **Local runtime** | Cached replica (same schema — not a fork) |
-| **Notes** | Musician remains the operational roster entity; Person ↔ Musician mapping is follow-up. Person IEM Settings are templates only — not live console bus state. Sensitive values encrypted at rest via Person Secure Fields. Person Files private by default. Instrument Reference is separate from Instrument Part. |
+| **Notes** | Musician remains the operational roster entity; Person ↔ Musician mapping is follow-up. **Person must not store login credentials** — User is the auth record. Person IEM Settings are templates only — not live console bus state. Sensitive values encrypted at rest via Person Secure Fields. Person Files private by default. Instrument Reference is separate from Instrument Part. |
 
 ### Music Library Domain
 
@@ -681,18 +681,42 @@ Each File Asset record stores:
 
 ## 13. Identity and Access Persistence
 
-### User vs Musician
+### User vs Person vs Musician (PH047)
 
 | Concept | Persistence |
 |---------|-------------|
-| **User** | Laravel auth identity — credentials, roles, permissions |
-| **Musician** | Domain person record — global, reusable |
+| **User** | Laravel auth identity — `username`, password hash (Laravel `Hash`), roles, permissions, access state |
+| **Person** | Production personnel profile — legal name, contact, travel, dietary, instruments, files, IEM templates; sensitive values in Person Secure Fields |
+| **Musician** | Domain person record — global, reusable operational roster |
 
 Related but distinct:
 
-- Musician may link to User (device login)
-- Not every User is a Musician (Director, Tech, Administrator)
-- Musician self-service edits limited to permitted fields
+- **User must link to Person** for Band Portal (direct `person_id` on `users` preferred).
+- **Login credentials must never be stored on Person** or Person child tables.
+- Musician may link to User (device login) — orthogonal to Person ↔ User.
+- Not every User is a Musician (Director, Tech, Administrator).
+- Not every Musician requires a User (guest/sub — policy decision at implementation).
+- Musician self-service edits limited to permitted fields.
+
+### Band Portal login (PH047)
+
+| Attribute | Rule |
+|-----------|------|
+| Login identifier | `username` — unique |
+| Password | Hashed via Laravel password hashing — never encrypted reversibly |
+| Email | On Person as contact — not login unless future decision |
+| Account creation | Person Invitation flow — admin invites, invitee sets credentials |
+| Forgot password | Deferred — UX link non-functional until approved phase |
+
+### Proposed tables (not implemented)
+
+| Table | Domain | Notes |
+|-------|--------|-------|
+| `users` | M1 extension | Add `username`, `person_id`; password via Laravel conventions |
+| `person_invitations` | M1b (proposed) | Token hash, `person_id`, expires_at, revoked_at, accepted_at |
+| `person_user_links` | M1 (optional) | Only if many-to-many approved; default is `users.person_id` |
+| `password_reset_tokens` | M1 | Laravel default when forgot-password is approved |
+| `onboarding_progress` | M1b (optional) | Progressive Person onboarding state |
 
 ### Role persistence
 

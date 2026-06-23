@@ -254,4 +254,33 @@
 
 ---
 
-End of Decision Log — PH046
+## PH047 — Band Portal Authentication & Canonical Identity
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 163 | **Person** is the canonical human/profile record — legal name, artistic name, contact, travel, dietary, passport (secure), banking (secure), instruments, files, IEM templates. Person is **not** an authentication record. | Separates production personnel data from login; aligns with PH045 Band People schema. |
+| 164 | **User** is the authentication identity — portal login credentials and access state. User **must link to Person** but must **not** store travel, passport, banking, instrument, or IEM data. | Clear data boundary; prevents credential leakage into personnel exports. |
+| 165 | **Username/password login** is approved for Band Portal. Login identifier is `username`. Email remains profile/contact data on Person unless a future decision approves email login. | Operator preference; staged login UX (PH046.01A) aligns with username-first flow. |
+| 166 | Passwords are **hashed** with Laravel password hashing (`Hash` facade / `bcrypt`/`argon`) — **not encrypted**. No custom reversible password encryption. `APP_KEY` is not a password storage strategy. Passwords must never be decrypted or displayed. | Industry standard; prevents recoverable credential storage. |
+| 167 | Sensitive Person data (passport number, bank account, Air New Zealand points) remains in **`person_secure_fields`** with application encryption. Dedicated environment encryption keys may be considered for secure fields only — not login passwords. | PH045 encryption model preserved; auth and PII encryption concerns separated. |
+| 168 | **Invitation flow** is the approved account-creation path: Admin creates/selects Person → sends time-limited invitation → invitee opens token link → invitee creates username and password → User created and linked to Person → progressive Person onboarding. Self-registration without invitation is not approved. | Controlled onboarding; Person exists before portal access. |
+| 169 | **Login details must never be stored on Person** — no username, password, hash, or invitation token on `people` or Person child tables. | Enforces Person/User separation at persistence layer. |
+| 170 | **Forgot password** remains unavailable in UX until the staged login implementation reaches an approved phase. PH046.01A scaffold may show the affordance; it must stay non-functional until then. | Avoids half-implemented recovery paths. |
+| 171 | Invitation tokens must be cryptographically random, time-limited, single-use, and revocable. Store token hash at rest — not plaintext in logs. | Standard secure invitation practice. |
+| 172 | Proposed future tables (document only): `users` (with `username`, `person_id`), optional `person_user_links` if many-to-many later approved, `person_invitations`, optional `onboarding_progress`, `password_reset_tokens` (Laravel conventions). | Migration planning without premature implementation. |
+| 173 | **Band Portal deployment:** operator should not manually deploy `band.edandtheshadowboys.com` except emergency recovery or explicit infrastructure intervention. Agent/process must trigger or verify Forge deployment via `./server/deploy/remote-deploy.sh` after push. | Reduces manual deploy drift; automation is default path. |
+| 174 | Decision **071** (User ≠ Musician) remains valid. PH047 adds **User ≠ Person** with explicit User→Person link for Band Portal. Musician↔User and Person↔Musician mappings remain separate follow-up concerns. | No charter conflict; extends identity governance. |
+| 175 | `/server/` Laravel skeleton `users` table (email-based) is **provisional** until M1 migration reconciles PH047 `username` + `person_id` model on shared PostgreSQL. | Documents gap between scaffold and governed schema. |
+
+### PH047 — Relationship to prior decisions
+
+| Prior | PH047 position |
+|-------|----------------|
+| PH007 / 071 User vs Musician | Unchanged — orthogonal linkage |
+| PH045 Band People schema | Reinforced — no auth columns on `people` |
+| PH008 / FOUNDATION M1 Breeze email auth | Band Portal uses username login per 165; Director local app may retain Breeze email baseline until aligned |
+| PH046.01A landing scaffold | Staged login UX only — no credential enforcement yet |
+
+---
+
+End of Decision Log — PH047

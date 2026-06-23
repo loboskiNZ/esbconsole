@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH045 Amended (Band People Schema Reconciliation)  
+Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -377,7 +377,7 @@ First implementable slice and stack baseline are defined in `docs/FOUNDATION_IMP
 | Database | PostgreSQL 16+ |
 | Cache/queue | Valkey 7+ (Redis-compatible) |
 | Local dev | Docker Compose (app, postgres, valkey) |
-| Auth | Laravel Breeze (session) |
+| Auth | Laravel session auth — **username/password** on Band Portal (PH047); Laravel Breeze baseline for Director local app |
 | Realtime | Laravel Reverb — planned post-foundation |
 | Cloud files | DigitalOcean Spaces — post-foundation |
 
@@ -403,6 +403,34 @@ No cloud, Ableton, or bridges required for foundation dev.
 
 Cloud deployment and Local Show Runtime full stack remain future phases.
 
+## Band Portal Application (`/server/`)
+
+| Attribute | Value |
+|-----------|-------|
+| **URL** | `https://band.edandtheshadowboys.com` |
+| **Purpose** | Band People onboarding, production personnel self-service, and future collaboration surfaces |
+| **Database** | Shared PostgreSQL with canonical `people` schema (M3a) — same logical database as Director local app |
+| **Auth consumer** | First implementation of M1 identity domain for portal members |
+
+### Person vs User boundary (PH047)
+
+| Layer | Responsibility |
+|-------|----------------|
+| **Person** | Canonical human/profile — legal name, artistic name, contact, travel, dietary, passport (secure fields), banking (secure fields), instruments, files, IEM templates |
+| **User** | Authentication — `username`, password hash, access state, roles; **must link to Person**; must **not** duplicate Person profile or secure-field data |
+
+Login credentials **never** belong on Person. Sensitive Person fields remain in `person_secure_fields` with application encryption — separate from password hashing.
+
+### Band Portal deployment policy (PH047)
+
+| Rule | Statement |
+|------|-----------|
+| **Default deploy path** | Agent or automation runs `./server/deploy/remote-deploy.sh` (with `--push` when committing) to trigger or verify Forge deploy hook after push to `main` |
+| **Manual Forge deploy** | Operator uses Forge **Deploy Now** only for emergency recovery or explicit infrastructure intervention |
+| **Verification** | After deploy, confirm `https://band.edandtheshadowboys.com/up` and targeted routes |
+
+Details: `server/docs/FORGE_SETUP.md` §5 (Deploy from workstation).
+
 ## Frontend Architecture Alignment
 
 Priority order (see `docs/INFORMATION_ARCHITECTURE.md`):
@@ -424,4 +452,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH008
+End of Architecture — PH047
