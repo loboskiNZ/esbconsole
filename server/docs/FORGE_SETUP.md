@@ -45,35 +45,56 @@ That is **expected**. Uncheck it, finish site setup, then use the deploy script 
 
 The Band Portal Laravel application lives under `/server/`. Nginx must point the site document root at **`/server/public`**, not `/public` at repo root.
 
-### Deploy script (required — replace entire Forge script)
+### Deploy script (adapt yours — do not drop Forge macros)
 
-Forge’s default Laravel script runs `composer install` in **`$FORGE_RELEASE_PATH`** (release root).  
-**Replace the whole deployment script** in Forge → site → **Deployments** with `server/deploy/forge-deploy.sh`:
+Keep Forge’s zero-downtime hooks and queue restart. Only change **paths** for the monorepo.
+
+| Line | Keep? | Monorepo change |
+|------|-------|-----------------|
+| `$CREATE_RELEASE()` | **Yes** | Required for zero-downtime deploy |
+| `cd $FORGE_RELEASE_DIRECTORY` | **Yes** | Stay at release root for composer shim + symlinks |
+| `$FORGE_COMPOSER install …` | **Yes** | Root `composer.json` delegates to `server/` |
+| `npm ci` / `npm run build` | **Yes** | Move to **`cd $FORGE_RELEASE_DIRECTORY/server`** — root `package.json` is the Node/X32 app, not Band Portal |
+| `$FORGE_PHP artisan …` | **Yes** | Run from **`server/`** (where `artisan` lives) |
+| `$ACTIVATE_RELEASE()` | **Yes** | Switches `current` symlink to this release |
+| `$RESTART_QUEUES()` | **Yes** | If queue workers are configured |
+
+**Add** before composer (release root):
 
 ```bash
-cd $FORGE_RELEASE_PATH
-
-# Forge links .env and storage at release root; Laravel app is in server/
-ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_PATH/server/.env
-rm -rf $FORGE_RELEASE_PATH/server/storage
-ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_PATH/server/storage
-
-# Root composer.json delegates to server/ via post-install-cmd
-$FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-
-cd $FORGE_RELEASE_PATH/server
-
-if [ -f artisan ]; then
-    $FORGE_PHP artisan migrate --force
-    $FORGE_PHP artisan config:cache
-    $FORGE_PHP artisan route:cache
-    $FORGE_PHP artisan view:cache
-fi
+ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
+rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
+ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_DIRECTORY/server/storage
 ```
 
-Do **not** leave the default `$FORGE_COMPOSER install` + `artisan` block at release root without `cd server`.
+Full adapted script (`server/deploy/forge-deploy.sh`):
 
-Ensure `/server/.env` content is configured in Forge → **Environment** (writes shared `$FORGE_SITE_PATH/.env`, symlinked into `server/` on deploy).
+```bash
+$CREATE_RELEASE()
+
+cd $FORGE_RELEASE_DIRECTORY
+
+ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
+rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
+ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_DIRECTORY/server/storage
+
+$FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+cd $FORGE_RELEASE_DIRECTORY/server
+
+npm ci || npm install
+npm run build
+
+$FORGE_PHP artisan optimize
+$FORGE_PHP artisan storage:link
+$FORGE_PHP artisan migrate --force
+
+$ACTIVATE_RELEASE()
+
+$RESTART_QUEUES()
+```
+
+Use `$FORGE_RELEASE_DIRECTORY` or `$FORGE_RELEASE_PATH` — whichever your Forge site already uses (keep the variable name from your current script).
 
 Use `php artisan migrate --force` only after production database is provisioned and `.env` is configured.
 
@@ -193,7 +214,7 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
 | “Your project does not contain a composer.json file” | Forge ran Composer at **repo root** before shim existed | Pull latest `main` (root `composer.json` added); replace deploy script with `server/deploy/forge-deploy.sh` |
-| “Composer could not find composer.json in …/releases/…” | Deploy script still runs Composer only at **release root** without root shim or `cd server` | **Replace entire** Forge deploy script; do not keep default Laravel script |
+| “Composer could not find composer.json in …/releases/…” | Deploy runs at release root before root shim existed | Pull latest `main`; keep your script structure, add `.env`/`storage` symlinks into `server/` |
 | 404 on all routes | Wrong web root | Set web directory to `server/public` |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
