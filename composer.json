@@ -1,0 +1,27 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "esb/esbconsole",
+    "description": "Monorepo root. Band Portal: server/. Local foundation: backend/.",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": "^8.4"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"if (!is_file('server/composer.json')) { fwrite(STDERR, 'server/composer.json missing'.PHP_EOL); exit(1); }\"",
+            "@composer install --working-dir=server --no-dev --no-interaction --prefer-dist --optimize-autoloader"
+        ],
+        "post-update-cmd": [
+            "@composer install --working-dir=server --no-dev --no-interaction --prefer-dist --optimize-autoloader"
+        ]
+    },
+    "config": {
+        "platform": {
+            "php": "8.4.0"
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

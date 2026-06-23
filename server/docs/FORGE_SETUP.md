@@ -30,7 +30,7 @@ Forge’s default “Install Composer Dependencies” step looks for **`composer
 
 | Path | `composer.json`? |
 |------|------------------|
-| `/` (repo root) | **No** |
+| `/` (repo root) | **Yes** — monorepo shim (delegates install to `server/`) |
 | `/server/` | **Yes** — Band Portal Laravel app |
 | `/backend/` | **Yes** — local foundation app (not this Forge site) |
 
@@ -45,14 +45,23 @@ That is **expected**. Uncheck it, finish site setup, then use the deploy script 
 
 The Band Portal Laravel application lives under `/server/`. Nginx must point the site document root at **`/server/public`**, not `/public` at repo root.
 
-### Deploy script (required for monorepo)
+### Deploy script (required — replace entire Forge script)
 
-In Forge → site → **Deployments** → edit the deploy script. Use **`$FORGE_SITE_PATH/server`** (not repo root):
+Forge’s default Laravel script runs `composer install` in **`$FORGE_RELEASE_PATH`** (release root).  
+**Replace the whole deployment script** in Forge → site → **Deployments** with `server/deploy/forge-deploy.sh`:
 
 ```bash
-cd $FORGE_SITE_PATH/server
+cd $FORGE_RELEASE_PATH
 
+# Forge links .env and storage at release root; Laravel app is in server/
+ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_PATH/server/.env
+rm -rf $FORGE_RELEASE_PATH/server/storage
+ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_PATH/server/storage
+
+# Root composer.json delegates to server/ via post-install-cmd
 $FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+
+cd $FORGE_RELEASE_PATH/server
 
 if [ -f artisan ]; then
     $FORGE_PHP artisan migrate --force
@@ -62,11 +71,11 @@ if [ -f artisan ]; then
 fi
 ```
 
-Copy-paste template: `server/deploy/forge-deploy.sh`
+Do **not** leave the default `$FORGE_COMPOSER install` + `artisan` block at release root without `cd server`.
 
-Ensure `/server/.env` exists on the server (copy from `server/.env.example`, set `APP_KEY`, database, `APP_URL`). Run `php artisan key:generate` once if `APP_KEY` is empty.
+Ensure `/server/.env` content is configured in Forge → **Environment** (writes shared `$FORGE_SITE_PATH/.env`, symlinked into `server/` on deploy).
 
-Adjust paths only if your Forge site directory differs from `$FORGE_SITE_PATH`. Use `php artisan migrate --force` only after production database is provisioned and `.env` is configured.
+Use `php artisan migrate --force` only after production database is provisioned and `.env` is configured.
 
 ---
 
@@ -183,7 +192,8 @@ Production PostgreSQL is not required for `composer validate` / `about` / `route
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| “Your project does not contain a composer.json file” | Forge ran Composer at **repo root** | Uncheck **Install Composer Dependencies** on connect; deploy script must `cd $FORGE_SITE_PATH/server` before `composer install` |
+| “Your project does not contain a composer.json file” | Forge ran Composer at **repo root** before shim existed | Pull latest `main` (root `composer.json` added); replace deploy script with `server/deploy/forge-deploy.sh` |
+| “Composer could not find composer.json in …/releases/…” | Deploy script still runs Composer only at **release root** without root shim or `cd server` | **Replace entire** Forge deploy script; do not keep default Laravel script |
 | 404 on all routes | Wrong web root | Set web directory to `server/public` |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
