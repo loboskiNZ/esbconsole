@@ -59,6 +59,7 @@ class StudioChartAccessService
                 $query->whereIn('instrument_part_id', $partIds)
                     ->whereNotNull('chart_id');
             }])
+            ->with(['timeSignature', 'musicalKey', 'mood'])
             ->orderBy('name')
             ->get();
     }

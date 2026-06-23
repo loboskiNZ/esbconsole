@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesBand;
+use App\Models\MusicalKey;
 use App\Models\Song;
+use App\Models\SongMood;
+use App\Models\TimeSignature;
 use App\Services\SongCodeAllocator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class SongController extends Controller
@@ -39,12 +43,7 @@ class SongController extends Controller
     {
         $band = $this->band();
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
-            'description' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string'],
-        ]);
+        $validated = $request->validate($this->songMetadataRules());
 
         $songCode = $this->songCodeAllocator->nextForBand($band);
 
@@ -53,8 +52,12 @@ class SongController extends Controller
             'song_code' => $songCode,
             'name' => $validated['name'],
             'bpm' => $validated['bpm'] ?? null,
+            'time_signature_id' => $validated['time_signature_id'] ?? null,
+            'musical_key_id' => $validated['musical_key_id'] ?? null,
+            'mood_id' => $validated['mood_id'] ?? null,
             'description' => $validated['description'] ?? null,
             'notes' => $validated['notes'] ?? null,
+            'director_notes' => $validated['director_notes'] ?? null,
             'status' => Song::STATUS_DRAFT,
         ]);
 
@@ -74,6 +77,9 @@ class SongController extends Controller
             'songInstrumentParts.instrumentPart',
             'songInstrumentParts.chart',
             'charts',
+            'timeSignature',
+            'musicalKey',
+            'mood',
         ]);
 
         $availableInstrumentParts = $band->instrumentParts()
@@ -95,7 +101,10 @@ class SongController extends Controller
 
         return view('songs.edit', [
             'band' => $this->band(),
-            'song' => $song,
+            'song' => $song->load(['timeSignature', 'musicalKey', 'mood']),
+            'timeSignatures' => TimeSignature::query()->where('active', true)->orderBy('sort_order')->get(),
+            'musicalKeys' => MusicalKey::query()->where('active', true)->orderBy('sort_order')->get(),
+            'moods' => SongMood::query()->where('active', true)->orderBy('sort_order')->get(),
         ]);
     }
 
@@ -103,18 +112,31 @@ class SongController extends Controller
     {
         $this->ensureSongBelongsToBand($song);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'bpm' => ['nullable', 'integer', 'min:1', 'max:999'],
-            'description' => ['nullable', 'string'],
-            'notes' => ['nullable', 'string'],
+        $validated = $request->validate(array_merge($this->songMetadataRules(), [
             'status' => ['nullable', 'string', 'in:draft,in_progress,ready,archived'],
-        ]);
+        ]));
 
         $song->update($validated);
 
         return redirect()
             ->route('songs.show', $song)
             ->with('status', 'Song updated.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function songMetadataRules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'bpm' => ['nullable', 'integer', 'min:20', 'max:300'],
+            'time_signature_id' => ['nullable', 'integer', Rule::exists('time_signatures', 'id')],
+            'musical_key_id' => ['nullable', 'integer', Rule::exists('musical_keys', 'id')],
+            'mood_id' => ['nullable', 'integer', Rule::exists('song_moods', 'id')],
+            'description' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string'],
+            'director_notes' => ['nullable', 'string'],
+        ];
     }
 }

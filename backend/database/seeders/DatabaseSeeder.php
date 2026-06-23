@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,
             BandSeeder::class,
+            SongMetadataReferenceSeeder::class,
             EffectReferenceSeeder::class,
             DirectorUserSeeder::class,
             LocalDemoDomainSeeder::class,

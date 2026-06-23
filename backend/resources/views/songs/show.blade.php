@@ -37,6 +37,33 @@
                                     <dd class="font-medium">{{ $song->bpm }}</dd>
                                 </div>
                             @endif
+                            @if ($song->timeSignature)
+                                <div>
+                                    <dt class="text-gray-500">Time signature</dt>
+                                    <dd class="font-medium">{{ $song->timeSignature->label }}</dd>
+                                </div>
+                            @endif
+                            @if ($song->musicalKey)
+                                <div>
+                                    <dt class="text-gray-500">Key</dt>
+                                    <dd class="font-medium">{{ $song->musicalKey->label }}</dd>
+                                </div>
+                            @endif
+                            @if ($song->mood)
+                                <div>
+                                    <dt class="text-gray-500">Mood</dt>
+                                    <dd class="font-medium flex items-center gap-2">
+                                        <span class="inline-block h-3 w-3 rounded-full" style="background-color: {{ $song->mood->colour_hex }}"></span>
+                                        {{ $song->mood->name }}
+                                    </dd>
+                                </div>
+                            @endif
+                            @if ($song->director_notes)
+                                <div>
+                                    <dt class="text-gray-500">Director notes</dt>
+                                    <dd class="text-gray-700 break-words whitespace-pre-wrap">{{ $song->director_notes }}</dd>
+                                </div>
+                            @endif
                             @if ($song->description)
                                 <div>
                                     <dt class="text-gray-500">Description</dt>

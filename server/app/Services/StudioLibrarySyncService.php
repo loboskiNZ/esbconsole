@@ -9,6 +9,9 @@ class StudioLibrarySyncService
 {
     /** @var list<string> */
     private const SYNC_TABLES = [
+        'song_moods',
+        'time_signatures',
+        'musical_keys',
         'instrument_parts',
         'songs',
         'charts',

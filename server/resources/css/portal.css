@@ -1019,6 +1019,7 @@
     gap: 1rem;
     padding: 0.85rem 1rem;
     border: 1px solid rgba(233, 203, 160, 0.14);
+    border-left: 3px solid var(--esb-song-mood-accent, #8ed4f0);
     border-radius: 0.75rem;
     background: rgba(12, 10, 8, 0.35);
 }
@@ -1061,6 +1062,80 @@
 
 .esb-studio__charts-item-body {
     min-width: 0;
+}
+
+.esb-studio__song-metadata {
+    padding: 1rem 1.1rem;
+    border: 1px solid rgba(233, 203, 160, 0.16);
+    border-left: 3px solid var(--esb-song-mood-accent, #8ed4f0);
+    border-radius: 0.9rem;
+    background: rgba(12, 10, 8, 0.38);
+}
+
+.esb-studio__song-metadata-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+}
+
+.esb-studio__song-metadata-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 0.85rem;
+    margin: 0;
+}
+
+.esb-studio__song-metadata-facts dd {
+    margin: 0;
+    color: var(--esb-muted);
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.esb-studio__song-mood-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--esb-song-mood-accent, #8ed4f0);
+    background: color-mix(in srgb, var(--esb-song-mood-accent, #8ed4f0) 18%, transparent);
+    color: var(--esb-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.esb-studio__song-mood-pill--compact {
+    flex-shrink: 0;
+    font-size: 0.68rem;
+}
+
+.esb-studio__song-brief {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(233, 203, 160, 0.12);
+}
+
+.esb-studio__song-brief-title {
+    color: var(--esb-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.esb-studio__song-brief-body {
+    margin-top: 0.35rem;
+    color: var(--esb-ink);
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.esb-studio__song-detail-panel {
+    margin-top: 1rem;
 }
 
 .esb-studio__footer {

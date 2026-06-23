@@ -18,7 +18,9 @@
                 <a href="{{ route('studio.charts.index') }}" class="esb-studio__back-link">← All songs</a>
             </div>
 
-            <section class="esb-portal__panel esb-studio__card">
+            @include('studio.charts._song-metadata', ['metadata' => $songMetadata])
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__song-detail-panel mt-4">
                 <h2 class="esb-studio__card-title">My Charts</h2>
 
                 @if (! $hasInstrumentAssignments)

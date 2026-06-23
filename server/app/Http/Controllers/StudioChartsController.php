@@ -6,6 +6,7 @@ use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Services\StudioChartAccessService;
 use App\Support\StudioLibraryChartStorage;
+use App\Support\StudioSongMetadata;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudioChartsController extends Controller
 {
-    public function index(StudioChartAccessService $chartAccess): View
+    public function index(StudioChartAccessService $chartAccess, StudioSongMetadata $songMetadata): View
     {
         $user = auth()->user();
         abort_unless($user !== null && $user->person_id !== null, 403);
@@ -22,15 +23,20 @@ class StudioChartsController extends Controller
         $songs = $chartAccess->songsForPerson($person);
         $hasInstrumentAssignments = $person->instruments->isNotEmpty();
 
+        $songMetadataById = $songs->mapWithKeys(
+            fn (Song $song) => [$song->id => $songMetadata->forSong($song)],
+        );
+
         return view('studio.charts.index', [
             'user' => $user,
             'person' => $person,
             'songs' => $songs,
+            'songMetadataById' => $songMetadataById,
             'hasInstrumentAssignments' => $hasInstrumentAssignments,
         ]);
     }
 
-    public function show(Song $song, StudioChartAccessService $chartAccess): View
+    public function show(Song $song, StudioChartAccessService $chartAccess, StudioSongMetadata $songMetadata): View
     {
         $user = auth()->user();
         abort_unless($user !== null && $user->person_id !== null, 403);
@@ -44,6 +50,7 @@ class StudioChartsController extends Controller
             'user' => $user,
             'person' => $person,
             'song' => $song,
+            'songMetadata' => $songMetadata->forSong($song),
             'chartLinks' => $chartLinks,
             'hasInstrumentAssignments' => $person->instruments->isNotEmpty(),
         ]);

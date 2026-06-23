@@ -28,14 +28,40 @@ class Song extends Model
         'song_code',
         'name',
         'bpm',
+        'time_signature_id',
+        'musical_key_id',
+        'mood_id',
         'description',
         'notes',
+        'director_notes',
         'status',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'bpm' => 'integer',
+        ];
+    }
 
     public function band(): BelongsTo
     {
         return $this->belongsTo(Band::class);
+    }
+
+    public function timeSignature(): BelongsTo
+    {
+        return $this->belongsTo(TimeSignature::class);
+    }
+
+    public function musicalKey(): BelongsTo
+    {
+        return $this->belongsTo(MusicalKey::class);
+    }
+
+    public function mood(): BelongsTo
+    {
+        return $this->belongsTo(SongMood::class, 'mood_id');
     }
 
     public function cues(): HasMany
