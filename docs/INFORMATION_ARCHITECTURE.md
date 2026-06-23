@@ -1,6 +1,6 @@
 # Information Architecture
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH047A Amended (Authentication Policy Finalisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical navigation structure, hierarchy, and visibility rules for the Live Performance Orchestration System
 
@@ -246,7 +246,20 @@ Band Portal (`band.edandtheshadowboys.com`) is a **cloud-only** surface. It does
 
 ### Staged login UX (current scaffold)
 
-PH046.01A landing implements a **staged** login presentation (username step → password step). Authentication is **not yet implemented**. The **Forgot password** affordance is visible in scaffold only — **must remain non-functional** until PH047 implementation reaches the approved forgot-password phase.
+PH046.01A landing implements a **staged** login presentation (username step → password step). Authentication is **not yet implemented**. The **Forgot password** affordance is visible in scaffold only — **must remain non-functional** until PH048+ reaches the approved forgot-password phase.
+
+### Username and password validation (PH047A)
+
+Validation applies at invitation acceptance (account creation) and password change. Login accepts any case for username (normalised to lowercase before lookup).
+
+| Field | Rules (user-facing validation) |
+|-------|-------------------------------|
+| **Username** | 3–32 characters; letters and numbers only; no spaces, hyphens, underscores, dots, or symbols; stored lowercase |
+| **Password** | 8–50 characters; must include uppercase, lowercase, number, and symbol |
+
+Invalid username examples to reject in UX: `Matt Guitar`, `matt-guitar`, `matt@esb`. Valid: `wolfman`, `matt01`, `guitar2`.
+
+Invalid password examples to reject: `password`, `Password1`, `password1!`. Valid: `ShadowBoy1!`, `Lobo2026#`.
 
 ### Approved flows (documented — not implemented)
 
@@ -272,8 +285,9 @@ Band Portal navigation is **Person-centric** for profile data and **User-centric
 
 - Screens that edit travel, passport, banking, instruments, or IEM data operate on **Person** — never on User.
 - Screens that manage login identifier or password operate on **User** — never on Person.
+- Username and password inputs must enforce Decision **176** and **177** validation rules.
 - Administrator invitation management operates on **Person Invitation** + **Person** — not by writing credentials onto Person.
 
 ---
 
-End of Information Architecture — PH047
+End of Information Architecture — PH047A

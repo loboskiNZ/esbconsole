@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH047A Amended (Authentication Policy Finalisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -259,8 +259,8 @@ The **authentication identity** for Band Portal (`band.edandtheshadowboys.com` /
 
 | Field class | Examples | Storage rule |
 |-------------|----------|--------------|
-| Login identifier | `username` | Unique; used for Band Portal login |
-| Credential | `password` | **Hashed only** via Laravel `Hash` — never encrypted reversibly, never displayed |
+| Login identifier | `username` | Unique; lowercase stored; case-insensitive; 3–32 chars; alphanumeric only (Decision 176) |
+| Credential | `password` | **Hashed only** via Laravel `Hash` — 8–50 chars with complexity rules (Decision 177) |
 | Access state | active, suspended, email_verified_at (if used) | On User record |
 | Session / remember token | Laravel session conventions | Standard framework tables |
 
@@ -285,18 +285,44 @@ Travel, passport, banking, dietary, instrument preferences, IEM templates, perso
 
 Self-registration without invitation is **not** approved for Band Portal in PH047.
 
-### Login Model (PH047)
+### Login Model (PH047 / PH047A)
 
 - **Approved:** Local username + password login on Band Portal.
-- **Username** is the login identifier.
-- **Email** on Person remains profile/contact data unless a future decision approves email login.
+- **Username** is the canonical authentication identifier (Decision **176**).
+- **Email** on Person remains profile/contact data only — not a login identifier.
 
-### Password Rules (PH047)
+### Username Policy (Decision 176 — PH047A)
 
-- Passwords are **hashed** with Laravel password hashing — not encrypted.
-- No custom reversible password encryption key.
-- `APP_KEY` is **not** a password storage strategy.
-- Passwords must never be decrypted or displayed.
+| Rule | Value |
+|------|-------|
+| Minimum length | 3 |
+| Maximum length | 32 |
+| Allowed characters | `a-z`, `A-Z`, `0-9` only |
+| Disallowed | Spaces, hyphens, underscores, dots, email addresses, symbols, punctuation |
+
+**Normalisation:** Usernames are case-agnostic — login is case-insensitive; stored in **lowercase**. `wolfman`, `WolfMan`, and `WOLFMAN` authenticate the same account.
+
+**Valid examples:** `ed`, `matt01`, `wolfman`, `horns1`, `guitar2`
+
+**Invalid examples:** `Matt Guitar`, `matt-guitar`, `matt_guitar`, `matt.guitar`, `matt@esb`
+
+**Database:** `username` is unique, indexed, stored lowercase, with case-insensitive uniqueness enforced at application and persistence layer.
+
+### Password Policy (Decision 177 — PH047A)
+
+Passwords are authentication secrets — never recoverable, never encrypted, never displayed.
+
+| Rule | Value |
+|------|-------|
+| Minimum length | 8 |
+| Maximum length | 50 |
+| Required | At least one uppercase letter, one lowercase letter, one number, one symbol |
+
+**Valid examples:** `ShadowBoy1!`, `Lobo2026#`, `Music@123`, `Touring$2027`
+
+**Invalid examples:** `password`, `PASSWORD`, `Password`, `Password1`, `password1!` (missing uppercase)
+
+**Storage:** Hashed only via Laravel `Hash` (Argon2id / current Laravel defaults). Never encrypted, never reversible, never recoverable. Custom password encryption is prohibited. `APP_KEY` is not a password encryption strategy.
 
 ---
 

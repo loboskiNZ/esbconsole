@@ -283,4 +283,34 @@
 
 ---
 
-End of Decision Log — PH047
+## PH047A — Authentication Policy Finalisation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 176 | **Username Policy:** Username is the canonical Band Portal authentication identifier. Email is contact information only. Length 3–32. Characters `a-z`, `A-Z`, `0-9` only. Disallowed: spaces, hyphens, underscores, dots, email addresses, symbols, punctuation. Usernames are case-insensitive; stored lowercase; unique indexed with case-insensitive uniqueness. | Removes ambiguity before PH048; aligns with PH046.01A username-first login scaffold. |
+| 177 | **Password Policy:** Length 8–50. Requires uppercase, lowercase, number, and symbol. Hashed only via Laravel `Hash` (Argon2id / Laravel defaults). Never encrypted, reversible, displayed, or recoverable. Custom password encryption prohibited. `APP_KEY` is not a password encryption strategy. | Finalises PH047 password rules for implementation validators and persistence. |
+
+### PH047A — Governance clarification
+
+| Identity | Role |
+|----------|------|
+| **User** | Authentication identity — username, password hash, access state |
+| **Person** | Human/profile identity — contact, travel, passport, banking, instruments, files, IEM |
+
+Login credentials must never be stored on Person. Passport, banking, travel, onboarding, instruments, files, and IEM data must never be stored on User.
+
+### PH047A — Validation (no conflicts)
+
+| Prior | PH047A position |
+|-------|-----------------|
+| **PH045** Band People schema | No conflict — `people` has no auth columns; username/password belong on `users` only |
+| **PH046** PHP 8.4 runtime | No conflict — runtime baseline unrelated to credential policy |
+| **PH046.01A** landing scaffold | No conflict — staged username→password UX matches Decision 176; validation enforced at PH048 |
+| **PH047** Person/User separation | Reinforced — 176/177 apply to User only; Person email remains contact data |
+| **Laravel auth foundations** | No conflict — Laravel `Hash`, session auth, and validation rules align; skeleton `users.email` reconciled at M1 per 175 |
+
+**PH048 Authentication Implementation may proceed** under Decisions 163–177.
+
+---
+
+End of Decision Log — PH047A

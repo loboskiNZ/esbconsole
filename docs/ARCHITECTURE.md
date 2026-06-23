@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH047A Amended (Authentication Policy Finalisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -377,7 +377,7 @@ First implementable slice and stack baseline are defined in `docs/FOUNDATION_IMP
 | Database | PostgreSQL 16+ |
 | Cache/queue | Valkey 7+ (Redis-compatible) |
 | Local dev | Docker Compose (app, postgres, valkey) |
-| Auth | Laravel session auth — **username/password** on Band Portal (PH047); Laravel Breeze baseline for Director local app |
+| Auth | Laravel session auth — **username/password** on Band Portal (PH047, PH047A); username policy Decision 176; password policy Decision 177 |
 | Realtime | Laravel Reverb — planned post-foundation |
 | Cloud files | DigitalOcean Spaces — post-foundation |
 
@@ -421,6 +421,15 @@ Cloud deployment and Local Show Runtime full stack remain future phases.
 
 Login credentials **never** belong on Person. Sensitive Person fields remain in `person_secure_fields` with application encryption — separate from password hashing.
 
+### Authentication policies (PH047A)
+
+| Policy | Decision | Summary |
+|--------|----------|---------|
+| **Username** | 176 | 3–32 chars; `a-z`/`A-Z`/`0-9` only; stored lowercase; case-insensitive login |
+| **Password** | 177 | 8–50 chars; upper + lower + number + symbol; Laravel `Hash` only |
+
+PH048 Authentication Implementation may proceed under these policies. Full rules: `docs/DECISION_LOG.md` PH047A.
+
 ### Band Portal deployment policy (PH047)
 
 | Rule | Statement |
@@ -452,4 +461,4 @@ Live Show View and Soundcheck run on Local Show Runtime. Preparation and library
 
 ---
 
-End of Architecture — PH047
+End of Architecture — PH047A

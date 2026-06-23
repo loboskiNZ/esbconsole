@@ -1,6 +1,6 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH047A Amended (Authentication Policy Finalisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
@@ -698,13 +698,18 @@ Related but distinct:
 - Not every Musician requires a User (guest/sub — policy decision at implementation).
 - Musician self-service edits limited to permitted fields.
 
-### Band Portal login (PH047)
+### Band Portal login (PH047 / PH047A)
 
 | Attribute | Rule |
 |-----------|------|
-| Login identifier | `username` — unique |
-| Password | Hashed via Laravel password hashing — never encrypted reversibly |
-| Email | On Person as contact — not login unless future decision |
+| Login identifier | `username` — canonical auth identifier (Decision 176) |
+| Username length | 3–32 characters |
+| Username charset | `a-z`, `A-Z`, `0-9` only; no spaces, hyphens, underscores, dots, symbols |
+| Username storage | Lowercase; unique indexed column; case-insensitive uniqueness |
+| Password length | 8–50 characters (Decision 177) |
+| Password complexity | Uppercase + lowercase + number + symbol required |
+| Password storage | Laravel `Hash` (Argon2id / defaults) — hashed only, never encrypted |
+| Email | On Person as contact — not login |
 | Account creation | Person Invitation flow — admin invites, invitee sets credentials |
 | Forgot password | Deferred — UX link non-functional until approved phase |
 
@@ -712,7 +717,7 @@ Related but distinct:
 
 | Table | Domain | Notes |
 |-------|--------|-------|
-| `users` | M1 extension | Add `username`, `person_id`; password via Laravel conventions |
+| `users` | M1 extension | `username` (`varchar(32)`, unique, lowercase, indexed), `person_id`, `password` (hash) |
 | `person_invitations` | M1b (proposed) | Token hash, `person_id`, expires_at, revoked_at, accepted_at |
 | `person_user_links` | M1 (optional) | Only if many-to-many approved; default is `users.person_id` |
 | `password_reset_tokens` | M1 | Laravel default when forgot-password is approved |

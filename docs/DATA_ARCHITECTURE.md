@@ -1,6 +1,6 @@
 # Data Architecture & Persistence Model
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH047A Amended (Authentication Policy Finalisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical data ownership, persistence authority, sync boundaries, and lifecycle rules before database schema design
 
@@ -356,7 +356,7 @@ Logical schema for file persistence: `docs/DATABASE_ARCHITECTURE.md` §12.
 
 ## 10. User/Auth Data Model
 
-### Approved Authentication (PH047)
+### Approved Authentication (PH047 / PH047A)
 
 **Laravel authentication** is approved for user identity and session management.
 
@@ -370,6 +370,31 @@ Logical schema for file persistence: `docs/DATABASE_ARCHITECTURE.md` §12.
 | **Account creation** | Invitation flow only — no self-registration |
 | **Password storage** | Laravel `Hash` only — hashed, never encrypted reversibly |
 | **Forgot password** | Unavailable in UX until the staged login flow reaches an approved implementation phase |
+
+### Username Policy (Decision 176 — PH047A)
+
+Username is the canonical authentication identifier for Band Portal. Email is contact information on Person only.
+
+| Rule | Value |
+|------|-------|
+| Length | 3–32 characters |
+| Characters | `a-z`, `A-Z`, `0-9` only |
+| Disallowed | Spaces, hyphens, underscores, dots, email addresses, symbols, punctuation |
+| Normalisation | Case-insensitive login; stored lowercase |
+| Uniqueness | Unique, indexed; case-insensitive uniqueness |
+
+Equivalent logins (`wolfman`, `WolfMan`, `WOLFMAN`) resolve to the same account.
+
+### Password Policy (Decision 177 — PH047A)
+
+| Rule | Value |
+|------|-------|
+| Length | 8–50 characters |
+| Complexity | At least one uppercase, one lowercase, one number, one symbol |
+| Storage | Laravel `Hash` only (Argon2id / Laravel defaults) |
+| Prohibited | Encryption, reversible storage, display, recovery of plaintext |
+
+Custom password encryption is prohibited. `APP_KEY` is not a password encryption strategy.
 
 ### User vs Musician vs Person (PH047)
 
