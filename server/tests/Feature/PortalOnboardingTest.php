@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use App\Models\User;
 use Tests\Concerns\CreatesInviteLinks;
 use Tests\TestCase;
 
@@ -26,15 +27,16 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('portalOnboarding', false);
     }
 
-    public function test_studio_route_loads(): void
+    public function test_studio_route_requires_authentication(): void
     {
-        $response = $this->get('/studio');
+        $this->get('/studio')->assertRedirect('/');
 
-        $response->assertOk();
-        $response->assertSee('The Studio', false);
-        $response->assertSee('Profile tasks', false);
-        $response->assertSee('Upcoming shows', false);
-        $response->assertSee('Band notices', false);
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/studio')
+            ->assertOk()
+            ->assertSee('The Studio', false)
+            ->assertSee('Profile tasks', false);
     }
 
     public function test_invite_route_does_not_create_database_records(): void
@@ -84,7 +86,7 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('Find Your Way Home', false);
         $response->assertSee('The Road Ahead', false);
         $response->assertSee('Enter the Studio', false);
-        $response->assertSee('temporary UI scaffold only', false);
+        $response->assertSee('instrument reference catalog', false);
         $response->assertSee('3–32 characters', false);
         $response->assertSee('8–50 characters', false);
     }

@@ -80,6 +80,9 @@ export function portalOnboarding(token = '', backgroundImages = []) {
         introCardIndex: 0,
         introCardsVisible: false,
         fieldError: '',
+        submitting: false,
+        onboardingComplete: false,
+        completionMessage: '',
         bgLoaded: false,
         bgVisible: false,
         overlayVisible: false,
@@ -435,7 +438,67 @@ export function portalOnboarding(token = '', backgroundImages = []) {
         },
 
         enterStudio() {
-            window.location.href = '/studio';
+            this.submitOnboarding();
+        },
+
+        async submitOnboarding() {
+            if (this.submitting || this.onboardingComplete) {
+                return;
+            }
+
+            this.fieldError = '';
+            this.submitting = true;
+
+            try {
+                const response = await fetch(`/invite/${this.token}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                    },
+                    body: JSON.stringify({
+                        username: this.form.username,
+                        password: this.form.password,
+                        password_confirm: this.form.passwordConfirm,
+                        human_verified: this.form.humanVerified,
+                        honeypot: this.form.honeypot,
+                        first_name: this.form.firstName,
+                        middle_name: this.form.middleName,
+                        surname: this.form.surname,
+                        stage_name: this.form.stageName,
+                        primary_instrument: this.form.primaryInstrument,
+                        additional_instruments: this.form.additionalInstruments,
+                        email: this.form.email,
+                        country: this.form.country,
+                        country_iso3: this.form.countryIso3,
+                        city: this.form.city,
+                        telephone: this.form.telephone,
+                    }),
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                if (! response.ok) {
+                    this.fieldError = payload.message
+                        ?? payload.errors?.username?.[0]
+                        ?? payload.errors?.password?.[0]
+                        ?? 'We could not complete your onboarding. Please review your details and try again.';
+                    return;
+                }
+
+                this.onboardingComplete = true;
+                this.completionMessage = payload.message
+                    ?? 'Your Studio account has been created. Log in to enter The Studio.';
+            } catch {
+                this.fieldError = 'We could not reach the server. Please try again.';
+            } finally {
+                this.submitting = false;
+            }
+        },
+
+        goToLogin() {
+            window.location.href = '/?onboarding=complete';
         },
     };
 }

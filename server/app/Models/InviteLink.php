@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class InviteLink extends Model
 {
@@ -69,5 +70,26 @@ class InviteLink extends Model
         }
 
         return true;
+    }
+
+    public function canAcceptAnotherRegistration(): bool
+    {
+        if (! $this->isValid()) {
+            return false;
+        }
+
+        if ($this->max_uses === null) {
+            return true;
+        }
+
+        return $this->used_count < $this->max_uses;
+    }
+
+    /**
+     * @return HasMany<InviteLinkAcceptance, $this>
+     */
+    public function acceptances(): HasMany
+    {
+        return $this->hasMany(InviteLinkAcceptance::class);
     }
 }

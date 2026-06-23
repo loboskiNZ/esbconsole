@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="Ed and the Shadow Boys member portal">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>Ed and the Shadow Boys Portal</title>
 
@@ -71,9 +72,25 @@
             >
                 <form
                     class="esb-portal__panel rounded-2xl p-6 sm:p-7"
+                    method="POST"
+                    action="{{ route('login') }}"
+                    x-ref="loginForm"
                     @submit="submitLogin($event)"
                     novalidate
                 >
+                    @csrf
+
+                    @if ($errors->has('login'))
+                        <p class="esb-portal__error mb-4 text-center" role="alert">
+                            {{ $errors->first('login') }}
+                        </p>
+                    @endif
+
+                    @if (! empty($onboardingComplete))
+                        <p class="esb-portal__success mb-4 text-center">
+                            Your Studio account has been created. Log in to enter The Studio.
+                        </p>
+                    @endif
                     <template x-if="loginStep === 'username'">
                         <div>
                             <p class="esb-portal__label mb-4">Enter your username</p>

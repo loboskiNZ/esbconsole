@@ -141,7 +141,7 @@
                                 Every member carries their own sound — one weapon or many. Choose what you bring to the shadows.
                             </p>
                             <p class="esb-onboarding__scaffold-note mt-4">
-                                Instrument options are temporary UI scaffold only — not production data.
+                                Instrument options are drawn from the band instrument reference catalog.
                             </p>
                         </div>
                     </template>
@@ -414,18 +414,45 @@
                 x-transition:enter-end="esb-portal-fade-enter-end"
                 class="esb-portal__panel esb-onboarding__panel esb-onboarding__arrival rounded-2xl p-6 sm:p-10 text-center"
             >
-                <p class="esb-onboarding__eyebrow">You have arrived</p>
-                <h2 class="esb-onboarding__arrival-title mt-3">The shadows part. The Studio awaits.</h2>
-                <p class="esb-onboarding__lead mt-4 mx-auto max-w-md">
-                    You are no longer a guest at the threshold. You belong here now.
-                </p>
-                <button
-                    type="button"
-                    class="esb-portal__button esb-portal__button--primary mt-8 w-full max-w-xs mx-auto"
-                    @click="enterStudio()"
-                >
-                    Enter the Studio
-                </button>
+                <template x-if="!onboardingComplete">
+                    <div>
+                        <p class="esb-onboarding__eyebrow">You have arrived</p>
+                        <h2 class="esb-onboarding__arrival-title mt-3">The shadows part. The Studio awaits.</h2>
+                        <p class="esb-onboarding__lead mt-4 mx-auto max-w-md">
+                            Complete your journey to create your Studio account.
+                        </p>
+                        <p
+                            class="esb-onboarding__error mt-4"
+                            x-show="fieldError"
+                            x-text="fieldError"
+                        ></p>
+                        <button
+                            type="button"
+                            class="esb-portal__button esb-portal__button--primary mt-8 w-full max-w-xs mx-auto"
+                            :disabled="submitting"
+                            @click="enterStudio()"
+                        >
+                            <span x-show="!submitting">Complete Your Journey</span>
+                            <span x-show="submitting">Creating your account…</span>
+                        </button>
+                    </div>
+                </template>
+
+                <template x-if="onboardingComplete">
+                    <div>
+                        <p class="esb-onboarding__eyebrow">Account created</p>
+                        <h2 class="esb-onboarding__arrival-title mt-3">Your Studio account has been created.</h2>
+                        <p class="esb-onboarding__lead mt-4 mx-auto max-w-md" x-text="completionMessage"></p>
+                        <p class="esb-onboarding__helper mt-4">Log in to enter The Studio.</p>
+                        <button
+                            type="button"
+                            class="esb-portal__button esb-portal__button--primary mt-8 w-full max-w-xs mx-auto"
+                            @click="goToLogin()"
+                        >
+                            Go to Login
+                        </button>
+                    </div>
+                </template>
             </div>
         </section>
     </main>

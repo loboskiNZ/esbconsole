@@ -13,7 +13,8 @@
                 <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
                 <h1 class="esb-portal__title">The Studio</h1>
                 <p class="esb-onboarding__lead mx-auto mt-4 max-w-2xl">
-                    Welcome inside. This is your member home — a scaffold destination for the onboarding journey.
+                    Welcome inside{{ $user?->person?->artistic_name ? ', '.$user->person->artistic_name : '' }}.
+                    This is your member home.
                 </p>
             </header>
 
@@ -21,7 +22,8 @@
                 <section class="esb-portal__panel esb-studio__card rounded-2xl p-6">
                     <h2 class="esb-studio__card-title">Welcome</h2>
                     <p class="esb-studio__card-body mt-3">
-                        You have completed the narrative onboarding scaffold. Profile and authentication wiring arrive in later phases.
+                        You are signed in as <strong>{{ $user->username }}</strong>.
+                        Profile completion tasks remain available when you are ready.
                     </p>
                 </section>
 
@@ -34,7 +36,7 @@
                         <li>Quick bio</li>
                         <li>Touring information</li>
                     </ul>
-                    <p class="esb-studio__card-note mt-4">Placeholder — no real data yet.</p>
+                    <p class="esb-studio__card-note mt-4">Coming in later phases.</p>
                 </section>
 
                 <section class="esb-portal__panel esb-studio__card rounded-2xl p-6">
@@ -54,9 +56,14 @@
                 </section>
             </div>
 
-            <p class="esb-studio__footer mt-10 text-center">
-                <a href="{{ url('/') }}" class="esb-portal__link">Return to portal landing</a>
-            </p>
+            <div class="esb-studio__footer mt-10 flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-center">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                        Log out
+                    </button>
+                </form>
+            </div>
         </div>
     </main>
 @endsection

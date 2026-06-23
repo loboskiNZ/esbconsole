@@ -88,6 +88,17 @@ export function portalLanding() {
 
         submitLogin(event) {
             event.preventDefault();
+
+            if (this.loginStep === 'username') {
+                this.continueFromUsername();
+                return;
+            }
+
+            if (! this.username.trim() || ! this.password) {
+                return;
+            }
+
+            this.$refs.loginForm.submit();
         },
     };
 }

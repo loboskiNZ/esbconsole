@@ -128,6 +128,22 @@
     cursor: not-allowed;
 }
 
+.esb-portal__button--secondary {
+    background: transparent;
+    border: 1px solid var(--esb-line);
+    color: var(--esb-ink);
+}
+
+.esb-portal__error {
+    color: #ffb4b4;
+    font-size: 0.95rem;
+}
+
+.esb-portal__success {
+    color: var(--esb-gold);
+    font-size: 0.95rem;
+}
+
 .esb-portal__link {
     color: var(--esb-muted);
     font-size: 0.92rem;
