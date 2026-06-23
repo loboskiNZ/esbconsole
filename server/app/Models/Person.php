@@ -59,4 +59,28 @@ class Person extends Model
             ->withPivot(['role_label', 'is_primary', 'notes'])
             ->withTimestamps();
     }
+
+    public function legalName(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->legal_first_name,
+            $this->legal_middle_names,
+            $this->legal_last_name,
+        ])));
+    }
+
+    public function primaryInstrument(): ?InstrumentReference
+    {
+        return $this->instruments->first(
+            fn ($instrument) => (bool) $instrument->pivot->is_primary,
+        );
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, InstrumentReference>
+     */
+    public function additionalInstruments()
+    {
+        return $this->instruments->filter(fn ($instrument) => ! $instrument->pivot->is_primary)->values();
+    }
 }

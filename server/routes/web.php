@@ -3,6 +3,7 @@
 use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingRegistrationController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudioController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,8 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/studio', [StudioController::class, 'index'])->name('studio');
+    Route::get('/studio/profile/edit', [ProfileController::class, 'edit'])->name('studio.profile.edit');
+    Route::put('/studio/profile', [ProfileController::class, 'update'])->name('studio.profile.update');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
 

@@ -7,7 +7,7 @@
 
 @section('body-attributes')
     class="esb-portal esb-portal--onboarding antialiased"
-    x-data="portalOnboarding(@js($token), @js($backgroundImages))"
+    x-data="portalOnboarding(@js($token), @js($backgroundImages), @js($humanCheck))"
     x-cloak
 @endsection
 
@@ -196,16 +196,19 @@
 
                     {{-- Human verification --}}
                     <div x-show="step === 2 && currentField === 'humanVerification'">
-                        <p class="esb-portal__label mb-4">One last check before we continue</p>
-                        <label class="esb-onboarding__checkbox flex items-start gap-3">
-                            <input
-                                type="checkbox"
-                                class="mt-1"
-                                x-model="form.humanVerified"
-                            >
-                            <span>I confirm I am a real person joining Ed and the Shadow Boys.</span>
-                        </label>
-                        <p class="esb-onboarding__rules mt-3">Human verification placeholder — production CAPTCHA follows in a later phase.</p>
+                        <p class="esb-portal__label mb-4">Quick check — are you human?</p>
+                        <label class="esb-portal__label mb-3 block" for="onboarding-human-answer" x-text="humanCheckQuestion"></label>
+                        <input
+                            id="onboarding-human-answer"
+                            type="number"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            class="esb-portal__input"
+                            x-model="form.humanAnswer"
+                            autocomplete="off"
+                            @keydown.enter.prevent="continueField()"
+                        >
+                        <p class="esb-onboarding__rules mt-3">A simple sum helps keep automated sign-ups out. No third-party services required.</p>
                     </div>
 
                     {{-- Legal name fields --}}

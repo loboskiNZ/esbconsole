@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Support\InstrumentCatalog;
+use App\Support\OnboardingHumanCheck;
 use App\Support\PortalUsername;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class StoreOnboardingRequest extends FormRequest
 {
@@ -60,7 +62,7 @@ class StoreOnboardingRequest extends FormRequest
                 'regex:/[^A-Za-z0-9]/',
             ],
             'password_confirm' => ['required', 'string', 'same:password'],
-            'human_verified' => ['accepted'],
+            'human_answer' => ['required', 'integer'],
             'honeypot' => ['nullable', 'string', 'max:0'],
             'first_name' => ['required', 'string', 'max:255'],
             'middle_name' => ['nullable', 'string', 'max:255'],
@@ -75,6 +77,24 @@ class StoreOnboardingRequest extends FormRequest
             'city' => ['required', 'string', 'max:255'],
             'telephone' => ['required', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            $token = (string) $this->route('token');
+
+            if (! OnboardingHumanCheck::validate($token, $this->input('human_answer'))) {
+                $validator->errors()->add(
+                    'human_answer',
+                    'That answer did not match. Refresh the page and try again.',
+                );
+            }
+        });
     }
 
     /**

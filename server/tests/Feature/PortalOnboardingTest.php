@@ -36,7 +36,7 @@ class PortalOnboardingTest extends TestCase
         $this->actingAs($user)->get('/studio')
             ->assertOk()
             ->assertSee('The Studio', false)
-            ->assertSee('Profile tasks', false);
+            ->assertSee('My Profile', false);
     }
 
     public function test_invite_route_does_not_create_database_records(): void
@@ -89,6 +89,8 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('instrument reference catalog', false);
         $response->assertSee('3–32 characters', false);
         $response->assertSee('8–50 characters', false);
+        $response->assertSee('Quick check', false);
+        $response->assertSee('humanCheckQuestion', false);
     }
 
     public function test_onboarding_scaffold_includes_back_navigation_and_weapon_refinements(): void

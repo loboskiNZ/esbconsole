@@ -592,6 +592,65 @@
     color: var(--esb-muted);
 }
 
+.esb-studio__profile-grid {
+    display: grid;
+    gap: 1rem 1.5rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .esb-studio__profile-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.esb-studio__profile-grid dt {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(233, 203, 160, 0.65);
+}
+
+.esb-studio__profile-grid dd {
+    margin-top: 0.25rem;
+    color: var(--esb-ink);
+    line-height: 1.45;
+}
+
+.esb-studio__readonly-block {
+    background: rgba(0, 0, 0, 0.18);
+}
+
+.esb-studio__instrument-grid {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+    .esb-studio__instrument-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.esb-studio__instrument-option {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--esb-line);
+    border-radius: 0.75rem;
+    color: var(--esb-muted);
+    cursor: pointer;
+}
+
+.esb-studio__instrument-option:has(input:checked) {
+    border-color: rgba(255, 178, 62, 0.55);
+    color: var(--esb-ink);
+    background: rgba(255, 178, 62, 0.08);
+}
+
 @media (prefers-reduced-motion: reduce) {
     .esb-onboarding__progress-fill {
         transition: none !important;

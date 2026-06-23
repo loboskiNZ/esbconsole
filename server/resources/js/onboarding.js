@@ -72,9 +72,10 @@ const FUTURE_TASKS = [
 
 export { SCAFFOLD_INSTRUMENTS, SCAFFOLD_COUNTRIES };
 
-export function portalOnboarding(token = '', backgroundImages = []) {
+export function portalOnboarding(token = '', backgroundImages = [], humanCheck = { left: 2, right: 2 }) {
     return {
         token,
+        humanCheck,
         step: 1,
         fieldIndex: 0,
         introCardIndex: 0,
@@ -102,7 +103,7 @@ export function portalOnboarding(token = '', backgroundImages = []) {
             username: '',
             password: '',
             passwordConfirm: '',
-            humanVerified: false,
+            humanAnswer: '',
             firstName: '',
             middleName: '',
             surname: '',
@@ -168,6 +169,10 @@ export function portalOnboarding(token = '', backgroundImages = []) {
                 country.name.toLowerCase().includes(query)
                 || country.iso3.toLowerCase().includes(query),
             );
+        },
+
+        get humanCheckQuestion() {
+            return `What is ${this.humanCheck.left} + ${this.humanCheck.right}?`;
         },
 
         get telephoneHint() {
@@ -301,11 +306,15 @@ export function portalOnboarding(token = '', backgroundImages = []) {
                         this.fieldError = 'Passwords must match.';
                     }
                     break;
-                case 'humanVerification':
-                    if (!this.form.humanVerified) {
-                        this.fieldError = 'Please confirm you are a real person.';
+                case 'humanVerification': {
+                    const answer = String(this.form.humanAnswer).trim();
+                    if (answer === '') {
+                        this.fieldError = 'Enter the answer to continue.';
+                    } else if (!/^\d+$/.test(answer)) {
+                        this.fieldError = 'Enter a whole number.';
                     }
                     break;
+                }
                 case 'firstName':
                     this.fieldError = validateRequired(this.form.firstName, 'First name');
                     break;
@@ -461,7 +470,7 @@ export function portalOnboarding(token = '', backgroundImages = []) {
                         username: this.form.username,
                         password: this.form.password,
                         password_confirm: this.form.passwordConfirm,
-                        human_verified: this.form.humanVerified,
+                        human_answer: Number.parseInt(String(this.form.humanAnswer).trim(), 10),
                         honeypot: this.form.honeypot,
                         first_name: this.form.firstName,
                         middle_name: this.form.middleName,

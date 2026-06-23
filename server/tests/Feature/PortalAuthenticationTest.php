@@ -7,6 +7,7 @@ use App\Models\InviteLink;
 use App\Models\InviteLinkAcceptance;
 use App\Models\Person;
 use App\Models\User;
+use App\Support\OnboardingHumanCheck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +31,7 @@ class PortalAuthenticationTest extends TestCase
             'username' => 'shadowplayer1',
             'password' => 'Password1!',
             'password_confirm' => 'Password1!',
-            'human_verified' => true,
+            'human_answer' => 8,
             'honeypot' => '',
             'first_name' => 'Ed',
             'middle_name' => 'J',
@@ -46,9 +47,53 @@ class PortalAuthenticationTest extends TestCase
         ], $overrides);
     }
 
+    private function postOnboarding(string $token, array $overrides = [], int $humanAnswer = 8): \Illuminate\Testing\TestResponse
+    {
+        $this->withSession([
+            OnboardingHumanCheck::SESSION_KEY => [
+                'answer' => $humanAnswer,
+                'token_hash' => InviteLink::hashToken($token),
+            ],
+        ]);
+
+        return $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload(array_merge([
+            'human_answer' => $humanAnswer,
+        ], $overrides)));
+    }
+
+    public function test_onboarding_human_check_rejects_wrong_answer(): void
+    {
+        $token = $this->createInviteLinkToken();
+
+        $this->withSession([
+            OnboardingHumanCheck::SESSION_KEY => [
+                'answer' => 8,
+                'token_hash' => InviteLink::hashToken($token),
+            ],
+        ]);
+
+        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+            'human_answer' => 99,
+        ]));
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('human_answer');
+        $this->assertSame(0, User::count());
+    }
+
+    public function test_onboarding_human_check_accepts_correct_answer(): void
+    {
+        $token = $this->createInviteLinkToken();
+
+        $this->postOnboarding($token, [], 11)->assertOk();
+
+        $this->assertSame(1, User::count());
+    }
+
     public function test_onboarding_requires_valid_invite(): void
     {
-        $response = $this->postJson('/invite/'.bin2hex(random_bytes(16)).'/complete', $this->validOnboardingPayload());
+        $token = bin2hex(random_bytes(16));
+        $response = $this->postOnboarding($token);
 
         $response->assertStatus(410);
         $this->assertSame(0, Person::count());
@@ -59,7 +104,7 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload());
+        $response = $this->postOnboarding($token);
 
         $response->assertOk();
         $this->assertSame(1, Person::count());
@@ -81,9 +126,9 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'username' => 'StageName99',
-        ]))->assertOk();
+        ])->assertOk();
 
         $this->assertSame('stagename99', User::first()->username);
     }
@@ -92,9 +137,9 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'username' => 'caseplayer',
-        ]))->assertOk();
+        ])->assertOk();
 
         $response = $this->post('/login', [
             'username' => 'CasePlayer',
@@ -109,15 +154,15 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'username' => 'uniqueplayer',
-        ]))->assertOk();
+        ])->assertOk();
 
         $secondToken = $this->createInviteLinkToken();
 
-        $response = $this->postJson('/invite/'.$secondToken.'/complete', $this->validOnboardingPayload([
+        $response = $this->postOnboarding($secondToken, [
             'username' => 'UniquePlayer',
-        ]));
+        ]);
 
         $response->assertStatus(422);
         $this->assertSame(1, User::count());
@@ -127,10 +172,10 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $response = $this->postOnboarding($token, [
             'password' => 'weakpass',
             'password_confirm' => 'weakpass',
-        ]));
+        ]);
 
         $response->assertStatus(422);
         $this->assertSame(0, User::count());
@@ -141,10 +186,10 @@ class PortalAuthenticationTest extends TestCase
         $token = $this->createInviteLinkToken();
         $plain = 'Password1!';
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'password' => $plain,
             'password_confirm' => $plain,
-        ]))->assertOk();
+        ])->assertOk();
 
         $user = User::first();
         $this->assertNotNull($user);
@@ -159,7 +204,7 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload())->assertOk();
+        $this->postOnboarding($token)->assertOk();
 
         $columns = Schema::getColumnListing('people');
 
@@ -171,10 +216,10 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'primary_instrument' => 'scaffold-drums',
             'additional_instruments' => ['scaffold-percussion', 'scaffold-vocals'],
-        ]))->assertOk();
+        ])->assertOk();
 
         $person = Person::with('instruments')->first();
         $this->assertNotNull($person);
@@ -193,16 +238,16 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken(['name' => 'Shared Invite']);
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'username' => 'playerone',
             'email' => 'one@example.com',
-        ]))->assertOk();
+        ])->assertOk();
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
+        $this->postOnboarding($token, [
             'username' => 'playertwo',
             'email' => 'two@example.com',
             'stage_name' => 'Player Two',
-        ]))->assertOk();
+        ])->assertOk();
 
         $this->assertSame(2, Person::count());
         $this->assertSame(2, User::count());
@@ -216,7 +261,7 @@ class PortalAuthenticationTest extends TestCase
             'expires_at' => Carbon::now()->subMinute(),
         ]);
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload())
+        $this->postOnboarding($token)
             ->assertStatus(410);
 
         $this->assertSame(0, Person::count());
@@ -228,7 +273,7 @@ class PortalAuthenticationTest extends TestCase
             'revoked_at' => Carbon::now(),
         ]);
 
-        $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload())
+        $this->postOnboarding($token)
             ->assertStatus(410);
 
         $this->assertSame(0, Person::count());
@@ -316,7 +361,7 @@ class PortalAuthenticationTest extends TestCase
     {
         $token = $this->createInviteLinkToken();
 
-        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload());
+        $response = $this->postOnboarding($token);
 
         $response->assertOk();
         $response->assertJsonPath('redirect', url('/?onboarding=complete'));

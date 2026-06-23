@@ -6,8 +6,10 @@ class StudioController extends Controller
 {
     public function index()
     {
+        $user = auth()->user();
+
         return view('studio.index', [
-            'user' => auth()->user()?->load('person'),
+            'user' => $user?->load(['person.instruments']),
         ]);
     }
 }
