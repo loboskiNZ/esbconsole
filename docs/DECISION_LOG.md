@@ -638,4 +638,33 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH061
+## PH061A — X32 Console Domain Discovery and Classification
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 220 | **X32 console domain classified** at business level in `docs/PH061A_X32_CONSOLE_DOMAIN_DISCOVERY.md`. Configuration channels/buses/routing remain **JSON inside `show_console_baselines`** — not normalized CCMM tables. | PH043 learn model; avoids 32×16 relational explosion |
+| 221 | **CCMM expansion (Track B):** `effect_definitions`, `effect_packages`, `effect_package_items`, `song_effect_assignments`, effects reference catalogue, and `show_console_baselines` become CCMM shared entities (proposed CCMM-12a–12b). | Must survive backup/restore for show prep and song FX intent |
+| 222 | **Live Stage only:** `console_learning_snapshots`, `integration_devices`, `integration_connection_profiles`, `performance_device_assignments`, all `live_*` OSC state, X32 scene/snippet recall operations. | Runtime continuity; PH059 Part B reinforced |
+| 223 | **Runtime-only exclusions** confirmed: fader/meter/mute/connection/heartbeat/transport live state must not become Cloud entities. | Cloud rebuilds prep assets not desk telemetry |
+| 224 | **Music `snippets` (PH027) ≠ X32 console snippets.** CCMM `snippets` table remains music domain; X32 recall snippets stay operational/fallback fields only. | Prevents domain collision |
+| 225 | **PH061 core recovery (Track A) not blocked** by PH061A; CCMM-12 X32 domain is **Track B** after core Gate 4 or parallel planning. `mix_moves` CCMM-12c blocked until M5 schema exists. | Sequencing risk control |
+
+### PH061A — CCMM additions summary
+
+| Package | Entities |
+|---------|----------|
+| CCMM-12a | effect_* tables + song_effect_assignments |
+| CCMM-12b | show_console_baselines |
+| CCMM-12c | mix_moves (future) |
+
+### PH061A — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Domain classification complete — no implementation |
+| **Document** | `docs/PH061A_X32_CONSOLE_DOMAIN_DISCOVERY.md` |
+| **Next** | Operator decisions §8; PH062 CCMM-12 authoring when Track B approved |
+
+---
+
+End of Decision Log — PH061A
