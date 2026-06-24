@@ -17,6 +17,7 @@ Items are listed in priority order unless noted. Implementation phases require e
 | **PH068** | Recovery Defect Resolution Plan | **Complete** | PH067B findings | Planning only — `PH068_RECOVERY_DEFECT_RESOLUTION_PLAN.md` |
 | **PH069** | Recovery Tooling Corrections | **Complete** | PH068 plan | Deferred FK, effect transform, file resolution |
 | **PH067C** | Second Local Recovery Rehearsal | **Complete** | PH069 | CONDITIONAL PASS — data PASS, files conditional |
+| **PH067D** | Local File Recovery Rehearsal | **Complete** | PH067C | PASS — 258/259 charts resolved with checksums |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---

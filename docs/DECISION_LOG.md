@@ -901,8 +901,27 @@ End of Decision Log — PH064
 |-------|-------|
 | **Status** | Rehearsal complete — CONDITIONAL PASS |
 | **Document** | `docs/PH067C_SECOND_LOCAL_RECOVERY_REHEARSAL_REPORT.md` |
-| **Next** | Operator Gate 2 + chart library sync before Cloud recovery |
+| **Next** | PH065 Gate 2 sign-off before Cloud recovery execution |
 
 ---
 
-End of Decision Log — PH067C
+## PH067D — Local File Recovery Rehearsal
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 282 | **PH067D file recovery PASS** — batch `6a231d04-ab3f-47d8-bece-4ee2044abc0a`; 258/259 charts resolved with SHA256 when `RECOVERY_CHART_ROOT` points at `backend/storage/app/private`. | Answers PH067C file-phase question |
+| 283 | **RD-04 closed for local rehearsal** — `path_mismatch=0`, classifications accurate; PH067C gap was operator root configuration, not tooling. | File resolution service validated |
+| 284 | **G4-7/G4-9 CONDITIONAL PASS** — single demo seed chart (`local-demo/charts/demo-vocal.pdf`) correctly `required_missing`; all production charts resolve. | Bounded acceptable conditional |
+| 285 | **Cloud R6 file upload** remains blocked pending Gate 2; local file path proven. | PH065 |
+
+### PH067D — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Rehearsal complete — PASS |
+| **Document** | `docs/PH067D_LOCAL_FILE_RECOVERY_REHEARSAL_REPORT.md` |
+| **Next** | Gate 2 sign-off → Cloud recovery execution |
+
+---
+
+End of Decision Log — PH067D
