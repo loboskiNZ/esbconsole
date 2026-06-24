@@ -576,4 +576,35 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH059
+## PH060 — CCMM Implementation Gap Analysis
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 209 | **CCMM gap-analysis is the implementation planning authority** before PH061 migration files. Comparison target: `server/` Cloud implementation vs PH059 CCMM. Document: `docs/PH060_CCMM_IMPLEMENTATION_GAP_ANALYSIS.md`. | Makes explicit what must change; no implementation until gaps closed. |
+| 210 | **Cloud completion process:** fresh isolated Cloud Database (PH056 Path B) → apply PH061 CCMM migrations in dependency order (PH060 §9) → verify → then data migration. Contaminated `defaultdb` is not a migration target. | Production forensic DB cannot be reconciled in place. |
+| 211 | **Migration retirement approach:** all `server/` duplicate shared-entity migrations (PH059 Part D) are **archived, not extended**. Shared entities move to Cloud-first CCMM migration package (PH061). `backend/` duplicates of same entities are also retired from Cloud path. | Ends fork that caused PH057 collision. |
+| 212 | **Quarantine handling:** `invite_links` and `invite_link_acceptances` remain on forensic production only; **excluded** from fresh Cloud migrate. Replace with `person_invitations` in PH048B/PH061 C18. No data migration from quarantined tables. | PH055-187 / PH059 Part C. |
+| 213 | **PH061 blocked until operator approves PH060 findings.** Current Cloud code readiness: **NOT READY** — 20 MISSING, 1 DRIFTED, 5 PARTIAL shared entities vs CCMM. | Quantified gate before migration authoring. |
+
+### PH060 — Gap summary
+
+| Metric | Count |
+|--------|-------|
+| CCMM shared entities | 35 |
+| ALIGNED | 9 |
+| PARTIAL | 5 |
+| DRIFTED | 1 (`users`) |
+| MISSING | 20 |
+| QUARANTINED | 2 |
+
+### PH060 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Gap analysis complete — PH061 **not authorised** until operator approval |
+| **Document** | `docs/PH060_CCMM_IMPLEMENTATION_GAP_ANALYSIS.md` |
+| **Next** | Operator sign-off → PH061 CCMM migration implementation planning |
+
+---
+
+End of Decision Log — PH060
