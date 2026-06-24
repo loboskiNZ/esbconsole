@@ -940,8 +940,30 @@ End of Decision Log — PH064
 |-------|-------|
 | **Status** | Assessment complete — READY WITH CONDITIONS |
 | **Document** | `docs/PH070_RECOVERY_READINESS_ASSESSMENT.md` |
-| **Next** | PH071 — Cloud Recovery Execution Authorisation Package |
+| **Next** | PH071B CCMM Coverage Remediation Plan (recommended) |
 
 ---
 
-End of Decision Log — PH070
+## PH071A — CCMM Domain Coverage Audit
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 291 | **CCMM verdict: Sufficient With Defined Gaps** — core platform domains covered; PH054 sync and M5 assets deferred by governance. | Capability-driven audit |
+| 292 | **No Critical gap blocks Cloud recovery** on current CCMM — PH067C/D evidence stands. | PH070 alignment |
+| 293 | **PH054 synchronisation schema absent** — Critical for peer authoring; Future Phase (PH071B track B1). | PH054 / ADR-001 |
+| 294 | **M5 assets missing** (`mix_moves`, `light_modes`, `production_configuration`) — High; PH071B track B2. | DATA_ARCHITECTURE Master Library |
+| 295 | **Website coverage partial by design** — consumer workspace on shared Cloud DB; not a schema fork failure. | PH055 three workspaces |
+| 296 | **CCMM-12 sufficient for X32 prep** — effects, packages, baselines covered; routing JSON-in-row per PH061A. | Console domain |
+| 297 | **Recommend PH071B** — remediation plan for PH054 package + M5 entities + PH059 Part B reconcile. | Sequenced follow-up |
+
+### PH071A — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Audit complete — CCMM Sufficient With Defined Gaps |
+| **Document** | `docs/PH071A_CCMM_DOMAIN_COVERAGE_AUDIT.md` |
+| **Next** | PH071B CCMM Coverage Remediation Plan |
+
+---
+
+End of Decision Log — PH071A
