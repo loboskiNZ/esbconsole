@@ -799,15 +799,29 @@ End of Decision Log — PH064
 | 255 | **Machine-readable reports** — export/import/file/verification/rollback JSON schemas v1. | Audit and Gate 4 evidence |
 | 256 | **Mandatory dry-run** before any write; two consecutive dry-run PASS per phase. | Production safety |
 | 257 | **PH067 = implementation + local dry-run rehearsal** — not production Cloud execution. | Sequencing |
+| 258 | **PH067A implements local-only `recovery:*` tooling** in `/server/` — dry-run default, production host/env guards, batch workspace under `storage/recovery/{batch_id}/`. No Spaces, no production DB, no destructive rollback execution. | PH066 §1, §8 |
+| 259 | **PH067A write execution gated** by `RECOVERY_LOCAL_ACKNOWLEDGED=true` plus non-production host allowlist; `--execute` on upload/rollback blocked in PH067A. | Safety |
+| 260 | **Report contracts** include `version: 1` and `schema: esb.recovery.*/v1` per PH066 with PH067A filenames (`entity_map.json`, `file_manifest.json`). | Audit |
 
 ### PH066 — Status
 
 | Field | Value |
 |-------|-------|
-| **Status** | Tooling plan complete — no commands implemented |
+| **Status** | Tooling plan complete — PH067A implements command framework |
 | **Document** | `docs/PH066_DATA_MIGRATION_AND_VERIFICATION_TOOLING_PLAN.md` |
-| **Next** | PH067A command implementation → PH067B local dry-run |
+| **Next** | PH067B local dry-run rehearsal |
 
 ---
 
-End of Decision Log — PH066
+## PH067A — Recovery Tooling Implementation (Local Framework)
+
+| Field | Value |
+|-------|-------|
+| **Status** | Complete — local recovery tooling framework in `/server/` |
+| **Scope** | 8 `recovery:*` Artisan commands, batch storage, production guards, unit/feature tests |
+| **Out of scope** | Production DB, Spaces uploads, destructive rollback, Cloud R5/R6 execution |
+| **Next** | PH067B local dry-run against `esb_dev` → `esb_ccmm_validation` |
+
+---
+
+End of Decision Log — PH067A
