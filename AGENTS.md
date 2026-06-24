@@ -88,6 +88,7 @@ Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`
 **Recovery execution:** `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` (Gate 2+)  
 **CCMM migrations:** `database/migrations/ccmm/` (PH063 authored; PH064 validated locally)  
 **Cloud recovery runbook:** `docs/PH065_CLOUD_RECOVERY_RUNBOOK.md` (Gate 2 sign-off required before execution)  
+**Data migration tooling:** `docs/PH066_DATA_MIGRATION_AND_VERIFICATION_TOOLING_PLAN.md` (PH067 implements)  
 **X32 console domain:** `docs/PH061A_X32_CONSOLE_DOMAIN_DISCOVERY.md` (CCMM-12 Track B)
 
 Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`

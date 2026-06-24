@@ -789,4 +789,25 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH065
+## PH066 — Data Migration and Verification Tooling Plan
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 252 | **PH066 defines recovery data/file tooling architecture** — export, transform, import, verify, rollback via `recovery:*` Artisan commands. Document: `docs/PH066_DATA_MIGRATION_AND_VERIFICATION_TOOLING_PLAN.md`. | Unblocks PH065 Gate 4 design |
+| 253 | **Identity strategy:** preserve `public_id`; remap bigint FKs via `cloud_recovery_entity_map`; Live Stage never mutated. | PH061 §5.1 |
+| 254 | **21-domain import order** defined incl. effects (CCMM-12) and `show_console_baselines`; runtime/integration excluded. | PH061A supersedes PH061 omit list for effects |
+| 255 | **Machine-readable reports** — export/import/file/verification/rollback JSON schemas v1. | Audit and Gate 4 evidence |
+| 256 | **Mandatory dry-run** before any write; two consecutive dry-run PASS per phase. | Production safety |
+| 257 | **PH067 = implementation + local dry-run rehearsal** — not production Cloud execution. | Sequencing |
+
+### PH066 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Tooling plan complete — no commands implemented |
+| **Document** | `docs/PH066_DATA_MIGRATION_AND_VERIFICATION_TOOLING_PLAN.md` |
+| **Next** | PH067A command implementation → PH067B local dry-run |
+
+---
+
+End of Decision Log — PH066

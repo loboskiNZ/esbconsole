@@ -12,7 +12,8 @@ Items are listed in priority order unless noted. Implementation phases require e
 | ID | Title | Status | Depends on | Notes |
 |----|-------|--------|------------|-------|
 | **PH065-exec** | Cloud Recovery Execution | Blocked | Gate 2 sign-off | R1–R10 per runbook; no execution until signed. |
-| **PH066** | Data/File Import Tooling | Queued | Gate 3 | `recovery:import-*` commands for R5/R6. |
+| **PH067A** | Recovery Tooling Implementation | Queued | PH066 plan | Artisan `recovery:*` commands in `/server/` |
+| **PH067B** | Local Dry-Run Rehearsal | Queued | PH067A | `esb_dev` → validation DB; dry-run manifests |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---
@@ -21,6 +22,7 @@ Items are listed in priority order unless noted. Implementation phases require e
 
 | ID | Title | Document |
 |----|-------|----------|
+| PH066 | Data Migration & Verification Tooling Plan | `docs/PH066_DATA_MIGRATION_AND_VERIFICATION_TOOLING_PLAN.md` |
 | PH065 | Cloud Recovery Runbook & Gate Package | `docs/PH065_CLOUD_RECOVERY_RUNBOOK.md` |
 | PH064 | CCMM Migration Loader & Local Validation | `docs/PH064_CCMM_LOCAL_VALIDATION_REPORT.md` |
 | PH063 | CCMM Migration Package Authoring | `database/migrations/ccmm/` |
