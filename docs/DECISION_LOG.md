@@ -634,7 +634,7 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 |-------|-------|
 | **Status** | Execution plan complete — **production execution not authorised** |
 | **Document** | `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` |
-| **Next** | Operator Gate 2 sign-off → PH062 migration package implementation |
+| **Next** | PH062 authoring plan → PH062-impl migration files → Operator Gate 2 |
 
 ---
 
@@ -667,4 +667,34 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH061A
+## PH062 — CCMM Migration Authoring Plan
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 226 | **PH062 is the migration authoring authority.** Defines file layout, package mapping (CCMM-00–11), naming, validation, and retirement of `server/` duplicate DDL. Document: `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md`. | Separates Git authoring from production execution |
+| 227 | **Canonical migration path:** repo-root `database/migrations/ccmm/` loaded by `/server/` (and `/backend/` after LS parity). Historical `server/` shared forks archived to `_archived_ccmm_forks/` — not deleted. | Single authority; ends PH060 duplicate fork |
+| 228 | **Track A (CCMM-00–11) authored first.** Track B (CCMM-12a–12c X32 domain) and Track C (LS-EXT superset) deferred per PH061A sequencing. | Core recovery not blocked by console domain |
+| 229 | **PH062 authorises migration files in Git only.** Production `php artisan migrate` against Cloud cluster requires PH061 Gate 2 + isolated DB — execution is PH063 runbook. | Production safety |
+| 230 | **`users` CCMM-04 is CREATE merged schema** on fresh Cloud (incl. `public_id`), not ALTER of skeleton. `charts.import_batch_id` FK enforced in CCMM-06 after `import_batches`. | Closes PH060 DRIFTED + PARTIAL gaps |
+| 231 | **`cloud_recovery_entity_map` authored** under `database/migrations/recovery/` before data import tooling. | PH061 §5.2 audit requirement |
+| 232 | **CCMM-11 `person_invitations` Cloud-only** — Live Stage parity apply excludes this table. | PH059 Part C workspace boundary |
+
+### PH062 — Package authority
+
+| Track | Packages | Authoring |
+|-------|----------|-----------|
+| A | CCMM-00 → CCMM-11 + RECOVERY | **Required** |
+| B | CCMM-12a → CCMM-12c | Deferred / draft only |
+| C | LS-EXT-01+ | After Live Stage CCMM parity |
+
+### PH062 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Authoring plan complete — migration PHP files not yet written |
+| **Document** | `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` |
+| **Next** | Implement §17 deliverables → PH062-A gate → Operator Gate 2 → PH063 execution runbook |
+
+---
+
+End of Decision Log — PH062
