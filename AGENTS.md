@@ -86,7 +86,7 @@ Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`
 **Schema authority:** `docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md` (CCMM)  
 **Gap analysis:** `docs/PH060_CCMM_IMPLEMENTATION_GAP_ANALYSIS.md` (PH061 gate)  
 **Recovery execution:** `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` (Gate 2+)  
-**CCMM migration authoring:** `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` (blueprint only; PH063 implements)  
+**CCMM migrations:** `database/migrations/ccmm/` (PH063 authored; PH064 loader + local validation)  
 **X32 console domain:** `docs/PH061A_X32_CONSOLE_DOMAIN_DISCOVERY.md` (CCMM-12 Track B)
 
 Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`

@@ -727,3 +727,27 @@ End of Decision Log — PH062
 ---
 
 End of Decision Log — PH063
+
+---
+
+## PH064 — CCMM Migration Loader and Local PostgreSQL Validation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 241 | **CCMM loader wired** in `server/` and `backend/` via `database/ccmm_migration_paths.php` + `loadMigrationsFrom()`. | Governed single path; no duplication |
+| 242 | **11 server fork migrations archived** to `_archived_ccmm_forks/` — not deleted. `0001_*` retained; `users` DDL removed from `0001` (CCMM-04 owns users). | PH062 retirement strategy |
+| 243 | **Local PostgreSQL validation PASS** on isolated `esb_ccmm_validation` (Docker `backend-postgres-1`). 48/48 CCMM tables; 0 forbidden; 0 FK orphans. | PH064 gate before production |
+| 244 | **`ccmm:validate-schema` command** added for repeatable local/CI schema checks. | PH062 §8.5 drift prevention |
+| 245 | **Production migrate remains blocked** — PH061 Gate 2 required. | Production safety |
+
+### PH064 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Loader wired; local validation PASS |
+| **Report** | `docs/PH064_CCMM_LOCAL_VALIDATION_REPORT.md` |
+| **Next** | PH063-runbook / PH061 Gate 2 for Cloud cluster |
+
+---
+
+End of Decision Log — PH064

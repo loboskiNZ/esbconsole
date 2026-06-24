@@ -23,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        require_once dirname(base_path()).'/database/ccmm_migration_paths.php';
+
+        foreach (ccmm_migration_paths() as $path) {
+            $this->loadMigrationsFrom($path);
+        }
+
         Route::bind('song', function (string $value): Song {
             abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
 

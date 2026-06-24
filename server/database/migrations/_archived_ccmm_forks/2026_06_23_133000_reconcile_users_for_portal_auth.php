@@ -9,11 +9,22 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('username', 32)->nullable()->unique()->after('id');
-            $table->foreignId('person_id')->nullable()->after('username')->constrained('people')->nullOnDelete();
-            $table->foreignId('band_id')->nullable()->after('person_id')->constrained('bands')->nullOnDelete();
-            $table->boolean('is_active')->default(true)->after('password');
+        Schema::table('users', function (Blueprint $table): void {
+            if (! Schema::hasColumn('users', 'username')) {
+                $table->string('username', 32)->nullable()->unique()->after('id');
+            }
+
+            if (! Schema::hasColumn('users', 'person_id')) {
+                $table->foreignId('person_id')->nullable()->after('username')->constrained('people')->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('users', 'band_id')) {
+                $table->foreignId('band_id')->nullable()->after('person_id')->constrained('bands')->nullOnDelete();
+            }
+
+            if (! Schema::hasColumn('users', 'is_active')) {
+                $table->boolean('is_active')->default(true)->after('password');
+            }
         });
 
         if (Schema::getConnection()->getDriverName() === 'pgsql') {

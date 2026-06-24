@@ -8,7 +8,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('invite_link_acceptances', function (Blueprint $table) {
+        if (! Schema::hasTable('invite_link_acceptances')) {
+            Schema::create('invite_link_acceptances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invite_link_id')->constrained('invite_links')->cascadeOnDelete();
             $table->foreignId('person_id')->constrained('people')->restrictOnDelete();
@@ -18,7 +19,8 @@ return new class extends Migration
 
             $table->unique('user_id');
             $table->index(['invite_link_id', 'accepted_at']);
-        });
+            });
+        }
     }
 
     public function down(): void
