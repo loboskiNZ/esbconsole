@@ -15,7 +15,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DEPLOY_ENV="$ROOT/server/deploy/.env"
-VERIFY_COMMIT="${1:-8750521}"
+VERIFY_COMMIT="8750521"
 
 if [[ "${1:-}" == "--push" ]]; then
   git -C "$ROOT" push origin main
@@ -23,8 +23,11 @@ if [[ "${1:-}" == "--push" ]]; then
 fi
 
 if [[ "${1:-}" == "--verify" ]]; then
-  VERIFY_COMMIT="${2:-8750521}"
-  exec "$ROOT/server/deploy/verify-active-release.sh" "$VERIFY_COMMIT"
+  exec "$ROOT/server/deploy/verify-active-release.sh" "${2:-8750521}"
+fi
+
+if [[ -n "${1:-}" ]]; then
+  VERIFY_COMMIT="$1"
 fi
 
 if [[ ! -f "$DEPLOY_ENV" ]]; then
