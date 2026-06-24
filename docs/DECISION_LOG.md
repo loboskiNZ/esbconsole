@@ -751,3 +751,42 @@ End of Decision Log — PH063
 ---
 
 End of Decision Log — PH064
+
+---
+
+## PH065 — Cloud Recovery Runbook and Gate 2 Sign-off Package
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 246 | **PH065 operational runbook authored** — R0–R10 phases with checklists, gates, rollback. Master: `docs/PH065_CLOUD_RECOVERY_RUNBOOK.md`. | Operator step-by-step manual before any Cloud execution |
+| 247 | **Gate 2 sign-off package** requires explicit operator signature, recovery window, rollback window. `docs/PH065_GATE2_SIGNOFF_PACKAGE.md`. | Production execution blocked until signed |
+| 248 | **Eight execution checklists** + rollback runbook + gate summary created under `docs/PH065_*`. | Completeness for Path B recovery |
+| 249 | **R5/R6 blocked on PH066** import/upload tooling — runbook documents placeholders; empty Cloud start valid after R4. | Honest execution boundary |
+| 250 | **Gate 3 criteria updated** to PH064 authority: **48 CCMM tables** (not legacy 35-only count). | Aligns with CCMM-12 inclusion |
+| 251 | **PH065 produces documentation only** — no production commands, migrate, deploy, or data migration in this phase. | Production safety |
+
+### PH065 — Document index
+
+| Document | Purpose |
+|----------|---------|
+| `PH065_CLOUD_RECOVERY_RUNBOOK.md` | Master R0–R10 |
+| `PH065_GATE2_SIGNOFF_PACKAGE.md` | Operator approval |
+| `PH065_FORENSIC_EXPORT_CHECKLIST.md` | Gate 1 |
+| `PH065_CLOUD_PROVISIONING_CHECKLIST.md` | R2 |
+| `PH065_MIGRATION_EXECUTION_CHECKLIST.md` | R3 |
+| `PH065_DATA_MIGRATION_CHECKLIST.md` | R5 |
+| `PH065_FILE_MIGRATION_CHECKLIST.md` | R6 |
+| `PH065_APPLICATION_VALIDATION_CHECKLIST.md` | Gate 5 |
+| `PH065_ROLLBACK_RUNBOOK.md` | Rollback paths |
+| `PH065_GATE_SUMMARY.md` | Gates 1–6 |
+
+### PH065 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Runbook package complete — **execution blocked pending Gate 2** |
+| **Next** | Operator signs Gate 2 → R1 forensic export → PH066 import tooling (optional before R5) |
+
+---
+
+End of Decision Log — PH065
