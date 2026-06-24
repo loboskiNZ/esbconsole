@@ -920,8 +920,28 @@ End of Decision Log — PH064
 |-------|-------|
 | **Status** | Rehearsal complete — PASS |
 | **Document** | `docs/PH067D_LOCAL_FILE_RECOVERY_REHEARSAL_REPORT.md` |
-| **Next** | Gate 2 sign-off → Cloud recovery execution |
+| **Next** | PH071 Cloud Recovery Execution Authorisation Package |
 
 ---
 
-End of Decision Log — PH067D
+## PH070 — Recovery Readiness Assessment
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 286 | **Recovery programme disposition: READY WITH CONDITIONS** — schema, tooling, and local rehearsals sufficient for authorisation; execution blocked on Gates 1–2 and Cloud provisioning. | PH070 assessment |
+| 287 | **Gate 3–4 technically satisfied locally** (PH064, PH067C, PH067D); Cloud execution evidence still pending. | Distinguish rehearsal vs production-adjacent gates |
+| 288 | **Not ready to execute PH061 R1+** without Gate 1 forensic export and Gate 2 operator signature. | PH065 production safety |
+| 289 | **Go WITH CONDITIONS** — proceed to PH071 authorisation package; no skip of Gates 1–2 or Cloud Gate 3–4. | Governed handoff |
+| 290 | **Critical risks remain:** `defaultdb` contamination (forensic only), recovery never executed on Cloud, operator sign-off pending. | Honest readiness |
+
+### PH070 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Assessment complete — READY WITH CONDITIONS |
+| **Document** | `docs/PH070_RECOVERY_READINESS_ASSESSMENT.md` |
+| **Next** | PH071 — Cloud Recovery Execution Authorisation Package |
+
+---
+
+End of Decision Log — PH070
