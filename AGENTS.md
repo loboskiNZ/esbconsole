@@ -131,6 +131,8 @@ During production data-integrity investigations or incidents:
 
 Violations require incident documentation in `docs/DECISION_LOG.md` before further implementation resumes.
 
+Active production incident recovery plan: `docs/PH056_PRODUCTION_RECOVERY_PLAN.md` (PH056 — **no production mutation until operator closes incident**).
+
 ## Development Rules
 
 - Make scoped changes only.

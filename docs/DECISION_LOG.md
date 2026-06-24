@@ -480,4 +480,36 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH055
+## PH056 — Production Recovery Planning
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 189 | **Production recovery requires an operator-selected path** before any mutation: Path A (PITR to isolated Cloud Database), Path B (fresh isolated Cloud Database — **recommended default**), or Path C (forensic hold). Full procedure: `docs/PH056_PRODUCTION_RECOVERY_PLAN.md`. | PH055 blocked production work without recovery plan; manual incident response made `defaultdb` migration history untrustworthy. |
+| 190 | **Forensic export is mandatory** before any recovery-path execution: DO snapshot or `pg_dump`, `migrations` export, row-count audit, Forge `DB_*` documentation. | Preserves evidence; enables rollback analysis; satisfies PH007 backup governance. |
+| 191 | **Fresh isolated Cloud Database (Path B)** is the recommended default when portal `users`/`people` are empty and manual migration edits occurred — governed `server/` migrations only on empty cluster. | Faster trustworthy schema than reconciling 66 contaminated migrations; aligns with PH055 Decision 185. |
+| 192 | **Deploy and migrate are gated** until PH056 incident closure: no `remote-deploy.sh`, no `forge-deploy.sh` migrate step on production, until Cloud Database target is isolated and operator signs verification checklist (PH056 §9). | `forge-deploy.sh` runs `migrate --force`; deploying to contaminated DB would worsen drift. |
+| 193 | **Website database co-tenancy** with Cloud Studio remains permitted per PH055 Decision 185 but requires operator sign-off and declared migration ownership before repointing `edandtheshadows` Forge site. | Co-tenancy is allowed; blind repointing without audit is not. |
+| 194 | **Old shared `defaultdb`** must remain forensic read-only or be decommissioned only after export — never dropped without operator approval. | May contain Website data and pre-incident evidence. |
+| 195 | **PH048B remains blocked** until PH056 incident closure recorded with operator sign-off on verification checklist. | Onboarding persistence must not resume on non-compliant schema or invite model. |
+
+### PH056 — Incident status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Open — planning complete; execution **not authorised** |
+| **Forensic summary** | PH056 §2 / PH055 incident record |
+| **Recovery plan** | `docs/PH056_PRODUCTION_RECOVERY_PLAN.md` |
+| **Operator decisions pending** | Recovery path; Website co-tenancy; identity loss acceptance |
+
+### PH056 — Validation
+
+| Prior | PH056 position |
+|-------|----------------|
+| PH055 Decision 185 (DB isolation) | Operationalised via recovery paths and tenancy matrix |
+| PH055 Decision 186 (production safety) | Reinforced — forensic export before any mutation |
+| PH047 Decision 173 (automated deploy) | Suspended until incident closure — deploy is not default during recovery |
+| PH055 Decision 187 (person-first invite) | PH048B blocked until recovery complete |
+
+---
+
+End of Decision Log — PH056
