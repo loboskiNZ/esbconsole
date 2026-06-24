@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH054 Amended (Cloud Studio ↔ Live Stage Synchronisation Model)  
+Status: PH055 Amended (Governance Recovery and Architecture Alignment)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -18,6 +18,50 @@ Foundation implementation plan: `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`
 - Performance is local.
 - Ableton is master.
 - The show must go on.
+
+## ESB Data Architecture (PH055)
+
+The platform has **one logical ESB data architecture**, **two physical PostgreSQL databases**, and **three workspaces**.
+
+### Physical databases
+
+| Database | Hosting | Purpose |
+|----------|---------|---------|
+| **Cloud Database** | DigitalOcean Managed PostgreSQL (Forge-provisioned) | Canonical cloud collaboration, Band Portal identity, published master library, sync package registry, audit |
+| **Live Stage Database** | Local PostgreSQL (Director host and/or Local Show Runtime Docker volume) | Offline-capable rehearsal and performance; runtime state; performance-ready replica of shared ESB entities |
+
+### Workspaces
+
+| Workspace | Definition | Physical database | Primary surfaces |
+|-----------|------------|-------------------|------------------|
+| **Cloud Studio** | Server-hosted musician portal and collaboration | Cloud Database | Band Portal, ESB Studio (`/server/`) |
+| **Website** | Public cloud web presence | Cloud Database | Journey, marketing, public band content (separate deployable app) |
+| **Live Stage** | Local rehearsal and performance system | Live Stage Database | Director preparation host; Local Show Runtime; X32 console (`/backend/`) |
+
+Cloud Studio and Website are **distinct deployable applications** that **share one Cloud Database**. They must not share a database with Live Stage.
+
+### Schema parity and offline divergence
+
+| Rule | Statement |
+|------|-----------|
+| **One logical schema** | Shared ESB entities (Band, Person, Song, Show, etc.) use the **same migration-defined schema** on Cloud Database and Live Stage Database |
+| **Schema parity** | Mandatory for all shared ESB entity tables — no workspace-specific schema forks |
+| **Data-state divergence** | Offline Live Stage operation may hold different row values, versions, and checkout state — not different table definitions |
+| **Runtime extension** | Live Stage Database may add runtime-only tables (timeline state, bridge health, execution logs) as a **superset** — not a replacement schema for shared entities |
+
+### Reconciliation with prior environment names
+
+| Legacy term (PH004–PH007) | PH055 mapping |
+|---------------------------|---------------|
+| Cloud Environment | Cloud Database — used by Cloud Studio and Website workspaces |
+| Director Local Environment | Live Stage workspace (preparation client) — uses Live Stage Database |
+| Local Show Runtime | Live Stage workspace (execution host) — uses Live Stage Database |
+
+PH007 Decision 084 described three **deployment contexts** (cloud, Director local, Local Show Runtime). PH055 clarifies these map to **two physical databases** and **three workspaces**. Director Local and Local Show Runtime are both Live Stage workspace hosts — not separate physical databases.
+
+### Production topology rule (PH055)
+
+**Forbidden:** Multiple unrelated deployable applications (Cloud Studio, Website, Live Stage) writing to the same physical database instance unless explicitly governed as Cloud Database co-tenants (Cloud Studio + Website only).
 
 ## Runtime Authority Model
 
@@ -59,13 +103,21 @@ Full data governance: `docs/DATA_ARCHITECTURE.md`
 
 ## Persistence Environment Responsibilities
 
-| Environment | Persistence Role |
-|-------------|-------------------|
-| **Director Local** | Draft creation/editing; publish source; local DB + file cache |
-| **Cloud** | Published canonical records; Laravel DB + Spaces; musician collaboration |
-| **Local Show Runtime** | Performance-ready replica; runtime state; execution logs; offline authority |
+| Environment | Persistence Role | PH055 database |
+|-------------|-------------------|----------------|
+| **Cloud Studio** | Published canonical records; musician portal; Laravel DB + Spaces | Cloud Database |
+| **Website** | Public content; may read/write shared band entities per app scope | Cloud Database |
+| **Live Stage (Director + Runtime)** | Performance-ready replica; runtime state; execution logs; offline authority | Live Stage Database |
 
-### Director Local Environment
+Legacy names retained for cross-reference:
+
+| Legacy name | PH055 role |
+|-------------|------------|
+| **Director Local** | Live Stage workspace — preparation client on Live Stage Database |
+| **Cloud Environment** | Cloud Database — shared by Cloud Studio and Website |
+| **Local Show Runtime** | Live Stage workspace — execution host on Live Stage Database |
+
+### Director Local Environment (Live Stage workspace — preparation)
 
 Primary design and preparation workstation.
 
@@ -76,7 +128,7 @@ Primary design and preparation workstation.
 
 **Role:** Create and prepare. Source of local creation.
 
-### Cloud Environment
+### Cloud Environment (Cloud Database — Cloud Studio + Website)
 
 Collaboration, backup, and distribution layer.
 
@@ -87,7 +139,7 @@ Collaboration, backup, and distribution layer.
 
 **Role:** Collaborate and sync. Not required during live performance.
 
-### Local Show Runtime
+### Local Show Runtime (Live Stage workspace — execution)
 
 Offline-capable live performance execution environment.
 

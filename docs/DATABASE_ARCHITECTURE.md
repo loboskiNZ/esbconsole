@@ -1,6 +1,6 @@
 # Database Architecture & Logical Schema Design
 
-Status: PH047A Amended (Authentication Policy Finalisation)  
+Status: PH055 Amended (Governance Recovery and Architecture Alignment)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical database architecture and logical schema design before physical database implementation
 
@@ -56,15 +56,30 @@ Database design **must follow** `docs/DATA_ARCHITECTURE.md`. Physical implementa
 
 ---
 
-## 3. Persistence Boundaries
+## 3. Persistence Boundaries (PH055)
 
-Three logical database contexts align with PH004 persistence environments:
+One ESB data architecture. Two physical databases. Three workspaces.
 
-| Context | Database role | Authority phase |
-|---------|---------------|-----------------|
-| **Director Local Database** | Draft creation, local editing, publish staging | Director-local-canonical until publish |
-| **Cloud Database** | Published canonical records, collaboration, sync package registry, audit | Cloud-canonical after publish |
-| **Local Show Runtime Database** | Performance-ready replica, runtime state, Soundcheck/Readiness, execution logs | Local-runtime-authoritative during show day |
+### Physical database topology
+
+| Physical database | Workspaces | Authority phase |
+|-------------------|------------|-----------------|
+| **Cloud Database** | Cloud Studio, Website | Cloud-canonical after publish for shared ESB entities |
+| **Live Stage Database** | Live Stage (Director preparation + Local Show Runtime execution) | Local-runtime-authoritative during show day; draft-capable during preparation |
+
+### Logical authority phases (unchanged from PH004)
+
+| Phase | Authority | Database |
+|-------|-----------|----------|
+| Draft preparation (Live Stage) | Director-local-canonical until publish/sync | Live Stage Database |
+| Published / collaboration | Cloud-canonical | Cloud Database |
+| Live performance | Local-runtime-authoritative | Live Stage Database |
+
+### Schema parity rule (PH055)
+
+Shared ESB entity tables **must** exist with identical migration-defined structure on Cloud Database and Live Stage Database. Offline operation causes **data-state divergence** (row values, versions, checkout state) — **not schema divergence** (missing tables, divergent columns, workspace-specific forks).
+
+Live Stage Database may include **runtime-only superset tables** (timeline state, bridge health, execution logs) that do not exist on Cloud Database. Shared entity tables must not diverge.
 
 ### Boundary rules
 
@@ -76,7 +91,7 @@ Three logical database contexts align with PH004 persistence environments:
 | **Runtime boundary** | Ableton Protocol State and live Runtime State exist only in Local Show Runtime — not cloud-canonical during performance. |
 | **File boundary** | Database stores file metadata and object references; binary content lives in Spaces (remote) or local cache (runtime). |
 
-Director Local and Cloud may share the same logical schema with different data visibility; Local Show Runtime uses a subset schema optimised for show-day execution plus runtime tables.
+Cloud Studio and Website co-tenant Cloud Database. Live Stage uses Live Stage Database exclusively. **Co-tenancy of Cloud Database by Cloud Studio and Website is permitted. Co-tenancy of Cloud Database with Live Stage is prohibited.**
 
 ---
 
@@ -463,9 +478,9 @@ Actions at Cue boundaries may reference:
 
 ---
 
-## 8. Cloud Database Model
+## 8. Cloud Database Model (Cloud Studio + Website)
 
-The cloud database (PostgreSQL or MySQL on DigitalOcean, Laravel-managed) stores:
+The Cloud Database (PostgreSQL 16+ on DigitalOcean, Laravel-managed) stores:
 
 ### Canonical master library (post-publish)
 
@@ -516,9 +531,9 @@ Post-performance archival of runtime history is optional.
 
 ---
 
-## 9. Local Runtime Database Model
+## 9. Live Stage Database Model
 
-Local Show Runtime database must contain **before performance begins** (via Published Package pull):
+Live Stage Database must contain **before performance begins** (via Published Package pull or governed sync):
 
 ### Active context
 

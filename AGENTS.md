@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH054 Amended (Cloud Studio ↔ Live Stage Synchronisation Model)
+Status: PH055 Amended (Governance Recovery and Architecture Alignment)
 
 ## Authority Order
 
@@ -42,16 +42,33 @@ The platform coordinates:
 - Soundcheck
 - Performance execution
 
-## Environment Terminology (PH054)
+## Environment Terminology (PH054 / PH055)
 
 Use these names consistently in documentation and implementation:
 
 | Term | Meaning |
 |------|---------|
-| **Cloud Studio** | Server environment — musician portal, cloud-hosted collaboration, song/chart/performance management (`/server/`, Forge-hosted) |
-| **Live Stage** | Local performance environment — rehearsal and performance runtime, offline-capable (`/backend/`, Local Show Runtime) |
+| **Cloud Studio** | Server environment — musician portal (Band Portal / ESB Studio), cloud-hosted collaboration, song/chart/performance management (`/server/`, Forge-hosted) |
+| **Website** | Public cloud-hosted web surfaces (e.g. band journey, marketing, public content) — separate deployable app, same Cloud Database as Cloud Studio |
+| **Live Stage** | Local performance environment — Director preparation host and Local Show Runtime for rehearsal and performance (`/backend/`, offline-capable) |
 
 Do **not** introduce alternative terms for these environments.
+
+### ESB data architecture (PH055)
+
+| Layer | Model |
+|-------|--------|
+| **Logical** | One ESB data architecture — shared entity definitions across workspaces |
+| **Physical databases** | **Two** — Cloud Database and Live Stage Database |
+| **Workspaces** | **Three** — Cloud Studio, Website, Live Stage |
+
+| Workspace | Physical database | Codebase (current) |
+|-----------|-------------------|-------------------|
+| Cloud Studio | Cloud Database | `/server/` |
+| Website | Cloud Database | separate Forge site (e.g. edandtheshadows) |
+| Live Stage | Live Stage Database | `/backend/` + Local Show Runtime stack |
+
+**Schema parity** is mandatory between Cloud Database and Live Stage Database for all shared ESB entities. Offline operation creates **data-state divergence**, not schema divergence.
 
 Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`
 
@@ -101,6 +118,18 @@ Physical database plan: `docs/PHYSICAL_DATABASE_AND_MIGRATION_PLAN.md`
 Foundation implementation plan: `docs/FOUNDATION_IMPLEMENTATION_PLAN.md`  
 UX and workflows: `docs/UX_MODEL.md`  
 Navigation: `docs/INFORMATION_ARCHITECTURE.md`
+
+## Production Safety Rules (PH055 — mandatory)
+
+During production data-integrity investigations or incidents:
+
+- **No ad hoc production DDL** — no `ALTER TABLE`, manual column adds, or schema edits outside Laravel migrations on any environment.
+- **No manual `INSERT` into `migrations`** — migration history must reflect only `php artisan migrate` execution.
+- **No marking migrations as run manually** — including via tinker, SQL client, or SSH one-liners.
+- **No feature work** during production data-integrity investigations — documentation and read-only diagnosis only until the operator closes the incident.
+- **No production mutation** without an operator-approved incident procedure — including deploy, migrate, seed, sync, truncate, refresh, or destructive Artisan commands.
+
+Violations require incident documentation in `docs/DECISION_LOG.md` before further implementation resumes.
 
 ## Development Rules
 

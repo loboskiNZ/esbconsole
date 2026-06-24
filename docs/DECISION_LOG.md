@@ -127,7 +127,7 @@
 | ID | Decision | Rationale |
 |----|----------|-----------|
 | 083 | PostgreSQL 16+ is the selected database engine for cloud, Director local, and Local Show Runtime. | JSONB manifest support, Laravel/DigitalOcean/Docker parity, single-engine operational simplicity; aligns with Ed's preference. |
-| 084 | Three distinct PostgreSQL databases: cloud (DO managed), Director local, Local Show Runtime (Docker). | Phase-aware authority; runtime DB required during performance; cloud not required during performance. |
+| 084 | Three distinct PostgreSQL databases: cloud (DO managed), Director local, Local Show Runtime (Docker). | Phase-aware authority; runtime DB required during performance; cloud not required during performance. **PH055 amends physical topology:** two physical databases (Cloud Database, Live Stage Database); three workspaces (Cloud Studio, Website, Live Stage). Decision 084 deployment contexts preserved; see PH055 Decisions 183–184. |
 | 085 | Laravel migrations are the sole approved schema change mechanism; no manual DDL or untracked schema edits. | Version-controlled governed schema evolution. |
 | 086 | Initial migrations follow dependency order M1–M14 (identity → band → assets → songs → shows → performances → sync → runtime → audit). | FK integrity and aggregate hierarchy respected. |
 | 087 | Internal bigint PKs plus UUID public_id for API/sync; PGM/CC16 as external mapping fields — not primary keys. | Sync-safe cross-environment references. |
@@ -441,4 +441,43 @@ Full decision record: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.
 
 ---
 
-End of Decision Log — PH054
+## PH055 — Governance Recovery and Architecture Alignment
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 183 | **ESB data architecture:** one logical data architecture; **two physical PostgreSQL databases** (Cloud Database, Live Stage Database); **three workspaces** (Cloud Studio, Website, Live Stage). Cloud Studio and Website use Cloud Database. Live Stage uses Live Stage Database. | Resolves PH007 Decision 084 drift — three deployment contexts were incorrectly implemented as permission to co-locate unrelated apps on one production database; clarifies Website as first-class workspace. |
+| 184 | **Schema parity** is mandatory between Cloud Database and Live Stage Database for all shared ESB entity tables. Offline operation creates **data-state divergence** (row values, versions, checkout state), **not schema divergence** (missing tables, divergent columns, workspace forks). Live Stage Database may add runtime-only superset tables. | Preserves sync-before-show and PH054 checkout model; prevents production schema collision across workspaces. |
+| 185 | **Production co-tenancy rule:** Cloud Studio and Website may share Cloud Database. **Live Stage must not share a physical database instance with Cloud Database.** Multiple Laravel apps on Cloud Database require governed migration namespace ownership per app. | Direct response to production incident — `/server/` and unrelated Forge sites must not apply `/backend/` migrations to Cloud Database. |
+| 186 | **Production safety (mandatory):** No ad hoc production DDL; no manual `INSERT` into `migrations`; no marking migrations as run manually; no feature work during production data-integrity investigations; no production mutation without operator-approved incident procedure. | Codified in `AGENTS.md`; closes governance gap exposed when incident response used SSH tinker and manual migration table edits. |
+| 187 | **Person-first invitation remains authoritative.** PH047 Decision 168 and PH048A invitation architecture (`person_id` FK, Person exists before User creation) are **not amended**. The implemented `invite_links` table (shared links without `person_id`, Person created at registration completion) is **non-compliant provisional drift**. **Implementation must change** to governed `person_invitations` model before production onboarding resumes. PH047 is not amended. | Resolves invite model conflict in favour of identity governance; documents drift without retroactive approval of shared invite links. |
+| 188 | **PH048A scope clarification:** PH048A governs narrative onboarding UX scaffold. Persistence implementation (User creation, Person updates, invitation validation, database writes) is **PH048B** — blocked until PH055 infrastructure recovery (database isolation, migration reconciliation) is operator-approved. | Resolves PH048A "scaffold only" vs implemented registration conflict without retroactively approving out-of-scope writes. |
+
+### PH055 — Original authority located
+
+| Concept | Original source | PH055 reconciliation |
+|---------|-----------------|----------------------|
+| Cloud Database | PH005 Decision 067; `DATABASE_ARCHITECTURE.md` §8; `PHYSICAL_DATABASE` §4 | Cloud Studio + Website workspaces |
+| Live Stage Database | PH005 Decision 068; `DATABASE_ARCHITECTURE.md` §9; `PHYSICAL_DATABASE` §5 | Director + Local Show Runtime consolidated |
+| Cloud Studio | PH054 Decision 182; ADR-001 | `/server/` Band Portal |
+| Website | `DATA_ARCHITECTURE.md` Band People rows ("Director Local / Website"); production Forge topology | Public cloud app; Cloud Database co-tenant |
+| Live Stage | PH054 Decision 182; ADR-001 mapping note | `/backend/` + Local Show Runtime |
+| Two physical DBs | **Not explicitly stated before PH055** — implied by cloud vs local authority split (PH004–PH007) but obscured by PH007 Decision 084 "three databases" wording | PH055 makes two physical databases explicit |
+| Three workspaces | **Not explicitly stated before PH055** — PH054 named two authoring environments; Website was implicit in DATA_ARCHITECTURE | PH055 names Website as third workspace |
+
+### PH055 — Production incident record (governance only)
+
+Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band Portal and unrelated Forge site; 66 migrations from multiple codebases; manual production DDL and `migrations` table inserts during incident response; empty `users`/`people` tables with historical sequence values. **No further production mutation** until operator selects recovery path (PITR, isolated Cloud Database provisioning, or forensic hold).
+
+### PH055 — Validation
+
+| Prior | PH055 position |
+|-------|----------------|
+| PH007 Decision 084 | **Amended interpretation** — two physical DBs, three workspaces; authority phases unchanged |
+| PH047 Decision 168 | **Reinforced** — implementation must align; PH047 not amended |
+| PH048A | **Clarified** — UX scaffold only; persistence is PH048B |
+| PH054 / ADR-001 | **Compatible** — peer authoring and sync model unchanged |
+| Charter offline-first | **Reinforced** — Live Stage Database isolation |
+
+---
+
+End of Decision Log — PH055

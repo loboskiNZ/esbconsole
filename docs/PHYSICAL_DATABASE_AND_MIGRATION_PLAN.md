@@ -1,6 +1,6 @@
 # Physical Database & Migration Plan
 
-Status: PH047 Amended (Band Portal Authentication & Canonical Identity)  
+Status: PH055 Amended (Governance Recovery and Architecture Alignment)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Physical database technology choices, migration strategy, initial schema plan, and delivery governance before any database implementation
 
@@ -68,9 +68,10 @@ Physical schema implementation **must follow** this document, `docs/DATABASE_ARC
 
 **Use PostgreSQL consistently** across:
 
-1. Cloud database (DigitalOcean Managed PostgreSQL)
-2. Director local database (local PostgreSQL instance or Docker)
-3. Local Show Runtime database (Docker PostgreSQL container)
+1. **Cloud Database** (DigitalOcean Managed PostgreSQL) — Cloud Studio and Website workspaces
+2. **Live Stage Database** (local PostgreSQL — Director host and/or Local Show Runtime Docker)
+
+PH055 clarifies PH007 Decision 084: the three historical deployment contexts (cloud, Director local, Local Show Runtime) map to **two physical databases** and **three workspaces** — not three independent physical database instances. See `docs/ARCHITECTURE.md` ESB Data Architecture and `docs/DECISION_LOG.md` PH055.
 
 ### Why one engine everywhere
 
@@ -102,30 +103,35 @@ Cloud database holds **published canonical** master library, operational records
 
 ---
 
-## 5. Local Runtime Database Decision
+## 5. Live Stage Database Decision (PH055)
 
 | Attribute | Value |
 |-----------|-------|
-| **Engine** | PostgreSQL 16+ (same major version as cloud) |
-| **Hosting** | Docker container in Local Show Runtime stack |
-| **Volume** | Named Docker volume for data persistence across restarts |
-| **Scope** | Performance-ready replica + runtime state + show-day logs |
+| **Engine** | PostgreSQL 16+ (same major version as Cloud Database) |
+| **Hosting** | Local PostgreSQL on Director workstation; Local Show Runtime Docker may use same instance or dedicated volume on same host |
+| **Volume** | Named Docker volume when containerised — data persistence across restarts |
+| **Scope** | Draft preparation; performance-ready replica; runtime state; Soundcheck/Readiness; show-day logs |
 | **Cloud dependency** | **None during performance** |
 
-Local Show Runtime database is **authoritative during performance** for runtime state, Soundcheck, Readiness, and execution logs. Schema is a **superset** of cloud entity tables plus runtime-only tables.
+Live Stage Database is **authoritative during performance** for runtime state, Soundcheck, Readiness, and execution logs. Shared ESB entity schema **must match** Cloud Database; runtime-only tables form a permitted **superset**.
+
+See §6 and §8 for workspace mapping (Director preparation + Local Show Runtime execution).
 
 ---
 
-## 6. Director Local Database Decision
+## 6. Director Local and Local Show Runtime (Live Stage Database)
+
+PH055 consolidates Director local and Local Show Runtime into **one physical Live Stage Database**.
 
 | Attribute | Value |
 |-----------|-------|
-| **Engine** | PostgreSQL 16+ |
-| **Hosting** | Local PostgreSQL (native install or Docker on Director workstation) |
-| **Scope** | Draft creation/editing; publish staging; optional offline preparation |
-| **Authority** | Director-local-canonical until publish |
+| **Engine** | PostgreSQL 16+ (same major version as Cloud Database) |
+| **Hosting** | Local PostgreSQL on Director workstation; Local Show Runtime Docker may use same instance or dedicated volume on same host |
+| **Scope** | Draft creation/editing; publish staging; performance-ready replica; runtime state; show-day logs |
+| **Authority** | Director-local-canonical until publish; local-runtime-authoritative during performance |
+| **Schema** | Shared ESB entity tables **must match** Cloud Database migrations; runtime-only tables permitted as superset |
 
-Director local database uses the **same schema** as cloud. Draft records distinguished by lifecycle/publish state — not a separate schema fork.
+Director preparation and Local Show Runtime execution are **Live Stage workspace** concerns — not separate physical databases.
 
 ---
 
@@ -145,40 +151,46 @@ Director local database uses the **same schema** as cloud. Draft records disting
 
 ---
 
-## 8. Environment Database Topology
+## 8. Environment Database Topology (PH055)
 
-### 1. Cloud database
+### 1. Cloud Database
 
 | Attribute | Value |
 |-----------|-------|
-| **Purpose** | Canonical published data; collaboration; sync package registry; audit archive |
+| **Workspaces** | Cloud Studio (`/server/`), Website (public cloud app) |
+| **Purpose** | Canonical published data; Band Portal identity; collaboration; sync package registry; audit archive |
 | **Authority** | Cloud-canonical after publish |
 | **Data scope** | Full master library + operational records + sync/audit (no live runtime cue state) |
-| **Sync direction** | Receives publish from Director Local; serves pull to Local Show Runtime |
+| **Co-tenancy** | Cloud Studio and Website **may** share this database — **must** use governed migration ownership per app |
+| **Sync direction** | Receives publish from Live Stage; serves pull to Live Stage Database |
 | **Backup** | Daily automated DO managed backups + pre-publish snapshots |
 | **Runtime dependency** | **Not required during live performance** |
 
-### 2. Director local database
+### 2. Live Stage Database
 
 | Attribute | Value |
 |-----------|-------|
-| **Purpose** | Primary preparation; draft editing; publish staging |
-| **Authority** | Director-local-canonical until publish |
-| **Data scope** | Same schema as cloud; draft + published mirror |
-| **Sync direction** | Publish → Cloud; pull updates ← Cloud |
-| **Backup** | Local pg_dump before major publish; optional cloud backup after publish |
-| **Runtime dependency** | Not required at show time (runtime has own DB) |
-
-### 3. Local Show Runtime database
-
-| Attribute | Value |
-|-----------|-------|
-| **Purpose** | Offline show execution; runtime state; Soundcheck/Readiness; logs |
-| **Authority** | Local-runtime-authoritative during performance |
-| **Data scope** | Pulled package replica + runtime-only tables |
-| **Sync direction** | Pull ← Cloud (pre-show); optional push → Cloud (post-performance logs) |
+| **Workspaces** | Live Stage — Director preparation host + Local Show Runtime execution |
+| **Purpose** | Offline show execution; draft preparation; runtime state; Soundcheck/Readiness; logs |
+| **Authority** | Local-runtime-authoritative during performance; draft-capable during preparation |
+| **Data scope** | Shared ESB entity replica + runtime-only tables |
+| **Schema parity** | **Mandatory** with Cloud Database for all shared ESB entity tables |
+| **Sync direction** | Pull ← Cloud Database (pre-show); publish → Cloud Database; optional push → Cloud (post-performance logs) |
 | **Backup** | Pre-performance snapshot; post-performance export optional |
 | **Runtime dependency** | **Required during performance** — show cannot execute without it |
+| **Isolation** | **Must not** share physical database instance with Cloud Database |
+
+### PH007 Decision 084 — amended interpretation
+
+Decision 084 listed three PostgreSQL databases (cloud, Director local, Local Show Runtime). PH055 **amends the physical topology** while preserving phase-aware authority:
+
+| PH007 context | PH055 physical database | PH055 workspace |
+|---------------|-------------------------|-----------------|
+| Cloud database | Cloud Database | Cloud Studio, Website |
+| Director local database | Live Stage Database | Live Stage (preparation) |
+| Local Show Runtime database | Live Stage Database | Live Stage (execution) |
+
+Offline operation creates **data-state divergence**, not schema divergence.
 
 ---
 
