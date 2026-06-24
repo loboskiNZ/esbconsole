@@ -373,7 +373,8 @@ The command prints the full invite URL once. Raw tokens are never stored — onl
 | 404 on all routes (after root fixed) | Deploy failed before `$ACTIVATE_RELEASE()` | Fix deploy script; redeploy; confirm `current/server/vendor` exists |
 | 500 after deploy, no APP_KEY | Missing `.env` | Create `.env`, run `php artisan key:generate` |
 | `/up` returns 200 but `/` returns 500 | Missing `APP_KEY` or session DB error | `tail -50 storage/logs/laravel.log`; ensure `APP_KEY=base64:…` in `.env` (`php artisan key:generate --force` in `server/`); confirm migrations ran (`sessions` table exists) |
-| Automated deploy from workstation | Deploy hook not configured | Forge → Site → **Deployments** → **Deploy hook**; copy URL into `server/deploy/.env` as `FORGE_DEPLOY_HOOK_URL`; run `./server/deploy/remote-deploy.sh` |
+| Deploy hook clones `bbos-website` / release has no `server/` | Forge site Git repo wrong | Set repository to `loboskiNZ/esbconsole` — `server/deploy/FORGE_BAND_SITE_REPO.md` |
+| Deploy hook accepted but `current` unchanged | Wrong repo or deploy script failed before `$ACTIVATE_RELEASE()` | Check Forge deployment log; fix Git repo; run `server/deploy/verify-active-release.sh` |
 | `cd: too many arguments` in Forge Command | `cd` and `php artisan` on one line without `&&` | Use `cd …/server && php artisan …` or `bash …/server/deploy/make-invite.sh` (see §6) |
 | Composer platform error | PHP version mismatch | Forge PHP 8.4 |
 | DB connection refused | Wrong host/port/SSL | Use DO managed DB credentials; enable SSL if required |

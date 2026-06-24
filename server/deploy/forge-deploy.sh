@@ -5,77 +5,23 @@ $CREATE_RELEASE()
 
 cd $FORGE_RELEASE_DIRECTORY
 
-# Shared storage must exist before config:cache (view.compiled path)
-mkdir -p $FORGE_SITE_PATH/storage/framework/{cache/data,sessions,views,testing}
-mkdir -p $FORGE_SITE_PATH/storage/{app/public,logs}
-
-# Studio chart library — private shared storage (outside public web root)
-LIBRARY_STORAGE_ROOT="$FORGE_SITE_PATH/storage/app/library"
-LIBRARY_INCOMING="$LIBRARY_STORAGE_ROOT/incoming"
-mkdir -p "$LIBRARY_STORAGE_ROOT/charts" "$LIBRARY_INCOMING"
-chmod 755 "$LIBRARY_STORAGE_ROOT"
-chmod 755 "$LIBRARY_STORAGE_ROOT/charts"
-chmod 777 "$LIBRARY_INCOMING"
-
-if [ -f "$LIBRARY_INCOMING/charts.tar.gz" ]; then
-  tar -xzf "$LIBRARY_INCOMING/charts.tar.gz" -C "$LIBRARY_STORAGE_ROOT"
-  rm -f "$LIBRARY_INCOMING/charts.tar.gz"
-fi
-
-if [ -d "$LIBRARY_INCOMING/charts" ]; then
-  rsync -a "$LIBRARY_INCOMING/charts/" "$LIBRARY_STORAGE_ROOT/charts/"
-  rm -rf "$LIBRARY_INCOMING/charts"
-fi
-
-if grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  sed -i "s|^PORTAL_LIBRARY_STORAGE_ROOT=.*|PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT|" "$FORGE_SITE_PATH/.env"
-else
-  echo "PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT" >> "$FORGE_SITE_PATH/.env"
-fi
-
-if ! grep -qE '^PORTAL_LIBRARY_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "PORTAL_LIBRARY_CONNECTION=library" >> "$FORGE_SITE_PATH/.env"
-fi
-
-if ! grep -qE '^PORTAL_LIBRARY_CHART_DISK=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "PORTAL_LIBRARY_CHART_DISK=library" >> "$FORGE_SITE_PATH/.env"
-fi
-
-# Forge links .env and storage at release root; Laravel lives in server/
-ln -nfs $FORGE_SITE_PATH/.env $FORGE_RELEASE_DIRECTORY/server/.env
-rm -rf $FORGE_RELEASE_DIRECTORY/server/storage
-ln -nfs $FORGE_SITE_PATH/storage $FORGE_RELEASE_DIRECTORY/server/storage
-
-$FORGE_COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
-
-cd $FORGE_RELEASE_DIRECTORY/server
-
-if ! grep -qE '^DB_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "ERROR: DB_CONNECTION is not set in $FORGE_SITE_PATH/.env" >&2
-  echo "Laravel will fall back to ephemeral SQLite inside each release (data lost on deploy)." >&2
-  echo "Add PostgreSQL credentials to the Forge site Environment tab, then redeploy." >&2
+if [[ ! -f "$FORGE_RELEASE_DIRECTORY/server/artisan" || ! -f "$FORGE_RELEASE_DIRECTORY/server/composer.json" ]]; then
+  echo "ERROR: Band Portal requires the esbconsole monorepo (server/artisan missing in release)." >&2
+  echo "Forge → Sites → band.edandtheshadowboys.com → Meta → Repository must be loboskiNZ/esbconsole on branch main." >&2
+  echo "This deploy cloned a non-monorepo repository (often loboskiNZ/bbos-website / Statamic)." >&2
   exit 1
 fi
 
-if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
-  $FORGE_PHP artisan key:generate --force
+if [[ -f "$FORGE_RELEASE_DIRECTORY/composer.json" ]] && grep -q '"name": "statamic/statamic"' "$FORGE_RELEASE_DIRECTORY/composer.json" 2>/dev/null; then
+  echo "ERROR: Release is Statamic (bbos-website), not esbconsole." >&2
+  echo "Fix Forge site Git repository to loboskiNZ/esbconsole before redeploying." >&2
+  exit 1
 fi
 
-if $FORGE_PHP artisan list 2>/dev/null | grep -q 'cloud:stabilise'; then
-  $FORGE_PHP artisan cloud:stabilise --mark-migrations --target=pgsql
-fi
+export FORGE_SITE_PATH FORGE_RELEASE_DIRECTORY FORGE_PHP FORGE_COMPOSER
 
-npm ci || npm install
-npm run build
-
-$FORGE_PHP artisan optimize
-$FORGE_PHP artisan storage:link
-$FORGE_PHP artisan migrate --force
-$FORGE_PHP artisan studio:library-promote-incoming
-$FORGE_PHP artisan studio:normalize-library-chart-permissions
+bash "$FORGE_RELEASE_DIRECTORY/server/deploy/esbconsole-release-build.sh"
 
 $ACTIVATE_RELEASE()
-
-$FORGE_PHP artisan studio:verify-chart-file-access 14 3
 
 $RESTART_QUEUES()

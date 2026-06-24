@@ -31,13 +31,15 @@ return new class extends Migration
             $table->index(['band_id', 'show_id']);
         });
 
-        Schema::create('mix_moves', function (Blueprint $table) {
-            $table->id();
-            $table->uuid('public_id')->unique();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('mix_moves')) {
+            Schema::create('mix_moves', function (Blueprint $table) {
+                $table->id();
+                $table->uuid('public_id')->unique();
+                $table->string('name');
+                $table->text('description')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
