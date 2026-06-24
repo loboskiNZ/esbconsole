@@ -585,16 +585,34 @@ mix_moves — blocked
 | LS-EXT | `ls_ext_{NN}_{slug}.php` |
 | Recovery | `recovery_{slug}.php` |
 
-### 8.4 Ownership tagging
+### 8.4 Mandatory migration declarations
 
-Every CCMM migration file header comment (PH063):
+Every CCMM migration file **must** declare these three fields in a header block immediately after `<?php`:
+
+| Field | Format | Example |
+|-------|--------|---------|
+| **CCMM Package** | `CCMM-{NN}`, `RECOVERY`, or `LS-EXT-{NN}` | `CCMM-05` |
+| **Decision Reference** | `DECISION_LOG {id}` (comma-separated if multiple) | `DECISION_LOG 230` |
+| **PH Reference** | Governing PH document(s) and section | `PH059 A12, PH062 §2` |
 
 ```php
-// @ccmm-package CCMM-05
+<?php
+
+// CCMM Package: CCMM-05
+// Decision Reference: DECISION_LOG 230
+// PH Reference: PH059 A12, PH062 §2
+
+use Illuminate\Database\Migrations\Migration;
+```
+
+**Optional** supplementary tags (recommended, not a substitute for the three mandatory fields):
+
+```php
 // @ccmm-ownership Shared CCMM
 // @ccmm-supersedes backend/2026_06_10_140100_m6_create_songs_table.php
-// @ccmm-authority docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md#A12
 ```
+
+PRs missing any mandatory declaration are **non-compliant** and must not merge.
 
 ### 8.5 Drift prevention
 

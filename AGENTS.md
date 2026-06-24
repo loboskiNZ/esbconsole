@@ -167,6 +167,18 @@ Active production incident recovery plan: `docs/PH056_PRODUCTION_RECOVERY_PLAN.m
 - Implementation of MIDI, lighting, X32, OSC, runtime event bus, or device realtime communication must comply with `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md`.
 - All future runtime, Ableton, cue, snippet, chart, musician guidance, and validation work must use **Song Code + Cue Number** (`SSS.CCC`) as the canonical runtime identity — not database `id` values. See `docs/DOMAIN_MODEL.md`, `docs/RUNTIME_MODEL.md` §4.1, `docs/INTEGRATION_RUNTIME_ARCHITECTURE.md` §6.1, and `docs/DECISION_LOG.md` PH010.01.
 
+## CCMM Migration Governance (PH062)
+
+Every migration under `database/migrations/ccmm/`, `database/migrations/recovery/`, and `database/migrations/ls-ext/` **must** declare in its file header:
+
+| Field | Example |
+|-------|---------|
+| **CCMM Package** | `CCMM-05` |
+| **Decision Reference** | `DECISION_LOG 230` |
+| **PH Reference** | `PH059 A12, PH062 §2` |
+
+Full specification: `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` §8.4. No CCMM migration may merge without all three declarations.
+
 ## Completion Report
 
 Every implementation must return:

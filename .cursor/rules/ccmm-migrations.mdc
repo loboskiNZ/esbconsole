@@ -1,0 +1,32 @@
+---
+description: Mandatory CCMM migration header declarations
+globs: database/migrations/**/*.php
+alwaysApply: false
+---
+
+# CCMM Migration Declarations (PH062)
+
+Every file under `database/migrations/ccmm/`, `database/migrations/recovery/`, and `database/migrations/ls-ext/` **must** declare these three fields in a header block immediately after `<?php`:
+
+```php
+// CCMM Package: CCMM-05
+// Decision Reference: DECISION_LOG 230
+// PH Reference: PH059 A12, PH062 §2
+```
+
+| Field | Required value |
+|-------|----------------|
+| **CCMM Package** | `CCMM-00` … `CCMM-12`, `RECOVERY`, or `LS-EXT-{NN}` |
+| **Decision Reference** | `DECISION_LOG {id}` or comma-separated ids authorising the change |
+| **PH Reference** | Governing PH doc(s) — e.g. `PH059 A12`, `PH062 §2`, `PH061A` |
+
+Optional supplementary tags (recommended):
+
+```php
+// @ccmm-ownership Shared CCMM
+// @ccmm-supersedes backend/2026_06_10_140100_m6_create_songs_table.php
+```
+
+**Reject** any CCMM migration PR missing all three mandatory declarations.
+
+Authority: `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` §8.4, `AGENTS.md` CCMM Migration Governance.

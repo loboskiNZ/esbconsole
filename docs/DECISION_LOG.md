@@ -676,7 +676,8 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 | 228 | **Package authority:** CCMM-00–12 + RECOVERY + LS-EXT. CCMM-12 unified X32 console package (effects + baselines + `mix_moves` placeholder). PH061A supersedes PH059 Part B for effect/baseline tables. | Consolidates Track B into CCMM-12 |
 | 229 | **PH062 is blueprint only** — no migration PHP files, production DDL, or data migration in this phase. PH063 authors implementation files. | Production safety |
 | 230 | **Retirement strategy:** retire ownership not history; classify every `server/` and `backend/` migration per retirement matrix §4. | Forensic audit preserved |
-| 231 | **Naming standard:** `{timestamp}_ccmm{NN}_{slug}.php` with `@ccmm-package`, `@ccmm-ownership`, `@ccmm-supersedes` header tags. | Prevents future drift |
+| 231 | **Naming standard:** `{timestamp}_ccmm{NN}_{slug}.php`. Every CCMM migration **must** declare **CCMM Package**, **Decision Reference**, and **PH Reference** in file header (PH062 §8.4). | Prevents future drift; traceable governance chain |
+| 235 | **Mandatory CCMM migration declarations** are non-negotiable: `CCMM Package`, `Decision Reference` (`DECISION_LOG {id}`), `PH Reference` (e.g. `PH059 A12`). Enforced in `AGENTS.md` and `.cursor/rules/ccmm-migrations.mdc`. | Every migration traceable to authority |
 | 232 | **CCMM change process:** Proposal → governance → CCMM update → PH062 amend → PH063 migration → Cloud → Live Stage parity. No direct migration without CCMM change. | Governed schema evolution |
 | 233 | **Cloud build order:** B0–B10 core → B12 X32 → BR recovery → B11 invitations. JSON baseline strategy for channel/bus/routing inside `show_console_baselines`. | PH061A document model |
 | 234 | **PH063 readiness: Ready with Conditions** — blueprint complete; blocked on Gate 2, migration file authoring, `effect_library_*` decision, `mix_moves` M5 schema. | Honest handoff gate |
