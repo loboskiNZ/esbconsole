@@ -37,12 +37,15 @@ class RecoveryExportService
         DB::connection($sourceConnection)->table($table)->orderBy('id')->chunk(200, function ($rows) use (
           $dryRun,
           $absoluteBundle,
+          $table,
           &$rowCount,
         ) {
           foreach ($rows as $row) {
             $rowCount++;
             if (! $dryRun) {
-              File::append($absoluteBundle, json_encode((array) $row, JSON_UNESCAPED_SLASHES)."\n");
+              $payload = (array) $row;
+              $payload['_recovery_table'] = $table;
+              File::append($absoluteBundle, json_encode($payload, JSON_UNESCAPED_SLASHES)."\n");
             }
           }
         });

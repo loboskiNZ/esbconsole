@@ -9,51 +9,56 @@ class RecoveryImportService
   public function __construct(
     private readonly RecoveryBatchStorage $storage,
     private readonly RecoveryDomainRegistry $registry,
+    private readonly RecoveryImportExecutor $executor,
   ) {}
 
   /** @return array<string, mixed> */
-  public function import(string $batchId, bool $dryRun): array
+  public function import(string $batchId, bool $dryRun, ?string $sourceConnection = null, ?string $targetConnection = null): array
   {
+    if (! $dryRun) {
+      return $this->executor->execute(
+        $batchId,
+        $sourceConnection ?? (string) config('recovery.source_connection'),
+        $targetConnection ?? (string) config('recovery.target_connection'),
+      );
+    }
+
     $domains = [];
 
     foreach ($this->registry->all() as $domain) {
       $bundlePath = $this->storage->domainBundlePath($batchId, $domain['key']);
       $inserted = 0;
       $skipped = 0;
-      $errors = [];
 
-      if (! File::exists($bundlePath)) {
+      if (! File::exists($bundlePath) && ! config('recovery.rehearsal_mode')) {
         $domains[] = [
           'domain' => $domain['key'],
           'inserted' => 0,
           'skipped' => 0,
-          'errors' => $dryRun ? [] : ['bundle_missing'],
+          'errors' => [],
         ];
 
         continue;
       }
 
-      foreach (File::lines($bundlePath) as $line) {
-        $row = json_decode($line, true);
-        if (! is_array($row)) {
-          $skipped++;
-          continue;
-        }
-
-        if ($dryRun) {
+      if (File::exists($bundlePath)) {
+        foreach (File::lines($bundlePath) as $line) {
+          $row = json_decode($line, true);
+          if (! is_array($row)) {
+            $skipped++;
+            continue;
+          }
           $inserted++;
-          continue;
         }
-
-        $errors[] = 'write_execution_disabled_in_ph067a';
-        $skipped++;
+      } else {
+        $inserted = 0;
       }
 
       $domains[] = [
         'domain' => $domain['key'],
         'inserted' => $inserted,
         'skipped' => $skipped,
-        'errors' => $errors,
+        'errors' => [],
       ];
     }
 
@@ -62,7 +67,7 @@ class RecoveryImportService
       'schema' => 'esb.recovery.import_manifest/v1',
       'batch_id' => $batchId,
       'imported_at' => now()->toIso8601String(),
-      'dry_run' => $dryRun,
+      'dry_run' => true,
       'domains' => $domains,
     ];
 

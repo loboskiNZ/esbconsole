@@ -820,8 +820,27 @@ End of Decision Log — PH064
 | **Status** | Complete — local recovery tooling framework in `/server/` |
 | **Scope** | 8 `recovery:*` Artisan commands, batch storage, production guards, unit/feature tests |
 | **Out of scope** | Production DB, Spaces uploads, destructive rollback, Cloud R5/R6 execution |
-| **Next** | PH067B local dry-run against `esb_dev` → `esb_ccmm_validation` |
+| **Next** | PH067B local dry-run against `esb_dev` → `esb_recovery_validation` |
 
 ---
 
-End of Decision Log — PH067A
+## PH067B — Local Recovery Rehearsal
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 261 | **PH067B rehearsal executed** — `esb_dev` → `esb_recovery_validation` on local Docker PostgreSQL. Batch `a0168483-1e88-4c6b-bb34-8e6b5a3314bb`. | Gate 4 evidence |
+| 262 | **Rehearsal import path enabled** via `RECOVERY_REHEARSAL_MODE=true` + `RecoveryImportExecutor` (local only). | PH067B execute requirement |
+| 263 | **Gate 4 rehearsal: CONDITIONAL FAIL** — tooling pipeline PASS; row parity and file migration FAIL. | Documented in `PH067B_LOCAL_RECOVERY_REHEARSAL_REPORT.md` |
+| 264 | **Root causes identified (no PH067B fixes):** (A) circular bands↔musicians FK ordering, (B) `esb_dev` legacy effect columns vs CCMM-12, (C) chart file paths missing locally. | PH068 queued |
+
+### PH067B — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Rehearsal complete — Gate 4 not eligible |
+| **Document** | `docs/PH067B_LOCAL_RECOVERY_REHEARSAL_REPORT.md` |
+| **Next** | PH068 recovery import hardening |
+
+---
+
+End of Decision Log — PH067B

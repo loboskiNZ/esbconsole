@@ -32,6 +32,7 @@ return [
   'allowed_databases' => [
     'esb_dev',
     'esb_ccmm_validation',
+    'esb_recovery_validation',
     'testing',
     ':memory:',
   ],
@@ -41,6 +42,8 @@ return [
   'target_connection' => env('RECOVERY_TARGET_CONNECTION', 'recovery_target'),
 
   'require_local_acknowledgement' => env('RECOVERY_LOCAL_ACKNOWLEDGED', false),
+
+  'rehearsal_mode' => env('RECOVERY_REHEARSAL_MODE', false),
 
   'source_env' => env('RECOVERY_SOURCE_ENV', 'live_stage'),
 

@@ -159,7 +159,7 @@ return [
             'url' => env('RECOVERY_TARGET_DB_URL'),
             'host' => env('RECOVERY_TARGET_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('RECOVERY_TARGET_DB_PORT', env('DB_PORT', '5432')),
-            'database' => env('RECOVERY_TARGET_DB_DATABASE', 'esb_ccmm_validation'),
+            'database' => env('RECOVERY_TARGET_DB_DATABASE', 'esb_recovery_validation'),
             'username' => env('RECOVERY_TARGET_DB_USERNAME', env('DB_USERNAME', 'root')),
             'password' => env('RECOVERY_TARGET_DB_PASSWORD', env('DB_PASSWORD', '')),
             'charset' => env('DB_CHARSET', 'utf8'),

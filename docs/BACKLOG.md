@@ -13,7 +13,8 @@ Items are listed in priority order unless noted. Implementation phases require e
 |----|-------|--------|------------|-------|
 | **PH065-exec** | Cloud Recovery Execution | Blocked | Gate 2 sign-off | R1–R10 per runbook; no execution until signed. |
 | **PH067A** | Recovery Tooling Implementation | **Complete** | PH066 plan | Artisan `recovery:*` commands in `/server/` |
-| **PH067B** | Local Dry-Run Rehearsal | Queued | PH067A | `esb_dev` → validation DB; dry-run manifests |
+| **PH067B** | Local Dry-Run Rehearsal | **Complete** | PH067A | `esb_dev` → `esb_recovery_validation`; Gate 4 CONDITIONAL FAIL |
+| **PH068** | Recovery Import Hardening | Queued | PH067B findings | Circular FK, schema drift transform, file roots |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---

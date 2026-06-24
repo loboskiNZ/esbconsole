@@ -31,7 +31,16 @@ class RecoveryImportDomainCommand extends RecoveryCommand
     }
 
     $batchId = $storage->resolveBatchId($this->option('batch'));
-    $manifest = $importer->import($batchId, $dryRun);
+    $manifest = $importer->import(
+      $batchId,
+      $dryRun,
+      $this->sourceConnection(),
+      $this->targetConnection(),
+    );
+
+    if (! $dryRun) {
+      $storage->writeJson($batchId, 'import_manifest.json', $manifest);
+    }
 
     $this->info(($dryRun ? '[dry-run] ' : '').'Import manifest written for batch '.$batchId);
     $this->line(json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
