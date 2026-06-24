@@ -843,4 +843,24 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH067B
+## PH068 — Recovery Defect Resolution Plan
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 265 | **PH068 plans correction for PH067B defects RD-01–RD-06** — no implementation, migrations, or production execution. | Governed sequencing before PH069/PH067C |
+| 266 | **Deferred FK three-pass import** adopted for `bands.primary_director_musician_id` ↔ `musicians.band_id`. | Mirrors CCMM-01/CCMM-04 intent |
+| 267 | **Effect recovery uses transform-layer mapping** from `effect_library_*` to CCMM-12 `effects` / `effect_parameters` — no CCMM schema change. | PH061A merge decision |
+| 268 | **File resolution requires configurable `RECOVERY_*_ROOT` paths** and missing-file classification before PH067C. | PH067B 262/262 missing |
+| 269 | **Next sequence: PH069 tooling corrections → PH067C second rehearsal** — Cloud R5/R6 remains blocked. | Gate 4 + Gate 2 |
+
+### PH068 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Plan complete — no tooling changes in PH068 |
+| **Document** | `docs/PH068_RECOVERY_DEFECT_RESOLUTION_PLAN.md` |
+| **Next** | PH069 recovery tooling corrections |
+
+---
+
+End of Decision Log — PH068
