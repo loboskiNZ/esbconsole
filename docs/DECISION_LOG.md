@@ -607,4 +607,35 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH060
+## PH061 — Cloud Recovery Execution Plan
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 214 | **PH061 is the execution plan authority** for Cloud recovery. Defines build sequence (F0–F6), data/file migration, verification, rollback, and Live Stage realignment. Document: `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md`. | Operator approved PH060; Path B assumed; no execution in PH061. |
+| 215 | **Migration package strategy:** eleven CCMM packages (CCMM-00 through CCMM-11) replace deprecated `server/`/`backend/` duplicate shared migrations. Historical migration files **preserved in Git for audit only** — not run on fresh Cloud. | PH060-211 operationalised; single Cloud-first path. |
+| 216 | **Verification authority:** Gates 1–6 (forensic export → operator sign-off → schema → data/files → application → incident closure) are mandatory before each phase advance. §8 acceptance criteria are binding. | Production Safety Rules; no skip. |
+| 217 | **Rollback requirements:** per-phase rollback in PH061 §9; pre-F4 Cloud snapshot; `cloud_recovery_entity_map` for data batch rollback; Live Stage never mutated during Cloud recovery; no manual migrations table edits. | Recoverable recovery; forensic evidence preserved. |
+| 218 | **PH062 authorised for migration file authoring only** after operator Gate 2 sign-off on PH061. PH062 does not execute production recovery. | Separates plan from implementation. |
+| 219 | **Live Stage realignment** (PH061 §11) follows Cloud Gate 4 pass — CCMM parity apply, superset migrations, governed pull, PH054 sync engine deferred. | Schema before sync; offline-first preserved. |
+
+### PH061 — Approved operator assumptions (planning)
+
+| Assumption | Status |
+|------------|--------|
+| PH056 Path B fresh Cloud Database | Assumed for plan |
+| Cloud-first canonical authority | Active |
+| CCMM schema authority | PH059 |
+| Duplicate migration ownership retired | PH060-211 |
+| invite_links quarantined | PH060-212 |
+
+### PH061 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Execution plan complete — **production execution not authorised** |
+| **Document** | `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` |
+| **Next** | Operator Gate 2 sign-off → PH062 migration package implementation |
+
+---
+
+End of Decision Log — PH061

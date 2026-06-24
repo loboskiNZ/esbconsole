@@ -84,7 +84,8 @@ Cloud-first canonical schema is a **reliability decision** — not a hierarchy o
 
 Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`  
 **Schema authority:** `docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md` (CCMM)  
-**Gap analysis:** `docs/PH060_CCMM_IMPLEMENTATION_GAP_ANALYSIS.md` (PH061 gate)
+**Gap analysis:** `docs/PH060_CCMM_IMPLEMENTATION_GAP_ANALYSIS.md` (PH061 gate)  
+**Recovery execution:** `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` (PH062 gate)
 
 Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`
 
