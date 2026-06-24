@@ -512,4 +512,34 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH056
+## PH058 — Cloud-First Canonical Schema Stabilisation
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 196 | **Cloud Database is canonical schema authority** for all shared ESB entities. Shared-entity DDL is authored for Cloud first and applied identically to Live Stage. | Resolves PH057 parity failure; one migration-defined structure enables backup, restore, and rebuild. |
+| 197 | **Cloud-first canonical schema is a reliability decision** — not a hierarchy of workspace importance. Cloud owns durable system-of-record: backup, restore, replication, reference data, long-term history, rebuild source. Live Stage owns operational continuity: rehearsal, performance, offline operation, console/Ableton runtime execution, pending local changes until synchronised. | Preserves Charter offline-first and Live Show View priority while making Cloud the predictable rebuild anchor. |
+| 198 | **Cloud can rebuild Live Stage; Live Stage can operate without Cloud.** Schema parity is mandatory for shared entities; data-state divergence when offline is permitted — schema divergence is not. | PH055 schema parity rule operationalised; sync-before-show enables offline performance. |
+| 199 | **`server/` duplicate shared-entity migrations are deprecated.** Live Stage definitions for missing Cloud tables are merged into Cloud Canonical Migration Manifest (CCMM). `invite_links` remains quarantined — `person_invitations` per PH055-187. | Ends parallel migration forks; PH058 plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`. |
+| 200 | **PH056 recovery and data migration remain blocked** until CCMM is published and operator approves. No production mutation until PH056 incident closure. | Schema stabilisation precedes recovery execution. |
+
+### PH058 — Validation
+
+| Prior | PH058 position |
+|-------|----------------|
+| PH054 peer authoring | Compatible — schema canonicality ≠ overwrite authority |
+| PH055 schema parity | Reinforced — Cloud-first DDL, identical Live Stage structure |
+| PH055-187 person-first invite | Unchanged — `invite_links` quarantined |
+| Charter offline / show must go on | Reinforced — Live Stage operates without Cloud |
+| PH057 backend-owned DDL | Amended — Cloud-first canonical authority |
+
+### PH058 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Planning complete — implementation **not authorised** |
+| **Plan** | `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md` |
+| **Next** | Publish CCMM; PH056 recovery on stabilised schema |
+
+---
+
+End of Decision Log — PH058

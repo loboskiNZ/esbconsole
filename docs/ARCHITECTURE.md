@@ -1,6 +1,6 @@
 # Architecture
 
-Status: PH055 Amended (Governance Recovery and Architecture Alignment)  
+Status: PH058 Amended (Cloud-First Canonical Schema Stabilisation)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: System architecture for the Live Performance Orchestration System
 
@@ -48,6 +48,20 @@ Cloud Studio and Website are **distinct deployable applications** that **share o
 | **Schema parity** | Mandatory for all shared ESB entity tables — no workspace-specific schema forks |
 | **Data-state divergence** | Offline Live Stage operation may hold different row values, versions, and checkout state — not different table definitions |
 | **Runtime extension** | Live Stage Database may add runtime-only tables (timeline state, bridge health, execution logs) as a **superset** — not a replacement schema for shared entities |
+
+### Cloud-first canonical schema — reliability framing (PH058)
+
+Cloud-first canonical schema is a **reliability decision**, not a hierarchy of workspace importance. Live Stage remains authoritative for show-day execution; Cloud is authoritative for durable system-of-record.
+
+| Cloud Database | Live Stage Database |
+|----------------|---------------------|
+| Backup, restore, replication | Rehearsal, performance, offline operation |
+| Reference data, long-term history | Console / Ableton runtime execution |
+| Rebuild source for Live Stage | Pending local changes until synchronised |
+
+**Cloud can rebuild Live Stage.** **Live Stage can operate without Cloud.**
+
+Canonical shared-entity DDL is authored for Cloud first; Live Stage matches schema for predictable rebuild. PH054 peer authoring and offline-first performance are unchanged. Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`.
 
 ### Reconciliation with prior environment names
 

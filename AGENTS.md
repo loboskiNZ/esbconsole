@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH055 Amended (Governance Recovery and Architecture Alignment)
+Status: PH058 Amended (Cloud-First Canonical Schema Stabilisation)
 
 ## Authority Order
 
@@ -69,6 +69,20 @@ Do **not** introduce alternative terms for these environments.
 | Live Stage | Live Stage Database | `/backend/` + Local Show Runtime stack |
 
 **Schema parity** is mandatory between Cloud Database and Live Stage Database for all shared ESB entities. Offline operation creates **data-state divergence**, not schema divergence.
+
+### Reliability responsibilities (PH058)
+
+Cloud-first canonical schema is a **reliability decision** — not a hierarchy of workspace importance.
+
+| Cloud Database (system of record) | Live Stage Database (operational continuity) |
+|-----------------------------------|---------------------------------------------|
+| Backup, restore, replication | Rehearsal, performance, offline operation |
+| Reference data, long-term history | Console / Ableton runtime execution |
+| Rebuild source for Live Stage | Pending local changes until synchronised |
+
+**Cloud can rebuild Live Stage.** **Live Stage can operate without Cloud.**
+
+Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`
 
 Formal ADR: `docs/adr/ADR-001-cloud-studio-live-stage-synchronisation.md`
 
