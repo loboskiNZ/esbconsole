@@ -169,6 +169,34 @@ return [
             'sslmode' => env('RECOVERY_TARGET_DB_SSLMODE', env('DB_SSLMODE', 'prefer')),
         ],
 
+        'cloud_stabilise_source' => [
+            'driver' => 'pgsql',
+            'host' => env('CLOUD_STABILISE_SOURCE_HOST', '127.0.0.1'),
+            'port' => env('CLOUD_STABILISE_SOURCE_PORT', env('DB_PORT', '5432')),
+            'database' => env('CLOUD_STABILISE_SOURCE_DATABASE', 'esb_dev'),
+            'username' => env('CLOUD_STABILISE_SOURCE_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('CLOUD_STABILISE_SOURCE_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('CLOUD_STABILISE_SOURCE_SSLMODE', env('DB_SSLMODE', 'prefer')),
+        ],
+
+        'cloud_stabilise_target' => [
+            'driver' => 'pgsql',
+            'host' => env('CLOUD_STABILISE_TARGET_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('CLOUD_STABILISE_TARGET_PORT', env('DB_PORT', '5432')),
+            'database' => env('CLOUD_STABILISE_TARGET_DATABASE', env('DB_DATABASE', 'laravel')),
+            'username' => env('CLOUD_STABILISE_TARGET_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('CLOUD_STABILISE_TARGET_PASSWORD', env('DB_PASSWORD', '')),
+            'charset' => env('DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('CLOUD_STABILISE_TARGET_SSLMODE', env('DB_SSLMODE', 'require')),
+        ],
+
         'sqlsrv' => [
             'driver' => 'sqlsrv',
             'url' => env('DB_URL'),
