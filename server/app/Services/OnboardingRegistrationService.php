@@ -37,6 +37,20 @@ class OnboardingRegistrationService
             ->get()
             ->keyBy('slug');
 
+        if (! $instrumentMap->has($primarySlug)) {
+            throw ValidationException::withMessages([
+                'primary_instrument' => ['That instrument is not available in the band catalog. Choose another weapon.'],
+            ]);
+        }
+
+        foreach ($additionalSlugs as $slug) {
+            if (! $instrumentMap->has($slug)) {
+                throw ValidationException::withMessages([
+                    'additional_instruments' => ['One of the additional instruments is not available. Review your weapon choices.'],
+                ]);
+            }
+        }
+
         $bandId = (int) config('portal.band_id');
 
         return DB::transaction(function () use ($inviteLink, $payload, $username, $password, $primarySlug, $additionalSlugs, $instrumentMap, $bandId): User {
@@ -54,11 +68,14 @@ class OnboardingRegistrationService
             ]);
 
             $user = User::create([
+                'public_id' => (string) Str::uuid(),
                 'username' => $username,
                 'password' => $password,
                 'person_id' => $person->id,
                 'band_id' => $bandId,
                 'is_active' => true,
+                'email' => trim((string) $payload['email']),
+                'name' => trim((string) $payload['stage_name']),
             ]);
 
             $person->instruments()->attach($instrumentMap[$primarySlug]->id, [
