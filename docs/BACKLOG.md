@@ -20,6 +20,7 @@ Items are listed in priority order unless noted. Implementation phases require e
 | **PH067D** | Local File Recovery Rehearsal | **Complete** | PH067C | PASS — 258/259 charts resolved with checksums |
 | **PH070** | Recovery Readiness Assessment | **Complete** | PH067D | READY WITH CONDITIONS → PH071 |
 | **PH071A** | CCMM Domain Coverage Audit | **Complete** | PH070 | CCMM Sufficient With Defined Gaps |
+| **PH071B** | CCMM Coverage Remediation Plan | **Complete** | PH071A | Gaps sequenced; no recovery blockers |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---

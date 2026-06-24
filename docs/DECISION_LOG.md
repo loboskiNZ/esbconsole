@@ -962,8 +962,30 @@ End of Decision Log — PH064
 |-------|-------|
 | **Status** | Audit complete — CCMM Sufficient With Defined Gaps |
 | **Document** | `docs/PH071A_CCMM_DOMAIN_COVERAGE_AUDIT.md` |
-| **Next** | PH071B CCMM Coverage Remediation Plan |
+| **Next** | PH071 Cloud Recovery Execution Authorisation Package |
 
 ---
 
-End of Decision Log — PH071A
+## PH071B — CCMM Coverage Remediation Plan
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 298 | **PH071A gaps do not block Cloud Recovery** — confirmed in PH071B; Gates 1–2 remain sole recovery blockers. | PH067C/D + PH064 evidence |
+| 299 | **PH054 synchronisation (B1) deferred to post-recovery CCMM-15** — Post-Recovery Required; not Recovery Blocking. | One-directional rebuild first |
+| 300 | **M5 assets (B2) deferred to post-recovery CCMM-16** — Post-Recovery Required; action attachment domain sufficient for recovery. | No mix_move source rows |
+| 301 | **Website publication model (B6) deferred** — Future Capability / application-level unless operator mandates public cutover scope. | PH055 consumer workspace |
+| 302 | **X32 registry (B4) deferred** — Future Capability / Live Stage Extension; baselines + CCMM-12 sufficient for recovery. | PH061A JSON-in-row pattern |
+| 303 | **B5 documentation reconciliation Pre-Recovery Recommended** — amend PH059 Part B before PH071 authorisation; documentation-only. | PH059 vs CCMM-12 drift |
+| 304 | **Cloud Recovery may proceed on CCMM v1 after Gate 1 and Gate 2.** | PH071B boundary |
+
+### PH071B — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Remediation plan complete |
+| **Document** | `docs/PH071B_CCMM_COVERAGE_REMEDIATION_PLAN.md` |
+| **Next** | PH071 — Cloud Recovery Execution Authorisation Package |
+
+---
+
+End of Decision Log — PH071B
