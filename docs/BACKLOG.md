@@ -11,8 +11,8 @@ Items are listed in priority order unless noted. Implementation phases require e
 
 | ID | Title | Status | Depends on | Notes |
 |----|-------|--------|------------|-------|
-| **PH062-impl** | CCMM Migration File Implementation | Queued | PH062 plan | Author `database/migrations/ccmm/` per blueprint §2–8; archive forks; validation tests. **Blueprint complete — no files yet.** |
-| **PH063** | CCMM Migration Execution Runbook | Queued | PH062-impl, Gate 2 | Operator F0–F6; Gates 3–6. Readiness: **Ready with Conditions** (PH062 §10). |
+| **PH063-exec** | CCMM Migration Loader & Local Validation | Queued | PH063 files | Wire `loadMigrationsFrom`, fresh PostgreSQL migrate test, archive server forks. |
+| **PH063-runbook** | Cloud Recovery Execution Runbook | Queued | PH063-exec, Gate 2 | Operator F0–F6; Gates 3–6. |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---
@@ -21,6 +21,7 @@ Items are listed in priority order unless noted. Implementation phases require e
 
 | ID | Title | Document |
 |----|-------|----------|
+| PH063 | CCMM Migration Package Authoring | `database/migrations/ccmm/` |
 | PH062 | CCMM Migration Authoring Plan | `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` |
 | PH061A | X32 Console Domain Discovery and Classification | `docs/PH061A_X32_CONSOLE_DOMAIN_DISCOVERY.md` |
 | PH061 | Cloud Recovery Execution Plan | `docs/PH061_CLOUD_RECOVERY_EXECUTION_PLAN.md` |

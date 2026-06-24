@@ -703,3 +703,27 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 ---
 
 End of Decision Log — PH062
+
+---
+
+## PH063 — CCMM Migration Package Authoring
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 236 | **CCMM migration PHP files authored** at repo-root `database/migrations/ccmm/` and `database/migrations/recovery/` per PH062 blueprint. **Not executed** against any production database. | PH063 scope: files only |
+| 237 | **22 migration files** cover CCMM-00–12 + RECOVERY. CCMM-12 includes merged `effects` catalogue (no `effect_library_*`). `mix_moves` placeholder only. | Operator decisions applied |
+| 238 | **Migration order:** B12 (`001200–001220`) before B11 (`001300`); RECOVERY at `001250`. | Operator B12-before-B11 |
+| 239 | **`show_console_baselines.source_snapshot_id`** nullable without FK — `console_learning_snapshots` remains LS-EXT. | PH061A boundary |
+| 240 | **PH063 execution blocked** until PH061 Gate 2 + isolated Cloud cluster. Files ready for local fresh-migrate validation. | Production safety |
+
+### PH063 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Migration files authored — **not executed** |
+| **Path** | `database/migrations/ccmm/`, `database/migrations/recovery/` |
+| **Next** | Wire loader in server/backend; local fresh-migrate test; PH061 Gate 2 for production |
+
+---
+
+End of Decision Log — PH063
