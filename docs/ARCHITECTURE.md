@@ -61,7 +61,7 @@ Cloud-first canonical schema is a **reliability decision**, not a hierarchy of w
 
 **Cloud can rebuild Live Stage.** **Live Stage can operate without Cloud.**
 
-Canonical shared-entity DDL is authored for Cloud first; Live Stage matches schema for predictable rebuild. PH054 peer authoring and offline-first performance are unchanged. Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`.
+Canonical shared-entity DDL is authored for Cloud first; Live Stage matches schema for predictable rebuild. PH054 peer authoring and offline-first performance are unchanged. Full plan: `docs/PH058_CLOUD_FIRST_SCHEMA_STABILISATION_PLAN.md`. **Schema authority:** `docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md` (CCMM).
 
 ### Reconciliation with prior environment names
 

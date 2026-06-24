@@ -542,4 +542,38 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 ---
 
-End of Decision Log — PH058
+## PH059 — Cloud Canonical Migration Manifest (CCMM)
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 201 | **CCMM accepted as shared schema authority.** `docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md` defines 35 shared ESB tables both Cloud Database and Live Stage Database must implement identically before recovery migrations are written. | Formalises PH058; single reference for PH060 migration authoring. |
+| 202 | **Cloud Database canonical schema reliability role** reinforced: backup, restore, replication, audit, rebuild source — not workspace hierarchy. | PH058 framing codified in manifest. |
+| 203 | **Live Stage schema parity requirement:** Live Stage applies CCMM groups CCMM-1–13 identically, then Live Stage superset (Part B) only. | PH055 schema parity operationalised. |
+| 204 | **`server/` duplicate shared migrations deprecated** — listed in CCMM Part D; must not be used for recovery or new environments. | Ends parallel forks from PH057/PH058. |
+| 205 | **Runtime-only Live Stage tables excluded from Cloud** — Part B lists runtime, soundcheck, readiness, X32 effects, integration, `performance_device_assignments`. | Cloud rebuilds shared entities; runtime state remains local. |
+| 206 | **`invite_links` / `invite_link_acceptances` quarantined;** canonical future model is `person_invitations` with `person_id` (PH047). Not in shared CCMM. | PH055-187 enforced in manifest. |
+| 207 | **`venues` and `festivals` classified as shared canonical entities** (CCMM A34–A35). | Tour collaboration on Cloud; operator may defer seeding only. |
+| 208 | **PH056 recovery unblocked for planning next phase only** — operator must approve CCMM before migration files (PH060) or production execution. | CCMM publication satisfies PH058-200 gate for migration authoring. |
+
+### PH059 — Specific resolutions
+
+| Topic | Resolution |
+|-------|------------|
+| **users** | Unified merge: `public_id`, `username`, `person_id`, `band_id`, `is_active`, nullable `name`/`email`, case-insensitive unique `username` |
+| **people** | PH045 + `bio`, `profile_photo_path`, `profile_photo_display_path` |
+| **instrument_reference** | `slug` canonical NOT NULL unique |
+| **songs** | `song_code`, `status` (not `lifecycle_state`), full metadata + authoring columns |
+| **charts** | Full file metadata + `import_batch_id`; parent `import_batches` required on Cloud |
+| **performance_device_assignments** | Live Stage superset only (FK to `integration_devices`) |
+
+### PH059 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | CCMM published — migration implementation **not authorised** (PH060) |
+| **Manifest** | `docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md` |
+| **Next** | Operator CCMM approval; PH060 governed migration files |
+
+---
+
+End of Decision Log — PH059
