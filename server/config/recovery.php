@@ -47,4 +47,16 @@ return [
 
   'source_env' => env('RECOVERY_SOURCE_ENV', 'live_stage'),
 
+  'storage_roots' => [
+    'chart' => env('RECOVERY_CHART_ROOT'),
+    'snippet' => env('RECOVERY_SNIPPET_ROOT'),
+    'profile' => env('RECOVERY_PROFILE_ROOT'),
+    'ableton' => env('RECOVERY_ABLETON_ROOT'),
+    'portal_library' => env('PORTAL_LIBRARY_STORAGE_ROOT', storage_path('app/library')),
+  ],
+
+  'deferred_fk_columns' => [
+    'bands' => ['primary_director_musician_id' => 'musicians'],
+  ],
+
 ];

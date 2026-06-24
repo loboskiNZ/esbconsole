@@ -45,8 +45,8 @@ class RecoveryReportGenerationTest extends TestCase
       'recovery_target',
     );
 
-    $this->assertSame(1, $report['version']);
-    $this->assertSame('esb.recovery.verification_report/v1', $report['schema']);
+    $this->assertSame(2, $report['version']);
+    $this->assertSame('esb.recovery.verification_report/v2', $report['schema']);
     $this->assertArrayHasKey('row_counts', $report);
   }
 

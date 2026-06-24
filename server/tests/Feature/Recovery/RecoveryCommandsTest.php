@@ -85,7 +85,7 @@ class RecoveryCommandsTest extends TestCase
 
     $this->assertSame(0, Artisan::call('recovery:verify', ['--batch' => $this->batchId]));
     $verify = $storage->readJson($this->batchId, 'verification_report.json');
-    $this->assertSame(1, $verify['version']);
+    $this->assertSame(2, $verify['version']);
 
     $this->assertSame(0, Artisan::call('recovery:rollback-batch', ['--batch' => $this->batchId]));
     $rollback = $storage->readJson($this->batchId, 'rollback_report.json');

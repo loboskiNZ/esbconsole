@@ -27,7 +27,7 @@ class RecoveryTransformDomainCommand extends RecoveryCommand
     }
 
     $batchId = $storage->resolveBatchId($this->option('batch'));
-    $entityMap = $transformer->transform($batchId);
+    $entityMap = $transformer->transform($batchId, $this->sourceConnection());
 
     $this->info('entity_map.json generated for batch '.$batchId);
     $this->line(json_encode($entityMap, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));

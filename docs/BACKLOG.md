@@ -15,8 +15,8 @@ Items are listed in priority order unless noted. Implementation phases require e
 | **PH067A** | Recovery Tooling Implementation | **Complete** | PH066 plan | Artisan `recovery:*` commands in `/server/` |
 | **PH067B** | Local Dry-Run Rehearsal | **Complete** | PH067A | `esb_dev` → `esb_recovery_validation`; Gate 4 CONDITIONAL FAIL |
 | **PH068** | Recovery Defect Resolution Plan | **Complete** | PH067B findings | Planning only — `PH068_RECOVERY_DEFECT_RESOLUTION_PLAN.md` |
-| **PH069** | Recovery Tooling Corrections | Queued | PH068 plan | Deferred FK, effect transform, file roots |
-| **PH067C** | Second Local Recovery Rehearsal | Queued | PH069 | `esb_dev` → `esb_recovery_validation`; Gate 4 re-test |
+| **PH069** | Recovery Tooling Corrections | **Complete** | PH068 plan | Deferred FK, effect transform, file resolution |
+| **PH067C** | Second Local Recovery Rehearsal | Queued | PH069 | Gate 4 re-test with chart root mounted |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---

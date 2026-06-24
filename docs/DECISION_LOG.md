@@ -863,4 +863,25 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH068
+## PH069 — Recovery Tooling Corrections
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 270 | **PH069 implements RD-01–RD-06 corrections** in `/server/` recovery services — no CCMM or production changes. | PH068 plan |
+| 271 | **Deferred FK three-pass import** via `RecoveryDeferredForeignKeyService` + `deferred_fk.json` / `deferred_fk_report.json`. | RD-01 |
+| 272 | **Effect transform at recovery layer** — drop `effect_library_*` columns; map via x32 algorithm keys. | RD-03 / PH061A |
+| 273 | **File resolution** via `RECOVERY_*_ROOT` env vars and `missing_files_report.json` classification. | RD-04 |
+| 274 | **Verification report v2** with `deferred_fk`, `effect_transform`, `file_resolution`, `gate4_readiness`. | RD-06 |
+| 275 | **Next: PH067C** second local rehearsal before Cloud R5/R6. | Gate 4 |
+
+### PH069 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Tooling corrections complete — 23 Recovery tests PASS |
+| **Document** | `docs/PH069_RECOVERY_TOOLING_CORRECTIONS_REPORT.md` |
+| **Next** | PH067C second local recovery rehearsal |
+
+---
+
+End of Decision Log — PH069

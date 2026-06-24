@@ -12,9 +12,15 @@ class RecoveryImportExecutor
   /** @var array<string, array<int, int>> */
   private array $idMap = [];
 
+  private bool $musiciansImported = false;
+
   public function __construct(
     private readonly RecoveryBatchStorage $storage,
     private readonly RecoveryDomainRegistry $registry,
+    private readonly RecoveryDeferredForeignKeyService $deferredFk,
+    private readonly RecoveryEffectTransformService $effectTransform,
+    private readonly RecoverySchemaColumnFilter $columnFilter,
+    private readonly RecoveryCascadeGuardService $cascadeGuard,
   ) {}
 
   /** @return array<string, mixed> */
@@ -27,9 +33,23 @@ class RecoveryImportExecutor
       throw new RuntimeException('Import execution requires RECOVERY_REHEARSAL_MODE=true for local rehearsal.');
     }
 
+    $this->effectTransform->warmMaps($sourceConnection);
     $domains = [];
+    $deferredFkReport = null;
+    $bandsExpected = $this->countBundleRows($batchId, 'bands');
 
     foreach ($this->registry->all() as $domain) {
+      if ($this->cascadeGuard->isBlocked($domain['key'])) {
+        $domains[] = [
+          'domain' => $domain['key'],
+          'inserted' => 0,
+          'skipped' => 0,
+          'errors' => ['dependency_block:bands_import_incomplete'],
+          'blocked' => true,
+        ];
+        continue;
+      }
+
       $result = $this->importDomain(
         $batchId,
         $domain,
@@ -37,8 +57,31 @@ class RecoveryImportExecutor
         $targetConnection,
       );
 
+      if ($domain['key'] === 'bands') {
+        $this->cascadeGuard->recordBandImportResult(
+          $bandsExpected,
+          $result['inserted'],
+          $result['skipped'],
+          $result['errors'],
+        );
+        $this->storage->writeJson(
+          $batchId,
+          'dependency_block_report.json',
+          $this->cascadeGuard->buildReport($batchId),
+        );
+      }
+
+      if ($domain['key'] === 'musicians') {
+        $this->musiciansImported = $result['inserted'] > 0 || $result['skipped'] > 0;
+        if ($this->musiciansImported) {
+          $deferredFkReport = $this->deferredFk->replay($batchId, $targetConnection, $this->idMap);
+        }
+      }
+
       $domains[] = $result;
     }
+
+    $this->effectTransform->buildReport($batchId);
 
     return [
       'version' => 1,
@@ -47,6 +90,7 @@ class RecoveryImportExecutor
       'imported_at' => now()->toIso8601String(),
       'dry_run' => false,
       'rehearsal_mode' => true,
+      'deferred_fk_replay' => $deferredFkReport,
       'domains' => $domains,
     ];
   }
@@ -72,6 +116,16 @@ class RecoveryImportExecutor
 
       foreach ($rowsByTable[$table] ?? [] as $row) {
         try {
+          if ($domain['key'] === 'bands') {
+            $row = $this->deferredFk->deferBandDirectorColumn($row);
+          }
+
+          if ($domain['key'] === 'effects') {
+            $row = $this->effectTransform->transformRow($table, $row);
+          }
+
+          $row = $this->columnFilter->filter($targetConnection, $table, $row);
+
           if ($this->insertRow($batchId, $table, $row, $targetConnection)) {
             $inserted++;
           } else {
@@ -91,7 +145,18 @@ class RecoveryImportExecutor
       'inserted' => $inserted,
       'skipped' => $skipped,
       'errors' => array_slice($errors, 0, 50),
+      'blocked' => false,
     ];
+  }
+
+  private function countBundleRows(string $batchId, string $domainKey): int
+  {
+    $path = $this->storage->domainBundlePath($batchId, $domainKey);
+    if (! file_exists($path)) {
+      return 0;
+    }
+
+    return count(file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES));
   }
 
   /**
@@ -174,9 +239,6 @@ class RecoveryImportExecutor
   private function normalizeRow(array $row): array
   {
     foreach ($row as $key => $value) {
-      if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $value)) {
-        $row[$key] = $value;
-      }
       if ($value instanceof \DateTimeInterface) {
         $row[$key] = $value->format('Y-m-d H:i:s');
       }

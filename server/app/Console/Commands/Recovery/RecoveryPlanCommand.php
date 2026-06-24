@@ -27,16 +27,20 @@ class RecoveryPlanCommand extends RecoveryCommand
     }
 
     $this->info('Migration order: '.implode(' → ', $plan['migration_order']));
-    $this->info('Entity export order: '.implode(' → ', $plan['entity_order']));
-    $this->info('File order: '.implode(' → ', $plan['file_order']));
+    $this->info('Critical path: '.implode(' → ', $plan['critical_path']));
+    $this->info('Deferred FK path: '.implode(' → ', $plan['deferred_fk_path']));
+    $this->info('Deferred FK candidates: '.($plan['deferred_fk_candidates'] ?? 0));
+    $this->info('Blocked if bands fail: '.implode(', ', $plan['blocked_domains_if_bands_fail'] ?? []));
+    $this->info('Non-exported prerequisites: '.implode(', ', $plan['non_exported_prerequisites'] ?? []));
     $this->newLine();
     $this->table(
-      ['Domain', 'Tables', 'Depends on', 'Total rows'],
+      ['Domain', 'Tables', 'Depends on', 'Total rows', 'Band-fail block'],
       collect($plan['domains'])->map(fn (array $d) => [
         $d['domain'],
         implode(', ', $d['tables']),
         implode(', ', $d['depends_on']),
         $d['total_rows'],
+        ($d['blocked_if_bands_fail'] ?? false) ? 'yes' : 'no',
       ])->all(),
     );
 

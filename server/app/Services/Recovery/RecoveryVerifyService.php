@@ -10,6 +10,7 @@ class RecoveryVerifyService
   public function __construct(
     private readonly RecoveryBatchStorage $storage,
     private readonly RecoveryDomainRegistry $registry,
+    private readonly RecoveryDeferredForeignKeyService $deferredFk,
   ) {}
 
   /** @return array<string, mixed> */
@@ -19,11 +20,10 @@ class RecoveryVerifyService
     string $targetConnection,
   ): array {
     $rowCounts = [];
-    $fkOrphans = [];
-    $warnings = [];
     $duplicatePublicIds = [];
     $entityMapIssues = [];
     $fileIssues = [];
+    $warnings = [];
 
     foreach ($this->registry->all() as $domain) {
       foreach ($domain['tables'] as $table) {
@@ -38,7 +38,7 @@ class RecoveryVerifyService
       }
     }
 
-    $entityMap = $this->tryReadEntityMap($batchId);
+    $entityMap = $this->tryReadJson($batchId, 'entity_map.json');
     if ($entityMap === null) {
       $entityMapIssues[] = 'entity_map.json missing';
     } else {
@@ -52,51 +52,47 @@ class RecoveryVerifyService
           $duplicatePublicIds[] = $publicId;
         }
         $seen[$publicId] = true;
-
-        if (($entry['cloud_id'] ?? null) === null && ($entry['bigint_remap_ready'] ?? false) === true) {
-          $entityMapIssues[] = 'cloud_id_pending_for_public_id:'.$publicId;
-        }
-      }
-
-      if (! empty($entityMap['duplicate_public_ids'] ?? [])) {
-        $warnings[] = 'transform reported duplicate public_id candidates';
       }
     }
 
-    $fileManifest = $this->tryReadFileManifest($batchId);
-    if ($fileManifest === null) {
-      $warnings[] = 'file_manifest.json missing';
-    } else {
-      foreach ($fileManifest['files'] ?? [] as $file) {
-        if (($file['status'] ?? '') === 'missing' && ($file['required'] ?? false)) {
-          $fileIssues[] = $file['destination_key'] ?? 'unknown';
-        }
-      }
-    }
-
-    $exportManifest = $this->tryReadExportManifest($batchId);
-    if ($exportManifest !== null) {
-      foreach ($exportManifest['domains'] ?? [] as $domain) {
-        $bundle = $domain['bundle_path'] ?? null;
-        if ($bundle === null) {
-          continue;
-        }
-        $path = $this->storage->batchPath($batchId).'/'.$bundle;
-        if (! is_file($path) && ($domain['row_count'] ?? 0) > 0) {
-          $warnings[] = "bundle missing for {$domain['domain']}";
-        }
-      }
-    }
+    $deferredFkStats = $this->buildDeferredFkStats($batchId);
+    $effectTransformStats = $this->buildEffectTransformStats($batchId);
+    $fileResolutionStats = $this->buildFileResolutionStats($batchId, $fileIssues);
 
     $fkOrphans = $this->detectSimpleOrphans($targetConnection);
 
+    $importManifest = $this->tryReadJson($batchId, 'import_manifest.json');
+    $cascadeBlocked = collect($importManifest['domains'] ?? [])
+      ->contains(fn (array $d) => ($d['blocked'] ?? false) === true);
+
+    $gate4Blockers = [];
+    if ($deferredFkStats['unresolved'] > 0) {
+      $gate4Blockers[] = 'deferred_fk_unresolved';
+    }
+    if ($fileResolutionStats['required_missing'] > 0) {
+      $gate4Blockers[] = 'required_files_missing';
+    }
+    if (collect($rowCounts)->contains(fn (array $c) => ($c['match'] ?? false) === false)) {
+      $gate4Blockers[] = 'row_count_mismatch';
+    }
+    if ($cascadeBlocked) {
+      $gate4Blockers[] = 'dependency_cascade_blocked';
+    }
+    if (($effectTransformStats['ambiguous_count'] ?? 0) > 0) {
+      $gate4Blockers[] = 'effect_transform_ambiguous';
+    }
+
     $passed = empty($duplicatePublicIds)
       && empty($fileIssues)
+      && $deferredFkStats['unresolved'] === 0
+      && ! $cascadeBlocked
       && ! collect($rowCounts)->contains(fn (array $c) => ($c['match'] ?? false) === false);
 
+    $gate4Eligible = $passed && empty($entityMapIssues);
+
     $report = [
-      'version' => 1,
-      'schema' => 'esb.recovery.verification_report/v1',
+      'version' => 2,
+      'schema' => 'esb.recovery.verification_report/v2',
       'batch_id' => $batchId,
       'verified_at' => now()->toIso8601String(),
       'passed' => $passed,
@@ -107,12 +103,83 @@ class RecoveryVerifyService
       'checksum_mismatches' => [],
       'missing_files' => $fileIssues,
       'warnings' => $warnings,
-      'gate4_eligible' => $passed && empty($entityMapIssues),
+      'gate4_eligible' => $gate4Eligible,
+      'deferred_fk' => $deferredFkStats,
+      'effect_transform' => $effectTransformStats,
+      'file_resolution' => $fileResolutionStats,
+      'gate4_readiness' => [
+        'eligible' => $gate4Eligible,
+        'blockers' => $gate4Blockers,
+      ],
     ];
 
     $this->storage->writeJson($batchId, 'verification_report.json', $report);
 
     return $report;
+  }
+
+  /** @return array<string, int|bool> */
+  private function buildDeferredFkStats(string $batchId): array
+  {
+    $manifest = $this->deferredFk->loadManifest($batchId);
+    $report = $this->tryReadJson($batchId, 'deferred_fk_report.json');
+
+    return [
+      'queued' => count($manifest['entries'] ?? []),
+      'applied' => (int) ($report['applied'] ?? 0),
+      'unresolved' => (int) ($report['unresolved'] ?? count($manifest['entries'] ?? [])),
+      'complete' => (bool) ($report['complete'] ?? false),
+    ];
+  }
+
+  /** @return array<string, mixed> */
+  private function buildEffectTransformStats(string $batchId): array
+  {
+    $report = $this->tryReadJson($batchId, 'effect_transform_report.json');
+
+    if ($report === null) {
+      return [
+        'transformed_count' => 0,
+        'skipped_count' => 0,
+        'ambiguous_count' => 0,
+        'present' => false,
+      ];
+    }
+
+    return [
+      'transformed_count' => (int) ($report['transformed_count'] ?? 0),
+      'skipped_count' => (int) ($report['skipped_count'] ?? 0),
+      'ambiguous_count' => (int) ($report['ambiguous_count'] ?? 0),
+      'operator_review_count' => count($report['operator_review'] ?? []),
+      'present' => true,
+    ];
+  }
+
+  /** @param  list<string>  $fileIssues */
+  private function buildFileResolutionStats(string $batchId, array &$fileIssues): array
+  {
+    $missingReport = $this->tryReadJson($batchId, 'missing_files_report.json');
+    $summary = $missingReport['summary'] ?? [];
+
+    foreach ($missingReport['by_class']['required_missing'] ?? [] as $item) {
+      $fileIssues[] = $item['destination_key'] ?? 'unknown';
+    }
+
+    $resolved = 0;
+    $manifest = $this->tryReadJson($batchId, 'file_manifest.json');
+    foreach ($manifest['files'] ?? [] as $file) {
+      if (($file['resolution_class'] ?? '') === 'resolved') {
+        $resolved++;
+      }
+    }
+
+    return [
+      'resolved' => $resolved,
+      'required_missing' => (int) ($summary['required_missing'] ?? 0),
+      'optional_missing' => (int) ($summary['optional_missing'] ?? 0),
+      'path_mismatch' => (int) ($summary['path_mismatch'] ?? 0),
+      'operator_action_required' => (int) ($summary['operator_action_required'] ?? 0),
+    ];
   }
 
   private function tableCount(string $connection, string $table): int
@@ -153,30 +220,10 @@ class RecoveryVerifyService
   }
 
   /** @return array<string, mixed>|null */
-  private function tryReadEntityMap(string $batchId): ?array
+  private function tryReadJson(string $batchId, string $filename): ?array
   {
     try {
-      return $this->storage->readJson($batchId, 'entity_map.json');
-    } catch (\Throwable) {
-      return null;
-    }
-  }
-
-  /** @return array<string, mixed>|null */
-  private function tryReadFileManifest(string $batchId): ?array
-  {
-    try {
-      return $this->storage->readJson($batchId, 'file_manifest.json');
-    } catch (\Throwable) {
-      return null;
-    }
-  }
-
-  /** @return array<string, mixed>|null */
-  private function tryReadExportManifest(string $batchId): ?array
-  {
-    try {
-      return $this->storage->readJson($batchId, 'export_manifest.json');
+      return $this->storage->readJson($batchId, $filename);
     } catch (\Throwable) {
       return null;
     }

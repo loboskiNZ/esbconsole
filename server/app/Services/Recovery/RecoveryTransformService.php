@@ -10,13 +10,20 @@ class RecoveryTransformService
   public function __construct(
     private readonly RecoveryBatchStorage $storage,
     private readonly RecoveryDomainRegistry $registry,
+    private readonly RecoveryDeferredForeignKeyService $deferredFk,
+    private readonly RecoveryEffectTransformService $effectTransform,
   ) {}
 
   /** @return array<string, mixed> */
-  public function transform(string $batchId): array
+  public function transform(string $batchId, ?string $sourceConnection = null): array
   {
     $entries = [];
     $duplicates = [];
+
+    if ($sourceConnection !== null) {
+      $this->effectTransform->warmMaps($sourceConnection);
+      $this->effectTransform->resetCounters();
+    }
 
     foreach ($this->registry->exportable() as $domain) {
       $bundlePath = $this->storage->domainBundlePath($batchId, $domain['key']);
@@ -33,7 +40,7 @@ class RecoveryTransformService
           continue;
         }
 
-        $table = $this->inferTableName($domain['key'], $row);
+        $table = (string) ($row['_recovery_table'] ?? $this->inferTableName($domain['key'], $row));
         $sourceId = $row['id'] ?? null;
         $publicId = $row['public_id'] ?? null;
 
@@ -62,6 +69,13 @@ class RecoveryTransformService
       }
     }
 
+    $deferredEntries = $this->deferredFk->captureFromBandsBundle($batchId);
+    $this->deferredFk->writeManifest($batchId, $deferredEntries);
+
+    if ($sourceConnection !== null) {
+      $this->effectTransform->buildReport($batchId);
+    }
+
     $payload = [
       'version' => 1,
       'schema' => 'esb.recovery.entity_map/v1',
@@ -70,6 +84,7 @@ class RecoveryTransformService
       'entries' => $entries,
       'duplicate_public_ids' => $duplicates,
       'public_id_preservation' => true,
+      'deferred_fk_count' => count($deferredEntries),
     ];
 
     $this->storage->writeJson($batchId, 'entity_map.json', $payload);

@@ -29,7 +29,7 @@ class RecoveryTransformServiceTest extends TestCase
     ];
     File::put($storage->domainBundlePath($this->batchId, 'bands'), implode("\n", $lines)."\n");
 
-    $result = app(RecoveryTransformService::class)->transform($this->batchId);
+    $result = app(RecoveryTransformService::class)->transform($this->batchId, 'sqlite');
 
     $this->assertSame(1, $result['version']);
     $this->assertCount(2, $result['entries']);
@@ -38,5 +38,6 @@ class RecoveryTransformServiceTest extends TestCase
 
     $saved = $storage->readJson($this->batchId, 'entity_map.json');
     $this->assertSame('esb.recovery.entity_map/v1', $saved['schema']);
+    $this->assertFileExists(storage_path('recovery/'.$this->batchId.'/deferred_fk.json'));
   }
 }

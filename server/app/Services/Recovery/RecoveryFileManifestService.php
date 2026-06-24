@@ -9,6 +9,7 @@ class RecoveryFileManifestService
   public function __construct(
     private readonly RecoveryBatchStorage $storage,
     private readonly RecoveryDomainRegistry $registry,
+    private readonly RecoveryFileResolutionService $fileResolution,
   ) {}
 
   /** @return array<string, mixed> */
@@ -16,13 +17,11 @@ class RecoveryFileManifestService
   {
     $files = [];
 
-    $exportManifest = $this->tryReadExportManifest($batchId);
-
     foreach ($this->registry->fileDomains() as $domain) {
-      $files = array_merge($files, $this->collectDomainFiles($batchId, $domain, $exportManifest));
+      $files = array_merge($files, $this->collectDomainFiles($batchId, $domain));
     }
 
-    return [
+    $manifest = [
       'version' => 1,
       'schema' => 'esb.recovery.files_manifest/v1',
       'batch_id' => $batchId,
@@ -30,10 +29,15 @@ class RecoveryFileManifestService
       'dry_run' => $dryRun,
       'files' => $files,
     ];
+
+    $missingReport = $this->fileResolution->buildMissingFilesReport($batchId, $files);
+    $this->storage->writeJson($batchId, 'missing_files_report.json', $missingReport);
+
+    return $manifest;
   }
 
   /** @return list<array<string, mixed>> */
-  private function collectDomainFiles(string $batchId, string $domain, ?array $exportManifest): array
+  private function collectDomainFiles(string $batchId, string $domain): array
   {
     $bundlePath = $this->storage->domainBundlePath($batchId, $domain);
 
@@ -42,20 +46,22 @@ class RecoveryFileManifestService
     }
 
     $entries = [];
-    $lines = File::lines($bundlePath);
 
-    foreach ($lines as $line) {
+    foreach (File::lines($bundlePath) as $line) {
       $row = json_decode($line, true);
       if (! is_array($row)) {
         continue;
       }
 
-      $path = $this->resolveStoragePath($row, $domain);
-      if ($path === null) {
+      $required = $domain === 'charts';
+      $rawReference = $this->rawStorageReference($row, $domain);
+      if ($rawReference === null) {
         continue;
       }
 
-      $exists = File::exists($path);
+      $resolved = $this->fileResolution->resolve($rawReference, $domain, $required);
+      $path = $resolved['path'];
+      $exists = $path !== null && File::exists($path);
       $bytes = $exists ? File::size($path) : 0;
       $sha256 = $exists ? hash_file('sha256', $path) : null;
 
@@ -64,12 +70,15 @@ class RecoveryFileManifestService
         'public_id' => $row['public_id'] ?? null,
         'path' => $path,
         'source_path' => $path,
+        'storage_reference_raw' => $resolved['storage_reference_raw'],
         'destination_key' => $this->destinationKey($domain, $row),
         'sha256' => $sha256,
         'bytes' => $bytes,
         'size' => $bytes,
         'domain' => $domain,
-        'required' => $domain !== 'snippets',
+        'required' => $required,
+        'resolution_class' => $resolved['resolution_class'],
+        'attempted_roots' => $resolved['attempted_roots'],
         'status' => $exists ? 'pending' : 'missing',
       ];
     }
@@ -78,11 +87,11 @@ class RecoveryFileManifestService
   }
 
   /** @param  array<string, mixed>  $row */
-  private function resolveStoragePath(array $row, string $domain): ?string
+  private function rawStorageReference(array $row, string $domain): ?string
   {
     $candidates = match ($domain) {
       'charts' => [$row['storage_reference'] ?? null, $row['file_path'] ?? null],
-      'snippets' => [$row['audio_storage_reference'] ?? null, $row['midi_storage_reference'] ?? null],
+      'snippets' => [$row['storage_reference'] ?? null, $row['audio_storage_reference'] ?? null, $row['midi_storage_reference'] ?? null],
       'people_profiles' => [$row['profile_image_path'] ?? null],
       'person_files' => [$row['storage_reference'] ?? null, $row['file_path'] ?? null],
       'ableton_show_files' => [$row['storage_reference'] ?? null],
@@ -91,11 +100,7 @@ class RecoveryFileManifestService
 
     foreach ($candidates as $candidate) {
       if (is_string($candidate) && $candidate !== '') {
-        if (str_starts_with($candidate, '/')) {
-          return $candidate;
-        }
-
-        return storage_path($candidate);
+        return $candidate;
       }
     }
 
@@ -125,24 +130,17 @@ class RecoveryFileManifestService
       'public_id' => null,
       'path' => null,
       'source_path' => null,
+      'storage_reference_raw' => null,
       'destination_key' => "{$domain}/pending",
       'sha256' => null,
       'bytes' => 0,
       'size' => 0,
       'domain' => $domain,
       'required' => false,
+      'resolution_class' => 'optional_missing',
+      'attempted_roots' => [],
       'status' => 'missing',
     ]];
-  }
-
-  /** @return array<string, mixed>|null */
-  private function tryReadExportManifest(string $batchId): ?array
-  {
-    try {
-      return $this->storage->readJson($batchId, 'export_manifest.json');
-    } catch (\Throwable) {
-      return null;
-    }
   }
 
   /** @return array<string, mixed> */
@@ -158,6 +156,7 @@ class RecoveryFileManifestService
         'sha256' => $file['sha256'] ?? null,
         'bytes' => $file['bytes'] ?? $file['size'] ?? 0,
         'action' => ($file['status'] ?? 'missing') === 'missing' ? 'skip' : 'upload',
+        'resolution_class' => $file['resolution_class'] ?? null,
         'spaces_connected' => false,
       ];
     }
