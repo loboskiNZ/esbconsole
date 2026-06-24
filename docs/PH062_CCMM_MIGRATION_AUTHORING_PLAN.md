@@ -1,408 +1,700 @@
 # PH062 — CCMM Migration Authoring Plan
 
-Status: Authoring plan — **migration files may be written; no production execution, deploy, data migration, or cluster cutover**  
-Authority: PH059 CCMM, PH060 Gap Analysis, PH061 Execution Plan, PH061A (Track B deferred)  
+Status: **Blueprint only** — no migration files, production mutation, DDL, deploys, schema changes, or data migration  
+Authority: PH059 CCMM (sole schema authority), PH060, PH061, PH061A  
 Date: 2026-06-24
 
 ---
 
-## 1. Purpose
+## Core principle
 
-PH062 defines **how** Cloud-first CCMM migration PHP files are authored, organised, validated, and retired from duplicate paths. It is the implementation blueprint for PH061 §3 migration packages.
+The CCMM is the **sole schema authority**. No migration folder, application implementation, or production database is authoritative for shared entities.
 
-| In scope | Out of scope |
-|----------|--------------|
-| Migration file layout, naming, package mapping | Production cluster provisioning (PH061 F0) |
-| Authoring rules per CCMM entity | Live Stage data import execution (PH061 F4) |
-| Retirement of `server/` duplicate DDL | PH054 sync engine |
-| Fresh-DB validation strategy | Forge cutover |
-| `cloud_recovery_entity_map` authoring | CCMM-12 Track B implementation (planning only) |
-| Live Stage superset package outline | `person_invitations` UX (PH048B) |
+```text
+CCMM (PH059)
+    ↓
+Migration Authoring Plan (PH062)
+    ↓
+Migration Packages (CCMM-00 … CCMM-12)
+    ↓
+Cloud Database (fresh isolated cluster — PH056 Path B)
+    ↓
+Live Stage Parity (CCMM identical + LS-EXT superset)
+```
 
-**PH062 authorises writing migration files in Git.** **PH063** (or operator-runbook Gate 2+) authorises **running** them against a target database.
+**PH062 defines the blueprint.** **PH063** authors migration PHP files and executes against approved targets.
 
 ---
 
-## 2. Tracks
+## 1. Migration ownership matrix
 
-| Track | Packages | When | Gate |
-|-------|----------|------|------|
-| **Track A — Core platform** | CCMM-00 → CCMM-11 | **First** — blocks Cloud recovery | Operator Gate 2 + fresh DB |
-| **Track B — X32 console domain** | CCMM-12a → CCMM-12c | **After** Track A Gate 4 or parallel authoring | PH061A + operator Track B approval |
-| **Track C — Live Stage superset** | LS-EXT-01+ | **After** Track A schema parity on Live Stage | PH061 §11 |
+Ownership values: **Shared CCMM** · **Cloud Extension** · **Live Stage Extension** · **Runtime Only** · **Quarantined**
 
-PH062 **must complete Track A authoring** before any production migrate. Track B files may be drafted in parallel but **must not** run on Cloud before Track A Gate 4 pass.
+### 1.1 Identity & people
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `users` | CCMM-04 | Shared CCMM |
+| `people` | CCMM-03 | Shared CCMM |
+| `person_secure_fields` | CCMM-03 | Shared CCMM |
+| `person_files` | CCMM-03 | Shared CCMM |
+| `person_iem_settings` | CCMM-03 | Shared CCMM |
+| `person_instruments` | CCMM-03 | Shared CCMM |
+| `musicians` | CCMM-04 | Shared CCMM |
+| `musician_band_roles` | CCMM-04 | Shared CCMM |
+| `person_invitations` | CCMM-11 | Cloud Extension |
+
+### 1.2 Bands & reference
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `bands` | CCMM-01, CCMM-04 (FK) | Shared CCMM |
+| `instrument_reference` | CCMM-02 | Shared CCMM |
+| `song_moods` | CCMM-02 | Shared CCMM |
+| `time_signatures` | CCMM-02 | Shared CCMM |
+| `musical_keys` | CCMM-02 | Shared CCMM |
+
+### 1.3 Music library
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `songs` | CCMM-05 | Shared CCMM |
+| `cues` | CCMM-05 | Shared CCMM |
+| `instrument_parts` | CCMM-05 | Shared CCMM |
+| `song_instrument_parts` | CCMM-06 | Shared CCMM |
+| `snippets` | CCMM-06 | Shared CCMM — **music** chart snippets (PH027) |
+
+### 1.4 Charts & import
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `import_batches` | CCMM-06 | Shared CCMM |
+| `import_entity_mappings` | CCMM-06 | Shared CCMM |
+| `charts` | CCMM-06 | Shared CCMM |
+
+### 1.5 Shows & performances
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `ableton_show_files` | CCMM-08 | Shared CCMM |
+| `shows` | CCMM-08 | Shared CCMM |
+| `show_playlist_items` | CCMM-08 | Shared CCMM |
+| `performances` | CCMM-08 | Shared CCMM |
+| `performance_assignments` | CCMM-08 | Shared CCMM |
+
+### 1.6 Actions
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `action_types` | CCMM-07 | Shared CCMM |
+| `action_definitions` | CCMM-07 | Shared CCMM |
+| `action_parameters` | CCMM-07 | Shared CCMM |
+| `cue_actions` | CCMM-07 | Shared CCMM |
+| `mix_moves` | CCMM-12 (placeholder) | Shared CCMM — **schema not defined**; blocked until M5 |
+
+### 1.7 Devices & assignments
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `devices` | CCMM-09 | Shared CCMM |
+| `capabilities` | CCMM-09 | Shared CCMM |
+| `assignments` | CCMM-09 | Shared CCMM |
+
+### 1.8 Venues & festivals
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `venues` | CCMM-10 | Shared CCMM |
+| `festivals` | CCMM-10 | Shared CCMM |
+
+### 1.9 Effects (PH061A — CCMM-12)
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `effect_definitions` | CCMM-12 | Shared CCMM |
+| `effect_packages` | CCMM-12 | Shared CCMM |
+| `effect_package_items` | CCMM-12 | Shared CCMM |
+| `song_effect_assignments` | CCMM-12 | Shared CCMM |
+| `effects` | CCMM-12 | Shared CCMM — algorithm reference catalogue |
+| `effect_parameters` | CCMM-12 | Shared CCMM |
+| `effect_package_types` | CCMM-12 | Shared CCMM |
+| `effect_package_item_parameters` | CCMM-12 | Shared CCMM |
+| `effect_package_item_target_sections` | CCMM-12 | Shared CCMM |
+| `effect_library_items` | — | **Operator Decision** — merge into `effects` or quarantine |
+| `effect_library_parameters` | — | **Operator Decision** — merge or quarantine |
+
+### 1.10 Console baselines (PH061A — CCMM-12)
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `show_console_baselines` | CCMM-12 | Shared CCMM |
+| `console_learning_snapshots` | LS-EXT-03 | Live Stage Extension |
+| Channels, buses, routing, DCAs (conceptual) | — | **JSON inside `show_console_baselines.baseline_json`** — not separate tables |
+
+### 1.11 Infrastructure & recovery
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `cache`, `cache_locks` | CCMM-00 | Cloud Extension |
+| `jobs`, `job_batches`, `failed_jobs` | CCMM-00 | Cloud Extension |
+| `sessions`, `password_reset_tokens` | CCMM-00 | Cloud Extension |
+| `cloud_recovery_entity_map` | RECOVERY | Cloud Extension — recovery audit only |
+| `permission_tables` (Spatie) | LS-EXT-06 | Live Stage Extension — default |
+
+### 1.12 Live Stage extension & runtime
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `integration_devices` | LS-EXT-01 | Live Stage Extension |
+| `integration_connection_profiles` | LS-EXT-01 | Live Stage Extension |
+| `performance_device_assignments` | LS-EXT-02 | Live Stage Extension |
+| `soundchecks` | LS-EXT-05 | Live Stage Extension |
+| `readiness_records` | LS-EXT-05 | Live Stage Extension |
+| `runtime_events` | LS-EXT-04 | Runtime Only |
+| `runtime_action_plans` | LS-EXT-04 | Runtime Only |
+| `runtime_action_items` | LS-EXT-04 | Runtime Only |
+| `runtime_audit_records` | LS-EXT-04 | Runtime Only |
+| `runtime_dispatches` | LS-EXT-04 | Runtime Only |
+| `runtime_dispatch_items` | LS-EXT-04 | Runtime Only |
+| `live_fader_state` | — | Runtime Only — not persisted as canonical row |
+| `live_meter_state` | — | Runtime Only |
+| `live_mute_state` | — | Runtime Only |
+| `live_connection_state` | — | Runtime Only |
+| `live_transport_state` | — | Runtime Only — Ableton authority |
+| `live_heartbeat_state` | — | Runtime Only |
+
+### 1.13 Quarantined
+
+| Entity | Package | Ownership |
+|--------|---------|-----------|
+| `invite_links` | — | Quarantined |
+| `invite_link_acceptances` | — | Quarantined |
+
+**PH061A supersedes PH059 Part B** for `show_console_baselines` and effect package tables — reclassified from Live Stage superset to **Shared CCMM** in CCMM-12.
 
 ---
 
-## 3. Repository layout
+## 2. Migration package definitions
 
-### 3.1 Canonical location (new)
+Canonical packages. Column definitions remain **PH059 Part A** authority; CCMM-12 columns follow **PH061A** + existing `backend/ph044_*` reference material.
 
-```
-/database/migrations/ccmm/          ← single CCMM authority (repo root)
-/database/migrations/ccmm/README.md
-/database/migrations/recovery/      ← cloud_recovery_entity_map + import audit (PH062)
-/database/seeders/ccmm/             ← governed reference seeds (optional co-location)
-```
+### CCMM-00 — Infrastructure
 
-### 3.2 Application load rules
-
-| App | Loads | Does not load |
-|-----|-------|---------------|
-| **`/server/`** (Cloud Studio) | `database/migrations/ccmm/*`, `database/migrations/recovery/*`, Laravel infra in `server/database/migrations/0001_*` only | `backend/` superset; quarantined invite migrations on fresh Cloud |
-| **`/backend/`** (Live Stage) | Same CCMM path **after** LS-2 parity step, then `backend/database/migrations/ls-ext/*` | CCMM duplicated inside `backend/` M-series for shared entities |
-
-**Implementation:** Register CCMM path in each app's migration loader (e.g. `AppServiceProvider::boot` → `loadMigrationsFrom` pointing at repo-root `database/migrations/ccmm`). Exact wiring is PH062 implementation detail.
-
-### 3.3 Historical files
-
-| Path | Disposition |
-|------|-------------|
-| `server/database/migrations/2026_06_23_*` shared DDL | **Archive** — move to `server/database/migrations/_archived_ccmm_forks/`; exclude from migrate path |
-| `server/database/migrations/2026_06_24_*` shared DDL | **Archive** |
-| `server/database/migrations/*invite*` | **Archive** — never on fresh Cloud |
-| `backend/database/migrations/*m2*`, `*m3*`, … `*m9*` shared | **Retain in Git** for audit; **replace** with CCMM path on Live Stage realignment |
-| `backend/database/migrations/*runtime*`, `*integration*`, `*console_learning*`, `*ph044*` | **LS-EXT** — Live Stage superset only |
-
----
-
-## 4. File naming convention
-
-```
-YYYY_MM_DD_HHMMSS_ccmm_{package}_{slug}.php
-```
-
-| Segment | Rule | Example |
-|---------|------|---------|
-| Timestamp | UTC order within package | `2026_07_01_100000` |
-| `ccmm` | Fixed marker | `ccmm` |
-| `{package}` | `ccmm00` … `ccmm11`, `ccmm12a` | `ccmm04` |
-| `{slug}` | snake_case table or action | `create_musicians_table` |
-
-**One logical package step per file** where practical. Multi-table packages may use sequential files in dependency order within the same package.
-
-**Idempotency:** Fresh Cloud target is empty — migrations use `Schema::create`, not `Schema::createIfNotExists` guards, except recovery tooling tables.
-
----
-
-## 5. Track A — package file plan
-
-Each row is an **authoring unit**. Column definitions are **PH059 Part A** authority. Backend migrations listed as **reference only** — CCMM files are authored Cloud-first, not copied.
-
-### CCMM-00 — Laravel infrastructure
-
-| File slug | Tables | Notes |
-|-----------|--------|-------|
-| `ccmm00_laravel_cache_jobs` | cache, cache_locks, jobs, job_batches, failed_jobs | Retain in `server/database/migrations/0001_*` **or** consolidate here — operator chooses single path |
-| `ccmm00_laravel_sessions_auth` | sessions, password_reset_tokens | users table **not** here — CCMM-04 |
-
-**Rule:** Laravel infra stays runnable before CCMM-01. If kept in `0001_*`, CCMM-00 package is documentation-only grouping.
+| Field | Value |
+|-------|-------|
+| **Purpose** | Laravel operational tables required for Cloud Studio |
+| **Entities** | `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs`, `sessions`, `password_reset_tokens` |
+| **Dependencies** | None |
+| **Seeds** | None |
 
 ### CCMM-01 — Foundation
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm01_create_bands_table` | bands | A1 | `server/130000`, `backend/m2` |
-
-Include `public_id`, `name`; `primary_director_musician_id` nullable **without FK** until CCMM-04.
+| Field | Value |
+|-------|-------|
+| **Purpose** | Band aggregate root |
+| **Entities** | `bands` (`primary_director_musician_id` nullable until CCMM-04) |
+| **Dependencies** | CCMM-00 |
+| **Seeds** | Default band row (operator-approved) |
 
 ### CCMM-02 — Reference data
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm02_create_instrument_reference` | instrument_reference | A9 | `server/131000` |
-| `ccmm02_create_song_metadata_reference` | song_moods, time_signatures, musical_keys | A13–A15 | `server/220100`, `backend/220000` |
-| `ccmm02_seed_reference_data` | — | seed | `InstrumentCatalog`, `SongMetadataReferenceSeeder` |
-
-Seeder may be PHP migration calling seeder class or dedicated `database/seeders/ccmm/`.
+| Field | Value |
+|-------|-------|
+| **Purpose** | Global reference catalogues for music library |
+| **Entities** | `instrument_reference`, `song_moods`, `time_signatures`, `musical_keys` |
+| **Dependencies** | CCMM-01 |
+| **Seeds** | `InstrumentCatalog`, `SongMetadataReferenceSeeder` |
 
 ### CCMM-03 — People
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm03_create_people_table` | people | A3 | `server/131000`, `backend/110000` |
-| `ccmm03_create_person_children` | person_secure_fields, person_files, person_iem_settings | A4–A6 | same |
-| `ccmm03_create_person_instruments` | person_instruments | A10 | same |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Band people and production personnel |
+| **Entities** | `people`, `person_secure_fields`, `person_files`, `person_iem_settings`, `person_instruments` |
+| **Dependencies** | CCMM-01 |
+| **Seeds** | None |
 
 ### CCMM-04 — Identity & roster
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm04_create_users_merged` | users | A2 | `server/0001` + `133000`; **add `public_id`** |
-| `ccmm04_create_musicians` | musicians, musician_band_roles | A7–A8 | `backend/m3`, `backend/190000` |
-| `ccmm04_extend_bands_director_fk` | bands | A1 FK | nullable → musicians |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Portal identity and musician roster |
+| **Entities** | `users` (merged CCMM schema incl. `public_id`), `musicians`, `musician_band_roles`; `bands.primary_director_musician_id` FK |
+| **Dependencies** | CCMM-01, CCMM-03 |
+| **Seeds** | None |
 
-**Critical:** `users` is **CREATE** on fresh Cloud (merged schema), not ALTER of skeleton.
+### CCMM-05 — Music library
 
-### CCMM-05 — Music library core
-
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm05_create_songs` | songs | A12 | `server/160000`, `backend/m6`, authoring cols |
-| `ccmm05_create_cues` | cues | A28 | `backend/m7` |
-| `ccmm05_create_instrument_parts` | instrument_parts | A11 | `server/160000`, `backend/m4` |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Song aggregate and cue identity |
+| **Entities** | `songs`, `cues`, `instrument_parts` |
+| **Dependencies** | CCMM-01, CCMM-02 |
+| **Seeds** | None |
 
 ### CCMM-06 — Charts & import audit
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm06_create_import_batches` | import_batches, import_entity_mappings | A18–A19 | `backend/100000` |
-| `ccmm06_create_charts` | charts | A16 | FK `import_batch_id` → import_batches |
-| `ccmm06_create_song_instrument_parts` | song_instrument_parts | A17 | `backend/100500` |
-| `ccmm06_create_snippets` | snippets | A33 | `backend/ph028` — **music** snippets |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Chart assets, import provenance, music snippets |
+| **Entities** | `import_batches`, `import_entity_mappings`, `charts`, `song_instrument_parts`, `snippets` |
+| **Dependencies** | CCMM-05; `import_batches` before `charts` FK |
+| **Seeds** | None |
 
 ### CCMM-07 — Actions
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm07_create_action_types` | action_types | A29 | `backend/runtime_action` |
-| `ccmm07_seed_action_types` | — | seed | action type catalogue |
-| `ccmm07_create_action_domain` | action_definitions, action_parameters, cue_actions | A30–A32 | `backend/runtime_action` |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Cue action definitions and parameters |
+| **Entities** | `action_types`, `action_definitions`, `action_parameters`, `cue_actions` |
+| **Dependencies** | CCMM-05 (`cues`) |
+| **Seeds** | Action type catalogue |
 
 ### CCMM-08 — Shows & performances
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm08_create_ableton_show_files` | ableton_show_files | A20 | `backend/110000` |
-| `ccmm08_create_shows` | shows, show_playlist_items | A21–A22 | `backend/m8`, `110200` |
-| `ccmm08_create_performances` | performances, performance_assignments | A23–A24 | `backend/110300`, `110400` |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Show aggregate, playlist, performance roster |
+| **Entities** | `ableton_show_files`, `shows`, `show_playlist_items`, `performances`, `performance_assignments` |
+| **Dependencies** | CCMM-01, CCMM-05, CCMM-04 (`musicians`) |
+| **Seeds** | None |
 
 ### CCMM-09 — Devices & assignments
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm09_create_devices_capabilities` | devices, capabilities | A25–A26 | `backend/m3`, `m4` |
-| `ccmm09_create_assignments` | assignments | A27 | `backend/m5` |
-
-**Note:** PH059 Part E groups devices earlier (CCMM-5). PH061 package order (devices after shows) is **authoring authority** — FK graph allows either; PH062 follows PH061 §3.
+| Field | Value |
+|-------|-------|
+| **Purpose** | Musician devices and instrument assignments |
+| **Entities** | `devices`, `capabilities`, `assignments` |
+| **Dependencies** | CCMM-04, CCMM-05 |
+| **Seeds** | None |
 
 ### CCMM-10 — Venues & festivals
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm10_create_venues_festivals` | venues, festivals | A34–A35 | `backend/210000`, `220000` |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Production venue metadata |
+| **Entities** | `venues`, `festivals` |
+| **Dependencies** | CCMM-01 |
+| **Seeds** | None |
 
-### CCMM-11 — Invitations (Cloud workspace)
+### CCMM-11 — Invitations
 
-| File slug | Tables | CCMM | Reference |
-|-----------|--------|------|-----------|
-| `ccmm11_create_person_invitations` | person_invitations | Part C | PH048B spec |
+| Field | Value |
+|-------|-------|
+| **Purpose** | Person-first onboarding (PH048B) — Cloud workspace only |
+| **Entities** | `person_invitations` |
+| **Dependencies** | CCMM-03, CCMM-04 |
+| **Seeds** | None |
 
-**Live Stage:** does not migrate CCMM-11 on parity apply (Cloud-only workspace table).
+### CCMM-12 — X32 console configuration
 
-### CCMM-RECOVERY — Recovery audit
+| Field | Value |
+|-------|-------|
+| **Purpose** | Musical FX packages, song assignments, show console baselines — show prep assets |
+| **Entities** | `effect_definitions`, `effect_packages`, `effect_package_items`, `song_effect_assignments`, `effects`, `effect_parameters`, `effect_package_types`, `effect_package_item_parameters`, `effect_package_item_target_sections`, `show_console_baselines`; **`mix_moves` placeholder** (no DDL until M5 schema) |
+| **Dependencies** | CCMM-05 (`songs`), CCMM-08 (`shows`) |
+| **Seeds** | `EffectsAlgorithmReferenceSeeder` (effects catalogue); `effect_package_types` reference |
 
-| File slug | Tables | Notes |
-|-----------|--------|-------|
-| `recovery_create_entity_map` | cloud_recovery_entity_map | PH061 §5.2; run before F4 data import |
+**Explicitly excluded from CCMM-12:** runtime state, OSC live values, telemetry, connection heartbeats, `console_learning_snapshots`, channel/bus/routing as normalized tables.
 
----
+### RECOVERY — Recovery audit
 
-## 6. Track B — X32 console domain (authoring deferred)
+| Field | Value |
+|-------|-------|
+| **Purpose** | ID remap for governed data import (PH061 §5.2) |
+| **Entities** | `cloud_recovery_entity_map` |
+| **Dependencies** | CCMM-00 |
+| **Seeds** | None |
 
-Planning authority: PH061A. **Do not author until operator approves Track B** or parallel draft with `// @ccmm-track-b` marker and excluded from default migrate manifest.
+### LS-EXT — Live Stage extension (post-parity)
 
-| Package | After | Tables | Source reference |
-|---------|-------|--------|------------------|
-| CCMM-12a | CCMM-05 | effect_definitions, effect_packages, effect_package_items, song_effect_assignments, effects, effect_parameters, effect_package_types, effect_package_item_parameters, effect_package_item_target_sections | `backend/ph044_*` |
-| CCMM-12b | CCMM-08 | show_console_baselines | `backend/console_learning` |
-| CCMM-12c | CCMM-07 | mix_moves | DOMAIN_MODEL M5 — **blocked** until schema exists |
-
-**Exclude from Cloud:** `effect_library_*` unless operator merges into `effects` catalogue (PH061A decision 5).
-
----
-
-## 7. Track C — Live Stage superset outline
-
-Applied **only after** CCMM-00–10 parity verified on Live Stage (PH061 §11).
-
-| Package | Tables | Notes |
-|---------|--------|-------|
-| LS-EXT-01 | integration_devices, integration_connection_profiles | PH059 Part B |
-| LS-EXT-02 | performance_device_assignments | show-day binding |
-| LS-EXT-03 | console_learning_snapshots | ephemeral learn |
-| LS-EXT-04 | runtime_* (action execution, events, dispatch) | execution state |
-| LS-EXT-05 | soundchecks, readiness_records | operational |
-| LS-EXT-06 | permission_tables (Spatie) | if not Cloud-only |
-
-**Location:** `backend/database/migrations/ls-ext/` with `ls_ext_{nn}_{slug}.php` naming.
-
-**CCMM-12 Track B** on Live Stage: apply 12a–12b after LS-EXT-03 if console parity required.
+| Package | Entities |
+|---------|----------|
+| LS-EXT-01 | `integration_devices`, `integration_connection_profiles` |
+| LS-EXT-02 | `performance_device_assignments` |
+| LS-EXT-03 | `console_learning_snapshots` |
+| LS-EXT-04 | `runtime_*` domain tables |
+| LS-EXT-05 | `soundchecks`, `readiness_records` |
+| LS-EXT-06 | Spatie `permission_tables` (default) |
 
 ---
 
-## 8. Authoring rules
+## 3. Cloud build manifest
 
-| # | Rule |
-|---|------|
-| 1 | **PH059 column list is authoritative** — diff against reference migration; fix drift in CCMM file |
-| 2 | **Every shared entity has `public_id` uuid unique** where CCMM specifies |
-| 3 | **FK ON DELETE** matches CCMM (RESTRICT vs CASCADE vs SET NULL) |
-| 4 | **No quarantined tables** in any CCMM file |
-| 5 | **No Live Stage superset** in CCMM path |
-| 6 | **One migration path** per shared table — no new duplicates in `server/` or `backend/` |
-| 7 | **Down()** must drop in reverse FK order for local dev rollback |
-| 8 | **Comments** only for non-obvious CCMM deviations — not column narration |
-| 9 | **PostgreSQL** types only — no MySQL-specific syntax |
-| 10 | **Case-insensitive unique** on `users.username` per PH047A |
+Package execution order for fresh Cloud Database. **B*** labels are build-phase identifiers; each maps 1:1 to a CCMM package.
 
-### users merge checklist (DRIFTED → ALIGNED)
+| Phase | Package | Prerequisites | Validation checkpoint | Rollback boundary |
+|-------|---------|---------------|----------------------|-------------------|
+| **B0** | CCMM-00 Infrastructure | Empty database | Laravel infra tables exist | Roll back B0 only |
+| **B1** | CCMM-01 Foundation | B0 | `bands` exists; `public_id` unique | Roll back B1–Bn |
+| **B2** | CCMM-02 Reference data | B1 | Reference tables + seeds ≥1 row each | Roll back B2–Bn |
+| **B3** | CCMM-03 People | B1 | `people` FK to bands | Roll back B3–Bn |
+| **B4** | CCMM-04 Identity & roster | B1, B3 | `users.public_id` present; musicians FK | Roll back B4–Bn |
+| **B5** | CCMM-05 Music library | B1, B2 | `songs` + `cues` FK graph | Roll back B5–Bn |
+| **B6** | CCMM-06 Charts & import | B5 | `charts.import_batch_id` FK valid | Roll back B6–Bn |
+| **B7** | CCMM-07 Actions | B5 | `action_types` seeded | Roll back B7–Bn |
+| **B8** | CCMM-08 Shows & performances | B1, B4, B5 | Show playlist FK chain | Roll back B8–Bn |
+| **B9** | CCMM-09 Devices & assignments | B4, B5 | Device → musician FK | Roll back B9–Bn |
+| **B10** | CCMM-10 Venues & festivals | B1 | Venues FK to bands | Roll back B10–Bn |
+| **B11** | CCMM-11 Invitations | B3, B4 | Cloud-only table present | Roll back B11 only |
+| **B12** | CCMM-12 X32 console | B5, B8 | Effect tables + baselines FK | Roll back B12 only |
+| **BR** | RECOVERY entity map | B0 | Audit table exists | Independent |
 
-| Requirement | Action in CCMM-04 |
-|-------------|-------------------|
-| `public_id` uuid NOT NULL unique | CREATE column |
-| Portal columns retained | username, person_id, band_id, is_active, email_verified_at |
-| email non-unique | no unique index on email |
-| password NOT NULL | default for system rows if needed in seed |
+**Recommended execution order:**
 
-### charts FK checklist
-
-| Requirement | Action in CCMM-06 |
-|-------------|-------------------|
-| `import_batches` exists first | CCMM-06 file order |
-| `charts.import_batch_id` | FK constrained |
-
----
-
-## 9. Retirement procedure (`server/` forks)
-
-| Step | Action |
-|------|--------|
-| R1 | Author full CCMM-01–10 in `database/migrations/ccmm/` |
-| R2 | Move deprecated `server/` shared migrations to `_archived_ccmm_forks/` |
-| R3 | Update `server` migrate path to load CCMM root only + Laravel `0001_*` |
-| R4 | Fresh `php artisan migrate` on empty local Postgres — **must reach 35 CCMM tables** |
-| R5 | Document archived file → CCMM file mapping in `database/migrations/ccmm/README.md` |
-| R6 | **Do not delete** archived files from Git |
-
----
-
-## 10. Validation strategy (pre-production)
-
-### 10.1 Local fresh migrate test
-
-```bash
-# Target: empty local PostgreSQL database (not production)
-cd server && php artisan migrate --database=ccmm_test
+```text
+B0 → B1 → B2 → B3 → B4 → B5 → B6 → B7 → B8 → B9 → B10 → B12 → BR → B11
 ```
 
-| Check | Pass criterion |
-|-------|----------------|
-| Migrate completes | exit 0 |
-| Table count | 35 CCMM shared + Laravel infra + recovery map |
-| Quarantine absent | `invite_links` not created |
-| users | `public_id` column exists |
-| charts FK | `import_batch_id` references `import_batches` |
-| Rollback | `migrate:rollback --step=N` for one package without orphan errors |
+B12 before B11: console/effects prep does not depend on invitations. B11 last — Cloud workspace only.
 
-### 10.2 Schema diff script (PH062 deliverable)
+**Gate 3 validation (PH061):** after B10 (+ B12 if in scope), assert **35 core CCMM tables** (+ CCMM-12 tables if B12 run) + zero quarantine tables.
 
-Automated compare:
-
-- `information_schema.columns` vs PH059 manifest extract
-- `pg_indexes` unique constraints spot-check
-- FK graph via `pg_constraint`
-
-Output: `storage/ccmm_validation/report.json` — not committed.
-
-### 10.3 PHPUnit gate (optional PH062)
-
-Feature test: `CcmmFreshMigrateTest` — migrate fresh sqlite/pgsql in-memory, assert table exists. **sqlite only for smoke**; PostgreSQL required for CI truth.
+**Rollback rule:** Never roll back across **BR** if data import batches recorded — truncate via `cloud_recovery_entity_map.batch_id` per PH061 §9.
 
 ---
 
-## 11. Seed authoring
+## 4. Migration retirement matrix
 
-| Seeder | Package | Tables | Idempotent |
-|--------|---------|--------|------------|
-| Default band | CCMM-02 or post-01 | bands | yes — `firstOrCreate` public_id |
-| InstrumentCatalog | CCMM-02 | instrument_reference | yes |
-| SongMetadataReferenceSeeder | CCMM-02 | song_moods, time_signatures, musical_keys | yes |
-| Action types | CCMM-07 | action_types | yes |
-| Effects catalogue | CCMM-12a | effects, effect_parameters | Track B only |
+**Rule:** Retire **ownership**, not **history**. No deletion. No rewriting Git history.
 
-**No production identity seed** without operator approval (PH061 F2).
+### 4.1 `server/database/migrations/`
+
+| File | Classification | Superseded by |
+|------|----------------|---------------|
+| `0001_01_01_000000_create_users_table` | Retired Ownership (users portion) | CCMM-04 `users` |
+| `0001_01_01_000000_create_users_table` | Canonical Source Material (sessions, password_reset_tokens) | CCMM-00 |
+| `0001_01_01_000001_create_cache_table` | Canonical Source Material | CCMM-00 |
+| `0001_01_01_000002_create_jobs_table` | Canonical Source Material | CCMM-00 |
+| `2026_06_23_120000_create_invite_links_table` | Quarantined | CCMM-11 `person_invitations` |
+| `2026_06_23_130000_create_bands_table` | Retired Ownership | CCMM-01 |
+| `2026_06_23_131000_create_band_people_schema` | Retired Ownership | CCMM-03 |
+| `2026_06_23_132000_provision_portal_reference_data` | Retired Ownership (seed logic) | CCMM-02 seeds |
+| `2026_06_23_133000_reconcile_users_for_portal_auth` | Retired Ownership | CCMM-04 |
+| `2026_06_23_134000_create_invite_link_acceptances_table` | Quarantined | — |
+| `2026_06_23_140000_add_profile_identity_fields_to_people` | Retired Ownership | CCMM-03 (merged) |
+| `2026_06_23_141000_add_profile_photo_display_path_to_people` | Retired Ownership | CCMM-03 (merged) |
+| `2026_06_23_160000_provision_studio_library_read_tables` | Retired Ownership | CCMM-05, CCMM-06 |
+| `2026_06_23_161000_provision_studio_library_storage_directories` | Cloud Extension (non-DB) | Retain as deploy helper |
+| `2026_06_23_162000_open_studio_library_storage_for_operator_sync` | Cloud Extension (non-DB) | Retain as deploy helper |
+| `2026_06_23_220100_provision_studio_song_metadata_tables` | Retired Ownership | CCMM-02 |
+| `2026_06_24_120100_provision_studio_song_authoring_fields` | Retired Ownership | CCMM-05 (merged) |
+
+**Archive target:** `server/database/migrations/_archived_ccmm_forks/` — excluded from migrate path.
+
+### 4.2 `backend/database/migrations/` — shared entities (retired ownership)
+
+| File | Classification | Superseded by |
+|------|----------------|---------------|
+| `0001_01_01_000000_create_users_table` | Retired Ownership | CCMM-04 |
+| `0001_01_01_000001_create_cache_table` | Retired Ownership | CCMM-00 |
+| `0001_01_01_000002_create_jobs_table` | Retired Ownership | CCMM-00 |
+| `2026_06_10_140000_m2_create_bands_table` | Retired Ownership | CCMM-01 |
+| `2026_06_10_140100_m6_create_songs_table` | Retired Ownership | CCMM-05 |
+| `2026_06_10_140200_m8_create_shows_and_playlist_tables` | Retired Ownership | CCMM-08 |
+| `2026_06_11_100000_m3_create_musicians_and_devices_tables` | Retired Ownership (musicians) | CCMM-04 |
+| `2026_06_11_100100_m4_create_instrument_parts_and_capabilities_tables` | Retired Ownership | CCMM-05, CCMM-09 |
+| `2026_06_11_100200_m5_create_assignments_table` | Retired Ownership | CCMM-09 |
+| `2026_06_11_100300_expand_songs_table` | Retired Ownership | CCMM-05 (merged) |
+| `2026_06_11_100400_m7_create_cues_table` | Retired Ownership | CCMM-05 |
+| `2026_06_11_100500_create_song_instrument_parts_table` | Retired Ownership | CCMM-06 |
+| `2026_06_11_100600_m9_create_charts_and_snippets_tables` | Retired Ownership | CCMM-06 |
+| `2026_06_11_110000_create_ableton_show_files_table` | Retired Ownership | CCMM-08 |
+| `2026_06_11_110100_expand_shows_table` | Retired Ownership | CCMM-08 (merged) |
+| `2026_06_11_110200_formalise_show_playlist_items` | Retired Ownership | CCMM-08 (merged) |
+| `2026_06_11_110300_create_performances_table` | Retired Ownership | CCMM-08 |
+| `2026_06_11_110400_create_performance_assignments_table` | Retired Ownership | CCMM-08 |
+| `2026_06_18_100000_create_import_batch_tables` | Retired Ownership | CCMM-06 |
+| `2026_06_17_100000_ph028_snippet_domain_schema` | Retired Ownership | CCMM-06 |
+| `2026_06_19_100000_add_user_id_to_musicians_table` | Retired Ownership | CCMM-04 (merged) |
+| `2026_06_20_100000_add_band_people_roles_and_profile_fields` | Retired Ownership | CCMM-03 (merged) |
+| `2026_06_21_100000_create_venues_table` | Retired Ownership | CCMM-10 |
+| `2026_06_22_100000_create_festivals_table` | Retired Ownership | CCMM-10 |
+| `2026_06_23_110000_create_band_people_schema` | Retired Ownership | CCMM-03 |
+| `2026_06_23_220000_create_song_metadata_reference_tables` | Retired Ownership | CCMM-02 |
+| `2026_06_24_100000_add_folder_import_fields_to_charts` | Canonical Source Material | CCMM-06 (merge columns) |
+| `2026_06_24_120000_add_song_authoring_fields` | Canonical Source Material | CCMM-05 (merge columns) |
+
+### 4.3 `backend/database/migrations/` — CCMM-12 source material
+
+| File | Classification | Superseded by |
+|------|----------------|---------------|
+| `2026_06_18_100000_ph044_effects_domain_schema` | Canonical Source Material | CCMM-12 |
+| `2026_06_18_110000_ph044_effect_library_reference_schema` | Canonical Source Material (legacy) | CCMM-12 / operator merge |
+| `2026_06_18_120000_ph044_x32_effects_algorithm_reference_schema` | Canonical Source Material | CCMM-12 |
+| `2026_06_18_130000_ph044_effects_operator_metadata` | Canonical Source Material | CCMM-12 (merged) |
+| `2026_06_18_140000_ph044_effect_package_item_routing_plan` | Canonical Source Material | CCMM-12 (merged) |
+| `2026_06_18_150000_ph044_effect_package_item_target_sections` | Canonical Source Material | CCMM-12 |
+| `2026_06_23_100000_create_console_learning_tables` | Split | `show_console_baselines` → CCMM-12; `console_learning_snapshots` → LS-EXT-03 |
+
+### 4.4 `backend/database/migrations/` — Live Stage extension
+
+| File | Classification |
+|------|----------------|
+| `2026_06_10_134252_create_permission_tables` | Live Stage Extension |
+| `2026_06_11_110500_create_soundchecks_table` | Live Stage Extension |
+| `2026_06_11_110600_create_readiness_records_table` | Live Stage Extension |
+| `2026_06_12_100000_create_runtime_action_domain_tables` | Live Stage Extension (runtime) |
+| `2026_06_13_100000_create_runtime_event_domain_tables` | Runtime Only |
+| `2026_06_14_100000_create_runtime_dispatch_domain_tables` | Runtime Only |
+| `2026_06_15_100000_create_integration_device_tables` | Live Stage Extension |
+| `2026_06_16_100000_create_performance_device_assignments_table` | Live Stage Extension |
 
 ---
 
-## 12. Recovery tooling authoring (PH062 scope)
+## 5. Duplicate migration resolution plan
 
-| Artefact | Location | Purpose |
-|----------|----------|---------|
-| `cloud_recovery_entity_map` migration | `database/migrations/recovery/` | ID remap audit |
-| Import command stubs | `server/app/Console/Commands/Recovery/` | PH063 execution |
-| Validation command | `server/app/Console/Commands/Recovery/ValidateCcmmSchema.php` | Gate 3 automation |
+### 5.1 Duplicate entities (shared tables in both `server/` and `backend/`)
 
-Import commands are **stubbed** in PH062 — implementation body executes under PH063 with Gate 2 sign-off.
+| Entity | server/ fork | backend/ fork | Resolution |
+|--------|-------------|---------------|------------|
+| `bands` | `130000` | `m2` | CCMM-01 sole authority; both forks retired |
+| `users` | `0001` + `133000` | `0001` | CCMM-04 merged CREATE; both retired |
+| `people` + children | `131000` | `110000`, `200000` | CCMM-03 merged; all retired |
+| `instrument_reference` | `131000` | `110000` | CCMM-02 |
+| `songs` | `160000`, `120100` | `m6`, `100300`, `120000` | CCMM-05 merged columns |
+| `charts`, `song_instrument_parts` | `160000` | `m9`, `100500`, `240000` | CCMM-06 merged |
+| `song_moods`, etc. | `220100` | `220000` | CCMM-02 |
+| Laravel infra | `0001_*` | `0001_*` | CCMM-00 |
 
----
+### 5.2 Conflicting migrations
 
-## 13. Gates (authoring vs execution)
+| Conflict | Nature | Resolution |
+|----------|--------|------------|
+| `users` skeleton vs portal reconcile | server `0001` lacks `public_id`; `133000` alters | CCMM-04 **CREATE** full schema on fresh Cloud |
+| `charts.import_batch_id` | Column without FK in server | CCMM-06 creates `import_batches` first, then FK |
+| `invite_links` vs `person_invitations` | Competing onboarding models | Quarantine invite; CCMM-11 only |
+| PH059 Part B vs PH061A | Effects/baselines listed LS-only in PH059 | PH061A wins — CCMM-12 Shared CCMM |
+| `effect_library_*` vs `effects` | Duplicate catalogues | Operator merge decision before CCMM-12 author |
 
-| Gate | Requirement | Enables |
-|------|-------------|---------|
-| **PH062-A** | Track A migration files merged to `main` | Local fresh migrate test |
-| **PH062-B** | Fresh migrate test pass on PostgreSQL | Operator review for Gate 2 |
-| **Gate 2** (PH061) | Operator sign-off on recovery plan + PH062-A/B evidence | F0 provision |
-| **Gate 3** | Schema validation on **isolated Cloud DB** | F4 data import |
-| **PH062-C** | Track B files authored (optional) | Track B migrate after Gate 4 |
+### 5.3 Supersession rule
 
-**PH062 completion ≠ production recovery.** Production migrate requires Gate 2 + isolated cluster.
-
----
-
-## 14. PH063 handoff
-
-PH063 — **CCMM Migration Execution Runbook** — will cover:
-
-1. F0–F6 step-by-step operator commands  
-2. Data import batch execution  
-3. File migration to Spaces  
-4. Gate 3–6 evidence templates  
-5. Live Stage realignment (LS-1–LS-7)  
-6. Rollback runbook per PH061 §9  
+1. New shared DDL **only** in `database/migrations/ccmm/` (repo root).  
+2. Existing fork marked **Retired Ownership** — moved to `_archived_ccmm_forks/` or documented in README; **never deleted**.  
+3. `migrations` table on fresh Cloud records **only** CCMM paths — no fork filenames.  
+4. Column drift: CCMM manifest wins; reference migration is **diff input only**.
 
 ---
 
-## 15. Operator decisions required
+## 6. Live Stage extension boundary
+
+### 6.1 Outside CCMM (never on Cloud Database)
+
+| Category | Tables / concepts | Rationale |
+|----------|-------------------|-----------|
+| **Learning ephemeral** | `console_learning_snapshots` | Pre-baseline capture; promote to `show_console_baselines` for durability |
+| **Connectivity** | `integration_devices`, `integration_connection_profiles` | Show-day bridge endpoints; offline runtime |
+| **Performance binding** | `performance_device_assignments` | FK to integration devices; not show-prep asset |
+| **Runtime execution** | `runtime_*` | Live cue/action execution state during performance |
+| **Operational** | `soundchecks`, `readiness_records` | Human process gates; local show day |
+| **OSC / telemetry** | `live_fader_state`, `live_meter_state`, `live_mute_state`, `live_connection_state`, `live_heartbeat_state` | Never canonical rows — bridge cache only |
+| **Transport** | `live_transport_state` | Ableton authority — external to X32 DB |
+
+### 6.2 Inside CCMM but JSON-document pattern
+
+Channel, bus, matrix, DCA, routing, monitor send matrix — **not tables**. Stored in `show_console_baselines.baseline_json` per PH043/PH061A.
+
+### 6.3 Parity rule
+
+Live Stage Database = **CCMM-00–12 identical** + **LS-EXT** applied after parity verification (PH061 §11). Cloud Database = **CCMM-00–12** + **CCMM-11** + **RECOVERY** — no LS-EXT.
+
+---
+
+## 7. X32 package definition (CCMM-12)
+
+### 7.1 Included entities
+
+| Entity | Role |
+|--------|------|
+| `effect_definitions` | Package member identity |
+| `effect_packages` | Named musical FX packages |
+| `effect_package_items` | Ordered package membership |
+| `song_effect_assignments` | Song ↔ package intent |
+| `effects` | X32 algorithm reference catalogue |
+| `effect_parameters` | Algorithm parameter definitions |
+| `effect_package_types` | Package type enum |
+| `effect_package_item_parameters` | Per-item parameter overrides |
+| `effect_package_item_target_sections` | Routing section metadata |
+| `show_console_baselines` | Show-scoped console configuration document |
+| `mix_moves` | **Placeholder** — DOMAIN_MODEL M5; no DDL until schema defined |
+
+### 7.2 Explicitly excluded
+
+| Excluded | Reason |
+|----------|--------|
+| `console_learning_snapshots` | Ephemeral learn — LS-EXT-03 |
+| `integration_devices` | Connection state — LS-EXT-01 |
+| `performance_device_assignments` | Show-day binding — LS-EXT-02 |
+| All `live_*` OSC state | Runtime only |
+| Normalized `channels`, `buses`, `routing` tables | JSON-in-baseline strategy |
+| X32 scene/snippet recall operations | OSC commands — not DB entities |
+| `effect_library_*` | Pending operator merge/quarantine decision |
+
+### 7.3 JSON baseline strategy
+
+| Aspect | Rule |
+|--------|------|
+| **Storage** | `show_console_baselines.baseline_json` (JSONB) |
+| **Content** | `configuration.*` (channels, buses, identity), `routing.*` (PH042), learned metadata |
+| **Promotion** | Learn on desk → `console_learning_snapshots` (LS) → operator save → `show_console_baselines` (CCMM) |
+| **Sync** | Row replicates Cloud ↔ Live Stage; JSON is the document payload |
+| **Versioning** | PH054 checkout columns **not in CCMM v1** — future follow-up |
+| **Size risk** | Monitor JSONB size; no normalization unless operator reverses PH061A decision |
+
+### 7.4 CCMM-12 internal order (authoring)
+
+```text
+effect_package_types → effects → effect_parameters → effect_definitions
+  → effect_packages → effect_package_items → effect_package_item_*
+  → song_effect_assignments
+show_console_baselines (after shows)
+mix_moves — blocked
+```
+
+---
+
+## 8. Migration naming standard
+
+### 8.1 Repository layout (authoritative path — PH063)
+
+```text
+/database/migrations/ccmm/       ← Shared CCMM packages (repo root)
+/database/migrations/recovery/   ← Recovery audit tables
+/database/migrations/ls-ext/     ← Live Stage extension (backend loads)
+/database/seeders/ccmm/          ← Governed reference seeds
+```
+
+### 8.2 Package naming
+
+| Pattern | Example |
+|---------|---------|
+| Documentation | `CCMM-{NN}` where NN = 00–12, plus `RECOVERY`, `LS-EXT-{NN}` |
+| Build phase | `B{N}` maps to `CCMM-{NN}` per §3 |
+
+### 8.3 Migration file naming
+
+```text
+{YYYY}_{MM}_{DD}_{HHMMSS}_ccmm{NN}_{slug}.php
+```
+
+| Segment | Rule |
+|---------|------|
+| Timestamp | Strict chronological order within package |
+| `ccmm{NN}` | Two-digit package: `ccmm00` … `ccmm12` |
+| `slug` | `create_{table}_table`, `seed_{name}`, `extend_{table}_{purpose}` |
+| LS-EXT | `ls_ext_{NN}_{slug}.php` |
+| Recovery | `recovery_{slug}.php` |
+
+### 8.4 Ownership tagging
+
+Every CCMM migration file header comment (PH063):
+
+```php
+// @ccmm-package CCMM-05
+// @ccmm-ownership Shared CCMM
+// @ccmm-supersedes backend/2026_06_10_140100_m6_create_songs_table.php
+// @ccmm-authority docs/PH059_CLOUD_CANONICAL_MIGRATION_MANIFEST.md#A12
+```
+
+### 8.5 Drift prevention
+
+| Rule | Enforcement |
+|------|-------------|
+| No shared DDL outside `database/migrations/ccmm/` | Code review + CI path check |
+| CCMM change before migration file | §9 process |
+| No `Schema::create` for CCMM tables in `server/` or `backend/` | Lint rule (PH063) |
+| Manifest diff required on PR | `ValidateCcmmSchema` command |
+
+---
+
+## 9. CCMM change process
+
+```text
+1. Proposal        — Issue / governance prompt describing domain need
+2. Governance      — Review against DOMAIN_MODEL, DATA_ARCHITECTURE, DATABASE_ARCHITECTURE
+3. CCMM update     — Amend PH059 (or governed addendum); DECISION_LOG entry
+4. Authoring plan  — Update PH062 package mapping if packages affected
+5. Migration       — PH063 authors PHP in database/migrations/ccmm/ only
+6. Cloud           — Fresh migrate or governed ALTER package on isolated DB
+7. Live Stage      — Parity apply + LS-EXT review if boundary crossed
+```
+
+| Step | Authority | Blocks |
+|------|-----------|--------|
+| Proposal | Operator / domain owner | — |
+| Governance review | DECISION_LOG + charter stack | Step 3 |
+| CCMM update | PH059 manifest | Step 5 |
+| Migration authoring | PH062 + PH063 | Production migrate |
+| Cloud apply | PH061 Gates 2–3 | Data import |
+| Live Stage parity | PH061 §11 | PH054 sync |
+
+**No direct migration creation without CCMM change.** Emergency production DDL is **forbidden** per AGENTS.md Production Safety Rules.
+
+---
+
+## 10. PH063 readiness assessment
+
+### Classification: **Ready with Conditions**
+
+| Criterion | Status |
+|-----------|--------|
+| CCMM manifest complete (PH059) | ✅ |
+| Gap analysis complete (PH060) | ✅ |
+| Recovery execution plan (PH061) | ✅ |
+| X32 domain classified (PH061A) | ✅ |
+| Migration authoring blueprint (PH062) | ✅ |
+| Operator Gate 2 sign-off | ❌ Blocker for production |
+| Fresh isolated Cloud cluster | ❌ Blocker for production |
+| `database/migrations/ccmm/` exists | ❌ PH063 deliverable |
+| `mix_moves` schema defined | ❌ CCMM-12 placeholder only |
+| `effect_library_*` merge decision | ❌ Operator decision |
+| PH061B console templates | ❌ Optional; not blocking core |
+
+### PH063 scope (when authorised)
+
+1. Create `database/migrations/ccmm/` CCMM-00–12 PHP files  
+2. Create `database/migrations/recovery/` entity map  
+3. Archive `server/` forks to `_archived_ccmm_forks/`  
+4. Wire migration loader in `/server/` and `/backend/`  
+5. `ValidateCcmmSchema` + `CcmmFreshMigrateTest`  
+6. **Still no production migrate** until PH061 Gate 2 + isolated cluster  
+
+### Blockers summary
+
+| # | Blocker | Owner |
+|---|---------|-------|
+| 1 | Operator Gate 2 (PH061) | Operator |
+| 2 | Migration PHP files not written | PH063 |
+| 3 | `effect_library_*` disposition | Operator |
+| 4 | `mix_moves` M5 schema undefined | Domain / M5 |
+| 5 | Repo-root CCMM path wiring decision | Operator (default: repo root) |
+
+---
+
+## 11. Operator decisions required
 
 | # | Decision | Default |
 |---|----------|---------|
-| 1 | Repo-root `database/migrations/ccmm/` vs `server/database/migrations/ccmm/` | **Repo root** (shared) |
-| 2 | Laravel infra in `0001_*` vs CCMM-00 consolidated | **Keep `0001_*`** |
-| 3 | Approve Track A authoring start without Gate 2 | **Yes** — Git only |
-| 4 | Track B parallel authoring | **Planning drafts only** |
-| 5 | Archive vs delete `server/` forks | **Archive** |
-| 6 | Spatie permissions — CCMM-00 or LS-EXT | **LS-EXT** (Live Stage) |
-| 7 | PHPUnit CCMM fresh migrate in CI | **Yes** when files land |
+| 1 | Repo-root `database/migrations/ccmm/` | **Approved** |
+| 2 | CCMM-12 in initial Cloud build (B12) vs post-Gate 4 | **Include B12** for show prep parity |
+| 3 | `effect_library_*` merge into `effects` or quarantine | **Merge** |
+| 4 | Laravel infra in `server/0001_*` vs CCMM-00 consolidated | **Keep `0001_*`** |
+| 5 | Spatie permissions — Cloud or LS-EXT | **LS-EXT** |
+| 6 | Authorise PH063 implementation start | **After this plan merge** |
+| 7 | B12 before or after B11 invitations | **B12 before B11** |
 
 ---
 
-## 16. Risks
+## 12. Canonical migration path (summary)
 
-| Risk | Mitigation |
-|------|------------|
-| CCMM file diverges from PH059 | Schema diff script; manifest is authority |
-| Accidental migrate on production `defaultdb` | Gate 2; `.env` cluster name check in validation command |
-| Backend M-series still runs on Cloud | Remove shared paths from backend Cloud deploy |
-| Track B creep blocks Track A | Separate directories; Track B excluded from default migrate |
-| users CREATE breaks existing server bootstrap | Fresh Cloud only until reconcile tooling |
-
----
-
-## 17. Deliverables checklist
-
-| # | Deliverable | Status |
-|---|-------------|--------|
-| 1 | `database/migrations/ccmm/README.md` | PH062 implementation |
-| 2 | CCMM-01–11 migration files | PH062 implementation |
-| 3 | `database/migrations/recovery/` entity map | PH062 implementation |
-| 4 | Archived `server/` forks | PH062 implementation |
-| 5 | `ValidateCcmmSchema` command | PH062 implementation |
-| 6 | `CcmmFreshMigrateTest` | PH062 implementation |
-| 7 | This authoring plan | **Complete** |
+| Path | Role |
+|------|------|
+| `database/migrations/ccmm/` | **Sole authority** for shared schema DDL |
+| `database/migrations/recovery/` | Cloud recovery audit |
+| `database/migrations/ls-ext/` | Live Stage superset |
+| `server/database/migrations/_archived_ccmm_forks/` | Retired forks — audit only |
+| `backend/database/migrations/` (M-series) | Retired ownership — audit only after realignment |
 
 ---
 
-End of PH062 — authoring plan; implementation files follow in same phase
+End of PH062 — blueprint only; no migration files authored

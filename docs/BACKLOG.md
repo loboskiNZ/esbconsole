@@ -11,8 +11,8 @@ Items are listed in priority order unless noted. Implementation phases require e
 
 | ID | Title | Status | Depends on | Notes |
 |----|-------|--------|------------|-------|
-| **PH062-impl** | CCMM Migration File Implementation | Queued | PH062 plan | Author `database/migrations/ccmm/` Track A files, archive server forks, fresh-migrate validation test. |
-| **PH063** | CCMM Migration Execution Runbook | Queued | PH062-impl, Gate 2 | Operator F0–F6 commands, data import, Gates 3–6 evidence. No production until Gate 2 sign-off. |
+| **PH062-impl** | CCMM Migration File Implementation | Queued | PH062 plan | Author `database/migrations/ccmm/` per blueprint §2–8; archive forks; validation tests. **Blueprint complete — no files yet.** |
+| **PH063** | CCMM Migration Execution Runbook | Queued | PH062-impl, Gate 2 | Operator F0–F6; Gates 3–6. Readiness: **Ready with Conditions** (PH062 §10). |
 | **PH061B** | Console Templates Domain | Queued | PH061A | Discover, classify, and define reusable console templates — relationship to `show_console_baselines`, `effect_packages`, and CCMM-12. Resolves PH061A operator decision: merge with baselines vs separate entity. |
 
 ---

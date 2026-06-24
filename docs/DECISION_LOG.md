@@ -671,29 +671,33 @@ Read-only investigation (2026-06-24) identified: shared `defaultdb` across Band 
 
 | ID | Decision | Rationale |
 |----|----------|-----------|
-| 226 | **PH062 is the migration authoring authority.** Defines file layout, package mapping (CCMM-00–11), naming, validation, and retirement of `server/` duplicate DDL. Document: `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md`. | Separates Git authoring from production execution |
-| 227 | **Canonical migration path:** repo-root `database/migrations/ccmm/` loaded by `/server/` (and `/backend/` after LS parity). Historical `server/` shared forks archived to `_archived_ccmm_forks/` — not deleted. | Single authority; ends PH060 duplicate fork |
-| 228 | **Track A (CCMM-00–11) authored first.** Track B (CCMM-12a–12c X32 domain) and Track C (LS-EXT superset) deferred per PH061A sequencing. | Core recovery not blocked by console domain |
-| 229 | **PH062 authorises migration files in Git only.** Production `php artisan migrate` against Cloud cluster requires PH061 Gate 2 + isolated DB — execution is PH063 runbook. | Production safety |
-| 230 | **`users` CCMM-04 is CREATE merged schema** on fresh Cloud (incl. `public_id`), not ALTER of skeleton. `charts.import_batch_id` FK enforced in CCMM-06 after `import_batches`. | Closes PH060 DRIFTED + PARTIAL gaps |
-| 231 | **`cloud_recovery_entity_map` authored** under `database/migrations/recovery/` before data import tooling. | PH061 §5.2 audit requirement |
-| 232 | **CCMM-11 `person_invitations` Cloud-only** — Live Stage parity apply excludes this table. | PH059 Part C workspace boundary |
+| 226 | **PH062 is the migration authoring blueprint.** CCMM (PH059) is the **sole schema authority** — no migration folder, application code, or production DB is authoritative for shared entities. Document: `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md`. | Ends PH060 duplicate-fork authority conflict |
+| 227 | **Canonical DDL path:** repo-root `database/migrations/ccmm/` (PH063). Historical `server/` and `backend/` shared forks → **Retired Ownership** archived, not deleted. | Single migration authority chain |
+| 228 | **Package authority:** CCMM-00–12 + RECOVERY + LS-EXT. CCMM-12 unified X32 console package (effects + baselines + `mix_moves` placeholder). PH061A supersedes PH059 Part B for effect/baseline tables. | Consolidates Track B into CCMM-12 |
+| 229 | **PH062 is blueprint only** — no migration PHP files, production DDL, or data migration in this phase. PH063 authors implementation files. | Production safety |
+| 230 | **Retirement strategy:** retire ownership not history; classify every `server/` and `backend/` migration per retirement matrix §4. | Forensic audit preserved |
+| 231 | **Naming standard:** `{timestamp}_ccmm{NN}_{slug}.php` with `@ccmm-package`, `@ccmm-ownership`, `@ccmm-supersedes` header tags. | Prevents future drift |
+| 232 | **CCMM change process:** Proposal → governance → CCMM update → PH062 amend → PH063 migration → Cloud → Live Stage parity. No direct migration without CCMM change. | Governed schema evolution |
+| 233 | **Cloud build order:** B0–B10 core → B12 X32 → BR recovery → B11 invitations. JSON baseline strategy for channel/bus/routing inside `show_console_baselines`. | PH061A document model |
+| 234 | **PH063 readiness: Ready with Conditions** — blueprint complete; blocked on Gate 2, migration file authoring, `effect_library_*` decision, `mix_moves` M5 schema. | Honest handoff gate |
 
-### PH062 — Package authority
+### PH062 — Ownership summary
 
-| Track | Packages | Authoring |
-|-------|----------|-----------|
-| A | CCMM-00 → CCMM-11 + RECOVERY | **Required** |
-| B | CCMM-12a → CCMM-12c | Deferred / draft only |
-| C | LS-EXT-01+ | After Live Stage CCMM parity |
+| Ownership | Count (approx.) |
+|-----------|-----------------|
+| Shared CCMM (incl. CCMM-12) | 46 tables + JSON document fields |
+| Cloud Extension | Laravel infra, `person_invitations`, `cloud_recovery_entity_map` |
+| Live Stage Extension | integration, learning snapshots, soundchecks, permissions |
+| Runtime Only | `runtime_*`, `live_*` |
+| Quarantined | `invite_links`, `invite_link_acceptances` |
 
 ### PH062 — Status
 
 | Field | Value |
 |-------|-------|
-| **Status** | Authoring plan complete — migration PHP files not yet written |
+| **Status** | Blueprint complete — **no migration files authored** |
 | **Document** | `docs/PH062_CCMM_MIGRATION_AUTHORING_PLAN.md` |
-| **Next** | Implement §17 deliverables → PH062-A gate → Operator Gate 2 → PH063 execution runbook |
+| **Next** | Operator decisions §11 → PH063 migration file implementation |
 
 ---
 
