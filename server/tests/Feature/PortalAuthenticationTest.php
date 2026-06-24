@@ -7,7 +7,6 @@ use App\Models\InviteLink;
 use App\Models\InviteLinkAcceptance;
 use App\Models\Person;
 use App\Models\User;
-use App\Support\OnboardingHumanCheck;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +30,6 @@ class PortalAuthenticationTest extends TestCase
             'username' => 'shadowplayer1',
             'password' => 'Password1!',
             'password_confirm' => 'Password1!',
-            'human_answer' => 8,
             'honeypot' => '',
             'first_name' => 'Ed',
             'middle_name' => 'J',
@@ -47,47 +45,66 @@ class PortalAuthenticationTest extends TestCase
         ], $overrides);
     }
 
-    private function postOnboarding(string $token, array $overrides = [], int $humanAnswer = 8): \Illuminate\Testing\TestResponse
+    private function postOnboarding(string $token, array $overrides = []): \Illuminate\Testing\TestResponse
     {
-        $this->withSession([
-            OnboardingHumanCheck::SESSION_KEY => [
-                'answer' => $humanAnswer,
-                'token_hash' => InviteLink::hashToken($token),
-            ],
-        ]);
-
-        return $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload(array_merge([
-            'human_answer' => $humanAnswer,
-        ], $overrides)));
+        return $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload($overrides));
     }
 
-    public function test_onboarding_human_check_rejects_wrong_answer(): void
+    public function test_invite_page_does_not_render_human_verification(): void
     {
         $token = $this->createInviteLinkToken();
 
-        $this->withSession([
-            OnboardingHumanCheck::SESSION_KEY => [
-                'answer' => 8,
-                'token_hash' => InviteLink::hashToken($token),
-            ],
-        ]);
+        $response = $this->get('/invite/'.$token);
 
-        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload([
-            'human_answer' => 99,
-        ]));
-
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors('human_answer');
-        $this->assertSame(0, User::count());
+        $response->assertOk();
+        $response->assertDontSee('Quick check', false);
+        $response->assertDontSee('humanCheckQuestion', false);
+        $response->assertDontSee('onboarding-human-answer', false);
+        $response->assertDontSee('That answer did not match', false);
     }
 
-    public function test_onboarding_human_check_accepts_correct_answer(): void
+    public function test_onboarding_submit_does_not_require_human_verification(): void
     {
         $token = $this->createInviteLinkToken();
 
-        $this->postOnboarding($token, [], 11)->assertOk();
+        $response = $this->postJson('/invite/'.$token.'/complete', $this->validOnboardingPayload());
 
-        $this->assertSame(1, User::count());
+        $response->assertOk();
+        $response->assertJsonMissingValidationErrors(['human_answer', 'human_check_proof']);
+    }
+
+    public function test_onboarding_completes_and_persists_through_login_cycle(): void
+    {
+        $token = $this->createInviteLinkToken();
+
+        $this->postOnboarding($token, [
+            'username' => 'persistplayer',
+            'email' => 'persist@example.com',
+            'stage_name' => 'Persist Player',
+            'city' => 'Christchurch',
+        ])->assertOk();
+
+        $person = Person::first();
+        $this->assertNotNull($person);
+        $this->assertSame('Christchurch', $person->city);
+
+        $this->post('/login', [
+            'username' => 'persistplayer',
+            'password' => 'Password1!',
+        ])->assertRedirect(route('studio'));
+        $this->assertAuthenticated();
+
+        $this->post('/logout')->assertRedirect('/');
+        $this->assertGuest();
+
+        $this->post('/login', [
+            'username' => 'persistplayer',
+            'password' => 'Password1!',
+        ])->assertRedirect(route('studio'));
+
+        $person->refresh();
+        $this->assertSame('Christchurch', $person->city);
+        $this->assertSame('persist@example.com', $person->email);
     }
 
     public function test_onboarding_requires_valid_invite(): void
@@ -399,5 +416,37 @@ class PortalAuthenticationTest extends TestCase
             'slug' => 'scaffold-vocals',
             'name' => 'Vocals',
         ]);
+    }
+
+    public function test_onboarding_username_check_reports_availability(): void
+    {
+        User::factory()->create(['username' => 'takenname']);
+
+        $this->postJson('/invite/check-username', ['username' => 'takenname'])
+            ->assertOk()
+            ->assertJson([
+                'available' => false,
+                'username' => 'takenname',
+            ]);
+
+        $this->postJson('/invite/check-username', ['username' => 'FreshName'])
+            ->assertOk()
+            ->assertJson([
+                'available' => true,
+                'username' => 'freshname',
+            ]);
+    }
+
+    public function test_onboarding_rejects_instrument_missing_from_database_catalog(): void
+    {
+        $token = $this->createInviteLinkToken();
+
+        InstrumentReference::query()->where('slug', 'scaffold-vocals')->delete();
+
+        $response = $this->postOnboarding($token);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('primary_instrument');
+        $this->assertSame(0, User::count());
     }
 }

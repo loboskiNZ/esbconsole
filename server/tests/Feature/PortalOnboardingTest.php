@@ -89,8 +89,9 @@ class PortalOnboardingTest extends TestCase
         $response->assertSee('instrument reference catalog', false);
         $response->assertSee('3–32 characters', false);
         $response->assertSee('8–50 characters', false);
-        $response->assertSee('Quick check', false);
-        $response->assertSee('humanCheckQuestion', false);
+        $response->assertDontSee('Quick check', false);
+        $response->assertDontSee('humanCheckQuestion', false);
+        $response->assertDontSee('onboarding-human-answer', false);
     }
 
     public function test_onboarding_scaffold_includes_back_navigation_and_weapon_refinements(): void

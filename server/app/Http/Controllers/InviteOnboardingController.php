@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\InviteLink;
 use App\Support\OnboardingBackgroundImages;
-use App\Support\OnboardingHumanCheck;
 use Illuminate\Http\Response;
 
 class InviteOnboardingController extends Controller
@@ -24,16 +23,9 @@ class InviteOnboardingController extends Controller
             );
         }
 
-        $humanCheck = OnboardingHumanCheck::issue();
-        OnboardingHumanCheck::store($humanCheck, $token);
-
         return view('onboarding.invite', [
             'token' => $token,
             'backgroundImages' => OnboardingBackgroundImages::resolve(),
-            'humanCheck' => [
-                'left' => $humanCheck['left'],
-                'right' => $humanCheck['right'],
-            ],
         ]);
     }
 }

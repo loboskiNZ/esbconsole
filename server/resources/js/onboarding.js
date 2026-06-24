@@ -1,6 +1,8 @@
 import {
     normalizeUsername,
+    validateCountrySelection,
     validateEmail,
+    validateInstrumentSlug,
     validatePassword,
     validateRequired,
     validateUsername,
@@ -44,7 +46,7 @@ const INTRO_CARDS = [
 ];
 
 const STEP_FIELDS = {
-    2: ['username', 'password', 'passwordConfirm', 'humanVerification'],
+    2: ['username', 'password', 'passwordConfirm'],
     3: ['firstName', 'middleName', 'surname'],
     4: ['stageName'],
     5: ['weapons'],
@@ -70,17 +72,49 @@ const FUTURE_TASKS = [
     'Touring information',
 ];
 
+const FIELD_LABELS = {
+    username: 'Username',
+    password: 'Password',
+    passwordConfirm: 'Password confirmation',
+    firstName: 'First name',
+    middleName: 'Middle name',
+    surname: 'Surname',
+    stageName: 'Stage name',
+    weapons: 'Primary weapon',
+    email: 'Email',
+    country: 'Country',
+    city: 'City',
+    telephone: 'Telephone',
+};
+
+const SERVER_FIELD_META = {
+    username: { step: 2, field: 'username', label: 'Username' },
+    password: { step: 2, field: 'password', label: 'Password' },
+    password_confirm: { step: 2, field: 'passwordConfirm', label: 'Password confirmation' },
+    first_name: { step: 3, field: 'firstName', label: 'First name' },
+    middle_name: { step: 3, field: 'middleName', label: 'Middle name' },
+    surname: { step: 3, field: 'surname', label: 'Surname' },
+    stage_name: { step: 4, field: 'stageName', label: 'Stage name' },
+    primary_instrument: { step: 5, field: 'weapons', label: 'Primary weapon' },
+    additional_instruments: { step: 5, field: 'weapons', label: 'Additional weapons' },
+    email: { step: 6, field: 'email', label: 'Email' },
+    country: { step: 6, field: 'country', label: 'Country' },
+    country_iso3: { step: 6, field: 'country', label: 'Country' },
+    city: { step: 6, field: 'city', label: 'City' },
+    telephone: { step: 6, field: 'telephone', label: 'Telephone' },
+};
+
 export { SCAFFOLD_INSTRUMENTS, SCAFFOLD_COUNTRIES };
 
-export function portalOnboarding(token = '', backgroundImages = [], humanCheck = { left: 2, right: 2 }) {
+export function portalOnboarding(token = '', backgroundImages = []) {
     return {
         token,
-        humanCheck,
         step: 1,
         fieldIndex: 0,
         introCardIndex: 0,
         introCardsVisible: false,
         fieldError: '',
+        submissionErrors: [],
         submitting: false,
         onboardingComplete: false,
         completionMessage: '',
@@ -103,7 +137,6 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
             username: '',
             password: '',
             passwordConfirm: '',
-            humanAnswer: '',
             firstName: '',
             middleName: '',
             surname: '',
@@ -171,10 +204,6 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
             );
         },
 
-        get humanCheckQuestion() {
-            return `What is ${this.humanCheck.left} + ${this.humanCheck.right}?`;
-        },
-
         get telephoneHint() {
             return this.form.countryPhoneCode
                 ? `Include your number — country code ${this.form.countryPhoneCode} is already known.`
@@ -226,6 +255,7 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
 
         goBack() {
             this.fieldError = '';
+            this.submissionErrors = [];
 
             if (this.step === 1 && this.introCardIndex > 0) {
                 this.introCardIndex -= 1;
@@ -277,8 +307,42 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
 
         beginJourney() {
             this.fieldError = '';
+            this.submissionErrors = [];
             this.step = 2;
             this.fieldIndex = 0;
+        },
+
+        fieldMessage(field) {
+            switch (field) {
+                case 'username':
+                    return validateUsername(this.form.username);
+                case 'password':
+                    return validatePassword(this.form.password);
+                case 'passwordConfirm':
+                    return this.form.password !== this.form.passwordConfirm
+                        ? 'Passwords must match.'
+                        : '';
+                case 'firstName':
+                    return validateRequired(this.form.firstName, 'First name');
+                case 'middleName':
+                    return '';
+                case 'surname':
+                    return validateRequired(this.form.surname, 'Surname');
+                case 'stageName':
+                    return validateRequired(this.form.stageName, 'Stage name');
+                case 'weapons':
+                    return validateInstrumentSlug(this.form.primaryInstrument, this.scaffoldInstruments);
+                case 'email':
+                    return validateEmail(this.form.email);
+                case 'country':
+                    return validateCountrySelection(this.form.country, this.form.countryIso3);
+                case 'telephone':
+                    return validateRequired(this.form.telephone, 'Telephone number');
+                case 'city':
+                    return validateRequired(this.form.city, 'City');
+                default:
+                    return '';
+            }
         },
 
         validateCurrentField() {
@@ -289,72 +353,122 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
             }
 
             const field = this.currentField;
+            this.fieldError = this.fieldMessage(field);
 
-            switch (field) {
-                case 'username':
-                    this.fieldError = validateUsername(this.form.username);
-
-                    if (!this.fieldError) {
-                        this.form.username = normalizeUsername(this.form.username);
-                    }
-                    break;
-                case 'password':
-                    this.fieldError = validatePassword(this.form.password);
-                    break;
-                case 'passwordConfirm':
-                    if (this.form.password !== this.form.passwordConfirm) {
-                        this.fieldError = 'Passwords must match.';
-                    }
-                    break;
-                case 'humanVerification': {
-                    const answer = String(this.form.humanAnswer).trim();
-                    if (answer === '') {
-                        this.fieldError = 'Enter the answer to continue.';
-                    } else if (!/^\d+$/.test(answer)) {
-                        this.fieldError = 'Enter a whole number.';
-                    }
-                    break;
-                }
-                case 'firstName':
-                    this.fieldError = validateRequired(this.form.firstName, 'First name');
-                    break;
-                case 'middleName':
-                    break;
-                case 'surname':
-                    this.fieldError = validateRequired(this.form.surname, 'Surname');
-                    break;
-                case 'stageName':
-                    this.fieldError = validateRequired(this.form.stageName, 'Stage name');
-                    break;
-                case 'weapons':
-                    if (!this.form.primaryInstrument) {
-                        this.fieldError = 'Choose your primary weapon.';
-                    }
-                    break;
-                case 'email':
-                    this.fieldError = validateEmail(this.form.email);
-                    break;
-                case 'country':
-                    if (!this.form.country || !this.form.countryIso3) {
-                        this.fieldError = 'Select your country from the list.';
-                    }
-                    break;
-                case 'telephone':
-                    this.fieldError = validateRequired(this.form.telephone, 'Telephone number');
-                    break;
-                case 'city':
-                    this.fieldError = validateRequired(this.form.city, 'City');
-                    break;
-                default:
-                    break;
+            if (!this.fieldError && field === 'username') {
+                this.form.username = normalizeUsername(this.form.username);
             }
 
             return this.fieldError === '';
         },
 
-        continueField() {
+        collectAllFieldErrors() {
+            const errors = [];
+
+            for (const [step, fields] of Object.entries(STEP_FIELDS)) {
+                for (const field of fields) {
+                    const message = this.fieldMessage(field);
+
+                    if (message) {
+                        errors.push({
+                            step: Number(step),
+                            field,
+                            label: FIELD_LABELS[field] ?? field,
+                            message,
+                        });
+                    }
+                }
+            }
+
+            return errors;
+        },
+
+        jumpToProblem(problem) {
+            if (!problem) {
+                return;
+            }
+
+            this.step = problem.step;
+            const fields = STEP_FIELDS[problem.step] ?? [];
+            const fieldIndex = fields.indexOf(problem.field);
+
+            this.fieldIndex = fieldIndex >= 0 ? fieldIndex : 0;
+            this.fieldError = problem.message;
+            this.onboardingComplete = false;
+        },
+
+        applySubmissionErrors(payload) {
+            const errors = Object.entries(payload.errors ?? {}).map(([field, messages]) => {
+                const meta = SERVER_FIELD_META[field] ?? { step: 8, field: null, label: field };
+
+                return {
+                    step: meta.step,
+                    field: meta.field,
+                    label: meta.label,
+                    message: messages[0] ?? 'This field needs attention.',
+                };
+            });
+
+            if (errors.length === 0) {
+                errors.push({
+                    step: 8,
+                    field: null,
+                    label: 'Registration',
+                    message: payload.message
+                        ?? 'We could not complete your onboarding. Please review your details and try again.',
+                });
+            }
+
+            this.submissionErrors = errors;
+            this.fieldError = errors[0].message;
+            this.jumpToProblem(errors[0]);
+        },
+
+        async checkUsernameAvailable() {
+            const username = normalizeUsername(this.form.username);
+
+            if (!username) {
+                return { available: false, message: 'Username is required.' };
+            }
+
+            try {
+                const response = await fetch('/invite/check-username', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                    },
+                    body: JSON.stringify({ username }),
+                });
+
+                const payload = await response.json().catch(() => ({}));
+
+                return {
+                    available: Boolean(payload.available),
+                    message: payload.message ?? (payload.available ? '' : 'That username is already taken.'),
+                };
+            } catch {
+                return {
+                    available: true,
+                    message: '',
+                };
+            }
+        },
+
+        async continueField() {
             if (!this.validateCurrentField()) {
                 return;
+            }
+
+            if (this.currentField === 'username') {
+                const availability = await this.checkUsernameAvailable();
+
+                if (!availability.available) {
+                    this.fieldError = availability.message || 'That username is already taken.';
+                    return;
+                }
             }
 
             if (this.fieldIndex < this.currentFields.length - 1) {
@@ -367,6 +481,7 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
 
         advanceStep() {
             this.fieldError = '';
+            this.submissionErrors = [];
             this.fieldIndex = 0;
 
             if (this.step < 8) {
@@ -455,12 +570,23 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
                 return;
             }
 
+            const clientErrors = this.collectAllFieldErrors();
+
+            if (clientErrors.length > 0) {
+                this.submissionErrors = clientErrors;
+                this.fieldError = clientErrors[0].message;
+                this.jumpToProblem(clientErrors[0]);
+                return;
+            }
+
             this.fieldError = '';
+            this.submissionErrors = [];
             this.submitting = true;
 
             try {
                 const response = await fetch(`/invite/${this.token}/complete`, {
                     method: 'POST',
+                    credentials: 'same-origin',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
@@ -470,7 +596,6 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
                         username: this.form.username,
                         password: this.form.password,
                         password_confirm: this.form.passwordConfirm,
-                        human_answer: Number.parseInt(String(this.form.humanAnswer).trim(), 10),
                         honeypot: this.form.honeypot,
                         first_name: this.form.firstName,
                         middle_name: this.form.middleName,
@@ -489,10 +614,7 @@ export function portalOnboarding(token = '', backgroundImages = [], humanCheck =
                 const payload = await response.json().catch(() => ({}));
 
                 if (! response.ok) {
-                    this.fieldError = payload.message
-                        ?? payload.errors?.username?.[0]
-                        ?? payload.errors?.password?.[0]
-                        ?? 'We could not complete your onboarding. Please review your details and try again.';
+                    this.applySubmissionErrors(payload);
                     return;
                 }
 

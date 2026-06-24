@@ -54,8 +54,28 @@ export function validateEmail(value) {
     return '';
 }
 
+export function validateInstrumentSlug(value, instruments) {
+    if (!value) {
+        return 'Choose your primary weapon.';
+    }
+
+    if (!instruments.some((instrument) => instrument.id === value)) {
+        return 'That instrument is not available. Choose another weapon.';
+    }
+
+    return '';
+}
+
+export function validateCountrySelection(country, countryIso3) {
+    if (!country?.trim() || !countryIso3 || countryIso3.length !== 3) {
+        return 'Select your country from the list.';
+    }
+
+    return '';
+}
+
 export function validateRequired(value, label) {
-    if (!value.trim()) {
+    if (!String(value ?? '').trim()) {
         return `${label} is required.`;
     }
 

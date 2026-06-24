@@ -7,7 +7,7 @@
 
 @section('body-attributes')
     class="esb-portal esb-portal--onboarding antialiased"
-    x-data="portalOnboarding(@js($token), @js($backgroundImages), @js($humanCheck))"
+    x-data="portalOnboarding(@js($token), @js($backgroundImages))"
     x-cloak
 @endsection
 
@@ -194,23 +194,6 @@
                         >
                     </div>
 
-                    {{-- Human verification --}}
-                    <div x-show="step === 2 && currentField === 'humanVerification'">
-                        <p class="esb-portal__label mb-4">Quick check — are you human?</p>
-                        <label class="esb-portal__label mb-3 block" for="onboarding-human-answer" x-text="humanCheckQuestion"></label>
-                        <input
-                            id="onboarding-human-answer"
-                            type="number"
-                            inputmode="numeric"
-                            pattern="[0-9]*"
-                            class="esb-portal__input"
-                            x-model="form.humanAnswer"
-                            autocomplete="off"
-                            @keydown.enter.prevent="continueField()"
-                        >
-                        <p class="esb-onboarding__rules mt-3">A simple sum helps keep automated sign-ups out. No third-party services required.</p>
-                    </div>
-
                     {{-- Legal name fields --}}
                     <div x-show="step === 3 && currentField === 'firstName'">
                         <label class="esb-portal__label mb-3 block" for="onboarding-first-name">First name</label>
@@ -365,6 +348,22 @@
                         class="esb-onboarding__error mt-4"
                         role="alert"
                     ></p>
+                    <ul
+                        class="esb-onboarding__error-list mt-4 space-y-2"
+                        x-show="submissionErrors.length > 1"
+                        role="alert"
+                    >
+                        <template x-for="error in submissionErrors" :key="`${error.step}-${error.label}`">
+                            <li>
+                                <button
+                                    type="button"
+                                    class="esb-onboarding__error-link"
+                                    @click="jumpToProblem(error)"
+                                    x-text="`${error.label}: ${error.message}`"
+                                ></button>
+                            </li>
+                        </template>
+                    </ul>
 
                     <div class="mt-8">
                         <button
@@ -429,6 +428,21 @@
                             x-show="fieldError"
                             x-text="fieldError"
                         ></p>
+                        <ul
+                            class="esb-onboarding__error-list mt-4 space-y-2 text-left"
+                            x-show="submissionErrors.length > 1"
+                        >
+                            <template x-for="error in submissionErrors" :key="`${error.step}-${error.label}`">
+                                <li>
+                                    <button
+                                        type="button"
+                                        class="esb-onboarding__error-link"
+                                        @click="jumpToProblem(error)"
+                                        x-text="`${error.label}: ${error.message}`"
+                                    ></button>
+                                </li>
+                            </template>
+                        </ul>
                         <button
                             type="button"
                             class="esb-portal__button esb-portal__button--primary mt-8 w-full max-w-xs mx-auto"
