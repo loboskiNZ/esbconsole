@@ -49,9 +49,10 @@ class CloudStabiliseCommand extends Command
             if ($dryRun) {
                 $this->info('[dry-run] Would run additive stabilisation migration on target connection');
             } else {
+                $migrationPath = '../database/migrations/ccmm/2026_06_25_001400_cloud_stabilisation_additive.php';
                 $exit = Artisan::call('migrate', [
                     '--database' => $target,
-                    '--path' => dirname(base_path()).'/database/migrations/ccmm/2026_06_25_001400_cloud_stabilisation_additive.php',
+                    '--path' => $migrationPath,
                     '--force' => true,
                 ]);
                 $this->line(Artisan::output());

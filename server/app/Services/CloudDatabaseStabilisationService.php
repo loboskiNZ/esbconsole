@@ -138,6 +138,7 @@ class CloudDatabaseStabilisationService
 
             $inserted = 0;
             $skipped = 0;
+            $payloads = [];
 
             foreach ($rows as $row) {
                 $payload = (array) $row;
@@ -155,16 +156,18 @@ class CloudDatabaseStabilisationService
                     continue;
                 }
 
-                if (! $dryRun) {
-                    DB::connection($targetConnection)->table($table)->insert($payload);
-                    $inserted++;
-                } else {
-                    $inserted++;
-                }
+                $payloads[] = $payload;
             }
 
-            if (! $dryRun && $inserted > 0) {
+            if (! $dryRun && $payloads !== []) {
+                foreach (array_chunk($payloads, 100) as $chunk) {
+                    DB::connection($targetConnection)->table($table)->insertOrIgnore($chunk);
+                }
+
+                $inserted = count($payloads);
                 $this->refreshSequence($targetConnection, $table);
+            } elseif ($dryRun) {
+                $inserted = count($payloads);
             }
 
             $summary[$table] = [

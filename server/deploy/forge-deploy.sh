@@ -61,6 +61,10 @@ if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
   $FORGE_PHP artisan key:generate --force
 fi
 
+if $FORGE_PHP artisan list 2>/dev/null | grep -q 'cloud:stabilise'; then
+  $FORGE_PHP artisan cloud:stabilise --mark-migrations --target=pgsql
+fi
+
 npm ci || npm install
 npm run build
 
