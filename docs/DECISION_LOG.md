@@ -884,4 +884,25 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH069
+## PH067C — Second Local Recovery Rehearsal
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 276 | **PH067C second rehearsal PASS for data recovery** — batch `62d2bef1-f1d2-4dd3-89b3-a2513c6a3094`; all domain row counts match; 0 import errors. | PH069 corrections validated |
+| 277 | **Deferred FK replay complete** — 1/1 band director FK applied; RD-01 closed. | G4-13 PASS |
+| 278 | **No band cascade failure** — `dependency_block_report.bands_blocked=false`; RD-02 closed. | G4-2/G4-3 PASS |
+| 279 | **Effect domain 520/520 imported** with 0 column drift errors; RD-03 closed. | G4-14 PASS |
+| 280 | **Gate 4 rehearsal: CONDITIONAL PASS** — file phase blocked on 258 `required_missing` charts (correctly classified); not tooling failure. | RD-04 operator content gap |
+| 281 | **Cloud R5/R6 remains blocked** pending Gate 2 + chart file sync to local root. | PH065 |
+
+### PH067C — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Rehearsal complete — CONDITIONAL PASS |
+| **Document** | `docs/PH067C_SECOND_LOCAL_RECOVERY_REHEARSAL_REPORT.md` |
+| **Next** | Operator Gate 2 + chart library sync before Cloud recovery |
+
+---
+
+End of Decision Log — PH067C
