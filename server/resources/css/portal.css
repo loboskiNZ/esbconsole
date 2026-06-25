@@ -1472,6 +1472,43 @@
     padding-left: 1rem;
 }
 
+.esb-studio__band-form-grid {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.esb-studio__band-textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.esb-studio__band-upload-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.esb-studio__band-asset-preview {
+    display: block;
+    width: 7rem;
+    height: 7rem;
+    object-fit: cover;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(233, 203, 160, 0.18);
+    background: rgba(12, 10, 8, 0.35);
+}
+
+.esb-studio__band-asset-preview--logo {
+    object-fit: contain;
+    padding: 0.35rem;
+    background: #fff;
+}
+
+.esb-studio__band-form-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
 .esb-studio__band-invites-head {
     display: flex;
     align-items: flex-start;

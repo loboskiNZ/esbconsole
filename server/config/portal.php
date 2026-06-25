@@ -44,6 +44,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Band profile assets
+    |--------------------------------------------------------------------------
+    |
+    | Stored on the local private disk by default. Served only through
+    | authenticated director routes — not via public URLs.
+    |
+    */
+
+    'band_asset_disk' => env('PORTAL_BAND_ASSET_DISK', 'local'),
+
+    'band_logo_max_kb' => (int) env('PORTAL_BAND_LOGO_MAX_KB', 5120),
+
+    'band_photo_max_kb' => (int) env('PORTAL_BAND_PHOTO_MAX_KB', 25600),
+
+    /*
+    |--------------------------------------------------------------------------
     | Governed music library (read-only from portal)
     |--------------------------------------------------------------------------
     |

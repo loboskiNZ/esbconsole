@@ -5,6 +5,7 @@ use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingRegistrationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudioBandController;
 use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
@@ -36,6 +37,10 @@ Route::middleware('auth')->group(function () {
         ->name('studio.invites.store');
 
     Route::middleware('studio.director')->group(function () {
+        Route::get('/studio/band', [StudioBandController::class, 'edit'])->name('studio.band.edit');
+        Route::put('/studio/band', [StudioBandController::class, 'update'])->name('studio.band.update');
+        Route::get('/studio/band/logo', [StudioBandController::class, 'logo'])->name('studio.band.logo');
+        Route::get('/studio/band/photo', [StudioBandController::class, 'photo'])->name('studio.band.photo');
         Route::get('/studio/users', [StudioUsersController::class, 'index'])->name('studio.users.index');
         Route::patch('/studio/users/{user}/activate', [StudioUsersController::class, 'activate'])->name('studio.users.activate');
         Route::patch('/studio/users/{user}/deactivate', [StudioUsersController::class, 'deactivate'])->name('studio.users.deactivate');

@@ -13,7 +13,21 @@ class Band extends Model
     protected $fillable = [
         'public_id',
         'name',
+        'bio',
+        'styles',
+        'logo_path',
+        'photo_path',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'styles' => 'array',
+        ];
+    }
 
     /**
      * @return HasMany<Person, $this>
