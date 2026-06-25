@@ -16,6 +16,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Studio role guard (legacy Spatie-compatible roles table)
+    |--------------------------------------------------------------------------
+    |
+    | Production may share a legacy roles table that requires guard_name.
+    | Studio system roles use this guard when inserting or backfilling rows.
+    |
+    */
+
+    'studio_role_guard' => env('PORTAL_STUDIO_ROLE_GUARD', 'web'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Profile photos
     |--------------------------------------------------------------------------
     |

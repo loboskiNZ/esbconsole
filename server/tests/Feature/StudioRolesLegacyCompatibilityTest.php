@@ -60,8 +60,25 @@ class StudioRolesLegacyCompatibilityTest extends TestCase
 
         $this->assertSame(4, $created);
         $this->assertSame($rolesCountBefore + 4, DB::table('roles')->count());
-        $this->assertDatabaseHas('roles', ['role_key' => Role::KEY_DIRECTOR, 'name' => 'Director / Superuser']);
+        $this->assertDatabaseHas('roles', [
+            'role_key' => Role::KEY_DIRECTOR,
+            'name' => 'Director / Superuser',
+            'guard_name' => 'web',
+        ]);
         $this->assertSame('Legacy Stage Manager', DB::table('roles')->where('id', 1)->value('name'));
+    }
+
+    public function test_provisioner_sets_guard_name_on_spatie_legacy_roles_table(): void
+    {
+        app(StudioRolesSchemaReconciler::class)->reconcile();
+        app(StudioRoleProvisioner::class)->provisionSystemRoles();
+
+        foreach ([Role::KEY_DIRECTOR, Role::KEY_MUSICIAN, Role::KEY_SOUND_TECH, Role::KEY_ASSISTANT] as $roleKey) {
+            $this->assertSame(
+                'web',
+                DB::table('roles')->where('role_key', $roleKey)->value('guard_name'),
+            );
+        }
     }
 
     public function test_repeated_reconcile_and_provisioning_is_idempotent(): void
@@ -116,11 +133,18 @@ class StudioRolesLegacyCompatibilityTest extends TestCase
         Schema::create('roles', function ($table): void {
             $table->id();
             $table->string('name');
+            $table->string('guard_name');
+            $table->timestamps();
         });
+
+        $now = now();
 
         DB::table('roles')->insert([
             'id' => 1,
             'name' => 'Legacy Stage Manager',
+            'guard_name' => 'web',
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
     }
 }

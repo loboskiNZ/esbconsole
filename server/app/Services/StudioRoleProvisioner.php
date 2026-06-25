@@ -14,6 +14,11 @@ class StudioRoleProvisioner
 
   public const DIRECTOR_EMAIL = 'ed@loboski.nz';
 
+  public static function studioRoleGuardName(): string
+  {
+    return (string) config('portal.studio_role_guard', 'web');
+  }
+
   /**
    * @var array<string, array{public_id: string, name: string, description: string}>
    */
@@ -108,6 +113,10 @@ class StudioRoleProvisioner
         $payload['role_key'] = $roleKey;
       } elseif (Schema::hasColumn('roles', 'code')) {
         $payload['code'] = $roleKey;
+      }
+
+      if (Schema::hasColumn('roles', 'guard_name')) {
+        $payload['guard_name'] = self::studioRoleGuardName();
       }
 
       DB::table('roles')->insert($payload);

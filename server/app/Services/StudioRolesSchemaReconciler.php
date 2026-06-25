@@ -18,6 +18,7 @@ class StudioRolesSchemaReconciler
         }
 
         $this->ensureRolesColumns();
+        $this->backfillMissingGuardNames();
         $this->backfillMissingRolePublicIds();
         $this->backfillRoleKeyFromLegacyCode();
         $this->ensureRoleIndexes();
@@ -134,6 +135,17 @@ class StudioRolesSchemaReconciler
                 $table->timestamp('updated_at')->nullable();
             });
         }
+    }
+
+    private function backfillMissingGuardNames(): void
+    {
+        if (! Schema::hasColumn('roles', 'guard_name')) {
+            return;
+        }
+
+        DB::table('roles')
+            ->whereNull('guard_name')
+            ->update(['guard_name' => StudioRoleProvisioner::studioRoleGuardName()]);
     }
 
     private function backfillMissingRolePublicIds(): void
