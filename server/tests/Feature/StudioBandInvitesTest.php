@@ -6,12 +6,14 @@ use App\Models\InviteLink;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Tests\Concerns\AssignsStudioRoles;
 use Tests\Concerns\CreatesInviteLinks;
 use Tests\Concerns\EnsuresPortalBand;
 use Tests\TestCase;
 
 class StudioBandInvitesTest extends TestCase
 {
+    use AssignsStudioRoles;
     use CreatesInviteLinks;
     use EnsuresPortalBand;
     use RefreshDatabase;
@@ -28,9 +30,9 @@ class StudioBandInvitesTest extends TestCase
         $this->ensurePortalBand();
     }
 
-    public function test_studio_dashboard_shows_band_invites_card_below_profile(): void
+    public function test_studio_dashboard_shows_band_invites_card_below_profile_for_director(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createDirectorUser();
 
         $this->actingAs($user)->get('/studio')
             ->assertOk()
@@ -39,12 +41,23 @@ class StudioBandInvitesTest extends TestCase
             ->assertSee('esb-studio__band-invites', false);
     }
 
+    public function test_musician_does_not_see_band_invites_card(): void
+    {
+        $user = User::factory()->create();
+        $this->assignMusicianRole($user);
+
+        $this->actingAs($user)->get('/studio')
+            ->assertOk()
+            ->assertDontSee('Band Invites', false)
+            ->assertDontSee('esb-studio__band-invites', false);
+    }
+
     public function test_studio_dashboard_lists_invites_newest_first_with_expiry_and_actions(): void
     {
         Carbon::setTestNow('2026-06-18 12:00:00');
 
         try {
-            $user = User::factory()->create();
+            $user = $this->createDirectorUser();
 
             $olderToken = $this->createInviteLinkToken([
                 'name' => 'Guitar Audition',
@@ -87,7 +100,7 @@ class StudioBandInvitesTest extends TestCase
 
     public function test_expired_invites_are_greyed_out_with_expired_label(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createDirectorUser();
 
         $this->createInviteLinkToken([
             'name' => 'Past Audition',
@@ -105,7 +118,7 @@ class StudioBandInvitesTest extends TestCase
     {
         $this->ensureInviteLinksTable();
 
-        $user = User::factory()->create();
+        $user = $this->createDirectorUser();
         $rawToken = InviteLink::generateRawToken();
 
         InviteLink::create([

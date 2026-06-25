@@ -28,7 +28,10 @@ class StudioController extends Controller
             'person' => $person,
             'songCount' => $songCount,
             'chartCount' => $chartCount,
-            'bandInvites' => $bandInvites->invitesForDashboard(),
+            'bandInvites' => $user?->isDirector()
+                ? $bandInvites->invitesForDashboard()
+                : collect(),
+            'isDirector' => $user?->isDirector() ?? false,
         ]);
     }
 }

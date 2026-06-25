@@ -54,6 +54,12 @@ class VerifyPortalSchemaCommand extends Command
         'users' => [
             'id', 'username', 'person_id', 'band_id', 'password', 'is_active', 'created_at', 'updated_at',
         ],
+        'roles' => [
+            'id', 'public_id', 'code', 'name', 'description', 'is_system', 'created_at', 'updated_at',
+        ],
+        'user_roles' => [
+            'id', 'user_id', 'role_id', 'band_id', 'assigned_at', 'assigned_by', 'created_at', 'updated_at',
+        ],
     ];
 
     public function handle(): int

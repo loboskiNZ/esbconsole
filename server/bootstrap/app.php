@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->redirectGuestsTo('/');
         $middleware->redirectUsersTo('/studio');
+        $middleware->alias([
+            'studio.director' => \App\Http\Middleware\EnsureStudioDirector::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

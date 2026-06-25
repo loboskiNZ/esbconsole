@@ -2,11 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Band;
+use App\Models\Role;
+use App\Support\StudioUserRoles;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -43,5 +47,25 @@ class User extends Authenticatable
     public function band(): BelongsTo
     {
         return $this->belongsTo(Band::class);
+    }
+
+    /**
+     * @return BelongsToMany<Role, $this>
+     */
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'user_roles')
+            ->withPivot(['band_id', 'assigned_at', 'assigned_by'])
+            ->withTimestamps();
+    }
+
+    public function hasRole(string $code, ?int $bandId = null): bool
+    {
+        return StudioUserRoles::hasRole($this, $code, $bandId);
+    }
+
+    public function isDirector(?int $bandId = null): bool
+    {
+        return StudioUserRoles::isDirector($this, $bandId);
     }
 }
