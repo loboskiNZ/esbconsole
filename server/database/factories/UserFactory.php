@@ -6,6 +6,7 @@ use App\Models\Person;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
@@ -22,6 +23,7 @@ class UserFactory extends Factory
         $username = strtolower(fake()->unique()->bothify('user####'));
 
         return [
+            'public_id' => (string) Str::uuid(),
             'username' => $username,
             'password' => static::$password ??= Hash::make('Password1!'),
             'person_id' => Person::factory(),

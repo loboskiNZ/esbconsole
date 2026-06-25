@@ -45,7 +45,7 @@ class VerifyPortalSchemaCommand extends Command
             'created_at', 'updated_at',
         ],
         'invite_links' => [
-            'id', 'name', 'token_hash', 'expires_at', 'revoked_at', 'used_count', 'max_uses',
+            'id', 'name', 'token_hash', 'token_ciphertext', 'expires_at', 'revoked_at', 'used_count', 'max_uses',
             'created_at', 'updated_at',
         ],
         'invite_link_acceptances' => [

@@ -16,6 +16,13 @@ class InviteLinkTest extends TestCase
     use CreatesInviteLinks;
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->ensureInviteLinksTable();
+    }
+
     public function test_valid_invite_token_opens_chapter_one(): void
     {
         $token = $this->createInviteLinkToken(['name' => 'Chapter 1 Test']);

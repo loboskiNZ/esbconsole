@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Crypt;
 
 class InviteLink extends Model
 {
@@ -13,6 +16,7 @@ class InviteLink extends Model
     protected $fillable = [
         'name',
         'token_hash',
+        'token_ciphertext',
         'expires_at',
         'revoked_at',
         'used_count',
@@ -40,6 +44,48 @@ class InviteLink extends Model
     public static function hashToken(string $token): string
     {
         return hash('sha256', $token);
+    }
+
+    public static function sealToken(string $rawToken): string
+    {
+        return Crypt::encryptString($rawToken);
+    }
+
+    public function revealToken(): ?string
+    {
+        if ($this->token_ciphertext === null || $this->token_ciphertext === '') {
+            return null;
+        }
+
+        try {
+            return Crypt::decryptString($this->token_ciphertext);
+        } catch (DecryptException) {
+            return null;
+        }
+    }
+
+    public function inviteUrl(): ?string
+    {
+        $token = $this->revealToken();
+
+        if ($token === null) {
+            return null;
+        }
+
+        return rtrim((string) config('app.url'), '/').'/invite/'.$token;
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    public static function createWithToken(string $name, string $rawToken, Carbon $expiresAt, array $attributes = []): self
+    {
+        return static::create(array_merge([
+            'name' => $name,
+            'token_hash' => static::hashToken($rawToken),
+            'token_ciphertext' => static::sealToken($rawToken),
+            'expires_at' => $expiresAt,
+        ], $attributes));
     }
 
     public static function findValidByToken(string $token): ?self

@@ -24,6 +24,7 @@
                 @if ($person)
                     <aside class="esb-studio__sidebar">
                         @include('studio.profile._identity-widget', ['person' => $person])
+                        @include('studio.partials._band-invites', ['bandInvites' => $bandInvites])
                     </aside>
                 @endif
 

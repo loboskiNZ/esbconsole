@@ -14,6 +14,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('cloud_recovery_entity_map')) {
+            return;
+        }
+
         Schema::create('cloud_recovery_entity_map', function (Blueprint $table) {
             $table->id();
             $table->string('source_env');

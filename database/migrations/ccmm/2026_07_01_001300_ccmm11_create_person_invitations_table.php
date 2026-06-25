@@ -14,6 +14,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('person_invitations')) {
+            return;
+        }
+
         Schema::create('person_invitations', function (Blueprint $table) {
             $table->id();
             $table->uuid('public_id')->unique();
