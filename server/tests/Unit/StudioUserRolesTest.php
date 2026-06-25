@@ -30,8 +30,8 @@ class StudioUserRolesTest extends TestCase
         $user = User::factory()->create();
         $this->assignDirectorRole($user, bandId: 1);
 
-        $this->assertTrue(StudioUserRoles::hasRole($user, Role::CODE_DIRECTOR, 1));
-        $this->assertFalse(StudioUserRoles::hasRole($user, Role::CODE_DIRECTOR, 99));
+        $this->assertTrue(StudioUserRoles::hasRole($user, Role::KEY_DIRECTOR, 1));
+        $this->assertFalse(StudioUserRoles::hasRole($user, Role::KEY_DIRECTOR, 99));
     }
 
     public function test_find_director_user_matches_person_email(): void

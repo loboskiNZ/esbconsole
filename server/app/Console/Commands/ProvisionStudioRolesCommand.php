@@ -27,7 +27,7 @@ class ProvisionStudioRolesCommand extends Command
         $this->line('Director assigned: '.($result['director_assigned'] ? 'yes' : 'no'));
 
         foreach ($provisioner->systemRoles() as $role) {
-            $this->info("OK role {$role->code} ({$role->name})");
+            $this->info("OK role {$role->role_key} ({$role->name})");
         }
 
         return self::SUCCESS;

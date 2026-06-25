@@ -12,7 +12,7 @@ return new class extends Migration
             Schema::create('roles', function (Blueprint $table) {
                 $table->id();
                 $table->uuid('public_id')->unique();
-                $table->string('code', 64)->unique();
+                $table->string('role_key', 64)->unique();
                 $table->string('name');
                 $table->text('description')->nullable();
                 $table->boolean('is_system')->default(true);

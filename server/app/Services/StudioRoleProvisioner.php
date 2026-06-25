@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Role;
-use App\Models\User;
 use App\Models\UserRole;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,22 +18,22 @@ class StudioRoleProvisioner
    * @var array<string, array{public_id: string, name: string, description: string}>
    */
   private const SYSTEM_ROLES = [
-    Role::CODE_DIRECTOR => [
+    Role::KEY_DIRECTOR => [
       'public_id' => '10000000-0000-4000-8000-000000000001',
       'name' => 'Director / Superuser',
       'description' => 'Full Cloud Studio administration and director surfaces.',
     ],
-    Role::CODE_MUSICIAN => [
+    Role::KEY_MUSICIAN => [
       'public_id' => '10000000-0000-4000-8000-000000000002',
       'name' => 'Musician',
       'description' => 'Musician-facing Studio surfaces.',
     ],
-    Role::CODE_SOUND_TECH => [
+    Role::KEY_SOUND_TECH => [
       'public_id' => '10000000-0000-4000-8000-000000000003',
       'name' => 'Sound Tech',
       'description' => 'Sound and technical operations surfaces.',
     ],
-    Role::CODE_ASSISTANT => [
+    Role::KEY_ASSISTANT => [
       'public_id' => '10000000-0000-4000-8000-000000000004',
       'name' => 'Assistant',
       'description' => 'Assistant and support surfaces.',
@@ -88,22 +87,27 @@ class StudioRoleProvisioner
     $created = 0;
     $now = now();
 
-    foreach (self::SYSTEM_ROLES as $code => $definition) {
-      $existing = DB::table('roles')->where('code', $code)->first();
-
-      if ($existing !== null) {
+    foreach (self::SYSTEM_ROLES as $roleKey => $definition) {
+      if ($this->findExistingRoleByKey($roleKey) !== null) {
         continue;
       }
 
-      DB::table('roles')->insert([
+      $payload = [
         'public_id' => $definition['public_id'],
-        'code' => $code,
         'name' => $definition['name'],
         'description' => $definition['description'],
         'is_system' => true,
         'created_at' => $now,
         'updated_at' => $now,
-      ]);
+      ];
+
+      if (Schema::hasColumn('roles', 'role_key')) {
+        $payload['role_key'] = $roleKey;
+      } elseif (Schema::hasColumn('roles', 'code')) {
+        $payload['code'] = $roleKey;
+      }
+
+      DB::table('roles')->insert($payload);
 
       $created++;
     }
@@ -113,7 +117,7 @@ class StudioRoleProvisioner
 
   public function assignDirectorToUser(int $userId, ?int $bandId = null, ?int $assignedBy = null): bool
   {
-    $role = Role::query()->where('code', Role::CODE_DIRECTOR)->first();
+    $role = $this->findExistingRoleByKey(Role::KEY_DIRECTOR);
 
     if ($role === null) {
       return false;
@@ -174,10 +178,34 @@ class StudioRoleProvisioner
    */
   public function systemRoles(): Collection
   {
-    return Role::query()
+    $query = Role::query()->orderBy('id');
+
+    if (Schema::hasColumn('roles', 'role_key')) {
+      return $query
+        ->whereIn('role_key', array_keys(self::SYSTEM_ROLES))
+        ->get();
+    }
+
+    return $query
       ->whereIn('code', array_keys(self::SYSTEM_ROLES))
-      ->orderBy('id')
       ->get();
+  }
+
+  private function findExistingRoleByKey(string $roleKey): ?object
+  {
+    if (Schema::hasColumn('roles', 'role_key')) {
+      $existing = DB::table('roles')->where('role_key', $roleKey)->first();
+
+      if ($existing !== null) {
+        return $existing;
+      }
+    }
+
+    if (Schema::hasColumn('roles', 'code')) {
+      return DB::table('roles')->where('code', $roleKey)->first();
+    }
+
+    return null;
   }
 
   private function usersCount(): int

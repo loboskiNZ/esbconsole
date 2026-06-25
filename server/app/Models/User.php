@@ -59,9 +59,9 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function hasRole(string $code, ?int $bandId = null): bool
+    public function hasRole(string $roleKey, ?int $bandId = null): bool
     {
-        return StudioUserRoles::hasRole($this, $code, $bandId);
+        return StudioUserRoles::hasRole($this, $roleKey, $bandId);
     }
 
     public function isDirector(?int $bandId = null): bool

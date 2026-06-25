@@ -37,10 +37,10 @@ class StudioRolesTest extends TestCase
 
         $this->assertSame(0, $secondRun);
         $this->assertSame(4, Role::query()->count());
-        $this->assertDatabaseHas('roles', ['code' => Role::CODE_DIRECTOR, 'name' => 'Director / Superuser']);
-        $this->assertDatabaseHas('roles', ['code' => Role::CODE_MUSICIAN]);
-        $this->assertDatabaseHas('roles', ['code' => Role::CODE_SOUND_TECH]);
-        $this->assertDatabaseHas('roles', ['code' => Role::CODE_ASSISTANT]);
+        $this->assertDatabaseHas('roles', ['role_key' => Role::KEY_DIRECTOR, 'name' => 'Director / Superuser']);
+        $this->assertDatabaseHas('roles', ['role_key' => Role::KEY_MUSICIAN]);
+        $this->assertDatabaseHas('roles', ['role_key' => Role::KEY_SOUND_TECH]);
+        $this->assertDatabaseHas('roles', ['role_key' => Role::KEY_ASSISTANT]);
     }
 
     public function test_ed_loboski_is_assigned_director_role(): void
@@ -100,7 +100,7 @@ class StudioRolesTest extends TestCase
         ]);
 
         $this->assertTrue($user->isDirector());
-        $this->assertTrue($user->hasRole(Role::CODE_DIRECTOR));
+        $this->assertTrue($user->hasRole(Role::KEY_DIRECTOR));
     }
 
     public function test_non_director_user_does_not_pass_director_check(): void
@@ -109,7 +109,7 @@ class StudioRolesTest extends TestCase
         $this->assignMusicianRole($user);
 
         $this->assertFalse($user->isDirector());
-        $this->assertTrue($user->hasRole(Role::CODE_MUSICIAN));
+        $this->assertTrue($user->hasRole(Role::KEY_MUSICIAN));
     }
 
     public function test_migrations_create_role_tables_and_seed_roles(): void

@@ -29,7 +29,7 @@ trait AssignsStudioRoles
     {
         $this->provisionStudioRoles();
 
-        $role = Role::query()->where('code', Role::CODE_MUSICIAN)->firstOrFail();
+        $role = Role::query()->where('role_key', Role::KEY_MUSICIAN)->firstOrFail();
 
         $user->roles()->syncWithoutDetaching([
             $role->id => [

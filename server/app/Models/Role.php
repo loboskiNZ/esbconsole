@@ -7,20 +7,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Role extends Model
 {
-    public const CODE_DIRECTOR = 'director';
+    public const KEY_DIRECTOR = 'director';
 
-    public const CODE_MUSICIAN = 'musician';
+    public const KEY_MUSICIAN = 'musician';
 
-    public const CODE_SOUND_TECH = 'sound_tech';
+    public const KEY_SOUND_TECH = 'sound_tech';
 
-    public const CODE_ASSISTANT = 'assistant';
+    public const KEY_ASSISTANT = 'assistant';
 
     /**
      * @var list<string>
      */
     protected $fillable = [
         'public_id',
-        'code',
+        'role_key',
         'name',
         'description',
         'is_system',
