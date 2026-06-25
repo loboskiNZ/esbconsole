@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CheckOnboardingUsernameController;
 use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingRegistrationController;
@@ -30,6 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::put('/studio/profile', [ProfileController::class, 'update'])->name('studio.profile.update');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
+
+Route::post('/invite/check-username', CheckOnboardingUsernameController::class)
+    ->middleware('guest')
+    ->name('invite.check-username');
 
 Route::get('/invite/{token}', [InviteOnboardingController::class, 'show'])
     ->middleware('guest')

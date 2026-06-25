@@ -437,6 +437,22 @@ class PortalAuthenticationTest extends TestCase
             ]);
     }
 
+    public function test_onboarding_username_check_rejects_get_requests(): void
+    {
+        $this->getJson('/invite/check-username?username=freshname')
+            ->assertStatus(405);
+    }
+
+    public function test_onboarding_username_check_route_is_not_invite_token_show(): void
+    {
+        $this->assertTrue(Route::has('invite.check-username'));
+
+        $route = Route::getRoutes()->getByName('invite.check-username');
+        $this->assertNotNull($route);
+        $this->assertSame(['POST'], $route->methods());
+        $this->assertSame('/invite/check-username', $route->uri());
+    }
+
     public function test_onboarding_rejects_instrument_missing_from_database_catalog(): void
     {
         $token = $this->createInviteLinkToken();
