@@ -93,13 +93,16 @@ class StudioRoleProvisioner
       }
 
       $payload = [
-        'public_id' => $definition['public_id'],
         'name' => $definition['name'],
         'description' => $definition['description'],
         'is_system' => true,
         'created_at' => $now,
         'updated_at' => $now,
       ];
+
+      if (Schema::hasColumn('roles', 'public_id')) {
+        $payload['public_id'] = $definition['public_id'];
+      }
 
       if (Schema::hasColumn('roles', 'role_key')) {
         $payload['role_key'] = $roleKey;

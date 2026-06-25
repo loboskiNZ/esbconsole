@@ -13,46 +13,58 @@ return new class extends Migration
             return;
         }
 
-        if (! Schema::hasColumn('roles', 'role_key')) {
-            Schema::table('roles', function (Blueprint $table) {
-                $table->string('role_key', 64)->nullable()->after('public_id');
-            });
-        }
+        if (Schema::hasColumn('roles', 'role_key')) {
+            $this->ensureRoleKeyUniqueIndex();
 
-        if (! Schema::hasColumn('roles', 'code')) {
             return;
         }
 
-        DB::table('roles')
-            ->whereNull('role_key')
-            ->whereNotNull('code')
-            ->orderBy('id')
-            ->each(function (object $role): void {
-                DB::table('roles')
-                    ->where('id', $role->id)
-                    ->whereNull('role_key')
-                    ->update(['role_key' => $role->code]);
-            });
+        Schema::table('roles', function (Blueprint $table): void {
+            $table->string('role_key', 64)->nullable();
+        });
 
-        if (DB::getDriverName() === 'pgsql') {
-            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS roles_role_key_unique ON roles (role_key) WHERE role_key IS NOT NULL');
-        } elseif (! $this->roleKeyUniqueIndexExists()) {
-            Schema::table('roles', function (Blueprint $table) {
-                $table->unique('role_key');
-            });
+        if (Schema::hasColumn('roles', 'code')) {
+            DB::table('roles')
+                ->whereNull('role_key')
+                ->whereNotNull('code')
+                ->orderBy('id')
+                ->get(['id', 'code'])
+                ->each(function (object $role): void {
+                    DB::table('roles')
+                        ->where('id', $role->id)
+                        ->whereNull('role_key')
+                        ->update(['role_key' => $role->code]);
+                });
         }
+
+        $this->ensureRoleKeyUniqueIndex();
     }
 
     public function down(): void
     {
-        // Non-destructive — role_key column and backfilled values retained per PH072.
+        // Non-destructive — role_key column retained per PH072.
+    }
+
+    private function ensureRoleKeyUniqueIndex(): void
+    {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('CREATE UNIQUE INDEX IF NOT EXISTS roles_role_key_unique ON roles (role_key) WHERE role_key IS NOT NULL');
+
+            return;
+        }
+
+        if ($this->roleKeyUniqueIndexExists()) {
+            return;
+        }
+
+        Schema::table('roles', function (Blueprint $table): void {
+            $table->unique('role_key');
+        });
     }
 
     private function roleKeyUniqueIndexExists(): bool
     {
-        $indexes = Schema::getIndexes('roles');
-
-        foreach ($indexes as $index) {
+        foreach (Schema::getIndexes('roles') as $index) {
             if (in_array('role_key', $index['columns'], true) && ($index['unique'] ?? false)) {
                 return true;
             }
