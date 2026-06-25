@@ -18,36 +18,53 @@ class StudioBandInviteServiceTest extends TestCase
     {
         parent::setUp();
 
+        config(['app.url' => 'https://band.example.test']);
         $this->ensureInviteLinksTable();
     }
 
-    public function test_invite_url_uses_configured_application_url(): void
+    public function test_shareable_invite_url_uses_configured_application_url(): void
     {
-        config(['app.url' => 'https://band.example.test']);
-
         $token = $this->createInviteLinkToken(['name' => 'Section Invite']);
 
         $invite = app(StudioBandInviteService::class)
-            ->invitesForDashboard()
+            ->shareableInvitesForDashboard()
             ->first();
 
         $this->assertNotNull($invite);
         $this->assertSame('https://band.example.test/invite/'.$token, $invite['invite_url']);
     }
 
-    public function test_expiry_label_uses_expired_for_past_dates(): void
+    public function test_expired_invite_is_not_shareable(): void
     {
         $this->createInviteLinkToken([
             'name' => 'Expired Invite',
             'expires_at' => Carbon::now()->subMinute(),
         ]);
 
-        $invite = app(StudioBandInviteService::class)
-            ->invitesForDashboard()
-            ->first();
+        $this->assertTrue(app(StudioBandInviteService::class)->shareableInvitesForDashboard()->isEmpty());
+    }
 
-        $this->assertNotNull($invite);
-        $this->assertSame('(Expired)', $invite['expiry_label']);
-        $this->assertFalse($invite['is_active']);
+    public function test_legacy_invite_without_ciphertext_is_not_shareable(): void
+    {
+        InviteLink::create([
+            'name' => 'Legacy Invite',
+            'token_hash' => InviteLink::hashToken(InviteLink::generateRawToken()),
+            'expires_at' => Carbon::now()->addDays(7),
+        ]);
+
+        $service = app(StudioBandInviteService::class);
+
+        $this->assertTrue($service->shareableInvitesForDashboard()->isEmpty());
+        $this->assertSame(1, $service->legacyUnusableCount());
+    }
+
+    public function test_create_invite_persists_encrypted_token(): void
+    {
+        $invite = app(StudioBandInviteService::class)->createInvite('New Audition', 21);
+
+        $this->assertSame('New Audition', $invite->name);
+        $this->assertNotNull($invite->token_ciphertext);
+        $this->assertTrue($invite->isValid());
+        $this->assertNotNull($invite->inviteUrl());
     }
 }

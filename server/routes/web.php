@@ -5,6 +5,7 @@ use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\OnboardingRegistrationController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
@@ -29,6 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/studio/profile/edit', [ProfileController::class, 'edit'])->name('studio.profile.edit');
     Route::get('/studio/profile/photo', [ProfileController::class, 'photo'])->name('studio.profile.photo');
     Route::put('/studio/profile', [ProfileController::class, 'update'])->name('studio.profile.update');
+    Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])
+        ->middleware('studio.director')
+        ->name('studio.invites.store');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
 

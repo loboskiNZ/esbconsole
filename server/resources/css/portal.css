@@ -1319,6 +1319,56 @@
     margin-top: 1rem;
 }
 
+.esb-studio__band-invites-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.esb-studio__band-invites-head .esb-studio__card-title {
+    margin: 0;
+}
+
+.esb-studio__band-invites-create-toggle {
+    flex-shrink: 0;
+}
+
+.esb-studio__band-invites-create {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.9rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(255, 178, 62, 0.16);
+    background: rgba(255, 178, 62, 0.04);
+}
+
+.esb-studio__band-invites-create-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--esb-muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.esb-studio__band-invites-create-input {
+    min-height: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.92rem;
+}
+
+.esb-studio__band-invites-create-submit {
+    min-height: 2.5rem;
+    width: 100%;
+    font-size: 0.78rem;
+}
+
+.esb-studio__band-invites-note {
+    font-size: 0.78rem;
+    color: rgba(233, 203, 160, 0.62);
+    line-height: 1.45;
+}
+
 .esb-studio__band-invites-list {
     display: grid;
     gap: 1rem;
@@ -1327,70 +1377,54 @@
     list-style: none;
 }
 
-.esb-studio__band-invite {
+.esb-studio__band-invite-share {
     display: grid;
-    gap: 0.35rem;
-    padding: 0.85rem 0.9rem;
-    border-radius: 0.85rem;
+    gap: 0.75rem;
+    padding: 1rem 0.95rem;
+    border-radius: 0.95rem;
     border: 1px solid rgba(255, 178, 62, 0.22);
     background: rgba(255, 178, 62, 0.05);
 }
 
-.esb-studio__band-invite--inactive {
-    border-color: rgba(233, 203, 160, 0.12);
-    background: rgba(233, 203, 160, 0.03);
-    color: rgba(233, 203, 160, 0.55);
-}
-
 .esb-studio__band-invite-name {
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--esb-ink);
     line-height: 1.3;
 }
 
-.esb-studio__band-invite--inactive .esb-studio__band-invite-name,
-.esb-studio__band-invite--inactive .esb-studio__band-invite-expiry {
-    color: inherit;
+.esb-studio__band-invite-expiry {
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: var(--esb-muted);
 }
 
-.esb-studio__band-invite-slug {
+.esb-studio__band-invite-qr-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0.65rem;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.esb-studio__band-invite-qr {
     display: block;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    background: transparent;
+    width: 168px;
+    height: 168px;
+}
+
+.esb-studio__band-invite-url {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.72rem;
     line-height: 1.45;
-    text-align: left;
     color: var(--esb-muted);
     word-break: break-all;
-    cursor: pointer;
-}
-
-.esb-studio__band-invite-slug:disabled {
-    cursor: default;
-    opacity: 0.65;
-}
-
-.esb-studio__band-invite-slug-unavailable {
-    font-size: 0.78rem;
-    font-style: italic;
-    color: var(--esb-muted);
-}
-
-.esb-studio__band-invite-expiry {
-    font-size: 0.78rem;
-    color: var(--esb-muted);
 }
 
 .esb-studio__band-invite-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.15rem;
 }
 
 .esb-studio__band-invite-action {

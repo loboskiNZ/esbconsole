@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\InviteLink;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class StudioBandInviteService
 {
@@ -12,14 +14,12 @@ class StudioBandInviteService
      * @return Collection<int, array{
      *     id: int,
      *     name: string,
-     *     slug: string|null,
-     *     invite_url: string|null,
-     *     expiry_label: string,
-     *     is_active: bool,
-     *     can_copy: bool,
+     *     invite_url: string,
+     *     expires_at_label: string,
+     *     download_filename: string,
      * }>
      */
-    public function invitesForDashboard(): Collection
+    public function shareableInvitesForDashboard(): Collection
     {
         if (! Schema::hasTable('invite_links')) {
             return collect();
@@ -28,42 +28,83 @@ class StudioBandInviteService
         return InviteLink::query()
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn (InviteLink $invite): array => $this->toViewModel($invite));
+            ->filter(fn (InviteLink $invite): bool => $this->isShareable($invite))
+            ->map(fn (InviteLink $invite): array => $this->toShareCardViewModel($invite))
+            ->values();
+    }
+
+    public function legacyUnusableCount(): int
+    {
+        if (! Schema::hasTable('invite_links')) {
+            return 0;
+        }
+
+        return InviteLink::query()
+            ->get()
+            ->filter(function (InviteLink $invite): bool {
+                if ($this->isShareable($invite)) {
+                    return false;
+                }
+
+                return $invite->token_ciphertext === null
+                    || $invite->token_ciphertext === ''
+                    || ! $invite->isValid();
+            })
+            ->count();
+    }
+
+    public function createInvite(string $name, int $days = 30): InviteLink
+    {
+        $rawToken = InviteLink::generateRawToken();
+
+        return InviteLink::createWithToken(
+            name: $name,
+            rawToken: $rawToken,
+            expiresAt: Carbon::now()->addDays($days),
+        );
+    }
+
+    public function isShareable(InviteLink $invite): bool
+    {
+        if ($invite->token_ciphertext === null || $invite->token_ciphertext === '') {
+            return false;
+        }
+
+        if (! $invite->isValid()) {
+            return false;
+        }
+
+        return $invite->inviteUrl() !== null;
     }
 
     /**
      * @return array{
      *     id: int,
      *     name: string,
-     *     slug: string|null,
-     *     invite_url: string|null,
-     *     expiry_label: string,
-     *     is_active: bool,
-     *     can_copy: bool,
+     *     invite_url: string,
+     *     expires_at_label: string,
+     *     download_filename: string,
      * }
      */
-    private function toViewModel(InviteLink $invite): array
+    private function toShareCardViewModel(InviteLink $invite): array
     {
-        $slug = $invite->revealToken();
-        $isActive = $invite->isValid();
-
         return [
             'id' => $invite->id,
             'name' => $invite->name,
-            'slug' => $slug,
-            'invite_url' => $invite->inviteUrl(),
-            'expiry_label' => $this->expiryLabel($invite),
-            'is_active' => $isActive,
-            'can_copy' => $slug !== null && $invite->inviteUrl() !== null,
+            'invite_url' => (string) $invite->inviteUrl(),
+            'expires_at_label' => $invite->expires_at->format('d M Y'),
+            'download_filename' => $this->downloadFilename($invite),
         ];
     }
 
-    private function expiryLabel(InviteLink $invite): string
+    private function downloadFilename(InviteLink $invite): string
     {
-        if ($invite->revoked_at !== null || $invite->expires_at->isPast()) {
-            return '(Expired)';
+        $slug = Str::slug($invite->name);
+
+        if ($slug === '') {
+            $slug = 'invite-'.$invite->id;
         }
 
-        return '(expires '.$invite->expires_at->format('d M Y').')';
+        return 'band-invite-'.$slug.'.png';
     }
 }

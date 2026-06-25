@@ -28,9 +28,10 @@ class StudioBandInvitesTest extends TestCase
         ]);
 
         $this->ensurePortalBand();
+        $this->ensureInviteLinksTable();
     }
 
-    public function test_studio_dashboard_shows_band_invites_card_below_profile_for_director(): void
+    public function test_studio_dashboard_shows_empty_state_with_create_invite_for_director(): void
     {
         $user = $this->createDirectorUser();
 
@@ -38,7 +39,9 @@ class StudioBandInvitesTest extends TestCase
             ->assertOk()
             ->assertSee('Band Invites', false)
             ->assertSee('No active band invites.', false)
-            ->assertSee('esb-studio__band-invites', false);
+            ->assertSee('Create invite', false)
+            ->assertSee('esb-studio__band-invites', false)
+            ->assertSee(route('studio.invites.store'), false);
     }
 
     public function test_musician_does_not_see_band_invites_card(): void
@@ -52,53 +55,35 @@ class StudioBandInvitesTest extends TestCase
             ->assertDontSee('esb-studio__band-invites', false);
     }
 
-    public function test_studio_dashboard_lists_invites_newest_first_with_expiry_and_actions(): void
+    public function test_active_invite_with_token_ciphertext_renders_qr_share_card(): void
     {
         Carbon::setTestNow('2026-06-18 12:00:00');
 
         try {
             $user = $this->createDirectorUser();
-
-            $olderToken = $this->createInviteLinkToken([
+            $token = $this->createInviteLinkToken([
                 'name' => 'Guitar Audition',
                 'expires_at' => Carbon::parse('2026-07-02 12:00:00'),
             ]);
 
-            $newerToken = $this->createInviteLinkToken([
-                'name' => 'Horn Section',
-                'expires_at' => Carbon::parse('2026-07-10 12:00:00'),
-            ]);
+            $inviteUrl = 'https://band.example.test/invite/'.$token;
 
-            InviteLink::query()->where('name', 'Guitar Audition')->update([
-                'created_at' => Carbon::parse('2026-06-10 12:00:00'),
-                'updated_at' => Carbon::parse('2026-06-10 12:00:00'),
-            ]);
-
-            InviteLink::query()->where('name', 'Horn Section')->update([
-                'created_at' => Carbon::parse('2026-06-15 12:00:00'),
-                'updated_at' => Carbon::parse('2026-06-15 12:00:00'),
-            ]);
-
-            $response = $this->actingAs($user)->get('/studio');
-
-            $response->assertOk();
-            $response->assertSeeInOrder([
-                'Horn Section',
-                $newerToken,
-                '(expires 10 Jul 2026)',
-                'Guitar Audition',
-                $olderToken,
-                '(expires 02 Jul 2026)',
-            ], false);
-            $response->assertSee('https://band.example.test/invite/'.$newerToken, false);
-            $response->assertSee('Copy', false);
-            $response->assertSee('Open', false);
+            $this->actingAs($user)->get('/studio')
+                ->assertOk()
+                ->assertSee('Guitar Audition', false)
+                ->assertSee('Expires 02 Jul 2026', false)
+                ->assertSee($inviteUrl, false)
+                ->assertSee('data-invite-qr', false)
+                ->assertSee('Copy link', false)
+                ->assertSee('Open', false)
+                ->assertSee('Download QR', false)
+                ->assertSee('esb-studio__band-invite-share', false);
         } finally {
             Carbon::setTestNow();
         }
     }
 
-    public function test_expired_invites_are_greyed_out_with_expired_label(): void
+    public function test_expired_invite_does_not_render_qr_share_card(): void
     {
         $user = $this->createDirectorUser();
 
@@ -109,12 +94,12 @@ class StudioBandInvitesTest extends TestCase
 
         $this->actingAs($user)->get('/studio')
             ->assertOk()
-            ->assertSee('Past Audition', false)
-            ->assertSee('(Expired)', false)
-            ->assertSee('esb-studio__band-invite--inactive', false);
+            ->assertDontSee('Past Audition', false)
+            ->assertDontSee('data-invite-qr', false)
+            ->assertSee('No active band invites.', false);
     }
 
-    public function test_legacy_invites_without_ciphertext_show_unavailable_slug(): void
+    public function test_invite_without_token_ciphertext_does_not_render_as_shareable(): void
     {
         $this->ensureInviteLinksTable();
 
@@ -129,9 +114,62 @@ class StudioBandInvitesTest extends TestCase
 
         $this->actingAs($user)->get('/studio')
             ->assertOk()
-            ->assertSee('Legacy Invite', false)
-            ->assertSee('Slug unavailable', false)
+            ->assertDontSee('Legacy Invite', false)
             ->assertDontSee($rawToken, false)
-            ->assertDontSee('Copy', false);
+            ->assertDontSee('data-invite-qr', false)
+            ->assertSee('older invite', false)
+            ->assertSee('No active band invites.', false);
+    }
+
+    public function test_generated_invite_url_uses_configured_application_url(): void
+    {
+        $user = $this->createDirectorUser();
+        $token = $this->createInviteLinkToken(['name' => 'Section Invite']);
+
+        $this->actingAs($user)->get('/studio')
+            ->assertOk()
+            ->assertSee('https://band.example.test/invite/'.$token, false);
+    }
+
+    public function test_director_can_create_invite_from_studio(): void
+    {
+        $user = $this->createDirectorUser();
+
+        $this->actingAs($user)->get('/studio');
+
+        $this->actingAs($user)
+            ->post(route('studio.invites.store'), [
+                '_token' => session()->token(),
+                'name' => 'Horn Section',
+                'days' => 14,
+            ])->assertRedirect(route('studio'));
+
+        $invite = InviteLink::query()->where('name', 'Horn Section')->first();
+
+        $this->assertNotNull($invite);
+        $this->assertNotNull($invite->token_ciphertext);
+        $this->assertTrue($invite->isValid());
+
+        $this->actingAs($user)->get('/studio')
+            ->assertOk()
+            ->assertSee('Band invite created.', false)
+            ->assertSee('Horn Section', false)
+            ->assertSee((string) $invite->inviteUrl(), false);
+    }
+
+    public function test_musician_cannot_create_invite(): void
+    {
+        $user = User::factory()->create();
+        $this->assignMusicianRole($user);
+
+        $this->actingAs($user)->get('/studio');
+
+        $this->actingAs($user)
+            ->post(route('studio.invites.store'), [
+                '_token' => session()->token(),
+                'name' => 'Blocked Invite',
+            ])->assertForbidden();
+
+        $this->assertSame(0, InviteLink::query()->count());
     }
 }

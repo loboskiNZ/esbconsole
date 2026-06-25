@@ -14,6 +14,7 @@ class StudioController extends Controller
     ): View {
         $user = auth()->user();
         $person = $user?->load(['person.instruments'])->person;
+        $isDirector = $user?->isDirector() ?? false;
 
         $songCount = 0;
         $chartCount = 0;
@@ -28,10 +29,9 @@ class StudioController extends Controller
             'person' => $person,
             'songCount' => $songCount,
             'chartCount' => $chartCount,
-            'bandInvites' => $user?->isDirector()
-                ? $bandInvites->invitesForDashboard()
-                : collect(),
-            'isDirector' => $user?->isDirector() ?? false,
+            'bandInvites' => $isDirector ? $bandInvites->shareableInvitesForDashboard() : collect(),
+            'legacyUnusableInviteCount' => $isDirector ? $bandInvites->legacyUnusableCount() : 0,
+            'isDirector' => $isDirector,
         ]);
     }
 }

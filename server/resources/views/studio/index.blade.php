@@ -20,12 +20,21 @@
                 </p>
             @endif
 
+            @if (session('invite_created'))
+                <p class="esb-portal__success mb-4" role="status">
+                    Band invite created.
+                </p>
+            @endif
+
             <div class="esb-studio__layout">
                 @if ($person)
                     <aside class="esb-studio__sidebar">
                         @include('studio.profile._identity-widget', ['person' => $person])
                         @if ($isDirector)
-                            @include('studio.partials._band-invites', ['bandInvites' => $bandInvites])
+                            @include('studio.partials._band-invites', [
+                                'bandInvites' => $bandInvites,
+                                'legacyUnusableInviteCount' => $legacyUnusableInviteCount,
+                            ])
                         @endif
                     </aside>
                 @endif
