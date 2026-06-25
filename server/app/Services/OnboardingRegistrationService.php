@@ -97,6 +97,8 @@ class OnboardingRegistrationService
 
             $inviteLink->increment('used_count');
 
+            app(StudioUserManagementService::class)->assignDefaultMusicianRole($user);
+
             return $user;
         });
     }

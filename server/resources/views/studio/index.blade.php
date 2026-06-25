@@ -31,6 +31,7 @@
                     <aside class="esb-studio__sidebar">
                         @include('studio.profile._identity-widget', ['person' => $person])
                         @if ($isDirector)
+                            @include('studio.partials._director-tools')
                             @include('studio.partials._band-invites', [
                                 'bandInvites' => $bandInvites,
                                 'legacyUnusableInviteCount' => $legacyUnusableInviteCount,

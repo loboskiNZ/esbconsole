@@ -129,7 +129,17 @@ class StudioRoleProvisioner
 
   public function assignDirectorToUser(int $userId, ?int $bandId = null, ?int $assignedBy = null): bool
   {
-    $role = $this->findExistingRoleByKey(Role::KEY_DIRECTOR);
+    return $this->assignRoleToUser(Role::KEY_DIRECTOR, $userId, $bandId, $assignedBy);
+  }
+
+  public function assignMusicianToUser(int $userId, ?int $bandId = null, ?int $assignedBy = null): bool
+  {
+    return $this->assignRoleToUser(Role::KEY_MUSICIAN, $userId, $bandId, $assignedBy);
+  }
+
+  public function assignRoleToUser(string $roleKey, int $userId, ?int $bandId = null, ?int $assignedBy = null): bool
+  {
+    $role = $this->findExistingRoleByKey($roleKey);
 
     if ($role === null) {
       return false;

@@ -9,6 +9,7 @@ use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
+use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,6 +34,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])
         ->middleware('studio.director')
         ->name('studio.invites.store');
+
+    Route::middleware('studio.director')->group(function () {
+        Route::get('/studio/users', [StudioUsersController::class, 'index'])->name('studio.users.index');
+        Route::patch('/studio/users/{user}/activate', [StudioUsersController::class, 'activate'])->name('studio.users.activate');
+        Route::patch('/studio/users/{user}/deactivate', [StudioUsersController::class, 'deactivate'])->name('studio.users.deactivate');
+        Route::put('/studio/users/{user}/roles', [StudioUsersController::class, 'updateRoles'])->name('studio.users.roles.update');
+    });
+
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 });
 

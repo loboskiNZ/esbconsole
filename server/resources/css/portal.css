@@ -1317,6 +1317,161 @@
     margin-top: 1rem;
 }
 
+.esb-studio__director-tools {
+    margin-top: 1rem;
+}
+
+.esb-studio__director-tools-list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__director-tools-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 178, 62, 0.22);
+    background: rgba(255, 178, 62, 0.05);
+    color: var(--esb-ink);
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.esb-studio__director-tools-link:hover,
+.esb-studio__director-tools-link:focus-visible {
+    border-color: rgba(255, 178, 62, 0.42);
+    color: #ffd27a;
+}
+
+.esb-studio__users-table-wrap {
+    overflow-x: auto;
+}
+
+.esb-studio__users-table {
+    width: 100%;
+    min-width: 56rem;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+
+.esb-studio__users-table th,
+.esb-studio__users-table td {
+    padding: 0.75rem 0.65rem;
+    border-bottom: 1px solid rgba(233, 203, 160, 0.12);
+    text-align: left;
+    vertical-align: top;
+}
+
+.esb-studio__users-table th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(233, 203, 160, 0.72);
+}
+
+.esb-studio__users-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.esb-studio__users-status--active {
+    color: #9be7b3;
+    background: rgba(56, 142, 88, 0.18);
+}
+
+.esb-studio__users-status--inactive {
+    color: #ffb4b4;
+    background: rgba(180, 56, 56, 0.18);
+}
+
+.esb-studio__users-muted {
+    color: var(--esb-muted);
+}
+
+.esb-studio__users-actions {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 9rem;
+}
+
+.esb-studio__users-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 0.55rem;
+    border: 1px solid rgba(233, 203, 160, 0.18);
+    background: rgba(12, 10, 8, 0.35);
+    color: var(--esb-ink);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.esb-studio__users-action:hover,
+.esb-studio__users-action:focus-visible {
+    border-color: rgba(255, 178, 62, 0.35);
+}
+
+.esb-studio__users-roles-editor summary {
+    list-style: none;
+}
+
+.esb-studio__users-roles-editor summary::-webkit-details-marker {
+    display: none;
+}
+
+.esb-studio__users-roles-form {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.65rem;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(233, 203, 160, 0.14);
+    background: rgba(12, 10, 8, 0.35);
+}
+
+.esb-studio__users-roles-fieldset {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.esb-studio__users-role-option {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--esb-muted);
+    font-size: 0.82rem;
+}
+
+.esb-studio__users-roles-save {
+    width: 100%;
+    min-height: 2.25rem;
+    font-size: 0.78rem;
+}
+
+.esb-studio__users-error-list {
+    margin: 0;
+    padding-left: 1rem;
+}
+
 .esb-studio__band-invites-head {
     display: flex;
     align-items: flex-start;
