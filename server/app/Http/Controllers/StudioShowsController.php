@@ -6,7 +6,9 @@ use App\Http\Requests\StoreStudioShowRequest;
 use App\Http\Requests\UpdateStudioShowRequest;
 use App\Models\Show;
 use App\Services\StudioPerformanceService;
+use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
+use App\Support\StudioLibraryAvailability;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -43,13 +45,23 @@ class StudioShowsController extends Controller
             ->with('show_created', true);
     }
 
-    public function show(Show $show, StudioShowService $shows, StudioPerformanceService $performances): View
-    {
+    public function show(
+        Show $show,
+        StudioShowService $shows,
+        StudioPerformanceService $performances,
+        StudioShowPlaylistService $playlist,
+        StudioLibraryAvailability $library,
+    ): View {
+        $user = auth()->user();
         $portalShow = $shows->showForPortal($show->id);
 
         return view('studio.shows.show', [
             'show' => $portalShow,
             'performances' => $performances->performancesForShow($portalShow->id),
+            'playlistEntries' => $playlist->playlistEntriesForShow($portalShow->id),
+            'selectableSongs' => $user?->isDirector() ? $playlist->selectableSongsForShow($portalShow->id) : collect(),
+            'libraryAvailable' => $library->isAvailable(),
+            'isDirector' => $user?->isDirector() ?? false,
         ]);
     }
 

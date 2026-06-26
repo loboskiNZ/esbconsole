@@ -71,6 +71,14 @@ class Show extends Model
     }
 
     /**
+     * @return HasMany<ShowPlaylistItem, $this>
+     */
+    public function playlistItems(): HasMany
+    {
+        return $this->hasMany(ShowPlaylistItem::class);
+    }
+
+    /**
      * @return HasMany<Performance, $this>
      */
     public function performances(): HasMany

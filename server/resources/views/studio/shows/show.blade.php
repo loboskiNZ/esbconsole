@@ -44,8 +44,51 @@
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
-                <h2 class="esb-studio__card-title">Playlists</h2>
-                <p class="esb-studio__card-body mt-3">Playlist management will appear here in a later phase.</p>
+                <div class="esb-studio__playlist-head">
+                    <h2 class="esb-studio__card-title">Playlist</h2>
+                    @if ($isDirector)
+                        <p class="esb-studio__card-body">Musical definition for this show production.</p>
+                    @endif
+                </div>
+
+                @if (session('playlist_updated'))
+                    <p class="esb-portal__success mt-3" role="status">Playlist updated.</p>
+                @endif
+
+                @if (! $libraryAvailable)
+                    <p class="esb-studio__card-body mt-3">Music library is not available in this environment.</p>
+                @elseif ($playlistEntries->isEmpty())
+                    <p class="esb-studio__card-body mt-3">No songs on this playlist yet.</p>
+                @else
+                    <ul class="esb-studio__playlist-list mt-4">
+                        @foreach ($playlistEntries as $entry)
+                            @include('studio.shows.partials._playlist-item', [
+                                'entry' => $entry,
+                                'show' => $show,
+                                'isDirector' => $isDirector,
+                            ])
+                        @endforeach
+                    </ul>
+                @endif
+
+                @if ($isDirector && $libraryAvailable)
+                    <form method="POST" action="{{ route('studio.shows.playlist.store', $show) }}" class="esb-studio__playlist-add-form mt-6">
+                        @csrf
+                        <label class="esb-portal__label mb-2 block" for="playlist-song-id">Add song</label>
+                        <div class="esb-studio__playlist-add-row">
+                            <select id="playlist-song-id" name="song_id" class="esb-portal__input" required>
+                                <option value="" disabled @selected(true)>Select a song</option>
+                                @foreach ($selectableSongs as $song)
+                                    <option value="{{ $song->id }}">{{ $song->name }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="esb-portal__button esb-portal__button--primary">Add song</button>
+                        </div>
+                        @error('song_id')
+                            <p class="esb-portal__error mt-2">{{ $message }}</p>
+                        @enderror
+                    </form>
+                @endif
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">

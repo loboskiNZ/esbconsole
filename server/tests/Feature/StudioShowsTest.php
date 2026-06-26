@@ -174,7 +174,7 @@ class StudioShowsTest extends TestCase
             ->assertSee('Festival Set', false)
             ->assertSee('Outdoor festival production.', false)
             ->assertSee('Planned', false)
-            ->assertSee('Playlists', false)
+            ->assertSee('Playlist', false)
             ->assertSee('Performances', false)
             ->assertSee('Ableton', false)
             ->assertSee('X32', false)
