@@ -13,10 +13,28 @@ class Band extends Model
     protected $fillable = [
         'public_id',
         'name',
+        'short_name',
+        'tagline',
+        'hometown',
+        'formation_year',
         'bio',
+        'short_bio',
+        'full_bio',
         'styles',
+        'booking_email',
+        'booking_phone',
+        'website_url',
+        'facebook_url',
+        'instagram_url',
+        'tiktok_url',
+        'youtube_url',
+        'spotify_url',
+        'apple_music_url',
+        'bandcamp_url',
         'logo_path',
         'photo_path',
+        'press_photo_path',
+        'hero_photo_path',
     ];
 
     /**
@@ -26,6 +44,7 @@ class Band extends Model
     {
         return [
             'styles' => 'array',
+            'formation_year' => 'integer',
         ];
     }
 

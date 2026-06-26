@@ -41,6 +41,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/studio/band', [StudioBandController::class, 'update'])->name('studio.band.update');
         Route::get('/studio/band/logo', [StudioBandController::class, 'logo'])->name('studio.band.logo');
         Route::get('/studio/band/photo', [StudioBandController::class, 'photo'])->name('studio.band.photo');
+        Route::get('/studio/band/hero', [StudioBandController::class, 'hero'])->name('studio.band.hero');
+        Route::get('/studio/band/press', [StudioBandController::class, 'press'])->name('studio.band.press');
         Route::get('/studio/users', [StudioUsersController::class, 'index'])->name('studio.users.index');
         Route::patch('/studio/users/{user}/activate', [StudioUsersController::class, 'activate'])->name('studio.users.activate');
         Route::patch('/studio/users/{user}/deactivate', [StudioUsersController::class, 'deactivate'])->name('studio.users.deactivate');

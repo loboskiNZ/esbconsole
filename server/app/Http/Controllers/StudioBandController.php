@@ -32,6 +32,8 @@ class StudioBandController extends Controller
             payload: $request->validatedPayload(),
             logo: $request->file('logo'),
             photo: $request->file('photo'),
+            heroPhoto: $request->file('hero_photo'),
+            pressPhoto: $request->file('press_photo'),
         );
 
         return redirect()
@@ -47,6 +49,16 @@ class StudioBandController extends Controller
     public function photo(BandProfileService $bandProfile): Response|StreamedResponse
     {
         return $this->assetResponse($bandProfile->portalBand()->photo_path);
+    }
+
+    public function hero(BandProfileService $bandProfile): Response|StreamedResponse
+    {
+        return $this->assetResponse($bandProfile->portalBand()->hero_photo_path);
+    }
+
+    public function press(BandProfileService $bandProfile): Response|StreamedResponse
+    {
+        return $this->assetResponse($bandProfile->portalBand()->press_photo_path);
     }
 
     private function assetResponse(?string $path): Response|StreamedResponse

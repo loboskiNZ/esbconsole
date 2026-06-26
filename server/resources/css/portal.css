@@ -1477,6 +1477,21 @@
     gap: 1.25rem;
 }
 
+.esb-studio__band-section + .esb-studio__band-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(233, 203, 160, 0.12);
+}
+
+.esb-studio__band-section-title {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(233, 203, 160, 0.82);
+}
+
 .esb-studio__band-textarea {
     min-height: 7rem;
     resize: vertical;

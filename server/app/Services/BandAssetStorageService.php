@@ -28,6 +28,16 @@ class BandAssetStorageService
         return $this->storeAsset($band, $file, 'photo');
     }
 
+    public function storeHeroPhoto(Band $band, UploadedFile $file): string
+    {
+        return $this->storeAsset($band, $file, 'hero');
+    }
+
+    public function storePressPhoto(Band $band, UploadedFile $file): string
+    {
+        return $this->storeAsset($band, $file, 'press');
+    }
+
     private function storeAsset(Band $band, UploadedFile $file, string $kind): string
     {
         $disk = $this->disk();
