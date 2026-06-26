@@ -21,19 +21,7 @@ class Show extends Model
         'name',
         'description',
         'lifecycle_state',
-        'scheduled_at',
-        'venue_location',
     ];
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'scheduled_at' => 'datetime',
-        ];
-    }
 
     /**
      * @return BelongsTo<Band, $this>
@@ -58,10 +46,5 @@ class Show extends Model
             self::STATE_DRAFT => 'Draft',
             default => str($this->lifecycle_state ?? 'draft')->replace('_', ' ')->title()->toString(),
         };
-    }
-
-    public function scheduleLabel(): ?string
-    {
-        return $this->scheduled_at?->format('d M Y H:i');
     }
 }

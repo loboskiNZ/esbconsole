@@ -19,7 +19,6 @@ class StudioShowService
 
         $query = Show::query()
             ->where('band_id', $bandId)
-            ->orderByDesc('scheduled_at')
             ->orderBy('name');
 
         if ($limit !== null) {
@@ -32,9 +31,7 @@ class StudioShowService
     /**
      * @param  array{
      *     name: string,
-     *     scheduled_at?: string|null,
-     *     venue_location?: string|null,
-     *     notes?: string|null,
+     *     description?: string|null,
      *     lifecycle_state?: string|null,
      * }  $payload
      */
@@ -60,10 +57,8 @@ class StudioShowService
                 'band_id' => $bandId,
                 'ableton_show_file_id' => $abletonShowFile->id,
                 'name' => $name,
-                'description' => $this->normalizeNullableString($payload['notes'] ?? null),
+                'description' => $this->normalizeNullableString($payload['description'] ?? null),
                 'lifecycle_state' => $payload['lifecycle_state'] ?? Show::STATE_DRAFT,
-                'scheduled_at' => $payload['scheduled_at'] ?? null,
-                'venue_location' => $this->normalizeNullableString($payload['venue_location'] ?? null),
             ]);
         });
     }

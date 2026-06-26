@@ -25,22 +25,37 @@ class StudioShowsTest extends TestCase
         $this->ensurePortalBand();
     }
 
-    public function test_shows_card_lists_existing_shows(): void
+    public function test_shows_card_lists_existing_shows_by_name_and_state_only(): void
     {
         $director = $this->createDirectorUser();
         $this->seedShow([
-            'name' => 'Summer Tour',
-            'scheduled_at' => '2026-08-15 20:00:00',
-            'venue_location' => 'Dunedin Town Hall',
+            'name' => 'LO-FI Show',
             'lifecycle_state' => Show::STATE_PLANNED,
         ]);
 
         $this->actingAs($director)->get('/studio')
             ->assertOk()
-            ->assertSee('Summer Tour', false)
-            ->assertSee('Dunedin Town Hall', false)
+            ->assertSee('LO-FI Show', false)
             ->assertSee('Planned', false)
-            ->assertDontSee('Upcoming shows', false);
+            ->assertDontSee('Upcoming shows', false)
+            ->assertDontSee('Dunedin Town Hall', false);
+    }
+
+    public function test_shows_card_does_not_display_dormant_schedule_or_venue_columns(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Legacy Scheduled Show']);
+
+        DB::table('shows')->where('id', $show->id)->update([
+            'scheduled_at' => '2026-08-15 20:00:00',
+            'venue_location' => 'Dunedin Town Hall',
+        ]);
+
+        $this->actingAs($director)->get('/studio')
+            ->assertOk()
+            ->assertSee('Legacy Scheduled Show', false)
+            ->assertDontSee('15 Aug 2026', false)
+            ->assertDontSee('Dunedin Town Hall', false);
     }
 
     public function test_shows_card_shows_empty_state_when_no_shows_exist(): void
@@ -97,27 +112,26 @@ class StudioShowsTest extends TestCase
         $this->actingAs($musician)->get('/studio/shows/create')->assertForbidden();
     }
 
-    public function test_director_can_create_show(): void
+    public function test_director_can_create_show_with_metadata_only(): void
     {
         $director = $this->createDirectorUser();
 
         $this->beginShowsSession($director)
             ->post('/studio/shows', [
                 '_token' => session()->token(),
-                'name' => 'Winter Gala',
-                'scheduled_at' => '2026-09-01T19:30',
-                'venue_location' => 'Regent Theatre',
-                'notes' => 'Full horn section.',
+                'name' => 'Christmas Show',
+                'description' => 'Seasonal production variant.',
                 'lifecycle_state' => Show::STATE_PLANNED,
             ])
             ->assertRedirect();
 
-        $show = Show::query()->where('name', 'Winter Gala')->first();
+        $show = Show::query()->where('name', 'Christmas Show')->first();
 
         $this->assertNotNull($show);
-        $this->assertSame('Regent Theatre', $show->venue_location);
-        $this->assertSame('Full horn section.', $show->description);
+        $this->assertSame('Seasonal production variant.', $show->description);
         $this->assertSame(Show::STATE_PLANNED, $show->lifecycle_state);
+        $this->assertNull($show->scheduled_at);
+        $this->assertNull($show->venue_location);
         $this->assertNotNull($show->ableton_show_file_id);
     }
 
@@ -145,26 +159,51 @@ class StudioShowsTest extends TestCase
             ->assertSee('Draft', false);
     }
 
-    public function test_clicking_show_opens_overview_page_with_details(): void
+    public function test_clicking_show_opens_overview_with_production_placeholders(): void
     {
         $director = $this->createDirectorUser();
         $show = $this->seedShow([
-            'name' => 'Overview Show',
-            'scheduled_at' => '2026-10-05 18:00:00',
-            'venue_location' => 'Queens Gardens',
-            'notes' => 'Outdoor set.',
+            'name' => 'Festival Set',
+            'description' => 'Outdoor festival production.',
             'lifecycle_state' => Show::STATE_PLANNED,
         ]);
 
         $this->actingAs($director)->get(route('studio.shows.show', $show))
             ->assertOk()
-            ->assertSee('Overview Show', false)
-            ->assertSee('Queens Gardens', false)
-            ->assertSee('Outdoor set.', false)
+            ->assertSee('Festival Set', false)
+            ->assertSee('Outdoor festival production.', false)
             ->assertSee('Planned', false)
-            ->assertSee('Playlist management will appear here', false)
-            ->assertSee('Performance scheduling will appear here', false)
-            ->assertSee('Technical requirements will appear here', false);
+            ->assertSee('Playlists', false)
+            ->assertSee('Performances', false)
+            ->assertSee('Ableton', false)
+            ->assertSee('X32', false)
+            ->assertSee('Technical', false)
+            ->assertSee('Files', false)
+            ->assertDontSee('Venue / location', false)
+            ->assertDontSee('Date/time', false);
+    }
+
+    public function test_dormant_schedule_and_venue_columns_are_preserved_on_existing_rows(): void
+    {
+        $director = $this->createDirectorUser();
+        $existing = $this->seedShow(['name' => 'Existing Show']);
+
+        DB::table('shows')->where('id', $existing->id)->update([
+            'scheduled_at' => '2026-08-15 20:00:00',
+            'venue_location' => 'Preserved Venue',
+        ]);
+
+        $this->beginShowsSession($director)
+            ->post('/studio/shows', [
+                '_token' => session()->token(),
+                'name' => 'Another Show',
+            ])
+            ->assertRedirect();
+
+        $preserved = DB::table('shows')->where('id', $existing->id)->first();
+
+        $this->assertSame('Preserved Venue', $preserved->venue_location);
+        $this->assertSame('2026-08-15 20:00:00', $preserved->scheduled_at);
     }
 
     public function test_show_management_never_deletes_show_rows(): void

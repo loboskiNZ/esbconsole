@@ -29,16 +29,7 @@
                             <li class="esb-studio__shows-page-item">
                                 <a href="{{ route('studio.shows.show', $show) }}" class="esb-studio__shows-page-link">
                                     <span class="esb-studio__shows-name">{{ $show->name }}</span>
-                                    <span class="esb-studio__shows-meta">
-                                        @if ($show->scheduleLabel())
-                                            {{ $show->scheduleLabel() }}
-                                        @endif
-                                        @if ($show->venue_location)
-                                            @if ($show->scheduleLabel()) · @endif
-                                            {{ $show->venue_location }}
-                                        @endif
-                                        · {{ $show->statusLabel() }}
-                                    </span>
+                                    <span class="esb-studio__shows-meta">{{ $show->statusLabel() }}</span>
                                 </a>
                             </li>
                         @endforeach

@@ -155,19 +155,7 @@
                                             <li class="esb-studio__shows-item">
                                                 <a href="{{ route('studio.shows.show', $show) }}" class="esb-studio__shows-link">
                                                     <span class="esb-studio__shows-name">{{ $show->name }}</span>
-                                                    <span class="esb-studio__shows-meta">
-                                                        @if ($show->scheduleLabel())
-                                                            {{ $show->scheduleLabel() }}
-                                                        @endif
-                                                        @if ($show->venue_location)
-                                                            @if ($show->scheduleLabel()) · @endif
-                                                            {{ $show->venue_location }}
-                                                        @endif
-                                                        @if ($show->lifecycle_state)
-                                                            @if ($show->scheduleLabel() || $show->venue_location) · @endif
-                                                            {{ $show->statusLabel() }}
-                                                        @endif
-                                                    </span>
+                                                    <span class="esb-studio__shows-meta">{{ $show->statusLabel() }}</span>
                                                 </a>
                                             </li>
                                         @endforeach

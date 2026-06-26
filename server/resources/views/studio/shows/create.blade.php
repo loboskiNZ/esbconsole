@@ -11,7 +11,7 @@
         <header class="esb-studio__chrome-header">
             <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
             <h1 class="esb-portal__title">Add Show</h1>
-            <p class="esb-studio__card-body mt-2">Create a new show for your band.</p>
+            <p class="esb-studio__card-body mt-2">Create a reusable show production.</p>
         </header>
 
         <div class="esb-studio__shell-body">
@@ -43,22 +43,12 @@
                     </div>
 
                     <div>
-                        <label class="esb-portal__label mb-2 block" for="show-scheduled-at">Show date/time</label>
-                        <input id="show-scheduled-at" name="scheduled_at" type="datetime-local" class="esb-portal__input" value="{{ old('scheduled_at') }}">
+                        <label class="esb-portal__label mb-2 block" for="show-description">Description</label>
+                        <textarea id="show-description" name="description" rows="5" class="esb-portal__input esb-studio__band-textarea">{{ old('description') }}</textarea>
                     </div>
 
                     <div>
-                        <label class="esb-portal__label mb-2 block" for="show-venue">Venue / location</label>
-                        <input id="show-venue" name="venue_location" type="text" class="esb-portal__input" value="{{ old('venue_location') }}">
-                    </div>
-
-                    <div>
-                        <label class="esb-portal__label mb-2 block" for="show-notes">Notes</label>
-                        <textarea id="show-notes" name="notes" rows="5" class="esb-portal__input esb-studio__band-textarea">{{ old('notes') }}</textarea>
-                    </div>
-
-                    <div>
-                        <label class="esb-portal__label mb-2 block" for="show-status">Status</label>
+                        <label class="esb-portal__label mb-2 block" for="show-status">Lifecycle state</label>
                         <select id="show-status" name="lifecycle_state" class="esb-portal__input">
                             <option value="draft" @selected(old('lifecycle_state', 'draft') === 'draft')>Draft</option>
                             <option value="planned" @selected(old('lifecycle_state') === 'planned')>Planned</option>

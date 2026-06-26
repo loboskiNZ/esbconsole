@@ -11,7 +11,7 @@
         <header class="esb-studio__chrome-header">
             <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
             <h1 class="esb-portal__title">{{ $show->name }}</h1>
-            <p class="esb-studio__card-body mt-2">Show overview</p>
+            <p class="esb-studio__card-body mt-2">Reusable show production</p>
         </header>
 
         <div class="esb-studio__shell-body">
@@ -25,44 +25,52 @@
                 </p>
             @endif
 
-            <section class="esb-portal__panel esb-studio__card esb-studio__show-overview">
-                <dl class="esb-studio__show-details">
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section">
+                <h2 class="esb-studio__card-title">Overview</h2>
+                <dl class="esb-studio__show-details mt-4">
                     <div>
                         <dt>Show name</dt>
                         <dd>{{ $show->name }}</dd>
                     </div>
                     <div>
-                        <dt>Date/time</dt>
-                        <dd>{{ $show->scheduleLabel() ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt>Venue / location</dt>
-                        <dd>{{ $show->venue_location ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt>Status</dt>
-                        <dd>{{ $show->statusLabel() }}</dd>
-                    </div>
-                    <div>
-                        <dt>Notes</dt>
+                        <dt>Description</dt>
                         <dd>{{ $show->description ?: '—' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Lifecycle state</dt>
+                        <dd>{{ $show->statusLabel() }}</dd>
                     </div>
                 </dl>
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
-                <h2 class="esb-studio__card-title">Playlist</h2>
+                <h2 class="esb-studio__card-title">Playlists</h2>
                 <p class="esb-studio__card-body mt-3">Playlist management will appear here in a later phase.</p>
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">Performances</h2>
-                <p class="esb-studio__card-body mt-3">Performance scheduling will appear here in a later phase.</p>
+                <p class="esb-studio__card-body mt-3">Performance occurrences will appear here in a later phase.</p>
+            </section>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                <h2 class="esb-studio__card-title">Ableton</h2>
+                <p class="esb-studio__card-body mt-3">Ableton show file configuration will appear here in a later phase.</p>
+            </section>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                <h2 class="esb-studio__card-title">X32</h2>
+                <p class="esb-studio__card-body mt-3">X32 baseline configuration will appear here in a later phase.</p>
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">Technical</h2>
                 <p class="esb-studio__card-body mt-3">Technical requirements will appear here in a later phase.</p>
+            </section>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                <h2 class="esb-studio__card-title">Files</h2>
+                <p class="esb-studio__card-body mt-3">Show files and assets will appear here in a later phase.</p>
             </section>
         </div>
 
