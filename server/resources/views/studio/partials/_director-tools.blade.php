@@ -6,6 +6,11 @@
 
     <ul class="esb-studio__director-tools-list mt-3">
         <li>
+            <a href="{{ route('studio.shows.create') }}" class="esb-studio__director-tools-link">
+                Add Show
+            </a>
+        </li>
+        <li>
             <a href="{{ route('studio.band.edit') }}" class="esb-studio__director-tools-link">
                 Manage Band
             </a>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\StudioBandInviteService;
 use App\Services\StudioChartAccessService;
+use App\Services\StudioShowService;
 use Illuminate\View\View;
 
 class StudioController extends Controller
@@ -11,6 +12,7 @@ class StudioController extends Controller
     public function index(
         StudioChartAccessService $chartAccess,
         StudioBandInviteService $bandInvites,
+        StudioShowService $shows,
     ): View {
         $user = auth()->user();
         $person = $user?->load(['person.instruments'])->person;
@@ -32,6 +34,7 @@ class StudioController extends Controller
             'bandInvites' => $isDirector ? $bandInvites->shareableInvitesForDashboard() : collect(),
             'legacyUnusableInviteCount' => $isDirector ? $bandInvites->legacyUnusableCount() : 0,
             'isDirector' => $isDirector,
+            'shows' => $shows->showsForPortal(limit: 5),
         ]);
     }
 }

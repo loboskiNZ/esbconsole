@@ -12,10 +12,12 @@ use App\Services\StudioChartSearchService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Tests\Concerns\EnsuresPortalBand;
 use Tests\TestCase;
 
 class PortalStudioHomeTest extends TestCase
 {
+    use EnsuresPortalBand;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -27,6 +29,7 @@ class PortalStudioHomeTest extends TestCase
             'portal.library_chart_disk' => 'library',
         ]);
         Storage::fake('library');
+        $this->ensurePortalBand();
     }
 
     public function test_studio_hero_renders_primary_actions(): void
@@ -41,7 +44,8 @@ class PortalStudioHomeTest extends TestCase
             ->assertSee('Your rehearsal library', false)
             ->assertSee('Shows', false)
             ->assertSee('Schedule', false)
-            ->assertSee('Upcoming shows', false)
+            ->assertSee('No shows yet.', false)
+            ->assertDontSee('Upcoming shows', false)
             ->assertSee('Rehearsals schedule', false)
             ->assertSee('Search songs', false)
             ->assertSee('Band notices', false)

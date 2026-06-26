@@ -134,7 +134,7 @@
                                 </div>
                             </article>
 
-                            <article class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary">
+                            <article class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary esb-studio__hero-card--shows">
                                 <div class="esb-studio__hero-card-head">
                                     <svg class="esb-studio__hero-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <path d="M7 4h10v3H7V4Z" stroke="currentColor" stroke-width="1.5" />
@@ -143,14 +143,44 @@
                                     </svg>
                                     <div>
                                         <h3 class="esb-studio__hero-card-title">Shows</h3>
-                                        <p class="esb-studio__hero-card-tagline">Upcoming shows</p>
+                                        <p class="esb-studio__hero-card-tagline">Shows</p>
                                     </div>
                                 </div>
-                                <p class="esb-studio__hero-card-body">
-                                    Your performance calendar will appear here when shows are synced to the portal.
-                                </p>
+
+                                @if ($shows->isEmpty())
+                                    <p class="esb-studio__hero-card-body">No shows yet.</p>
+                                @else
+                                    <ul class="esb-studio__shows-list">
+                                        @foreach ($shows as $show)
+                                            <li class="esb-studio__shows-item">
+                                                <a href="{{ route('studio.shows.show', $show) }}" class="esb-studio__shows-link">
+                                                    <span class="esb-studio__shows-name">{{ $show->name }}</span>
+                                                    <span class="esb-studio__shows-meta">
+                                                        @if ($show->scheduleLabel())
+                                                            {{ $show->scheduleLabel() }}
+                                                        @endif
+                                                        @if ($show->venue_location)
+                                                            @if ($show->scheduleLabel()) · @endif
+                                                            {{ $show->venue_location }}
+                                                        @endif
+                                                        @if ($show->lifecycle_state)
+                                                            @if ($show->scheduleLabel() || $show->venue_location) · @endif
+                                                            {{ $show->statusLabel() }}
+                                                        @endif
+                                                    </span>
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+
                                 <div class="esb-studio__hero-card-foot">
-                                    <span class="esb-studio__hero-placeholder-action">Open</span>
+                                    <a
+                                        href="{{ route('studio.shows.index') }}"
+                                        class="esb-portal__button esb-portal__button--secondary esb-studio__hero-action"
+                                    >
+                                        Open
+                                    </a>
                                 </div>
                             </article>
 

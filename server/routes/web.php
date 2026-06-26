@@ -10,6 +10,7 @@ use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
+use App\Http\Controllers\StudioShowsController;
 use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/studio/profile/edit', [ProfileController::class, 'edit'])->name('studio.profile.edit');
     Route::get('/studio/profile/photo', [ProfileController::class, 'photo'])->name('studio.profile.photo');
     Route::put('/studio/profile', [ProfileController::class, 'update'])->name('studio.profile.update');
+    Route::get('/studio/shows', [StudioShowsController::class, 'index'])->name('studio.shows.index');
+    Route::get('/studio/shows/create', [StudioShowsController::class, 'create'])
+        ->middleware('studio.director')
+        ->name('studio.shows.create');
+    Route::post('/studio/shows', [StudioShowsController::class, 'store'])
+        ->middleware('studio.director')
+        ->name('studio.shows.store');
+    Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
     Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])
         ->middleware('studio.director')
         ->name('studio.invites.store');
