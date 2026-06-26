@@ -168,6 +168,107 @@ class StudioPerformancesTest extends TestCase
         $this->assertNotNull($confirmed);
     }
 
+    public function test_cancelled_is_accepted_as_a_valid_status(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Cancelled Show']);
+
+        $this->beginPerformanceSession($director)
+            ->post('/studio/performances', $this->performancePayload($show, [
+                'status' => Performance::STATUS_CANCELLED,
+            ]))
+            ->assertRedirect();
+
+        $performance = Performance::query()->where('show_id', $show->id)->firstOrFail();
+
+        $this->assertSame(Performance::STATUS_CANCELLED, $performance->status);
+        $this->assertSame('Cancelled', $performance->statusLabel());
+    }
+
+    public function test_invalid_performance_statuses_are_rejected(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Invalid Status Show']);
+
+        $this->beginPerformanceSession($director)
+            ->post('/studio/performances', $this->performancePayload($show, [
+                'status' => 'tentative',
+            ]))
+            ->assertSessionHasErrors('status');
+    }
+
+    public function test_create_form_includes_calendar_date_picker_input(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedShow(['name' => 'Picker Show']);
+
+        $this->actingAs($director)->get('/studio/performances/create')
+            ->assertOk()
+            ->assertSee('id="performance-date"', false)
+            ->assertSee('type="date"', false)
+            ->assertSee('esb-studio__date-input', false);
+    }
+
+    public function test_edit_form_includes_calendar_date_picker_input(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Edit Picker Show']);
+        $performance = $this->seedPerformance($show);
+
+        $this->actingAs($director)->get(route('studio.performances.edit', $performance))
+            ->assertOk()
+            ->assertSee('id="performance-date"', false)
+            ->assertSee('type="date"', false)
+            ->assertSee('esb-studio__date-input', false);
+    }
+
+    public function test_cancelled_performance_displays_in_list_and_overview(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Cancelled List Show']);
+        $performance = $this->seedPerformance($show, [
+            'status' => Performance::STATUS_CANCELLED,
+            'performance_date' => '2026-03-21',
+        ]);
+
+        $this->actingAs($director)->get('/studio/performances')
+            ->assertOk()
+            ->assertSee('Cancelled', false)
+            ->assertSee('Sat 21 Mar 2026', false);
+
+        $this->actingAs($director)->get(route('studio.performances.show', $performance))
+            ->assertOk()
+            ->assertSee('Cancelled', false)
+            ->assertSee('Sat 21 Mar 2026', false);
+    }
+
+    public function test_director_can_edit_performance_to_cancelled_without_deleting_row(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Edit Cancel Show']);
+        $performance = $this->seedPerformance($show, [
+            'status' => Performance::STATUS_CONFIRMED,
+            'location_name' => 'Original Venue',
+        ]);
+        $countBefore = DB::table('performances')->count();
+
+        $this->actingAs($director)->get(route('studio.performances.edit', $performance))->assertOk();
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.update', $performance), array_merge(
+                $this->performancePayload($show, [
+                    'status' => Performance::STATUS_CANCELLED,
+                    'location_name' => 'Original Venue',
+                ]),
+            ))
+            ->assertRedirect(route('studio.performances.show', $performance));
+
+        $this->assertSame($countBefore, DB::table('performances')->count());
+        $performance->refresh();
+        $this->assertSame(Performance::STATUS_CANCELLED, $performance->status);
+        $this->assertSame('Original Venue', $performance->location_name);
+    }
+
     public function test_performance_appears_in_performances_list(): void
     {
         $director = $this->createDirectorUser();
@@ -199,7 +300,7 @@ class StudioPerformancesTest extends TestCase
             ->assertOk()
             ->assertSee($performance->typeLabel(), false)
             ->assertSee($performance->statusLabel(), false)
-            ->assertSee('22 Aug 2026', false)
+            ->assertSee('Sat 22 Aug 2026', false)
             ->assertSee('Festival Green', false)
             ->assertSee('Open', false);
     }
@@ -228,7 +329,7 @@ class StudioPerformancesTest extends TestCase
             ->assertSee('Confirmed', false)
             ->assertSee('Opera House', false)
             ->assertSee('123 Main St', false)
-            ->assertSee('15 Sep 2026', false)
+            ->assertSee('Tue 15 Sep 2026', false)
             ->assertSee('16:00', false)
             ->assertSee('20:00', false)
             ->assertSee('120 min', false)

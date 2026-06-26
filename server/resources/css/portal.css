@@ -1740,6 +1740,23 @@
     white-space: pre-wrap;
 }
 
+.esb-studio__date-input {
+    min-height: 2.75rem;
+    color-scheme: dark;
+}
+
+.esb-studio__date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.85;
+    filter: invert(78%) sepia(42%) saturate(742%) hue-rotate(346deg) brightness(101%) contrast(101%);
+}
+
+.esb-studio__field-hint {
+    color: var(--esb-muted);
+    font-size: 0.76rem;
+    line-height: 1.4;
+}
+
 .esb-studio__show-details {
     display: grid;
     gap: 1rem;

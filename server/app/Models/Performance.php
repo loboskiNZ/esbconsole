@@ -16,6 +16,20 @@ class Performance extends Model
 
     public const STATUS_CONFIRMED = 'confirmed';
 
+    public const STATUS_CANCELLED = 'cancelled';
+
+    /**
+     * @return list<string>
+     */
+    public static function validStatuses(): array
+    {
+        return [
+            self::STATUS_NOT_CONFIRMED,
+            self::STATUS_CONFIRMED,
+            self::STATUS_CANCELLED,
+        ];
+    }
+
     /**
      * @var list<string>
      */
@@ -85,6 +99,7 @@ class Performance extends Model
         return match ($this->status) {
             self::STATUS_CONFIRMED => 'Confirmed',
             self::STATUS_NOT_CONFIRMED => 'Not confirmed',
+            self::STATUS_CANCELLED => 'Cancelled',
             default => str($this->status ?? self::STATUS_NOT_CONFIRMED)->replace('_', ' ')->title()->toString(),
         };
     }
@@ -111,7 +126,7 @@ class Performance extends Model
 
     public function formattedPerformanceDate(): string
     {
-        return $this->performance_date?->format('j M Y') ?? '—';
+        return $this->performance_date?->format('D j M Y') ?? '—';
     }
 
     public function formattedTime(?string $value): string

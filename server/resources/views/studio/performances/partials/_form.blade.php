@@ -33,6 +33,7 @@
         <select id="performance-status" name="status" class="esb-portal__input" required>
             <option value="not_confirmed" @selected(old('status', $performance?->status ?? 'not_confirmed') === 'not_confirmed')>Not confirmed</option>
             <option value="confirmed" @selected(old('status', $performance?->status) === 'confirmed')>Confirmed</option>
+            <option value="cancelled" @selected(old('status', $performance?->status) === 'cancelled')>Cancelled</option>
         </select>
     </div>
 
@@ -64,10 +65,11 @@
             id="performance-date"
             name="performance_date"
             type="date"
-            class="esb-portal__input"
+            class="esb-portal__input esb-studio__date-input"
             value="{{ old('performance_date', $performance?->performance_date?->format('Y-m-d')) }}"
             required
         >
+        <p class="esb-studio__field-hint mt-1">Use the calendar picker to choose a date.</p>
     </div>
 
     <div>

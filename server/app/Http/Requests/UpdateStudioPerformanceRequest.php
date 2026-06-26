@@ -27,7 +27,7 @@ class UpdateStudioPerformanceRequest extends FormRequest
                 Rule::exists('shows', 'id')->where(fn ($query) => $query->where('band_id', $bandId)),
             ],
             'performance_type' => ['required', 'string', Rule::in([Performance::TYPE_REHEARSAL, Performance::TYPE_LIVE])],
-            'status' => ['required', 'string', Rule::in([Performance::STATUS_NOT_CONFIRMED, Performance::STATUS_CONFIRMED])],
+            'status' => ['required', 'string', Rule::in(Performance::validStatuses())],
             'location_name' => ['required', 'string', 'max:255'],
             'location_address' => ['nullable', 'string', 'max:5000'],
             'performance_date' => ['required', 'date'],
