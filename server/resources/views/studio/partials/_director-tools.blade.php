@@ -11,6 +11,11 @@
             </a>
         </li>
         <li>
+            <a href="{{ route('studio.performances.create') }}" class="esb-studio__director-tools-link">
+                Add Performance
+            </a>
+        </li>
+        <li>
             <a href="{{ route('studio.band.edit') }}" class="esb-studio__director-tools-link">
                 Manage Band
             </a>

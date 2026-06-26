@@ -50,7 +50,26 @@
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">Performances</h2>
-                <p class="esb-studio__card-body mt-3">Performance occurrences will appear here in a later phase.</p>
+
+                @if ($performances->isEmpty())
+                    <p class="esb-studio__card-body mt-3">No performances scheduled for this show yet.</p>
+                @else
+                    <ul class="esb-studio__show-performances-list mt-4">
+                        @foreach ($performances as $performance)
+                            <li class="esb-studio__show-performances-item">
+                                <a href="{{ route('studio.performances.show', $performance) }}" class="esb-studio__show-performances-link">
+                                    <span class="esb-studio__show-performances-meta">
+                                        {{ $performance->typeLabel() }} · {{ $performance->statusLabel() }}
+                                    </span>
+                                    <span class="esb-studio__show-performances-details">
+                                        {{ $performance->formattedPerformanceDate() }} · {{ $performance->locationNameLabel() }}
+                                    </span>
+                                    <span class="esb-studio__show-performances-open">Open</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
             </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">

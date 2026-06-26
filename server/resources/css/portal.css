@@ -1635,6 +1635,111 @@
     text-decoration: underline;
 }
 
+.esb-studio__performances-list,
+.esb-studio__show-performances-list,
+.esb-studio__availability-list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__performances-link,
+.esb-studio__show-performances-link {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(233, 203, 160, 0.14);
+    background: rgba(12, 10, 8, 0.35);
+    color: inherit;
+    text-decoration: none;
+}
+
+.esb-studio__performances-link:hover,
+.esb-studio__performances-link:focus-visible,
+.esb-studio__show-performances-link:hover,
+.esb-studio__show-performances-link:focus-visible {
+    border-color: rgba(255, 178, 62, 0.35);
+}
+
+.esb-studio__performances-show,
+.esb-studio__performances-primary {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--esb-ink);
+}
+
+.esb-studio__performances-meta,
+.esb-studio__performances-secondary,
+.esb-studio__show-performances-meta,
+.esb-studio__show-performances-details {
+    font-size: 0.78rem;
+    color: var(--esb-muted);
+    line-height: 1.45;
+}
+
+.esb-studio__performances-secondary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+}
+
+.esb-studio__show-performances-link {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+}
+
+.esb-studio__show-performances-open {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(255, 178, 62, 0.92);
+}
+
+.esb-studio__availability-item {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(233, 203, 160, 0.14);
+    background: rgba(12, 10, 8, 0.25);
+}
+
+.esb-studio__availability-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--esb-ink);
+}
+
+.esb-studio__availability-status {
+    font-size: 0.78rem;
+    color: rgba(255, 178, 62, 0.92);
+    font-weight: 700;
+}
+
+.esb-studio__availability-notes {
+    font-size: 0.78rem;
+    color: var(--esb-muted);
+    white-space: pre-wrap;
+}
+
+.esb-studio__inline-link {
+    color: rgba(255, 178, 62, 0.92);
+    text-decoration: none;
+}
+
+.esb-studio__inline-link:hover,
+.esb-studio__inline-link:focus-visible {
+    text-decoration: underline;
+}
+
+.esb-studio__pre-wrap {
+    white-space: pre-wrap;
+}
+
 .esb-studio__show-details {
     display: grid;
     gap: 1rem;

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Show extends Model
 {
@@ -67,6 +68,14 @@ class Show extends Model
     public function abletonShowFile(): BelongsTo
     {
         return $this->belongsTo(AbletonShowFile::class);
+    }
+
+    /**
+     * @return HasMany<Performance, $this>
+     */
+    public function performances(): HasMany
+    {
+        return $this->hasMany(Performance::class);
     }
 
     public function statusLabel(): string

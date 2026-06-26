@@ -10,6 +10,7 @@ use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
+use App\Http\Controllers\StudioPerformancesController;
 use App\Http\Controllers\StudioShowsController;
 use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,14 @@ Route::middleware('auth')->group(function () {
         Route::patch('/studio/shows/{show}/restore', [StudioShowsController::class, 'restore'])->name('studio.shows.restore');
     });
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
+    Route::get('/studio/performances', [StudioPerformancesController::class, 'index'])->name('studio.performances.index');
+    Route::middleware('studio.director')->group(function () {
+        Route::get('/studio/performances/create', [StudioPerformancesController::class, 'create'])->name('studio.performances.create');
+        Route::post('/studio/performances', [StudioPerformancesController::class, 'store'])->name('studio.performances.store');
+        Route::get('/studio/performances/{performance}/edit', [StudioPerformancesController::class, 'edit'])->name('studio.performances.edit');
+        Route::put('/studio/performances/{performance}', [StudioPerformancesController::class, 'update'])->name('studio.performances.update');
+    });
+    Route::get('/studio/performances/{performance}', [StudioPerformancesController::class, 'show'])->name('studio.performances.show');
     Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])
         ->middleware('studio.director')
         ->name('studio.invites.store');

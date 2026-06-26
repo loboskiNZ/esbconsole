@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreStudioShowRequest;
 use App\Http\Requests\UpdateStudioShowRequest;
 use App\Models\Show;
+use App\Services\StudioPerformanceService;
 use App\Services\StudioShowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -42,10 +43,13 @@ class StudioShowsController extends Controller
             ->with('show_created', true);
     }
 
-    public function show(Show $show, StudioShowService $shows): View
+    public function show(Show $show, StudioShowService $shows, StudioPerformanceService $performances): View
     {
+        $portalShow = $shows->showForPortal($show->id);
+
         return view('studio.shows.show', [
-            'show' => $shows->showForPortal($show->id),
+            'show' => $portalShow,
+            'performances' => $performances->performancesForShow($portalShow->id),
         ]);
     }
 
