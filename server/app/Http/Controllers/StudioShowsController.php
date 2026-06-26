@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreStudioShowRequest;
+use App\Http\Requests\UpdateStudioShowRequest;
 use App\Models\Show;
 use App\Services\StudioShowService;
 use Illuminate\Http\RedirectResponse;
@@ -12,8 +13,18 @@ class StudioShowsController extends Controller
 {
     public function index(StudioShowService $shows): View
     {
+        $user = auth()->user();
+
         return view('studio.shows.index', [
-            'shows' => $shows->showsForPortal(),
+            'shows' => $shows->activeShowsForPortal(),
+            'isDirector' => $user?->isDirector() ?? false,
+        ]);
+    }
+
+    public function archived(StudioShowService $shows): View
+    {
+        return view('studio.shows.archived', [
+            'shows' => $shows->archivedShowsForPortal(),
         ]);
     }
 
@@ -33,10 +44,42 @@ class StudioShowsController extends Controller
 
     public function show(Show $show, StudioShowService $shows): View
     {
-        $portalShow = $shows->showForPortal($show->id);
-
         return view('studio.shows.show', [
-            'show' => $portalShow,
+            'show' => $shows->showForPortal($show->id),
         ]);
+    }
+
+    public function edit(Show $show, StudioShowService $shows): View
+    {
+        return view('studio.shows.edit', [
+            'show' => $shows->showForPortal($show->id),
+        ]);
+    }
+
+    public function update(UpdateStudioShowRequest $request, Show $show, StudioShowService $shows): RedirectResponse
+    {
+        $updated = $shows->updateShow($show, $request->validatedPayload());
+
+        return redirect()
+            ->route('studio.shows.show', $updated)
+            ->with('show_updated', true);
+    }
+
+    public function archive(Show $show, StudioShowService $shows): RedirectResponse
+    {
+        $shows->archiveShow($show);
+
+        return redirect()
+            ->route('studio.shows.index')
+            ->with('show_archived', $show->name);
+    }
+
+    public function restore(Show $show, StudioShowService $shows): RedirectResponse
+    {
+        $restored = $shows->restoreShow($show);
+
+        return redirect()
+            ->route('studio.shows.index')
+            ->with('show_restored', $restored->name);
     }
 }

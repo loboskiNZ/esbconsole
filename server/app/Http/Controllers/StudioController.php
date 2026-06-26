@@ -34,7 +34,7 @@ class StudioController extends Controller
             'bandInvites' => $isDirector ? $bandInvites->shareableInvitesForDashboard() : collect(),
             'legacyUnusableInviteCount' => $isDirector ? $bandInvites->legacyUnusableCount() : 0,
             'isDirector' => $isDirector,
-            'shows' => $shows->showsForPortal(limit: 5),
+            'shows' => $shows->activeShowsForPortal(limit: 5),
         ]);
     }
 }

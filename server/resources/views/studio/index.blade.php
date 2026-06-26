@@ -153,10 +153,15 @@
                                     <ul class="esb-studio__shows-list">
                                         @foreach ($shows as $show)
                                             <li class="esb-studio__shows-item">
-                                                <a href="{{ route('studio.shows.show', $show) }}" class="esb-studio__shows-link">
-                                                    <span class="esb-studio__shows-name">{{ $show->name }}</span>
-                                                    <span class="esb-studio__shows-meta">{{ $show->statusLabel() }}</span>
-                                                </a>
+                                                <div class="esb-studio__shows-row esb-studio__shows-row--compact">
+                                                    <a href="{{ route('studio.shows.show', $show) }}" class="esb-studio__shows-link esb-studio__shows-row-main">
+                                                        <span class="esb-studio__shows-name">{{ $show->name }}</span>
+                                                        <span class="esb-studio__shows-meta">{{ $show->statusLabel() }}</span>
+                                                    </a>
+                                                    @if ($isDirector)
+                                                        @include('studio.shows.partials._show-actions', ['show' => $show])
+                                                    @endif
+                                                </div>
                                             </li>
                                         @endforeach
                                     </ul>

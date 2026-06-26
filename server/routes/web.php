@@ -34,12 +34,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/studio/profile/photo', [ProfileController::class, 'photo'])->name('studio.profile.photo');
     Route::put('/studio/profile', [ProfileController::class, 'update'])->name('studio.profile.update');
     Route::get('/studio/shows', [StudioShowsController::class, 'index'])->name('studio.shows.index');
+    Route::get('/studio/shows/archived', [StudioShowsController::class, 'archived'])
+        ->middleware('studio.director')
+        ->name('studio.shows.archived');
     Route::get('/studio/shows/create', [StudioShowsController::class, 'create'])
         ->middleware('studio.director')
         ->name('studio.shows.create');
     Route::post('/studio/shows', [StudioShowsController::class, 'store'])
         ->middleware('studio.director')
         ->name('studio.shows.store');
+    Route::middleware('studio.director')->group(function () {
+        Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');
+        Route::put('/studio/shows/{show}', [StudioShowsController::class, 'update'])->name('studio.shows.update');
+        Route::patch('/studio/shows/{show}/archive', [StudioShowsController::class, 'archive'])->name('studio.shows.archive');
+        Route::patch('/studio/shows/{show}/restore', [StudioShowsController::class, 'restore'])->name('studio.shows.restore');
+    });
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
     Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])
         ->middleware('studio.director')

@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Shows — The Studio')
+@section('title', 'Archived Shows — The Studio')
 
 @section('body-attributes')
     class="esb-portal esb-portal--studio antialiased"
@@ -10,22 +10,17 @@
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
         <header class="esb-studio__chrome-header">
             <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Shows</h1>
+            <h1 class="esb-portal__title">Archived Shows</h1>
         </header>
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4 flex flex-wrap items-center justify-between gap-3">
-                <a href="{{ route('studio') }}" class="esb-studio__back-link">← Back to Studio</a>
-                @if ($isDirector)
-                    <a href="{{ route('studio.shows.archived') }}" class="esb-studio__shows-archived-link">
-                        View Archived
-                    </a>
-                @endif
+            <div class="esb-studio__charts-nav mb-4">
+                <a href="{{ route('studio.shows.index') }}" class="esb-studio__back-link">← Back to Shows</a>
             </div>
 
             @if ($shows->isEmpty())
                 <section class="esb-portal__panel esb-studio__card">
-                    <p class="esb-studio__card-body">No shows yet.</p>
+                    <p class="esb-studio__card-body">No archived shows.</p>
                 </section>
             @else
                 <section class="esb-portal__panel esb-studio__card">
@@ -37,9 +32,7 @@
                                         <span class="esb-studio__shows-name">{{ $show->name }}</span>
                                         <span class="esb-studio__shows-meta">{{ $show->statusLabel() }}</span>
                                     </a>
-                                    @if ($isDirector)
-                                        @include('studio.shows.partials._show-actions', ['show' => $show])
-                                    @endif
+                                    @include('studio.shows.partials._show-actions', ['show' => $show, 'archived' => true])
                                 </div>
                             </li>
                         @endforeach

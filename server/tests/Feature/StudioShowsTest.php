@@ -130,6 +130,7 @@ class StudioShowsTest extends TestCase
         $this->assertNotNull($show);
         $this->assertSame('Seasonal production variant.', $show->description);
         $this->assertSame(Show::STATE_PLANNED, $show->lifecycle_state);
+        $this->assertTrue($show->is_active);
         $this->assertNull($show->scheduled_at);
         $this->assertNull($show->venue_location);
         $this->assertNotNull($show->ableton_show_file_id);
@@ -223,6 +224,191 @@ class StudioShowsTest extends TestCase
         $this->assertDatabaseHas('shows', ['id' => $existing->id, 'name' => 'Existing Show']);
     }
 
+    public function test_active_shows_appear_on_dashboard(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedShow(['name' => 'Active Dashboard Show']);
+
+        $this->actingAs($director)->get('/studio')
+            ->assertOk()
+            ->assertSee('Active Dashboard Show', false)
+            ->assertSee('Edit', false)
+            ->assertSee('Archive', false);
+    }
+
+    public function test_archived_shows_do_not_appear_on_dashboard(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Hidden Dashboard Show']);
+
+        $this->archiveShowAsDirector($director, $show);
+
+        $this->actingAs($director)
+            ->get('/studio')
+            ->assertOk()
+            ->assertDontSee('Hidden Dashboard Show', false);
+    }
+
+    public function test_active_shows_appear_on_shows_index(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedShow(['name' => 'Active Index Show']);
+
+        $this->actingAs($director)->get('/studio/shows')
+            ->assertOk()
+            ->assertSee('Active Index Show', false)
+            ->assertSee('View Archived', false);
+    }
+
+    public function test_archived_shows_do_not_appear_on_shows_index(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Hidden Index Show']);
+
+        $this->archiveShowAsDirector($director, $show);
+
+        $this->actingAs($director)->get('/studio/shows')
+            ->assertOk()
+            ->assertDontSee('Hidden Index Show', false);
+    }
+
+    public function test_archived_shows_appear_on_archived_page(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Archived List Show']);
+
+        $this->archiveShowAsDirector($director, $show);
+
+        $this->actingAs($director)->get('/studio/shows/archived')
+            ->assertOk()
+            ->assertSee('Archived List Show', false)
+            ->assertSee('Restore', false);
+    }
+
+    public function test_director_can_edit_show(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow([
+            'name' => 'Original Name',
+            'description' => 'Original description.',
+            'lifecycle_state' => Show::STATE_DRAFT,
+        ]);
+
+        $this->actingAs($director)->get(route('studio.shows.edit', $show))->assertOk();
+
+        $this->actingAs($director)
+            ->put(route('studio.shows.update', $show), [
+                '_token' => session()->token(),
+                'name' => 'Updated Name',
+                'description' => 'Updated description.',
+                'lifecycle_state' => Show::STATE_PLANNED,
+            ])
+            ->assertRedirect(route('studio.shows.show', $show));
+
+        $show->refresh();
+
+        $this->assertSame('Updated Name', $show->name);
+        $this->assertSame('Updated description.', $show->description);
+        $this->assertSame(Show::STATE_PLANNED, $show->lifecycle_state);
+    }
+
+    public function test_director_can_archive_show_without_deleting_row(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Archive Target Show']);
+        $countBefore = DB::table('shows')->count();
+
+        $this->archiveShowAsDirector($director, $show);
+
+        $this->assertSame($countBefore, DB::table('shows')->count());
+        $this->assertDatabaseHas('shows', [
+            'id' => $show->id,
+            'name' => 'Archive Target Show',
+            'is_active' => false,
+        ]);
+    }
+
+    public function test_director_can_restore_archived_show(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Restore Target Show']);
+
+        $this->archiveShowAsDirector($director, $show);
+
+        $this->actingAs($director)->get('/studio/shows/archived')->assertOk();
+
+        $this->actingAs($director)
+            ->patch(route('studio.shows.restore', $show), ['_token' => session()->token()])
+            ->assertRedirect(route('studio.shows.index'));
+
+        $show->refresh();
+        $this->assertTrue($show->is_active);
+
+        $this->actingAs($director)->get('/studio')
+            ->assertOk()
+            ->assertSee('Restore Target Show', false);
+    }
+
+    public function test_musician_cannot_edit_archive_or_restore_shows(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Protected Show']);
+
+        $this->actingAs($musician)->get(route('studio.shows.edit', $show))->assertForbidden();
+
+        $this->actingAs($musician)->get('/studio/shows')->assertOk();
+        $this->actingAs($musician)
+            ->patch(route('studio.shows.archive', $show), ['_token' => session()->token()])
+            ->assertForbidden();
+
+        $show->update(['is_active' => false]);
+
+        $this->actingAs($musician)->get('/studio/shows/archived')->assertForbidden();
+
+        $this->actingAs($musician)->get('/studio/shows')->assertOk();
+        $this->actingAs($musician)
+            ->patch(route('studio.shows.restore', $show), ['_token' => session()->token()])
+            ->assertForbidden();
+    }
+
+    public function test_edit_does_not_affect_dormant_schedule_or_venue_columns(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Dormant Columns Show']);
+
+        DB::table('shows')->where('id', $show->id)->update([
+            'scheduled_at' => '2026-08-15 20:00:00',
+            'venue_location' => 'Preserved Venue',
+        ]);
+
+        $this->actingAs($director)->get(route('studio.shows.edit', $show))->assertOk();
+
+        $this->actingAs($director)
+            ->put(route('studio.shows.update', $show), [
+                '_token' => session()->token(),
+                'name' => 'Renamed Show',
+                'description' => 'New description.',
+                'lifecycle_state' => Show::STATE_PLANNED,
+            ])
+            ->assertRedirect();
+
+        $preserved = DB::table('shows')->where('id', $show->id)->first();
+
+        $this->assertSame('Preserved Venue', $preserved->venue_location);
+        $this->assertSame('2026-08-15 20:00:00', $preserved->scheduled_at);
+    }
+
+    public function test_no_delete_route_exists_for_shows(): void
+    {
+        $deleteRoutes = collect(app('router')->getRoutes())->filter(
+            static fn ($route): bool => in_array('DELETE', $route->methods(), true)
+                && str_contains($route->uri(), 'studio/shows')
+        );
+
+        $this->assertTrue($deleteRoutes->isEmpty());
+    }
+
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -239,5 +425,14 @@ class StudioShowsTest extends TestCase
         $this->actingAs($director)->get('/studio/shows/create')->assertOk();
 
         return $this;
+    }
+
+    private function archiveShowAsDirector(User $director, Show $show): void
+    {
+        $this->actingAs($director)->get('/studio/shows')->assertOk();
+
+        $this->actingAs($director)
+            ->patch(route('studio.shows.archive', $show), ['_token' => session()->token()])
+            ->assertRedirect(route('studio.shows.index'));
     }
 }
