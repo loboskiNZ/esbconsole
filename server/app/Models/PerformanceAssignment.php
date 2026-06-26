@@ -28,7 +28,18 @@ class PerformanceAssignment extends Model
         'active',
         'availability_status',
         'availability_notes',
+        'responded_at',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'responded_at' => 'datetime',
+        ];
+    }
 
     /**
      * @return BelongsTo<Performance, $this>

@@ -7,6 +7,7 @@ use App\Http\Controllers\OnboardingRegistrationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudioBandController;
 use App\Http\Controllers\StudioBandInviteController;
+use App\Http\Controllers\StudioCalendarController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
@@ -51,7 +52,12 @@ Route::middleware('auth')->group(function () {
         Route::patch('/studio/shows/{show}/restore', [StudioShowsController::class, 'restore'])->name('studio.shows.restore');
     });
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
+    Route::get('/studio/calendar', [StudioCalendarController::class, 'index'])->name('studio.calendar.index');
     Route::get('/studio/performances', [StudioPerformancesController::class, 'index'])->name('studio.performances.index');
+    Route::get('/studio/performances/{performance}/calendar.ics', [StudioPerformancesController::class, 'calendar'])
+        ->name('studio.performances.calendar');
+    Route::post('/studio/performances/{performance}/rsvp', [StudioPerformancesController::class, 'rsvp'])
+        ->name('studio.performances.rsvp');
     Route::middleware('studio.director')->group(function () {
         Route::get('/studio/performances/create', [StudioPerformancesController::class, 'create'])->name('studio.performances.create');
         Route::post('/studio/performances', [StudioPerformancesController::class, 'store'])->name('studio.performances.store');

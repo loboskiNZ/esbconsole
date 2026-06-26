@@ -177,7 +177,10 @@
                                 </div>
                             </article>
 
-                            <article class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary">
+                            <article
+                                class="esb-portal__panel esb-studio__hero-card esb-studio__hero-card--secondary esb-studio__hero-card--schedule"
+                                x-data="studioSchedule(@js($scheduleItems->pluck('card')->values()), @js($hasMusicianLink))"
+                            >
                                 <div class="esb-studio__hero-card-head">
                                     <svg class="esb-studio__hero-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                         <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.5" />
@@ -185,15 +188,38 @@
                                     </svg>
                                     <div>
                                         <h3 class="esb-studio__hero-card-title">Schedule</h3>
-                                        <p class="esb-studio__hero-card-tagline">Rehearsals schedule</p>
+                                        <p class="esb-studio__hero-card-tagline">Upcoming performances</p>
                                     </div>
                                 </div>
-                                <p class="esb-studio__hero-card-body">
-                                    Rehearsal dates and call times will land here.
-                                </p>
+
+                                @if (session('rsvp_saved'))
+                                    <p class="esb-portal__success mt-3" role="status">RSVP saved.</p>
+                                @endif
+
+                                @if (session('rsvp_error'))
+                                    <p class="esb-portal__error mt-3" role="alert">{{ session('rsvp_error') }}</p>
+                                @endif
+
+                                @if ($scheduleItems->isEmpty())
+                                    <p class="esb-studio__hero-card-body">No upcoming performances.</p>
+                                @else
+                                    <ul class="esb-studio__schedule-list mt-3">
+                                        @foreach ($scheduleItems as $item)
+                                            @include('studio.partials._schedule-item', ['item' => $item])
+                                        @endforeach
+                                    </ul>
+                                @endif
+
                                 <div class="esb-studio__hero-card-foot">
-                                    <span class="esb-studio__hero-placeholder-action">Open</span>
+                                    <a
+                                        href="{{ route('studio.calendar.index') }}"
+                                        class="esb-portal__button esb-portal__button--secondary esb-studio__hero-action"
+                                    >
+                                        View Calendar
+                                    </a>
                                 </div>
+
+                                @include('studio.partials._rsvp-modal')
                             </article>
                         </div>
                     </section>

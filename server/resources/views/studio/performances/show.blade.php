@@ -32,7 +32,31 @@
                 <p class="esb-portal__success mb-4" role="status">Performance updated.</p>
             @endif
 
-            <section class="esb-portal__panel esb-studio__card esb-studio__show-section">
+            @if (session('rsvp_saved'))
+                <p class="esb-portal__success mb-4" role="status">RSVP saved.</p>
+            @endif
+
+            @if (session('rsvp_error'))
+                <p class="esb-portal__error mb-4" role="alert">{{ session('rsvp_error') }}</p>
+            @endif
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section" x-data="studioSchedule([@js($scheduleCard)], @js($hasMusicianLink))">
+                <div class="esb-studio__schedule-rsvp-head">
+                    <h2 class="esb-studio__card-title">Your RSVP</h2>
+                    <span class="esb-studio__schedule-rsvp">RSVP: {{ $rsvpLabel }}</span>
+                </div>
+                <div class="esb-studio__schedule-item-actions mt-4">
+                    <button type="button" class="esb-studio__show-pill esb-studio__show-pill--action" @click="openRsvp(@js($scheduleCard))">
+                        RSVP
+                    </button>
+                    <a href="{{ $scheduleCard['ics_url'] }}" class="esb-studio__show-pill esb-studio__show-pill--action">
+                        Add to calendar
+                    </a>
+                </div>
+                @include('studio.partials._rsvp-modal')
+            </section>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">Overview</h2>
                 <dl class="esb-studio__show-details mt-4">
                     <div>

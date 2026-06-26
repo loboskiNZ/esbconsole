@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Services\StudioBandInviteService;
 use App\Services\StudioChartAccessService;
+use App\Services\StudioMusicianResolverService;
+use App\Services\StudioScheduleService;
 use App\Services\StudioShowService;
 use Illuminate\View\View;
 
@@ -13,10 +15,13 @@ class StudioController extends Controller
         StudioChartAccessService $chartAccess,
         StudioBandInviteService $bandInvites,
         StudioShowService $shows,
+        StudioScheduleService $schedule,
+        StudioMusicianResolverService $musicians,
     ): View {
         $user = auth()->user();
         $person = $user?->load(['person.instruments'])->person;
         $isDirector = $user?->isDirector() ?? false;
+        $musician = $user ? $musicians->musicianForUser($user) : null;
 
         $songCount = 0;
         $chartCount = 0;
@@ -25,6 +30,8 @@ class StudioController extends Controller
             $songCount = $chartAccess->songCountForPerson($person);
             $chartCount = $chartAccess->chartCountForPerson($person);
         }
+
+        $upcomingPerformances = $schedule->upcomingPerformancesForPortal(limit: 5);
 
         return view('studio.index', [
             'user' => $user,
@@ -35,6 +42,8 @@ class StudioController extends Controller
             'legacyUnusableInviteCount' => $isDirector ? $bandInvites->legacyUnusableCount() : 0,
             'isDirector' => $isDirector,
             'shows' => $shows->activeShowsForPortal(limit: 5),
+            'scheduleItems' => $schedule->buildScheduleItems($upcomingPerformances, $musician),
+            'hasMusicianLink' => $musician !== null,
         ]);
     }
 }
