@@ -35,6 +35,8 @@ class Song extends Model
         'reference_url',
         'reference_title',
         'reference_notes',
+        'spotify_url',
+        'youtube_url',
         'status',
     ];
 
@@ -72,5 +74,13 @@ class Song extends Model
     public function charts(): HasMany
     {
         return $this->hasMany(Chart::class);
+    }
+
+    /**
+     * @return HasMany<SongAsset, $this>
+     */
+    public function assets(): HasMany
+    {
+        return $this->hasMany(SongAsset::class)->orderBy('sort_order')->orderBy('id');
     }
 }

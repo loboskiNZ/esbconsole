@@ -19,7 +19,7 @@ class StudioSongsController extends Controller
     {
         $this->ensureSongBelongsToPortalBand($song);
 
-        $song->load(['timeSignature', 'musicalKey', 'mood']);
+        $song->load(['timeSignature', 'musicalKey', 'mood', 'assets']);
 
         return view('studio.songs.edit', [
             'song' => $song,
@@ -29,6 +29,8 @@ class StudioSongsController extends Controller
             'returnTo' => $request->query('return_to'),
             'songInstrumentParts' => $instrumentParts->partsForSongEdit($song),
             'attachableInstrumentParts' => $instrumentParts->attachablePartsForSong($song),
+            'songAssetTypes' => \App\Support\SongAssetType::labels(),
+            'songAssetMaxMb' => (int) ceil(((int) config('portal.song_asset_max_kb', 153600)) / 1024),
         ]);
     }
 
@@ -78,6 +80,8 @@ class StudioSongsController extends Controller
             'reference_url' => ['nullable', 'string', 'max:2048', 'url'],
             'reference_title' => ['nullable', 'string', 'max:255'],
             'reference_notes' => ['nullable', 'string'],
+            'spotify_url' => ['nullable', 'string', 'max:2048', 'url'],
+            'youtube_url' => ['nullable', 'string', 'max:2048', 'url'],
             'return_to' => ['nullable', 'string', 'max:2048'],
         ];
     }

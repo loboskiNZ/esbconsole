@@ -15,6 +15,7 @@ use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
 use App\Http\Controllers\StudioPerformancesController;
 use App\Http\Controllers\StudioShowsController;
+use App\Http\Controllers\StudioSongAssetController;
 use App\Http\Controllers\StudioSongsController;
 use App\Http\Controllers\StudioSongInstrumentPartController;
 use App\Http\Controllers\StudioUsersController;
@@ -54,6 +55,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/songs/{song}', [StudioSongsController::class, 'update'])->name('songs.update');
         Route::post('/songs/{song}/instrument-parts', [StudioSongInstrumentPartController::class, 'store'])
             ->name('songs.instrument-parts.store');
+        Route::post('/songs/{song}/assets', [StudioSongAssetController::class, 'store'])
+            ->name('songs.assets.store');
+        Route::get('/songs/{song}/assets/{songAsset}/file', [StudioSongAssetController::class, 'file'])
+            ->name('songs.assets.file');
 
         Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');
         Route::put('/studio/shows/{show}', [StudioShowsController::class, 'update'])->name('studio.shows.update');

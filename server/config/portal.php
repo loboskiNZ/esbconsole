@@ -87,4 +87,12 @@ return [
 
     'library_storage_root' => env('PORTAL_LIBRARY_STORAGE_ROOT'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Song assets (audio / MIDI library files on esb-media)
+    |--------------------------------------------------------------------------
+    */
+
+    'song_asset_max_kb' => (int) env('PORTAL_SONG_ASSET_MAX_KB', 153600),
+
 ];

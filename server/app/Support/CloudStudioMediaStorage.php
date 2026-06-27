@@ -18,6 +18,25 @@ class CloudStudioMediaStorage
         return "library/charts/{$bandId}/{$songCode}/{$filename}";
     }
 
+    public function songAssetReference(int $songId, string $assetType, string $filename): string
+    {
+        $safeType = preg_replace('/[^a-z0-9_]+/', '_', strtolower($assetType)) ?: SongAssetType::OTHER;
+
+        return "library/songs/{$songId}/assets/{$safeType}/{$filename}";
+    }
+
+    /**
+     * Write canonical media to S3 only — no local fallback (song assets, etc.).
+     */
+    public function putMediaObject(string $storageReference, string $contents): void
+    {
+        $key = ltrim($storageReference, '/');
+
+        if (! Storage::disk($this->mediaDisk())->put($key, $contents)) {
+            throw new RuntimeException("Unable to write media object at {$key}.");
+        }
+    }
+
     public function chartDiskRoot(): string
     {
         $root = config('portal.library_storage_root')

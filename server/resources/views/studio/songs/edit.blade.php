@@ -31,6 +31,10 @@
                 <p class="esb-portal__success mb-4" role="status">Instrument part added.</p>
             @endif
 
+            @if (session('song_asset_uploaded'))
+                <p class="esb-portal__success mb-4" role="status">Song file uploaded.</p>
+            @endif
+
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"
@@ -126,12 +130,153 @@
                     </div>
                 </div>
 
+                <div class="esb-studio__song-section mt-6">
+                    <h2 class="esb-studio__card-title">External links</h2>
+                    <p class="esb-studio__card-body mt-2">Streaming and reference links for this song.</p>
+                    <div class="esb-studio__band-form-grid mt-4">
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-spotify-url">Spotify URL</label>
+                            <input
+                                id="song-spotify-url"
+                                name="spotify_url"
+                                type="url"
+                                class="esb-portal__input"
+                                value="{{ old('spotify_url', $song->spotify_url) }}"
+                                placeholder="https://open.spotify.com/track/..."
+                            >
+                        </div>
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-youtube-url">YouTube URL</label>
+                            <input
+                                id="song-youtube-url"
+                                name="youtube_url"
+                                type="url"
+                                class="esb-portal__input"
+                                value="{{ old('youtube_url', $song->youtube_url) }}"
+                                placeholder="https://www.youtube.com/watch?v=..."
+                            >
+                        </div>
+                    </div>
+                </div>
+
                 <div class="esb-studio__band-form-actions mt-6">
                     <button type="submit" class="esb-portal__button esb-portal__button--primary">
                         Save song
                     </button>
                 </div>
             </form>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-form mt-4">
+                <h2 class="esb-studio__card-title">Song files</h2>
+                <p class="esb-studio__card-body mt-2">Audio, stems, backing tracks, and MIDI files stored in the music library.</p>
+
+                @if ($song->assets->isEmpty())
+                    <p class="esb-studio__card-body mt-3">No song files uploaded yet.</p>
+                @else
+                    <ul class="esb-studio__song-asset-list mt-4">
+                        @foreach ($song->assets as $asset)
+                            <li class="esb-studio__song-asset-card">
+                                <div class="esb-studio__song-asset-card-head">
+                                    <h3 class="esb-studio__song-asset-label">{{ $asset->label }}</h3>
+                                    <span class="esb-studio__song-asset-type">{{ $asset->assetTypeLabel() }}</span>
+                                </div>
+                                <dl class="esb-studio__song-asset-meta">
+                                    <div>
+                                        <dt>Filename</dt>
+                                        <dd>{{ $asset->original_filename }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Size</dt>
+                                        <dd>{{ $asset->formattedFileSize() }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Uploaded</dt>
+                                        <dd>{{ $asset->created_at?->format('j M Y') ?? '—' }}</dd>
+                                    </div>
+                                </dl>
+                                @if ($asset->notes)
+                                    <p class="esb-studio__song-asset-notes">{{ $asset->notes }}</p>
+                                @endif
+                                <a
+                                    href="{{ route('songs.assets.file', [$song, $asset]) }}"
+                                    class="esb-studio__show-pill esb-studio__show-pill--action mt-3"
+                                >Open / download</a>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+
+                <form
+                    method="POST"
+                    action="{{ route('songs.assets.store', $song) }}"
+                    enctype="multipart/form-data"
+                    class="esb-studio__song-asset-upload-form mt-6"
+                >
+                    @csrf
+
+                    @if ($returnTo)
+                        <input type="hidden" name="return_to" value="{{ $returnTo }}">
+                    @endif
+
+                    @error('file')
+                        <p class="esb-portal__error mb-4">{{ $message }}</p>
+                    @enderror
+
+                    <div class="esb-studio__band-form-grid">
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-asset-file">Upload file</label>
+                            <input
+                                id="song-asset-file"
+                                name="file"
+                                type="file"
+                                class="esb-portal__input"
+                                accept=".mp3,.wav,.mid,.midi,audio/mpeg,audio/wav,audio/midi"
+                                required
+                            >
+                            <p class="esb-studio__card-body mt-2">MP3, WAV, or MIDI. Max {{ $songAssetMaxMb }} MB.</p>
+                        </div>
+
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-asset-label">Label</label>
+                            <input
+                                id="song-asset-label"
+                                name="label"
+                                type="text"
+                                class="esb-portal__input"
+                                value="{{ old('label') }}"
+                                placeholder="e.g. Electronic Love no drums"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-asset-type">Asset type</label>
+                            <select id="song-asset-type" name="asset_type" class="esb-portal__input" required>
+                                @foreach ($songAssetTypes as $value => $label)
+                                    <option value="{{ $value }}" @selected(old('asset_type') === $value)>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="song-asset-notes">Notes</label>
+                            <textarea
+                                id="song-asset-notes"
+                                name="notes"
+                                rows="3"
+                                class="esb-portal__input esb-studio__band-textarea"
+                            >{{ old('notes') }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="esb-studio__band-form-actions mt-4">
+                        <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                            Upload song file
+                        </button>
+                    </div>
+                </form>
+            </section>
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-form mt-4">
                 <h2 class="esb-studio__card-title">Instrument parts</h2>

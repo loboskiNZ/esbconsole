@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Library\Chart;
 use App\Models\Library\Song;
+use App\Models\Library\SongAsset;
 use App\Models\Library\SongInstrumentPart;
 use App\Support\StudioLibraryAvailability;
 use Illuminate\Support\Facades\Config;
@@ -49,6 +50,12 @@ class AppServiceProvider extends ServiceProvider
             abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
 
             return SongInstrumentPart::query()->findOrFail($value);
+        });
+
+        Route::bind('songAsset', function (string $value): SongAsset {
+            abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
+
+            return SongAsset::query()->findOrFail($value);
         });
     }
 
