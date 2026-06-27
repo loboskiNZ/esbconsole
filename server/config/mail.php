@@ -79,6 +79,11 @@ return [
             'transport' => 'array',
         ],
 
+        'graph' => [
+            'transport' => 'graph',
+            'send_as' => env('GRAPH_SEND_AS', env('BOOKING_MAILBOX', env('MAIL_FROM_ADDRESS'))),
+        ],
+
         'failover' => [
             'transport' => 'failover',
             'mailers' => [

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Mail\Transport\GraphTransport;
+use App\Services\MicrosoftGraph\GraphAccessTokenProvider;
 use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Models\Library\SongAsset;
@@ -10,6 +12,7 @@ use App\Support\StudioLibraryAvailability;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,6 +32,13 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->repairMergedPortalEnv();
+
+        Mail::extend('graph', function (array $config): GraphTransport {
+            return new GraphTransport(
+                tokens: app(GraphAccessTokenProvider::class),
+                sendAsMailbox: (string) ($config['send_as'] ?? config('services.microsoft.send_as', '')),
+            );
+        });
 
         require_once dirname(base_path()).'/database/ccmm_migration_paths.php';
 

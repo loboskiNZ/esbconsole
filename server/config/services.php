@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'microsoft' => [
+        'tenant_id' => env('MICROSOFT_TENANT_ID', env('AZURE_TENANT_ID')),
+        'client_id' => env('MICROSOFT_CLIENT_ID', env('AZURE_CLIENT_ID')),
+        'client_secret' => env('MICROSOFT_CLIENT_SECRET', env('AZURE_CLIENT_SECRET')),
+        'send_as' => env('GRAPH_SEND_AS', env('BOOKING_MAILBOX', env('MAIL_FROM_ADDRESS'))),
+    ],
+
 ];
