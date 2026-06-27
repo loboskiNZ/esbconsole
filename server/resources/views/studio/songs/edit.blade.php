@@ -23,6 +23,14 @@
                 @endif
             </div>
 
+            @if (session('song_updated'))
+                <p class="esb-portal__success mb-4" role="status">Song updated.</p>
+            @endif
+
+            @if (session('song_part_added'))
+                <p class="esb-portal__success mb-4" role="status">Instrument part added.</p>
+            @endif
+
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"
@@ -124,6 +132,77 @@
                     </button>
                 </div>
             </form>
+
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-form mt-4">
+                <h2 class="esb-studio__card-title">Instrument parts</h2>
+                <p class="esb-studio__card-body mt-2">Parts required to perform this song.</p>
+
+                @if ($songInstrumentParts === [])
+                    <p class="esb-studio__card-body mt-3">No instrument parts defined.</p>
+                @else
+                    <div class="esb-studio__part-pill-grid mt-4">
+                        @foreach ($songInstrumentParts as $part)
+                            @include('studio.shows.partials._instrument-part-pill', [
+                                'part' => array_merge($part, [
+                                    'song_id' => $song->id,
+                                    'instrument_part_id' => null,
+                                    'song_instrument_part_id' => $part['song_instrument_part_id'],
+                                ]),
+                                'showChart' => true,
+                                'actionable' => false,
+                            ])
+                        @endforeach
+                    </div>
+                @endif
+
+                <form
+                    method="POST"
+                    action="{{ route('songs.instrument-parts.store', $song) }}"
+                    class="esb-studio__song-parts-add-form mt-6"
+                >
+                    @csrf
+
+                    @if ($returnTo)
+                        <input type="hidden" name="return_to" value="{{ $returnTo }}">
+                    @endif
+
+                    @error('instrument_part')
+                        <p class="esb-portal__error mb-4">{{ $message }}</p>
+                    @enderror
+
+                    <div class="esb-studio__band-form-grid">
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="instrument-part-id">Add existing part</label>
+                            <select id="instrument-part-id" name="instrument_part_id" class="esb-portal__input">
+                                <option value="">Select a part</option>
+                                @foreach ($attachableInstrumentParts as $instrumentPart)
+                                    <option value="{{ $instrumentPart->id }}" @selected((string) old('instrument_part_id') === (string) $instrumentPart->id)>
+                                        {{ $instrumentPart->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="esb-portal__label mb-2 block" for="new-part-name">Or create new part</label>
+                            <input
+                                id="new-part-name"
+                                name="new_part_name"
+                                type="text"
+                                class="esb-portal__input"
+                                value="{{ old('new_part_name') }}"
+                                placeholder="e.g. Alto Sax"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="esb-studio__band-form-actions mt-4">
+                        <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                            Add instrument part
+                        </button>
+                    </div>
+                </form>
+            </section>
         </div>
 
         <footer class="esb-studio__chrome-footer">

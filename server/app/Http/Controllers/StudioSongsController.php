@@ -6,6 +6,7 @@ use App\Models\Library\MusicalKey;
 use App\Models\Library\Song;
 use App\Models\Library\SongMood;
 use App\Models\Library\TimeSignature;
+use App\Services\StudioSongInstrumentPartService;
 use App\Support\SafeInternalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,16 +15,20 @@ use Illuminate\View\View;
 
 class StudioSongsController extends Controller
 {
-    public function edit(Request $request, Song $song): View
+    public function edit(Request $request, Song $song, StudioSongInstrumentPartService $instrumentParts): View
     {
         $this->ensureSongBelongsToPortalBand($song);
 
+        $song->load(['timeSignature', 'musicalKey', 'mood']);
+
         return view('studio.songs.edit', [
-            'song' => $song->load(['timeSignature', 'musicalKey', 'mood']),
+            'song' => $song,
             'timeSignatures' => TimeSignature::query()->where('active', true)->orderBy('sort_order')->get(),
             'musicalKeys' => MusicalKey::query()->where('active', true)->orderBy('sort_order')->get(),
             'moods' => SongMood::query()->where('active', true)->orderBy('sort_order')->get(),
             'returnTo' => $request->query('return_to'),
+            'songInstrumentParts' => $instrumentParts->partsForSongEdit($song),
+            'attachableInstrumentParts' => $instrumentParts->attachablePartsForSong($song),
         ]);
     }
 
