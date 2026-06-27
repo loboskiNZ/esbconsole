@@ -9,6 +9,7 @@ use App\Http\Controllers\StudioBandController;
 use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioCalendarController;
 use App\Http\Controllers\StudioChartSearchController;
+use App\Http\Controllers\StudioShowPlaylistChartController;
 use App\Http\Controllers\StudioShowPlaylistController;
 use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
@@ -60,6 +61,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('/studio/shows/{show}/playlist/{playlistItem}/archive', [StudioShowPlaylistController::class, 'archive'])->name('studio.shows.playlist.archive');
         Route::patch('/studio/shows/{show}/playlist/{playlistItem}/move-up', [StudioShowPlaylistController::class, 'moveUp'])->name('studio.shows.playlist.move-up');
         Route::patch('/studio/shows/{show}/playlist/{playlistItem}/move-down', [StudioShowPlaylistController::class, 'moveDown'])->name('studio.shows.playlist.move-down');
+        Route::get('/studio/shows/{show}/playlist/songs/{song}/parts/{songInstrumentPart}/chart/upload', [StudioShowPlaylistChartController::class, 'create'])
+            ->name('studio.shows.playlist.chart.upload.create');
+        Route::post('/studio/shows/{show}/playlist/songs/{song}/parts/{songInstrumentPart}/chart/upload', [StudioShowPlaylistChartController::class, 'store'])
+            ->name('studio.shows.playlist.chart.upload.store');
     });
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
     Route::get('/studio/calendar', [StudioCalendarController::class, 'index'])->name('studio.calendar.index');

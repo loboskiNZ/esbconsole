@@ -55,7 +55,12 @@
         @else
             <div class="esb-studio__part-pill-grid">
                 @foreach ($parts as $part)
-                    @include('studio.shows.partials._instrument-part-pill', ['part' => $part])
+                    @include('studio.shows.partials._instrument-part-pill', [
+                        'part' => $part,
+                        'actionable' => true,
+                        'show' => $show,
+                        'isDirector' => $isDirector,
+                    ])
                 @endforeach
             </div>
         @endif

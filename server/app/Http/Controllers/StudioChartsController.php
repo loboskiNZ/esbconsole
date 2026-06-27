@@ -66,7 +66,11 @@ class StudioChartsController extends Controller
 
         $person = $user->person()->with('instruments')->firstOrFail();
 
-        if (! $chartAccess->personCanAccessChart($person, $chart)) {
+        $chart->loadMissing('song');
+
+        if ($user->isDirector() && $chart->song !== null && $chart->song->band_id === (int) config('portal.band_id', 1)) {
+            // Directors may open charts for show preparation.
+        } elseif (! $chartAccess->personCanAccessChart($person, $chart)) {
             abort(403);
         }
 

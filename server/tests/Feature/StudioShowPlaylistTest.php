@@ -15,7 +15,9 @@ use App\Models\User;
 use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Concerns\AssignsStudioRoles;
 use Tests\Concerns\EnsuresPortalBand;
@@ -37,6 +39,131 @@ class StudioShowPlaylistTest extends TestCase
         ]);
         $this->ensurePortalBand();
         $this->seedReferenceTables();
+    }
+
+    public function test_show_overview_uses_three_column_summary_layout(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Three Column Show']);
+        $song = $this->seedSongWithParts('Column Song', withChartFor: ['Bass']);
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Show summary', false)
+            ->assertSee('esb-studio__show-overview-grid--library', false)
+            ->assertSee('esb-studio__instrument-parts-summary-card', false)
+            ->assertSee('esb-studio__show-section--playlist', false)
+            ->assertSee('Distinct parts required', false);
+    }
+
+    public function test_available_chart_pill_links_to_chart_file(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Chart Pill Show']);
+        $song = $this->seedSongWithParts('Chart Pill Song', withChartFor: ['Bass']);
+        $this->seedPlaylistItem($show, $song);
+        $chart = Chart::query()->where('song_id', $song->id)->firstOrFail();
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee(route('studio.charts.file', $chart), false)
+            ->assertSee('esb-studio__part-pill--available', false);
+    }
+
+    public function test_missing_chart_pill_links_to_scoped_upload_for_director(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Upload Pill Show']);
+        $song = $this->seedSongWithParts('Upload Pill Song', withoutChartFor: ['Keyboard']);
+        $this->seedPlaylistItem($show, $song);
+
+        $songInstrumentPart = SongInstrumentPart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('instrumentPart', fn ($query) => $query->where('name', 'Keyboard'))
+            ->firstOrFail();
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee(route('studio.shows.playlist.chart.upload.create', [
+                'show' => $show,
+                'song' => $song,
+                'songInstrumentPart' => $songInstrumentPart,
+                'return_to' => '/studio/shows/'.$show->id.'#playlist',
+            ]), false)
+            ->assertSee('esb-studio__part-pill--missing', false);
+    }
+
+    public function test_musician_does_not_see_upload_link_for_missing_chart_pill(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Musician Upload Show']);
+        $song = $this->seedSongWithParts('Musician Upload Song', withoutChartFor: ['Keyboard']);
+        $this->seedPlaylistItem($show, $song);
+
+        $songInstrumentPart = SongInstrumentPart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('instrumentPart', fn ($query) => $query->where('name', 'Keyboard'))
+            ->firstOrFail();
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Keyboard', false)
+            ->assertDontSee(route('studio.shows.playlist.chart.upload.create', [
+                'show' => $show,
+                'song' => $song,
+                'songInstrumentPart' => $songInstrumentPart,
+            ]), false);
+    }
+
+    public function test_director_can_upload_chart_for_missing_song_instrument_part(): void
+    {
+        Storage::fake('library');
+        config(['portal.library_chart_disk' => 'library']);
+
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Upload Flow Show']);
+        $song = $this->seedSongWithParts('Upload Flow Song', withoutChartFor: ['Keyboard']);
+        $this->seedPlaylistItem($show, $song);
+        $playlistNotes = 'Keep playlist note';
+
+        $songInstrumentPart = SongInstrumentPart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('instrumentPart', fn ($query) => $query->where('name', 'Keyboard'))
+            ->firstOrFail();
+
+        $item = ShowPlaylistItem::query()->where('show_id', $show->id)->firstOrFail();
+        $item->update(['notes' => $playlistNotes]);
+
+        $returnTo = '/studio/shows/'.$show->id.'#playlist';
+        $chartCountBefore = Chart::query()->count();
+
+        $this->actingAs($director)->get(route('studio.shows.playlist.chart.upload.create', [
+            'show' => $show,
+            'song' => $song,
+            'songInstrumentPart' => $songInstrumentPart,
+            'return_to' => $returnTo,
+        ]))->assertOk()->assertSee($returnTo, false);
+
+        $this->actingAs($director)->post(route('studio.shows.playlist.chart.upload.store', [
+            'show' => $show,
+            'song' => $song,
+            'songInstrumentPart' => $songInstrumentPart,
+        ]), [
+            '_token' => session()->token(),
+            'chart' => UploadedFile::fake()->create('keyboard.pdf', 120, 'application/pdf'),
+            'return_to' => $returnTo,
+        ])->assertRedirect($returnTo);
+
+        $songInstrumentPart->refresh();
+        $this->assertNotNull($songInstrumentPart->chart_id);
+        $this->assertSame($chartCountBefore + 1, Chart::query()->count());
+        $this->assertSame($playlistNotes, $item->fresh()->notes);
+        $this->assertSame(
+            SongInstrumentPart::query()->count(),
+            SongInstrumentPart::query()->where('song_id', $song->id)->count(),
+        );
     }
 
     public function test_playlist_displays_songs_with_metadata_and_instrument_parts(): void

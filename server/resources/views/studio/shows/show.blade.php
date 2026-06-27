@@ -29,9 +29,9 @@
                 <p class="esb-portal__success mb-4" role="status">Playlist updated.</p>
             @endif
 
-            <div class="esb-studio__show-overview-grid">
-                <section class="esb-portal__panel esb-studio__card esb-studio__show-section">
-                    <h2 class="esb-studio__card-title">Overview</h2>
+            <div class="esb-studio__show-overview-grid {{ $libraryAvailable ? 'esb-studio__show-overview-grid--library' : '' }}">
+                <section class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__show-overview-card">
+                    <h2 class="esb-studio__card-title">Show summary</h2>
                     <dl class="esb-studio__show-details mt-4">
                         <div>
                             <dt>Show name</dt>
@@ -49,7 +49,7 @@
                 </section>
 
                 @if ($libraryAvailable)
-                    <section class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__playlist-summary-card">
+                    <section class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__show-overview-card esb-studio__playlist-summary-card">
                         <h2 class="esb-studio__card-title">Playlist summary</h2>
                         <dl class="esb-studio__playlist-summary mt-4">
                             <div>
@@ -70,33 +70,35 @@
                             </div>
                         </dl>
                     </section>
+
+                    <section class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__show-overview-card esb-studio__instrument-parts-summary-card">
+                        <h2 class="esb-studio__card-title">Instrument parts</h2>
+                        <p class="esb-studio__card-body mt-2">Distinct parts required across the active playlist.</p>
+
+                        @if ($showInstrumentParts === [])
+                            <p class="esb-studio__card-body mt-3">No instrument parts defined.</p>
+                        @else
+                            <div class="esb-studio__part-pill-grid mt-4">
+                                @foreach ($showInstrumentParts as $part)
+                                    @include('studio.shows.partials._instrument-part-pill', [
+                                        'part' => array_merge($part, [
+                                            'has_chart' => false,
+                                            'chart_status_label' => '',
+                                            'song_id' => 0,
+                                            'song_instrument_part_id' => 0,
+                                            'chart_id' => null,
+                                        ]),
+                                        'showChart' => false,
+                                        'actionable' => false,
+                                    ])
+                                @endforeach
+                            </div>
+                        @endif
+                    </section>
                 @endif
             </div>
 
-            @if ($libraryAvailable)
-                <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
-                    <h2 class="esb-studio__card-title">Instrument parts</h2>
-                    <p class="esb-studio__card-body mt-2">Distinct parts required across the active playlist.</p>
-
-                    @if ($showInstrumentParts === [])
-                        <p class="esb-studio__card-body mt-3">No instrument parts defined.</p>
-                    @else
-                        <div class="esb-studio__part-pill-grid mt-4">
-                            @foreach ($showInstrumentParts as $part)
-                                @include('studio.shows.partials._instrument-part-pill', [
-                                    'part' => array_merge($part, [
-                                        'has_chart' => false,
-                                        'chart_status_label' => '',
-                                    ]),
-                                    'showChart' => false,
-                                ])
-                            @endforeach
-                        </div>
-                    @endif
-                </section>
-            @endif
-
-            <section id="playlist" class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+            <section id="playlist" class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__show-section--playlist mt-4">
                 <div class="esb-studio__playlist-head">
                     <h2 class="esb-studio__card-title">Playlist</h2>
                     @if ($isDirector)

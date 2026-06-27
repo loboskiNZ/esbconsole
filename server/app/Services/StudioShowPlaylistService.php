@@ -25,7 +25,10 @@ class StudioShowPlaylistService
      *         item: ShowPlaylistItem,
      *         metadata: array<string, mixed>,
      *         instrument_parts: list<array{
+     *             song_id: int,
+     *             song_instrument_part_id: int,
      *             instrument_part_id: int|null,
+     *             chart_id: int|null,
      *             name: string,
      *             has_chart: bool,
      *             chart_status_label: string,
@@ -86,7 +89,10 @@ class StudioShowPlaylistService
      *     item: ShowPlaylistItem,
      *     metadata: array<string, mixed>,
      *     instrument_parts: list<array{
+     *         song_id: int,
+     *         song_instrument_part_id: int,
      *         instrument_part_id: int|null,
+     *         chart_id: int|null,
      *         name: string,
      *         has_chart: bool,
      *         chart_status_label: string,
@@ -282,7 +288,10 @@ class StudioShowPlaylistService
 
     /**
      * @return list<array{
+     *     song_id: int,
+     *     song_instrument_part_id: int,
      *     instrument_part_id: int|null,
+     *     chart_id: int|null,
      *     name: string,
      *     has_chart: bool,
      *     chart_status_label: string,
@@ -292,12 +301,15 @@ class StudioShowPlaylistService
     {
         return $song->songInstrumentParts
             ->sortBy(fn ($row) => $row->instrumentPart?->name ?? '')
-            ->map(function ($row): array {
+            ->map(function ($row) use ($song): array {
                 $name = $row->instrumentPart?->name ?? 'Instrument part';
                 $hasChart = $row->chart_id !== null;
 
                 return [
+                    'song_id' => $song->id,
+                    'song_instrument_part_id' => $row->id,
                     'instrument_part_id' => $row->instrument_part_id,
+                    'chart_id' => $row->chart_id,
                     'name' => $name,
                     'has_chart' => $hasChart,
                     'chart_status_label' => $hasChart ? 'chart available' : 'chart missing',

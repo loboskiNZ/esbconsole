@@ -1771,10 +1771,54 @@
 }
 
 @media (min-width: 960px) {
-    .esb-studio__show-overview-grid {
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    .esb-studio__show-overview-grid--library {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         align-items: start;
     }
+
+    .esb-studio__show-overview-grid:not(.esb-studio__show-overview-grid--library) {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: start;
+    }
+}
+
+.esb-studio__show-overview-card {
+    min-height: 100%;
+}
+
+.esb-studio__show-section--playlist {
+    border-color: rgba(233, 203, 160, 0.08);
+    background: rgba(12, 10, 8, 0.16);
+    box-shadow: none;
+}
+
+.esb-studio__show-section--playlist .esb-studio__playlist-item {
+    border-color: rgba(233, 203, 160, 0.1);
+    background: rgba(12, 10, 8, 0.18);
+}
+
+.esb-studio__part-pill--link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.esb-studio__part-pill--link:hover,
+.esb-studio__part-pill--link:focus-visible {
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.esb-studio__part-pill--available:hover,
+.esb-studio__part-pill--available:focus-visible {
+    border-color: rgba(139, 214, 154, 0.75);
+    background: color-mix(in srgb, #8bd69a 24%, transparent);
+}
+
+.esb-studio__part-pill--missing:hover,
+.esb-studio__part-pill--missing:focus-visible {
+    border-color: rgba(255, 178, 62, 0.85);
+    background: color-mix(in srgb, #ffb23e 32%, transparent);
 }
 
 .esb-studio__playlist-summary {
