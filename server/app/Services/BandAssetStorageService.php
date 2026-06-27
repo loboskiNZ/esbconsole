@@ -3,15 +3,14 @@
 namespace App\Services;
 
 use App\Models\Band;
+use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class BandAssetStorageService
 {
-    public function disk(): string
-    {
-        return (string) config('portal.band_asset_disk', 'local');
-    }
+    public function __construct(
+        private readonly CloudStudioMediaStorage $mediaStorage,
+    ) {}
 
     public function storagePrefix(Band $band): string
     {
@@ -40,13 +39,17 @@ class BandAssetStorageService
 
     private function storeAsset(Band $band, UploadedFile $file, string $kind): string
     {
-        $disk = $this->disk();
         $prefix = $this->storagePrefix($band);
         $extension = strtolower($file->extension() ?: $file->guessExtension() ?: 'jpg');
         $filename = $kind.'-'.now()->format('YmdHisv').'.'.$extension;
         $path = $prefix.'/'.$filename;
+        $contents = file_get_contents($file->getRealPath());
 
-        Storage::disk($disk)->putFileAs($prefix, $file, $filename);
+        if ($contents === false) {
+            throw new \RuntimeException('Unable to read uploaded band asset.');
+        }
+
+        $this->mediaStorage->put($path, $contents);
 
         return $path;
     }

@@ -3,19 +3,15 @@
 namespace App\Services;
 
 use App\Models\Person;
+use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class PersonProfilePhotoService
 {
     public function __construct(
         private readonly ProfilePhotoDisplayGenerator $displayGenerator,
+        private readonly CloudStudioMediaStorage $mediaStorage,
     ) {}
-
-    public function disk(): string
-    {
-        return (string) config('portal.profile_photo_disk', 'local');
-    }
 
     public function storagePrefix(Person $person): string
     {
@@ -27,7 +23,6 @@ class PersonProfilePhotoService
      */
     public function store(Person $person, UploadedFile $file): array
     {
-        $disk = $this->disk();
         $prefix = $this->storagePrefix($person);
         $extension = strtolower($file->extension() ?: $file->guessExtension() ?: 'jpg');
         $originalPath = $prefix.'/original.'.$extension;
@@ -35,12 +30,19 @@ class PersonProfilePhotoService
 
         $this->deleteExisting($person);
 
-        Storage::disk($disk)->putFileAs($prefix, $file, 'original.'.$extension);
+        $sourceAbsolute = $file->getRealPath();
+        $displayTemp = tempnam(sys_get_temp_dir(), 'esb-profile-display-');
 
-        $sourceAbsolute = Storage::disk($disk)->path($originalPath);
-        $displayAbsolute = Storage::disk($disk)->path($displayPath);
+        if ($sourceAbsolute === false || $displayTemp === false) {
+            throw new \RuntimeException('Unable to prepare profile photo upload.');
+        }
 
-        $this->displayGenerator->createFromFile($sourceAbsolute, $displayAbsolute);
+        $this->displayGenerator->createFromFile($sourceAbsolute, $displayTemp);
+
+        $this->mediaStorage->put($originalPath, (string) file_get_contents($sourceAbsolute));
+        $this->mediaStorage->put($displayPath, (string) file_get_contents($displayTemp));
+
+        @unlink($displayTemp);
 
         return [
             'original' => $originalPath,
@@ -50,20 +52,19 @@ class PersonProfilePhotoService
 
     public function deleteExisting(Person $person): void
     {
-        $disk = $this->disk();
         $paths = array_filter([
             $person->profile_photo_path,
             $person->profile_photo_display_path,
         ]);
 
         foreach ($paths as $path) {
-            Storage::disk($disk)->delete($path);
+            $this->mediaStorage->delete($path);
         }
 
         $legacyPrefix = $this->storagePrefix($person);
 
         foreach (['jpg', 'jpeg', 'png', 'webp'] as $extension) {
-            Storage::disk($disk)->delete($legacyPrefix.'/profile.'.$extension);
+            $this->mediaStorage->delete($legacyPrefix.'/profile.'.$extension);
         }
     }
 }

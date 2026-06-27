@@ -6,6 +6,7 @@ use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Models\Library\SongInstrumentPart;
 use App\Support\StudioLibraryAvailability;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->repairMergedPortalEnv();
+
         require_once dirname(base_path()).'/database/ccmm_migration_paths.php';
 
         foreach (ccmm_migration_paths() as $path) {
@@ -47,5 +50,29 @@ class AppServiceProvider extends ServiceProvider
 
             return SongInstrumentPart::query()->findOrFail($value);
         });
+    }
+
+    /**
+     * Recover from a corrupted Forge .env line such as:
+     * QUEUE_CONNECTION=databasePORTAL_LIBRARY_STORAGE_ROOT=/path/to/library
+     */
+    private function repairMergedPortalEnv(): void
+    {
+        $queue = (string) env('QUEUE_CONNECTION', '');
+
+        if (! str_contains($queue, 'PORTAL_LIBRARY_STORAGE_ROOT=')) {
+            return;
+        }
+
+        [$queueConnection, $libraryRoot] = explode('PORTAL_LIBRARY_STORAGE_ROOT=', $queue, 2);
+        $libraryRoot = rtrim(trim($libraryRoot), '/');
+
+        if ($libraryRoot === '') {
+            return;
+        }
+
+        Config::set('queue.default', $queueConnection);
+        Config::set('portal.library_storage_root', $libraryRoot);
+        Config::set('filesystems.disks.library.root', $libraryRoot);
     }
 }

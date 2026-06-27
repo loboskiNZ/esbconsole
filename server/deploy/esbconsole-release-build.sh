@@ -17,10 +17,33 @@ if [[ -z "${FORGE_SITE_PATH:-}" || -z "${FORGE_RELEASE_DIRECTORY:-}" ]]; then
   exit 1
 fi
 
-mkdir -p "$FORGE_SITE_PATH/storage/framework/{cache/data,sessions,views,testing}"
-mkdir -p "$FORGE_SITE_PATH/storage/{app/public,logs}"
+FORGE_SITE_ROOT="$FORGE_SITE_PATH"
+if [[ "$(basename "$FORGE_SITE_ROOT")" == "current" ]]; then
+  FORGE_SITE_ROOT="$(dirname "$FORGE_SITE_ROOT")"
+fi
 
-LIBRARY_STORAGE_ROOT="$FORGE_SITE_PATH/storage/app/library"
+ENV_FILE="$FORGE_SITE_ROOT/.env"
+
+repair_portal_env() {
+  if [[ ! -f "$ENV_FILE" ]]; then
+    return 0
+  fi
+
+  if grep -qE 'QUEUE_CONNECTION=.*PORTAL_LIBRARY_STORAGE_ROOT=' "$ENV_FILE"; then
+    sed -i 's/^\(QUEUE_CONNECTION=[^P]*\)PORTAL_LIBRARY_STORAGE_ROOT=/\1\nPORTAL_LIBRARY_STORAGE_ROOT=/' "$ENV_FILE"
+  fi
+
+  if [[ -s "$ENV_FILE" ]] && [[ -n "$(tail -c1 "$ENV_FILE" | tr -d '\n')" ]]; then
+    echo >> "$ENV_FILE"
+  fi
+}
+
+repair_portal_env
+
+mkdir -p "$FORGE_SITE_ROOT/storage/framework/{cache/data,sessions,views,testing}"
+mkdir -p "$FORGE_SITE_ROOT/storage/{app/public,logs}"
+
+LIBRARY_STORAGE_ROOT="$FORGE_SITE_ROOT/storage/app/library"
 LIBRARY_INCOMING="$LIBRARY_STORAGE_ROOT/incoming"
 mkdir -p "$LIBRARY_STORAGE_ROOT/charts" "$LIBRARY_INCOMING"
 chmod 755 "$LIBRARY_STORAGE_ROOT" "$LIBRARY_STORAGE_ROOT/charts"
@@ -36,31 +59,31 @@ if [[ -d "$LIBRARY_INCOMING/charts" ]]; then
   rm -rf "$LIBRARY_INCOMING/charts"
 fi
 
-if grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  sed -i "s|^PORTAL_LIBRARY_STORAGE_ROOT=.*|PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT|" "$FORGE_SITE_PATH/.env"
+if grep -qE '^PORTAL_LIBRARY_STORAGE_ROOT=' "$ENV_FILE" 2>/dev/null; then
+  sed -i "s|^PORTAL_LIBRARY_STORAGE_ROOT=.*|PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT|" "$ENV_FILE"
 else
-  echo "PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT" >> "$FORGE_SITE_PATH/.env"
+  echo "PORTAL_LIBRARY_STORAGE_ROOT=$LIBRARY_STORAGE_ROOT" >> "$ENV_FILE"
 fi
 
-if ! grep -qE '^PORTAL_LIBRARY_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "PORTAL_LIBRARY_CONNECTION=library" >> "$FORGE_SITE_PATH/.env"
+if ! grep -qE '^PORTAL_LIBRARY_CONNECTION=' "$ENV_FILE" 2>/dev/null; then
+  echo "PORTAL_LIBRARY_CONNECTION=library" >> "$ENV_FILE"
 fi
 
-if ! grep -qE '^PORTAL_LIBRARY_CHART_DISK=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "PORTAL_LIBRARY_CHART_DISK=library" >> "$FORGE_SITE_PATH/.env"
+if ! grep -qE '^PORTAL_LIBRARY_CHART_DISK=' "$ENV_FILE" 2>/dev/null; then
+  echo "PORTAL_LIBRARY_CHART_DISK=library" >> "$ENV_FILE"
 fi
 
-ln -nfs "$FORGE_SITE_PATH/.env" "$FORGE_RELEASE_DIRECTORY/server/.env"
+ln -nfs "$ENV_FILE" "$FORGE_RELEASE_DIRECTORY/server/.env"
 rm -rf "$FORGE_RELEASE_DIRECTORY/server/storage"
-ln -nfs "$FORGE_SITE_PATH/storage" "$FORGE_RELEASE_DIRECTORY/server/storage"
+ln -nfs "$FORGE_SITE_ROOT/storage" "$FORGE_RELEASE_DIRECTORY/server/storage"
 
 cd "$FORGE_RELEASE_DIRECTORY"
 "$FORGE_COMPOSER" install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 cd "$FORGE_RELEASE_DIRECTORY/server"
 
-if ! grep -qE '^DB_CONNECTION=' "$FORGE_SITE_PATH/.env" 2>/dev/null; then
-  echo "ERROR: DB_CONNECTION is not set in $FORGE_SITE_PATH/.env" >&2
+if ! grep -qE '^DB_CONNECTION=' "$ENV_FILE" 2>/dev/null; then
+  echo "ERROR: DB_CONNECTION is not set in $ENV_FILE" >&2
   exit 1
 fi
 

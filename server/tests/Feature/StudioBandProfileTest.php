@@ -24,9 +24,9 @@ class StudioBandProfileTest extends TestCase
 
         config([
             'portal.band_id' => 1,
-            'portal.band_asset_disk' => 'local',
         ]);
 
+        Storage::fake('media');
         Storage::fake('local');
         $this->ensurePortalBand();
         $this->seedBandProfile();
@@ -166,7 +166,7 @@ class StudioBandProfileTest extends TestCase
         $band = Band::query()->findOrFail(1);
 
         $this->assertNotNull($band->logo_path);
-        Storage::disk('local')->assertExists($band->logo_path);
+        Storage::disk('media')->assertExists($band->logo_path);
         $this->actingAs($director)->get(route('studio.band.logo'))->assertOk();
     }
 
@@ -184,7 +184,7 @@ class StudioBandProfileTest extends TestCase
         $band = Band::query()->findOrFail(1);
 
         $this->assertNotNull($band->photo_path);
-        Storage::disk('local')->assertExists($band->photo_path);
+        Storage::disk('media')->assertExists($band->photo_path);
         $this->actingAs($director)->get(route('studio.band.photo'))->assertOk();
     }
 
@@ -202,7 +202,7 @@ class StudioBandProfileTest extends TestCase
         $band = Band::query()->findOrFail(1);
 
         $this->assertNotNull($band->hero_photo_path);
-        Storage::disk('local')->assertExists($band->hero_photo_path);
+        Storage::disk('media')->assertExists($band->hero_photo_path);
         $this->actingAs($director)->get(route('studio.band.hero'))->assertOk();
     }
 
@@ -220,7 +220,7 @@ class StudioBandProfileTest extends TestCase
         $band = Band::query()->findOrFail(1);
 
         $this->assertNotNull($band->press_photo_path);
-        Storage::disk('local')->assertExists($band->press_photo_path);
+        Storage::disk('media')->assertExists($band->press_photo_path);
         $this->actingAs($director)->get(route('studio.band.press'))->assertOk();
     }
 
@@ -244,7 +244,7 @@ class StudioBandProfileTest extends TestCase
         $newPath = Band::query()->findOrFail(1)->logo_path;
 
         $this->assertNotSame($oldPath, $newPath);
-        Storage::disk('local')->assertExists($newPath);
+        Storage::disk('media')->assertExists($newPath);
     }
 
     public function test_old_photo_file_is_preserved_when_replaced(): void

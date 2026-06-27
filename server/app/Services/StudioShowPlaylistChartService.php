@@ -7,7 +7,7 @@ use App\Models\Library\Song;
 use App\Models\Library\SongInstrumentPart;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
-use App\Support\StudioLibraryChartStorage;
+use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -16,7 +16,7 @@ use InvalidArgumentException;
 class StudioShowPlaylistChartService
 {
     public function __construct(
-        private readonly StudioLibraryChartStorage $chartStorage,
+        private readonly CloudStudioMediaStorage $mediaStorage,
     ) {}
 
     public function songInstrumentPartForShowPlaylist(
@@ -57,8 +57,7 @@ class StudioShowPlaylistChartService
         $partName = $songInstrumentPart->instrumentPart?->name ?? 'Chart';
         $bandId = (int) $song->band_id;
         $filename = Str::slug($partName).'-'.Str::lower(Str::random(8)).'.pdf';
-        $storageReference = "charts/{$bandId}/{$song->song_code}/{$filename}";
-        $diskPath = $this->chartStorage->diskRelativePath($storageReference);
+        $storageReference = $this->mediaStorage->chartReference($bandId, $song->song_code, $filename);
         $contents = file_get_contents($file->getRealPath());
 
         if ($contents === false) {
@@ -73,19 +72,10 @@ class StudioShowPlaylistChartService
             $partName,
             $file,
             $storageReference,
-            $diskPath,
             $contents,
             $checksum,
         ): Chart {
-            $diskName = (string) config('portal.library_chart_disk', 'library');
-            $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
-            $directory = trim(str_replace('\\', '/', dirname($diskPath)), '/');
-
-            if ($directory !== '' && $directory !== '.' && ! $disk->exists($directory)) {
-                $disk->makeDirectory($directory);
-            }
-
-            $disk->put($diskPath, $contents);
+            $this->mediaStorage->put($storageReference, $contents);
 
             $chart = Chart::query()->create([
                 'public_id' => (string) Str::uuid(),

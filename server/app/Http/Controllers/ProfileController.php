@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\InstrumentReference;
 use App\Services\PersonProfileService;
+use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -64,7 +64,7 @@ class ProfileController extends Controller
             ->with('profile_updated', true);
     }
 
-    public function photo(): Response|StreamedResponse
+    public function photo(CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
         $user = auth()->user();
 
@@ -75,16 +75,10 @@ class ProfileController extends Controller
         $person = $user->person()->firstOrFail();
         $path = $person->profilePhotoServePath();
 
-        if ($path === null) {
+        if ($path === null || ! $mediaStorage->exists($path)) {
             abort(404);
         }
 
-        $disk = (string) config('portal.profile_photo_disk', 'local');
-
-        if (! Storage::disk($disk)->exists($path)) {
-            abort(404);
-        }
-
-        return Storage::disk($disk)->response($path);
+        return $mediaStorage->response($path, basename($path));
     }
 }

@@ -25,6 +25,7 @@ class PortalStudioChartsTest extends TestCase
             'portal.band_id' => 1,
             'portal.library_chart_disk' => 'library',
         ]);
+        Storage::fake('media');
         Storage::fake('library');
     }
 

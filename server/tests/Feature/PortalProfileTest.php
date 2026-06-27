@@ -184,8 +184,8 @@ class PortalProfileTest extends TestCase
 
     public function test_user_can_upload_profile_photo_with_original_and_display_paths(): void
     {
+        Storage::fake('media');
         Storage::fake('local');
-        config(['portal.profile_photo_disk' => 'local']);
 
         $user = User::factory()->create();
         $person = $user->person;
@@ -207,16 +207,16 @@ class PortalProfileTest extends TestCase
         $person->refresh();
         $this->assertStringEndsWith('/original.jpg', $person->profile_photo_path);
         $this->assertStringEndsWith('/display.jpg', $person->profile_photo_display_path);
-        Storage::disk('local')->assertExists($person->profile_photo_path);
-        Storage::disk('local')->assertExists($person->profile_photo_display_path);
+        Storage::disk('media')->assertExists($person->profile_photo_path);
+        Storage::disk('media')->assertExists($person->profile_photo_display_path);
 
         $this->actingAs($user)->get(route('studio.profile.photo'))->assertOk();
     }
 
     public function test_twenty_megabyte_profile_photo_upload_is_accepted(): void
     {
+        Storage::fake('media');
         Storage::fake('local');
-        config(['portal.profile_photo_disk' => 'local']);
 
         $user = User::factory()->create();
         $person = $user->person;
@@ -242,8 +242,8 @@ class PortalProfileTest extends TestCase
 
     public function test_invalid_profile_photo_format_is_rejected(): void
     {
+        Storage::fake('media');
         Storage::fake('local');
-        config(['portal.profile_photo_disk' => 'local']);
 
         $user = User::factory()->create();
         $person = $user->person;

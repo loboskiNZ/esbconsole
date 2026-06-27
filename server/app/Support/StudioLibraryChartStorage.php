@@ -2,18 +2,17 @@
 
 namespace App\Support;
 
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudioLibraryChartStorage
 {
+    public function __construct(
+        private readonly CloudStudioMediaStorage $mediaStorage,
+    ) {}
+
     public function diskRoot(): string
     {
-        $root = config('portal.library_storage_root')
-            ?: config('filesystems.disks.library.root')
-            ?: storage_path('app/library');
-
-        return rtrim((string) $root, '/');
+        return $this->mediaStorage->chartDiskRoot();
     }
 
     /**
@@ -21,14 +20,7 @@ class StudioLibraryChartStorage
      */
     public function diskRelativePath(string $storageReference): string
     {
-        $reference = ltrim($storageReference, '/');
-        $root = $this->diskRoot();
-
-        if (str_ends_with($root, '/charts') && str_starts_with($reference, 'charts/')) {
-            return substr($reference, strlen('charts/'));
-        }
-
-        return $reference;
+        return $this->mediaStorage->chartDiskRelativePath($storageReference);
     }
 
     public function absolutePath(string $storageReference): string
@@ -38,29 +30,11 @@ class StudioLibraryChartStorage
 
     public function exists(string $storageReference): bool
     {
-        if ($storageReference === '') {
-            return false;
-        }
-
-        $absolutePath = $this->absolutePath($storageReference);
-
-        if (is_readable($absolutePath)) {
-            return true;
-        }
-
-        try {
-            return Storage::disk((string) config('portal.library_chart_disk', 'library'))
-                ->exists($this->diskRelativePath($storageReference));
-        } catch (\Throwable) {
-            return false;
-        }
+        return $this->mediaStorage->exists($storageReference);
     }
 
     public function response(string $storageReference, string $filename, string $mimeType): StreamedResponse
     {
-        return Storage::disk((string) config('portal.library_chart_disk', 'library'))
-            ->response($this->diskRelativePath($storageReference), $filename, [
-                'Content-Type' => $mimeType,
-            ]);
+        return $this->mediaStorage->response($storageReference, $filename, $mimeType);
     }
 }

@@ -13,7 +13,7 @@ class StudioLibraryChartStorageTest extends TestCase
             'portal.library_storage_root' => '/srv/storage/app/library',
         ]);
 
-        $storage = new StudioLibraryChartStorage;
+        $storage = app(StudioLibraryChartStorage::class);
 
         $this->assertSame(
             '/srv/storage/app/library/charts/1/031/alto_sax.pdf',
@@ -27,7 +27,7 @@ class StudioLibraryChartStorageTest extends TestCase
             'portal.library_storage_root' => '/srv/storage/app/library/charts',
         ]);
 
-        $storage = new StudioLibraryChartStorage;
+        $storage = app(StudioLibraryChartStorage::class);
 
         $this->assertSame(
             '1/031/alto_sax.pdf',

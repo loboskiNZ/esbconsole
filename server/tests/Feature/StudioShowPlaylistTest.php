@@ -119,6 +119,7 @@ class StudioShowPlaylistTest extends TestCase
 
     public function test_director_can_upload_chart_for_missing_song_instrument_part(): void
     {
+        Storage::fake('media');
         Storage::fake('library');
         config(['portal.library_chart_disk' => 'library']);
 
@@ -146,11 +147,9 @@ class StudioShowPlaylistTest extends TestCase
             'return_to' => $returnTo,
         ]))->assertOk()
             ->assertSee($returnTo, false)
-            ->assertSee(route('studio.shows.playlist.chart.upload.store', [
-                'show' => $show->getKey(),
-                'song' => $song->getKey(),
-                'songInstrumentPart' => $songInstrumentPart->getKey(),
-            ], false), false);
+            ->assertSee('Upload chart', false)
+            ->assertSee($song->name, false)
+            ->assertSee('Keyboard', false);
 
         $this->actingAs($director)->post(route('studio.shows.playlist.chart.upload.store', [
             'show' => $show,

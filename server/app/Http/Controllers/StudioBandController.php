@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateBandProfileRequest;
 use App\Services\BandProfileService;
 use App\Support\BandStyles;
+use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -41,38 +41,36 @@ class StudioBandController extends Controller
             ->with('band_updated', true);
     }
 
-    public function logo(BandProfileService $bandProfile): Response|StreamedResponse
+    public function logo(BandProfileService $bandProfile, CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
-        return $this->assetResponse($bandProfile->portalBand()->logo_path);
+        return $this->assetResponse($bandProfile->portalBand()->logo_path, $mediaStorage);
     }
 
-    public function photo(BandProfileService $bandProfile): Response|StreamedResponse
+    public function photo(BandProfileService $bandProfile, CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
-        return $this->assetResponse($bandProfile->portalBand()->photo_path);
+        return $this->assetResponse($bandProfile->portalBand()->photo_path, $mediaStorage);
     }
 
-    public function hero(BandProfileService $bandProfile): Response|StreamedResponse
+    public function hero(BandProfileService $bandProfile, CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
-        return $this->assetResponse($bandProfile->portalBand()->hero_photo_path);
+        return $this->assetResponse($bandProfile->portalBand()->hero_photo_path, $mediaStorage);
     }
 
-    public function press(BandProfileService $bandProfile): Response|StreamedResponse
+    public function press(BandProfileService $bandProfile, CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
-        return $this->assetResponse($bandProfile->portalBand()->press_photo_path);
+        return $this->assetResponse($bandProfile->portalBand()->press_photo_path, $mediaStorage);
     }
 
-    private function assetResponse(?string $path): Response|StreamedResponse
+    private function assetResponse(?string $path, CloudStudioMediaStorage $mediaStorage): Response|StreamedResponse
     {
         if ($path === null || $path === '') {
             abort(404);
         }
 
-        $disk = (string) config('portal.band_asset_disk', 'local');
-
-        if (! Storage::disk($disk)->exists($path)) {
+        if (! $mediaStorage->exists($path)) {
             abort(404);
         }
 
-        return Storage::disk($disk)->response($path);
+        return $mediaStorage->response($path, basename($path));
     }
 }

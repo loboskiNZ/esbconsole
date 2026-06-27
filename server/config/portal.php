@@ -31,12 +31,14 @@ return [
     | Profile photos
     |--------------------------------------------------------------------------
     |
-    | Stored on the local private disk by default. Served only through the
-    | authenticated profile photo route — not via public URLs.
+    | New uploads target the media disk (esb-media). Legacy local files remain
+    | readable via dual-read fallback. Served only through authenticated routes.
     |
     */
 
-    'profile_photo_disk' => env('PORTAL_PROFILE_PHOTO_DISK', 'local'),
+    'media_disk' => env('PORTAL_MEDIA_DISK', 'media'),
+
+    'profile_photo_disk' => env('PORTAL_PROFILE_PHOTO_DISK', 'media'),
 
     'profile_photo_max_kb' => (int) env('PORTAL_PROFILE_PHOTO_MAX_KB', 25600),
 
@@ -47,12 +49,12 @@ return [
     | Band profile assets
     |--------------------------------------------------------------------------
     |
-    | Stored on the local private disk by default. Served only through
-    | authenticated director routes — not via public URLs.
+    | New uploads target the media disk (esb-media). Legacy local files remain
+    | readable via dual-read fallback. Served only through authenticated routes.
     |
     */
 
-    'band_asset_disk' => env('PORTAL_BAND_ASSET_DISK', 'local'),
+    'band_asset_disk' => env('PORTAL_BAND_ASSET_DISK', 'media'),
 
     'band_logo_max_kb' => (int) env('PORTAL_BAND_LOGO_MAX_KB', 5120),
 
