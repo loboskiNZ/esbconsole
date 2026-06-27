@@ -25,7 +25,7 @@ class StudioNormalizeLibraryChartPermissionsCommand extends Command
         $files = 0;
 
         foreach (File::allFiles($chartsRoot) as $file) {
-            if (@chmod($file->getPathname(), 0644)) {
+            if (@chmod($file->getPathname(), 0666)) {
                 $files++;
             }
         }
@@ -40,12 +40,12 @@ class StudioNormalizeLibraryChartPermissionsCommand extends Command
                 continue;
             }
 
-            if (@chmod($item->getPathname(), 0755)) {
+            if (@chmod($item->getPathname(), 0777)) {
                 $directories++;
             }
         }
 
-        if (@chmod($chartsRoot, 0755)) {
+        if (@chmod($chartsRoot, 0777)) {
             $directories++;
         }
 

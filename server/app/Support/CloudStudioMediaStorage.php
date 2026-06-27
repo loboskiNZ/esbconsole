@@ -274,9 +274,9 @@ class CloudStudioMediaStorage
             $absolute = $disk->path($relativePath);
 
             if (is_dir($absolute)) {
-                @chmod($absolute, 0775);
+                @chmod($absolute, 0777);
             } elseif (is_file($absolute)) {
-                @chmod($absolute, 0664);
+                @chmod($absolute, 0666);
             }
         } catch (\Throwable) {
             //
