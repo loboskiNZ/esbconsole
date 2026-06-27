@@ -1,14 +1,27 @@
 @php
+    use App\Support\SafeInternalRedirect;
+
     $item = $entry['item'];
     $metadata = $entry['metadata'];
     $parts = $entry['instrument_parts'];
     $requiredPartCount = $entry['required_part_count'];
     $song = $item->song;
+    $songEditReturnTo = $song !== null
+        ? app(SafeInternalRedirect::class)->showPlaylistReturnPath($show->id)
+        : null;
 @endphp
 
 <li class="esb-studio__playlist-item">
     <div class="esb-studio__playlist-item-head">
-        <h3 class="esb-studio__playlist-song-title">{{ $song?->name ?? 'Song' }}</h3>
+        <div class="esb-studio__playlist-title-row">
+            <h3 class="esb-studio__playlist-song-title">{{ $song?->name ?? 'Song' }}</h3>
+            @if ($isDirector && $song !== null)
+                <a
+                    href="{{ route('songs.edit', ['song' => $song, 'return_to' => $songEditReturnTo]) }}"
+                    class="esb-studio__show-pill"
+                >Edit</a>
+            @endif
+        </div>
         <span class="esb-studio__playlist-position">#{{ $item->position }}</span>
     </div>
 

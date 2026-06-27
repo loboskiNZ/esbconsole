@@ -96,7 +96,7 @@
                 </section>
             @endif
 
-            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+            <section id="playlist" class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <div class="esb-studio__playlist-head">
                     <h2 class="esb-studio__card-title">Playlist</h2>
                     @if ($isDirector)

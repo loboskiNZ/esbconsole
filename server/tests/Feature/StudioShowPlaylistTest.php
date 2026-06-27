@@ -147,7 +147,8 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('📄✕', false)
             ->assertSee('Bass chart available', false)
             ->assertSee('Drums chart missing', false)
-            ->assertDontSee('Add song', false);
+            ->assertDontSee('Add song', false)
+            ->assertDontSee(route('songs.edit', $song), false);
     }
 
     public function test_show_overview_does_not_modify_library_or_playlist_rows(): void
@@ -274,7 +275,8 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Readable Song', false)
             ->assertSee('Instrument parts', false)
             ->assertDontSee('Add song', false)
-            ->assertDontSee('Move up', false);
+            ->assertDontSee('Move up', false)
+            ->assertDontSee(route('songs.edit', $song), false);
 
         $this->actingAs($musician)
             ->post(route('studio.shows.playlist.store', $show), [
@@ -286,6 +288,82 @@ class StudioShowPlaylistTest extends TestCase
         $this->actingAs($musician)
             ->patch(route('studio.shows.playlist.archive', [$show, $item]), ['_token' => csrf_token()])
             ->assertForbidden();
+
+        $this->actingAs($musician)->get(route('songs.edit', $song))->assertForbidden();
+    }
+
+    public function test_director_sees_edit_pill_beside_playlist_song_title(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Edit Pill Show']);
+        $song = $this->seedSongWithParts('Editable Song');
+        $this->seedPlaylistItem($show, $song);
+
+        $returnTo = '/studio/shows/'.$show->id.'#playlist';
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Editable Song', false)
+            ->assertSee(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]), false);
+    }
+
+    public function test_song_edit_page_preserves_return_to_from_playlist(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Return To Show']);
+        $song = $this->seedSongWithParts('Return Song');
+        $returnTo = '/studio/shows/'.$show->id.'#playlist';
+
+        $this->actingAs($director)->get(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]))
+            ->assertOk()
+            ->assertSee('name="return_to"', false)
+            ->assertSee($returnTo, false);
+    }
+
+    public function test_saving_song_from_playlist_redirects_back_to_show_playlist(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Save Return Show']);
+        $song = $this->seedSongWithParts('Before Save');
+        $item = $this->seedPlaylistItem($show, $song, notes: 'Keep this note.');
+        $returnTo = '/studio/shows/'.$show->id.'#playlist';
+        $playlistNotesBefore = ShowPlaylistItem::query()->find($item->id)?->notes;
+        $chartCount = Chart::query()->count();
+        $partCount = SongInstrumentPart::query()->count();
+
+        $this->actingAs($director)->get(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]));
+
+        $this->actingAs($director)->put(route('songs.update', $song), [
+            '_token' => session()->token(),
+            'name' => 'After Save',
+            'bpm' => 128,
+            'return_to' => $returnTo,
+        ])->assertRedirect($returnTo);
+
+        $this->assertSame('After Save', Song::query()->find($song->id)?->name);
+        $this->assertSame($playlistNotesBefore, ShowPlaylistItem::query()->find($item->id)?->notes);
+        $this->assertSame($chartCount, Chart::query()->count());
+        $this->assertSame($partCount, SongInstrumentPart::query()->count());
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('After Save', false)
+            ->assertSee('128', false);
+    }
+
+    public function test_unsafe_external_return_to_is_ignored_on_song_update(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSongWithParts('Safe Redirect Song');
+        $fallback = route('studio.charts.show', $song, absolute: false);
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->put(route('songs.update', $song), [
+            '_token' => session()->token(),
+            'name' => 'Safe Redirect Song',
+            'return_to' => 'https://evil.example/phish',
+        ])->assertRedirect($fallback);
     }
 
     public function test_playlist_management_does_not_modify_song_or_chart_data(): void

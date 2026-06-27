@@ -1885,6 +1885,13 @@
     gap: 0.5rem;
 }
 
+.esb-studio__playlist-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .esb-studio__playlist-song-title {
     margin: 0;
     font-size: 1rem;

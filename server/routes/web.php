@@ -14,6 +14,7 @@ use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioController;
 use App\Http\Controllers\StudioPerformancesController;
 use App\Http\Controllers\StudioShowsController;
+use App\Http\Controllers\StudioSongsController;
 use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -47,6 +48,9 @@ Route::middleware('auth')->group(function () {
         ->middleware('studio.director')
         ->name('studio.shows.store');
     Route::middleware('studio.director')->group(function () {
+        Route::get('/songs/{song}/edit', [StudioSongsController::class, 'edit'])->name('songs.edit');
+        Route::put('/songs/{song}', [StudioSongsController::class, 'update'])->name('songs.update');
+
         Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');
         Route::put('/studio/shows/{show}', [StudioShowsController::class, 'update'])->name('studio.shows.update');
         Route::patch('/studio/shows/{show}/archive', [StudioShowsController::class, 'archive'])->name('studio.shows.archive');
