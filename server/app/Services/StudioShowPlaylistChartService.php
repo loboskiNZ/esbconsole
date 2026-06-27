@@ -6,6 +6,7 @@ use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Models\Library\SongInstrumentPart;
 use App\Models\Show;
+use App\Models\ShowPlaylistItem;
 use App\Support\StudioLibraryChartStorage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,6 @@ use InvalidArgumentException;
 class StudioShowPlaylistChartService
 {
     public function __construct(
-        private readonly StudioShowPlaylistService $playlist,
         private readonly StudioLibraryChartStorage $chartStorage,
     ) {}
 
@@ -27,14 +27,16 @@ class StudioShowPlaylistChartService
     ): SongInstrumentPart {
         $bandId ??= (int) config('portal.band_id', 1);
 
-        abort_unless($song->band_id === $bandId, 404);
-        abort_unless($songInstrumentPart->song_id === $song->id, 404);
+        abort_unless((int) $song->band_id === $bandId, 404);
+        abort_unless((int) $songInstrumentPart->song_id === (int) $song->id, 404);
 
-        $activeSongIds = $this->playlist->playlistEntriesForShow($show->id, $bandId)
-            ->map(fn (array $entry) => $entry['item']->song_id)
-            ->all();
+        $onActivePlaylist = ShowPlaylistItem::query()
+            ->where('show_id', $show->id)
+            ->where('song_id', $song->id)
+            ->active()
+            ->exists();
 
-        abort_unless(in_array($song->id, $activeSongIds, true), 404);
+        abort_unless($onActivePlaylist, 404);
 
         return $songInstrumentPart->loadMissing(['instrumentPart', 'chart', 'song']);
     }
@@ -75,8 +77,15 @@ class StudioShowPlaylistChartService
             $contents,
             $checksum,
         ): Chart {
-            $disk = (string) config('portal.library_chart_disk', 'library');
-            \Illuminate\Support\Facades\Storage::disk($disk)->put($diskPath, $contents);
+            $diskName = (string) config('portal.library_chart_disk', 'library');
+            $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+            $directory = trim(str_replace('\\', '/', dirname($diskPath)), '/');
+
+            if ($directory !== '' && $directory !== '.' && ! $disk->exists($directory)) {
+                $disk->makeDirectory($directory);
+            }
+
+            $disk->put($diskPath, $contents);
 
             $chart = Chart::query()->create([
                 'public_id' => (string) Str::uuid(),

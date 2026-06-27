@@ -1,6 +1,8 @@
 @extends('layouts.portal')
 
-@section('title', 'Upload Chart — '.$song->name)
+@section('title')
+    Upload Chart — {{ $song->name }}
+@endsection
 
 @section('body-attributes')
     class="esb-portal esb-portal--studio antialiased"
@@ -24,7 +26,11 @@
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"
-                action="{{ route('studio.shows.playlist.chart.upload.store', [$show, $song, $songInstrumentPart]) }}"
+                action="{{ route('studio.shows.playlist.chart.upload.store', [
+                    'show' => $show->getKey(),
+                    'song' => $song->getKey(),
+                    'songInstrumentPart' => $songInstrumentPart->getKey(),
+                ]) }}"
                 enctype="multipart/form-data"
             >
                 @csrf

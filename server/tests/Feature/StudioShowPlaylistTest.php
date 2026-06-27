@@ -144,7 +144,13 @@ class StudioShowPlaylistTest extends TestCase
             'song' => $song,
             'songInstrumentPart' => $songInstrumentPart,
             'return_to' => $returnTo,
-        ]))->assertOk()->assertSee($returnTo, false);
+        ]))->assertOk()
+            ->assertSee($returnTo, false)
+            ->assertSee(route('studio.shows.playlist.chart.upload.store', [
+                'show' => $show->getKey(),
+                'song' => $song->getKey(),
+                'songInstrumentPart' => $songInstrumentPart->getKey(),
+            ], false), false);
 
         $this->actingAs($director)->post(route('studio.shows.playlist.chart.upload.store', [
             'show' => $show,
