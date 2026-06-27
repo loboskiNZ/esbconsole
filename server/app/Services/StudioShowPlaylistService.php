@@ -20,10 +20,78 @@ class StudioShowPlaylistService
     ) {}
 
     /**
+     * @return array{
+     *     entries: Collection<int, array{
+     *         item: ShowPlaylistItem,
+     *         metadata: array<string, mixed>,
+     *         instrument_parts: list<array{
+     *             instrument_part_id: int|null,
+     *             name: string,
+     *             has_chart: bool,
+     *             chart_status_label: string,
+     *         }>,
+     *         required_part_count: int,
+     *     }>,
+     *     summary: array{
+     *         song_count: int,
+     *         instrument_part_count: int,
+     *         charts_available: int,
+     *         charts_missing: int,
+     *     },
+     *     show_instrument_parts: list<array{name: string}>,
+     * }
+     */
+    public function playlistViewForShow(int $showId, ?int $bandId = null): array
+    {
+        $entries = $this->playlistEntriesForShow($showId, $bandId);
+
+        $chartsAvailable = 0;
+        $chartsMissing = 0;
+        /** @var array<string, string> $distinctParts */
+        $distinctParts = [];
+
+        foreach ($entries as $entry) {
+            foreach ($entry['instrument_parts'] as $part) {
+                if ($part['has_chart']) {
+                    $chartsAvailable++;
+                } else {
+                    $chartsMissing++;
+                }
+
+                $key = mb_strtolower(trim($part['name']));
+                $distinctParts[$key] = $part['name'];
+            }
+        }
+
+        $showInstrumentParts = collect($distinctParts)
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->map(fn (string $name): array => ['name' => $name])
+            ->values()
+            ->all();
+
+        return [
+            'entries' => $entries,
+            'summary' => [
+                'song_count' => $entries->count(),
+                'instrument_part_count' => count($distinctParts),
+                'charts_available' => $chartsAvailable,
+                'charts_missing' => $chartsMissing,
+            ],
+            'show_instrument_parts' => $showInstrumentParts,
+        ];
+    }
+
+    /**
      * @return Collection<int, array{
      *     item: ShowPlaylistItem,
      *     metadata: array<string, mixed>,
-     *     instrument_parts: list<array{name: string, has_chart: bool}>,
+     *     instrument_parts: list<array{
+     *         instrument_part_id: int|null,
+     *         name: string,
+     *         has_chart: bool,
+     *         chart_status_label: string,
+     *     }>,
+     *     required_part_count: int,
      * }>
      */
     public function playlistEntriesForShow(int $showId, ?int $bandId = null): Collection
@@ -40,18 +108,11 @@ class StudioShowPlaylistService
             ->orderBy('position')
             ->get();
 
-        $songIds = $items->pluck('song_id')->all();
-        $songs = Song::query()
-            ->with([
-                'timeSignature',
-                'musicalKey',
-                'mood',
-                'songInstrumentParts.instrumentPart',
-                'songInstrumentParts.chart',
-            ])
-            ->whereIn('id', $songIds)
-            ->get()
-            ->keyBy('id');
+        if ($items->isEmpty()) {
+            return collect();
+        }
+
+        $songs = $this->loadSongsForPlaylist($items->pluck('song_id')->all());
 
         return $items->map(function (ShowPlaylistItem $item) use ($songs): array {
             /** @var Song|null $song */
@@ -60,6 +121,8 @@ class StudioShowPlaylistService
             if ($song !== null) {
                 $item->setRelation('song', $song);
             }
+
+            $instrumentParts = $song ? $this->instrumentPartsForSong($song) : [];
 
             return [
                 'item' => $item,
@@ -70,9 +133,33 @@ class StudioShowPlaylistService
                     'mood_label' => StudioSongMetadata::DEFAULT_MOOD_LABEL,
                     'has_metadata' => false,
                 ],
-                'instrument_parts' => $song ? $this->instrumentPartsForSong($song) : [],
+                'instrument_parts' => $instrumentParts,
+                'required_part_count' => count($instrumentParts),
             ];
         });
+    }
+
+    /**
+     * @param  list<int>  $songIds
+     * @return Collection<int, Song>
+     */
+    private function loadSongsForPlaylist(array $songIds): Collection
+    {
+        if ($songIds === []) {
+            return collect();
+        }
+
+        return Song::query()
+            ->with([
+                'timeSignature',
+                'musicalKey',
+                'mood',
+                'songInstrumentParts.instrumentPart',
+                'songInstrumentParts.chart',
+            ])
+            ->whereIn('id', $songIds)
+            ->get()
+            ->keyBy('id');
     }
 
     /**
@@ -194,16 +281,28 @@ class StudioShowPlaylistService
     }
 
     /**
-     * @return list<array{name: string, has_chart: bool}>
+     * @return list<array{
+     *     instrument_part_id: int|null,
+     *     name: string,
+     *     has_chart: bool,
+     *     chart_status_label: string,
+     * }>
      */
     private function instrumentPartsForSong(Song $song): array
     {
         return $song->songInstrumentParts
             ->sortBy(fn ($row) => $row->instrumentPart?->name ?? '')
-            ->map(fn ($row): array => [
-                'name' => $row->instrumentPart?->name ?? 'Instrument part',
-                'has_chart' => $row->chart_id !== null,
-            ])
+            ->map(function ($row): array {
+                $name = $row->instrumentPart?->name ?? 'Instrument part';
+                $hasChart = $row->chart_id !== null;
+
+                return [
+                    'instrument_part_id' => $row->instrument_part_id,
+                    'name' => $name,
+                    'has_chart' => $hasChart,
+                    'chart_status_label' => $hasChart ? 'chart available' : 'chart missing',
+                ];
+            })
             ->values()
             ->all();
     }

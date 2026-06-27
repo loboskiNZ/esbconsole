@@ -25,23 +25,76 @@
                 </p>
             @endif
 
-            <section class="esb-portal__panel esb-studio__card esb-studio__show-section">
-                <h2 class="esb-studio__card-title">Overview</h2>
-                <dl class="esb-studio__show-details mt-4">
-                    <div>
-                        <dt>Show name</dt>
-                        <dd>{{ $show->name }}</dd>
-                    </div>
-                    <div>
-                        <dt>Description</dt>
-                        <dd>{{ $show->description ?: '—' }}</dd>
-                    </div>
-                    <div>
-                        <dt>Lifecycle state</dt>
-                        <dd>{{ $show->statusLabel() }}</dd>
-                    </div>
-                </dl>
-            </section>
+            @if (session('playlist_updated'))
+                <p class="esb-portal__success mb-4" role="status">Playlist updated.</p>
+            @endif
+
+            <div class="esb-studio__show-overview-grid">
+                <section class="esb-portal__panel esb-studio__card esb-studio__show-section">
+                    <h2 class="esb-studio__card-title">Overview</h2>
+                    <dl class="esb-studio__show-details mt-4">
+                        <div>
+                            <dt>Show name</dt>
+                            <dd>{{ $show->name }}</dd>
+                        </div>
+                        <div>
+                            <dt>Description</dt>
+                            <dd>{{ $show->description ?: '—' }}</dd>
+                        </div>
+                        <div>
+                            <dt>Lifecycle state</dt>
+                            <dd>{{ $show->statusLabel() }}</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                @if ($libraryAvailable)
+                    <section class="esb-portal__panel esb-studio__card esb-studio__show-section esb-studio__playlist-summary-card">
+                        <h2 class="esb-studio__card-title">Playlist summary</h2>
+                        <dl class="esb-studio__playlist-summary mt-4">
+                            <div>
+                                <dt>Songs</dt>
+                                <dd>{{ number_format($playlistSummary['song_count']) }}</dd>
+                            </div>
+                            <div>
+                                <dt>Instrument parts</dt>
+                                <dd>{{ number_format($playlistSummary['instrument_part_count']) }}</dd>
+                            </div>
+                            <div>
+                                <dt>Charts available</dt>
+                                <dd>{{ number_format($playlistSummary['charts_available']) }}</dd>
+                            </div>
+                            <div>
+                                <dt>Charts missing</dt>
+                                <dd>{{ number_format($playlistSummary['charts_missing']) }}</dd>
+                            </div>
+                        </dl>
+                    </section>
+                @endif
+            </div>
+
+            @if ($libraryAvailable)
+                <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                    <h2 class="esb-studio__card-title">Instrument parts</h2>
+                    <p class="esb-studio__card-body mt-2">Distinct parts required across the active playlist.</p>
+
+                    @if ($showInstrumentParts === [])
+                        <p class="esb-studio__card-body mt-3">No instrument parts defined.</p>
+                    @else
+                        <div class="esb-studio__part-pill-grid mt-4">
+                            @foreach ($showInstrumentParts as $part)
+                                @include('studio.shows.partials._instrument-part-pill', [
+                                    'part' => array_merge($part, [
+                                        'has_chart' => false,
+                                        'chart_status_label' => '',
+                                    ]),
+                                    'showChart' => false,
+                                ])
+                            @endforeach
+                        </div>
+                    @endif
+                </section>
+            @endif
 
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <div class="esb-studio__playlist-head">
@@ -50,10 +103,6 @@
                         <p class="esb-studio__card-body">Musical definition for this show production.</p>
                     @endif
                 </div>
-
-                @if (session('playlist_updated'))
-                    <p class="esb-portal__success mt-3" role="status">Playlist updated.</p>
-                @endif
 
                 @if (! $libraryAvailable)
                     <p class="esb-studio__card-body mt-3">Music library is not available in this environment.</p>

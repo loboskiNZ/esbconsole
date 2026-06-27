@@ -54,11 +54,14 @@ class StudioShowsController extends Controller
     ): View {
         $user = auth()->user();
         $portalShow = $shows->showForPortal($show->id);
+        $playlistView = $playlist->playlistViewForShow($portalShow->id);
 
         return view('studio.shows.show', [
             'show' => $portalShow,
             'performances' => $performances->performancesForShow($portalShow->id),
-            'playlistEntries' => $playlist->playlistEntriesForShow($portalShow->id),
+            'playlistEntries' => $playlistView['entries'],
+            'playlistSummary' => $playlistView['summary'],
+            'showInstrumentParts' => $playlistView['show_instrument_parts'],
             'selectableSongs' => $user?->isDirector() ? $playlist->selectableSongsForShow($portalShow->id) : collect(),
             'libraryAvailable' => $library->isAvailable(),
             'isDirector' => $user?->isDirector() ?? false,

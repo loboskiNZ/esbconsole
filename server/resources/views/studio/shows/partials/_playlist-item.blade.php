@@ -2,6 +2,7 @@
     $item = $entry['item'];
     $metadata = $entry['metadata'];
     $parts = $entry['instrument_parts'];
+    $requiredPartCount = $entry['required_part_count'];
     $song = $item->song;
 @endphp
 
@@ -30,33 +31,28 @@
         </div>
     </dl>
 
-    <div class="esb-studio__playlist-parts">
-        <h4 class="esb-studio__playlist-parts-title">Instrument parts</h4>
+    <div class="esb-studio__playlist-required-parts">
+        <div class="esb-studio__playlist-required-parts-head">
+            <h4 class="esb-studio__playlist-parts-title">Required parts</h4>
+            <span class="esb-studio__playlist-required-count">{{ $requiredPartCount }}</span>
+        </div>
+
         @if ($parts === [])
             <p class="esb-studio__card-body">No instrument parts defined.</p>
         @else
-            <ul class="esb-studio__playlist-parts-list">
+            <div class="esb-studio__part-pill-grid">
                 @foreach ($parts as $part)
-                    <li class="esb-studio__playlist-part-row">
-                        <span class="esb-studio__playlist-part-name">{{ $part['name'] }}</span>
-                        <span class="esb-studio__playlist-part-chart">
-                            @if ($part['has_chart'])
-                                ✓ Chart
-                            @else
-                                —
-                            @endif
-                        </span>
-                    </li>
+                    @include('studio.shows.partials._instrument-part-pill', ['part' => $part])
                 @endforeach
-            </ul>
+            </div>
         @endif
     </div>
 
-    @if (! $isDirector && $item->notes)
-        <p class="esb-studio__playlist-notes">
+    @if ($item->notes)
+        <div class="esb-studio__playlist-notes-block">
             <span class="esb-studio__playlist-notes-label">Notes</span>
-            {{ $item->notes }}
-        </p>
+            <p class="esb-studio__playlist-notes">{{ $item->notes }}</p>
+        </div>
     @endif
 
     @if ($isDirector)
@@ -78,7 +74,7 @@
             </form>
         </div>
 
-        <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form mt-3">
+        <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form">
             @csrf
             @method('PATCH')
             <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Edit notes</label>

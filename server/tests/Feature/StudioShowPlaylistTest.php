@@ -12,6 +12,7 @@ use App\Models\Library\TimeSignature;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
 use App\Models\User;
+use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -55,8 +56,123 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Lead Vocal', false)
             ->assertSee('Trumpet', false)
             ->assertSee('Keyboard', false)
-            ->assertSee('✓ Chart', false)
-            ->assertSee('Instrument parts', false);
+            ->assertSee('📄✓', false)
+            ->assertSee('📄✕', false)
+            ->assertSee('Required parts', false)
+            ->assertSee('Playlist summary', false);
+    }
+
+    public function test_playlist_summary_counts_are_correct(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Summary Show']);
+
+        $songA = $this->seedSongWithParts('Song A', withChartFor: ['Bass', 'Trumpet'], withoutChartFor: ['Drums']);
+        $songB = $this->seedSongWithParts('Song B', withChartFor: ['Bass'], withoutChartFor: []);
+        $this->seedPlaylistItem($show, $songA, position: 1);
+        $this->seedPlaylistItem($show, $songB, position: 2);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Playlist summary', false)
+            ->assertSee('Songs', false)
+            ->assertSee('Charts missing', false);
+
+        $summary = app(StudioShowPlaylistService::class)->playlistViewForShow($show->id)['summary'];
+
+        $this->assertSame(2, $summary['song_count']);
+        $this->assertSame(3, $summary['instrument_part_count']);
+        $this->assertSame(3, $summary['charts_available']);
+        $this->assertSame(1, $summary['charts_missing']);
+    }
+
+    public function test_distinct_instrument_parts_appear_once_in_overview(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Distinct Parts Show']);
+
+        $songA = $this->seedSongWithParts('Song A', withChartFor: ['Bass']);
+        $songB = $this->seedSongWithParts('Song B', withChartFor: ['Bass', 'Trumpet']);
+        $this->seedPlaylistItem($show, $songA);
+        $this->seedPlaylistItem($show, $songB, position: 2);
+
+        $view = app(StudioShowPlaylistService::class)->playlistViewForShow($show->id);
+
+        $this->assertSame(['Bass', 'Trumpet'], collect($view['show_instrument_parts'])->pluck('name')->all());
+        $this->assertCount(2, $view['entries']);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Distinct parts required', false)
+            ->assertSee('Trumpet', false);
+    }
+
+    public function test_archived_playlist_items_do_not_contribute_to_summary(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Archived Summary Show']);
+
+        $active = $this->seedSongWithParts('Active Song', withChartFor: ['Bass']);
+        $archived = $this->seedSongWithParts('Archived Song', withChartFor: ['Trumpet', 'Drums']);
+        $this->seedPlaylistItem($show, $active);
+        $this->seedPlaylistItem($show, $archived, position: 2, isActive: false);
+
+        $summary = app(StudioShowPlaylistService::class)->playlistViewForShow($show->id)['summary'];
+
+        $this->assertSame(1, $summary['song_count']);
+        $this->assertSame(1, $summary['instrument_part_count']);
+        $this->assertSame(1, $summary['charts_available']);
+        $this->assertSame(0, $summary['charts_missing']);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Active Song', false)
+            ->assertSee('esb-studio__playlist-song-title', false)
+            ->assertDontSee('esb-studio__playlist-song-title">Archived Song', false);
+    }
+
+    public function test_musicians_see_same_read_only_playlist_information(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Musician Read Show']);
+        $song = $this->seedSongWithParts('Readable Song', withChartFor: ['Bass'], withoutChartFor: ['Drums']);
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Playlist summary', false)
+            ->assertSee('Required parts', false)
+            ->assertSee('📄✓', false)
+            ->assertSee('📄✕', false)
+            ->assertSee('Bass chart available', false)
+            ->assertSee('Drums chart missing', false)
+            ->assertDontSee('Add song', false);
+    }
+
+    public function test_show_overview_does_not_modify_library_or_playlist_rows(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Read Only Show']);
+        $song = $this->seedSongWithParts('Read Only Song', withChartFor: ['Bass']);
+        $item = $this->seedPlaylistItem($show, $song);
+
+        $songCount = Song::query()->count();
+        $chartCount = Chart::query()->count();
+        $partCount = SongInstrumentPart::query()->count();
+        $playlistCount = DB::table('show_playlist_items')->count();
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
+
+        $this->assertSame($songCount, Song::query()->count());
+        $this->assertSame($chartCount, Chart::query()->count());
+        $this->assertSame($partCount, SongInstrumentPart::query()->count());
+        $this->assertSame($playlistCount, DB::table('show_playlist_items')->count());
+        $this->assertDatabaseHas('show_playlist_items', [
+            'id' => $item->id,
+            'is_active' => true,
+            'position' => 1,
+        ]);
     }
 
     public function test_playlist_shows_no_instrument_parts_message_when_none_exist(): void
@@ -276,14 +392,19 @@ class StudioShowPlaylistTest extends TestCase
         ]);
     }
 
-    private function seedPlaylistItem(Show $show, Song $song, int $position = 1, ?string $notes = null): ShowPlaylistItem
-    {
+    private function seedPlaylistItem(
+        Show $show,
+        Song $song,
+        int $position = 1,
+        ?string $notes = null,
+        bool $isActive = true,
+    ): ShowPlaylistItem {
         return ShowPlaylistItem::query()->create([
             'show_id' => $show->id,
             'song_id' => $song->id,
             'position' => $position,
             'notes' => $notes,
-            'is_active' => true,
+            'is_active' => $isActive,
         ]);
     }
 
