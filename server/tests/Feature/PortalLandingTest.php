@@ -32,6 +32,8 @@ class PortalLandingTest extends TestCase
         $response->assertSee('loginStep === \'password\'', false);
         $response->assertSee('showLoginButton', false);
         $response->assertSee('showForgotPassword', false);
+        $response->assertSee('Forgot your password?', false);
+        $response->assertSee(route('password.request'), false);
         $response->assertSee('<template x-if="loginStep === \'password\'">', false);
     }
 

@@ -57,7 +57,7 @@ class ResetUserPasswordCommand extends Command
         $this->line('Username: '.$user->username);
         $this->line('Password: '.$password);
         $this->line('');
-        $this->warn('Share this password securely and change it after login when self-service reset exists.');
+        $this->warn('Share this password securely. Users can also reset via Forgot password on the login page.');
 
         return self::SUCCESS;
     }

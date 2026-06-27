@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Support\InstrumentCatalog;
+use App\Support\PortalPassword;
 use App\Support\PortalUsername;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -49,16 +50,7 @@ class StoreOnboardingRequest extends FormRequest
                 'regex:/^[a-z0-9]+$/',
                 'unique:users,username',
             ],
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'max:50',
-                'regex:/[A-Z]/',
-                'regex:/[a-z]/',
-                'regex:/[0-9]/',
-                'regex:/[^A-Za-z0-9]/',
-            ],
+            'password' => PortalPassword::validationRules(),
             'password_confirm' => ['required', 'string', 'same:password'],
             'honeypot' => ['nullable', 'string', 'max:0'],
             'first_name' => ['required', 'string', 'max:255'],

@@ -7,6 +7,8 @@ use App\Models\Library\Song;
 use App\Models\Library\SongAsset;
 use App\Models\Library\SongInstrumentPart;
 use App\Support\StudioLibraryAvailability;
+use Illuminate\Auth\Notifications\ResetPassword;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -56,6 +58,20 @@ class AppServiceProvider extends ServiceProvider
             abort_unless(app(StudioLibraryAvailability::class)->isAvailable(), 404);
 
             return SongAsset::query()->findOrFail($value);
+        });
+
+        ResetPassword::toMailUsing(function ($notifiable, string $token): MailMessage {
+            $url = url(route('password.reset', [
+                'token' => $token,
+                'email' => $notifiable->getEmailForPasswordReset(),
+            ], false));
+
+            return (new MailMessage)
+                ->subject('Reset your Ed and the Shadow Boys portal password')
+                ->line('You are receiving this email because we received a password reset request for your Studio account.')
+                ->action('Reset Password', $url)
+                ->line('This password reset link will expire in '.config('auth.passwords.users.expire').' minutes.')
+                ->line('If you did not request a password reset, no further action is required.');
         });
     }
 

@@ -3,7 +3,9 @@
 use App\Http\Controllers\CheckOnboardingUsernameController;
 use App\Http\Controllers\InviteOnboardingController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\NewPasswordController;
 use App\Http\Controllers\OnboardingRegistrationController;
+use App\Http\Controllers\PasswordResetLinkController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudioBandController;
 use App\Http\Controllers\StudioBandInviteController;
@@ -24,11 +26,20 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('home', [
         'onboardingComplete' => request()->query('onboarding') === 'complete',
+        'passwordResetComplete' => request()->query('password_reset') === 'complete' || session('password_reset'),
     ]);
 })->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store'])->name('login');
+    Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])
+        ->middleware('throttle:6,1')
+        ->name('password.update');
 });
 
 Route::middleware('auth')->group(function () {

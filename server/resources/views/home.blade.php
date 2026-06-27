@@ -92,6 +92,12 @@
                         </p>
                     @endif
 
+                    @if (! empty($passwordResetComplete))
+                        <p class="esb-portal__success mb-4 text-center" role="status">
+                            Your password has been reset. Log in with your new credentials.
+                        </p>
+                    @endif
+
                     <input type="hidden" name="username" :value="username">
 
                     <template x-if="loginStep === 'username'">
@@ -148,11 +154,11 @@
                                 </button>
 
                                 <p
-                                    class="text-center esb-studio__card-body"
+                                    class="text-center"
                                     x-show="showForgotPassword"
                                     x-transition.opacity.duration.500ms
                                 >
-                                    Forgot your password? Contact your band director to reset it.
+                                    <a href="{{ route('password.request') }}" class="esb-portal__link">Forgot your password?</a>
                                 </p>
                             </div>
                         </div>

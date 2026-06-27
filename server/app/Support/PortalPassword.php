@@ -28,4 +28,21 @@ class PortalPassword
 
         return true;
     }
+
+    /**
+     * @return list<string|\Illuminate\Contracts\Validation\ValidationRule>
+     */
+    public static function validationRules(): array
+    {
+        return [
+            'required',
+            'string',
+            'min:8',
+            'max:50',
+            'regex:/[A-Z]/',
+            'regex:/[a-z]/',
+            'regex:/[0-9]/',
+            'regex:/[^A-Za-z0-9]/',
+        ];
+    }
 }
