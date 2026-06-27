@@ -148,11 +148,11 @@
                                 </button>
 
                                 <p
-                                    class="text-center"
+                                    class="text-center esb-studio__card-body"
                                     x-show="showForgotPassword"
                                     x-transition.opacity.duration.500ms
                                 >
-                                    <a href="#" class="esb-portal__link" @click.prevent>Forgot your password?</a>
+                                    Forgot your password? Contact your band director to reset it.
                                 </p>
                             </div>
                         </div>
