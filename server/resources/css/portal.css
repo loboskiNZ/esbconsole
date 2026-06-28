@@ -1623,6 +1623,11 @@
     color: var(--esb-ink);
 }
 
+.esb-studio__show-pill--active {
+    border-color: rgba(255, 178, 62, 0.95);
+    background: color-mix(in srgb, #ffb23e 38%, transparent);
+}
+
 .esb-studio__shows-archived-link {
     color: rgba(255, 178, 62, 0.92);
     font-size: 0.82rem;
@@ -2527,6 +2532,157 @@
     color: var(--esb-muted);
     line-height: 1.45;
     white-space: pre-wrap;
+}
+
+.esb-studio__director-tools-heading {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--esb-muted);
+}
+
+.esb-studio__song-library-toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.esb-studio__song-library-toolbar-row--filters {
+    margin-top: 1rem;
+    justify-content: space-between;
+}
+
+.esb-studio__song-library-search {
+    display: flex;
+    flex: 1 1 16rem;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.esb-studio__song-library-search .esb-portal__input {
+    flex: 1 1 auto;
+}
+
+.esb-studio__song-library-filter {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.esb-studio__song-library-summary {
+    margin-top: 1rem;
+}
+
+.esb-studio__song-library-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.esb-studio__song-library-summary-grid dt {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--esb-muted);
+}
+
+.esb-studio__song-library-summary-grid dd {
+    margin: 0.15rem 0 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--esb-ink);
+}
+
+.esb-studio__song-library-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__song-library-card {
+    list-style: none;
+}
+
+.esb-studio__song-library-code {
+    flex: 0 0 auto;
+    min-width: 2.75rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--esb-muted);
+}
+
+.esb-studio__song-library-head-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.esb-studio__song-library-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.78rem;
+    color: var(--esb-muted);
+}
+
+.esb-studio__song-library-details {
+    padding-top: 0.75rem;
+}
+
+.esb-studio__song-library-expanded-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.esb-studio__song-library-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__song-library-tag-list li {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    font-size: 0.78rem;
+    color: var(--esb-ink);
+}
+
+.esb-studio__song-library-more {
+    background: transparent !important;
+    color: var(--esb-muted) !important;
+}
+
+.esb-studio__song-library-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__song-library-notes dd {
+    white-space: pre-wrap;
+}
+
+.esb-studio__song-library-card-actions {
+    display: flex;
+    justify-content: flex-end;
 }
 
 @media (min-width: 640px) {

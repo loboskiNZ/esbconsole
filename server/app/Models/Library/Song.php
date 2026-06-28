@@ -2,12 +2,21 @@
 
 namespace App\Models\Library;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Song extends Model
 {
+    public const STATUS_DRAFT = 'draft';
+
+    public const STATUS_IN_PROGRESS = 'in_progress';
+
+    public const STATUS_READY = 'ready';
+
+    public const STATUS_ARCHIVED = 'archived';
+
     protected $table = 'songs';
 
     /**
@@ -82,5 +91,28 @@ class Song extends Model
     public function assets(): HasMany
     {
         return $this->hasMany(SongAsset::class)->orderBy('sort_order')->orderBy('id');
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->status === self::STATUS_ARCHIVED;
+    }
+
+    /**
+     * @param  Builder<Song>  $query
+     * @return Builder<Song>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', '!=', self::STATUS_ARCHIVED);
+    }
+
+    /**
+     * @param  Builder<Song>  $query
+     * @return Builder<Song>
+     */
+    public function scopeArchived(Builder $query): Builder
+    {
+        return $query->where('status', self::STATUS_ARCHIVED);
     }
 }

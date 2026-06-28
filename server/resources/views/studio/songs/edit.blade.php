@@ -17,11 +17,23 @@
         <div class="esb-studio__shell-body">
             <div class="esb-studio__charts-nav mb-4">
                 @if ($returnTo)
-                    <a href="{{ $returnTo }}" class="esb-studio__back-link">← Back to show playlist</a>
+                    <a href="{{ $returnTo }}" class="esb-studio__back-link">
+                        @if ($returnTo === app(\App\Support\SafeInternalRedirect::class)->songLibraryReturnPath())
+                            ← Back to Song Library
+                        @else
+                            ← Back to show playlist
+                        @endif
+                    </a>
                 @else
                     <a href="{{ route('studio.charts.show', $song) }}" class="esb-studio__back-link">← Back to charts</a>
                 @endif
             </div>
+
+            @if (session('song_created'))
+                <p class="esb-portal__success mb-4" role="status">
+                    Song created. Continue by adding instrument parts, charts and song assets.
+                </p>
+            @endif
 
             @if (session('song_updated'))
                 <p class="esb-portal__success mb-4" role="status">Song updated.</p>

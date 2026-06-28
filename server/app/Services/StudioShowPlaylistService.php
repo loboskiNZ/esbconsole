@@ -102,6 +102,7 @@ class StudioShowPlaylistService
 
         return Song::query()
             ->where('band_id', $bandId)
+            ->active()
             ->orderBy('name')
             ->get()
             ->filter(fn (Song $song): bool => $this->songMatchesPlaylistSearch($song, $query))
@@ -390,6 +391,7 @@ class StudioShowPlaylistService
 
         return Song::query()
             ->where('band_id', $bandId)
+            ->active()
             ->whereNotIn('id', $activeSongIds)
             ->orderBy('name')
             ->get();
@@ -403,6 +405,10 @@ class StudioShowPlaylistService
         $song = Song::query()
             ->where('band_id', $bandId)
             ->findOrFail($songId);
+
+        if ($song->isArchived()) {
+            throw new InvalidArgumentException('Song is archived and cannot be added to a playlist.');
+        }
 
         $existing = ShowPlaylistItem::query()
             ->where('show_id', $portalShow->id)

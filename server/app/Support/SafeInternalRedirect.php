@@ -9,6 +9,11 @@ class SafeInternalRedirect
         return '/studio/shows/'.$showId.'#playlist';
     }
 
+    public function songLibraryReturnPath(): string
+    {
+        return '/songs';
+    }
+
     public function resolve(?string $returnTo, string $fallback): string
     {
         if ($returnTo === null || trim($returnTo) === '') {

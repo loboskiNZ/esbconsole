@@ -63,6 +63,11 @@ Route::middleware('auth')->group(function () {
         ->middleware('studio.director')
         ->name('studio.shows.store');
     Route::middleware('studio.director')->group(function () {
+        Route::get('/songs', [StudioSongsController::class, 'index'])->name('songs.index');
+        Route::get('/songs/create', [StudioSongsController::class, 'create'])->name('songs.create');
+        Route::post('/songs', [StudioSongsController::class, 'store'])->name('songs.store');
+        Route::patch('/songs/{song}/archive', [StudioSongsController::class, 'archive'])->name('songs.archive');
+        Route::patch('/songs/{song}/restore', [StudioSongsController::class, 'restore'])->name('songs.restore');
         Route::get('/songs/{song}/edit', [StudioSongsController::class, 'edit'])->name('songs.edit');
         Route::put('/songs/{song}', [StudioSongsController::class, 'update'])->name('songs.update');
         Route::post('/songs/{song}/instrument-parts', [StudioSongInstrumentPartController::class, 'store'])

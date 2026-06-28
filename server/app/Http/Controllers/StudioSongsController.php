@@ -7,6 +7,7 @@ use App\Models\Library\Song;
 use App\Models\Library\SongMood;
 use App\Models\Library\TimeSignature;
 use App\Services\StudioSongInstrumentPartService;
+use App\Services\StudioSongLibraryService;
 use App\Support\SafeInternalRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,75 @@ use Illuminate\View\View;
 
 class StudioSongsController extends Controller
 {
+    public function index(Request $request, StudioSongLibraryService $library): View
+    {
+        $showArchived = $request->boolean('archived');
+        $query = $request->string('q')->toString();
+        $genre = $request->string('genre')->toString();
+
+        return view('studio.songs.index', [
+            'songs' => $library->songsForLibrary(
+                showArchived: $showArchived,
+                query: $query !== '' ? $query : null,
+                genre: $genre !== '' ? $genre : null,
+            ),
+            'summary' => $library->summaryForBand(),
+            'genreOptions' => $library->genreOptionsForBand(),
+            'showArchived' => $showArchived,
+            'query' => $query,
+            'genre' => $genre,
+            'libraryReturnTo' => app(SafeInternalRedirect::class)->songLibraryReturnPath(),
+        ]);
+    }
+
+    public function create(StudioSongLibraryService $library): View
+    {
+        return view('studio.songs.create', [
+            'musicalKeys' => MusicalKey::query()->where('active', true)->orderBy('sort_order')->get(),
+            'hasDurationField' => $library->hasDurationColumn(),
+        ]);
+    }
+
+    public function store(Request $request, StudioSongLibraryService $library): RedirectResponse
+    {
+        $validated = $request->validate($this->createSongRules($library));
+
+        $durationSeconds = null;
+        if ($library->hasDurationColumn() && isset($validated['duration'])) {
+            $durationSeconds = $library->parseDurationInput($validated['duration']);
+        }
+        unset($validated['duration']);
+
+        $song = $library->createSong([
+            ...$validated,
+            'duration_seconds' => $durationSeconds,
+        ]);
+
+        return redirect()
+            ->route('songs.edit', $song)
+            ->with('song_created', true);
+    }
+
+    public function archive(Song $song, StudioSongLibraryService $library): RedirectResponse
+    {
+        $this->ensureSongBelongsToPortalBand($song);
+        $library->archiveSong($song);
+
+        return redirect()
+            ->route('songs.index', request()->only(['q', 'genre', 'archived']))
+            ->with('song_archived', $song->name);
+    }
+
+    public function restore(Song $song, StudioSongLibraryService $library): RedirectResponse
+    {
+        $this->ensureSongBelongsToPortalBand($song);
+        $library->restoreSong($song);
+
+        return redirect()
+            ->route('songs.index', ['archived' => 1])
+            ->with('song_restored', $song->fresh()->name);
+    }
+
     public function edit(Request $request, Song $song, StudioSongInstrumentPartService $instrumentParts): View
     {
         $this->ensureSongBelongsToPortalBand($song);
@@ -54,6 +124,27 @@ class StudioSongsController extends Controller
     private function ensureSongBelongsToPortalBand(Song $song): void
     {
         abort_unless($song->band_id === (int) config('portal.band_id', 1), 404);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function createSongRules(StudioSongLibraryService $library): array
+    {
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'bpm' => ['nullable', 'integer', 'min:20', 'max:300'],
+            'musical_key_id' => ['nullable', 'integer', Rule::exists(MusicalKey::class, 'id')],
+            'director_notes' => ['nullable', 'string'],
+            'spotify_url' => ['nullable', 'string', 'max:2048', 'url'],
+            'youtube_url' => ['nullable', 'string', 'max:2048', 'url'],
+        ];
+
+        if ($library->hasDurationColumn()) {
+            $rules['duration'] = ['nullable', 'string', 'max:16'];
+        }
+
+        return $rules;
     }
 
     /**
