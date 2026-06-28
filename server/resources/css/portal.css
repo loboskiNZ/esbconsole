@@ -2346,6 +2346,17 @@
     gap: 0.35rem;
 }
 
+.esb-studio__setlist-pdf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.esb-studio__setlist-pdf-generate-form {
+    margin: 0;
+}
+
 .esb-studio__playlist-add-row {
     display: grid;
     gap: 0.65rem;

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -23,6 +24,11 @@ class CloudStudioMediaStorage
         $safeType = preg_replace('/[^a-z0-9_]+/', '_', strtolower($assetType)) ?: SongAssetType::OTHER;
 
         return "library/songs/{$songId}/assets/{$safeType}/{$filename}";
+    }
+
+    public function setlistReference(int $showId, string $timestamp): string
+    {
+        return "library/setlists/{$showId}/setlist-{$timestamp}.pdf";
     }
 
     /**
@@ -269,7 +275,7 @@ class CloudStudioMediaStorage
         abort(404);
     }
 
-    private function ensureLocalDirectory(\Illuminate\Contracts\Filesystem\Filesystem $disk, string $relativePath): void
+    private function ensureLocalDirectory(Filesystem $disk, string $relativePath): void
     {
         $directory = trim(str_replace('\\', '/', dirname($relativePath)), '/.');
 
@@ -287,7 +293,7 @@ class CloudStudioMediaStorage
         $this->normalizeLocalPathPermissions($disk, $directory);
     }
 
-    private function normalizeLocalPathPermissions(\Illuminate\Contracts\Filesystem\Filesystem $disk, string $relativePath): void
+    private function normalizeLocalPathPermissions(Filesystem $disk, string $relativePath): void
     {
         try {
             $absolute = $disk->path($relativePath);

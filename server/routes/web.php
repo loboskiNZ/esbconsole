@@ -10,16 +10,17 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\StudioBandController;
 use App\Http\Controllers\StudioBandInviteController;
 use App\Http\Controllers\StudioCalendarController;
-use App\Http\Controllers\StudioChartSearchController;
-use App\Http\Controllers\StudioShowPlaylistChartController;
-use App\Http\Controllers\StudioShowPlaylistController;
 use App\Http\Controllers\StudioChartsController;
+use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioController;
 use App\Http\Controllers\StudioPerformancesController;
+use App\Http\Controllers\StudioShowPlaylistChartController;
+use App\Http\Controllers\StudioShowPlaylistController;
 use App\Http\Controllers\StudioShowsController;
+use App\Http\Controllers\StudioShowSetlistPdfController;
 use App\Http\Controllers\StudioSongAssetController;
-use App\Http\Controllers\StudioSongsController;
 use App\Http\Controllers\StudioSongInstrumentPartController;
+use App\Http\Controllers\StudioSongsController;
 use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +79,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('/studio/shows/{show}/archive', [StudioShowsController::class, 'archive'])->name('studio.shows.archive');
         Route::patch('/studio/shows/{show}/restore', [StudioShowsController::class, 'restore'])->name('studio.shows.restore');
         Route::post('/studio/shows/{show}/playlist', [StudioShowPlaylistController::class, 'store'])->name('studio.shows.playlist.store');
+        Route::post('/studio/shows/{show}/setlist/generate', [StudioShowSetlistPdfController::class, 'generate'])
+            ->name('studio.shows.setlist.generate');
         Route::get('/studio/shows/{show}/playlist/songs/search', [StudioShowPlaylistController::class, 'searchSongs'])
             ->name('studio.shows.playlist.songs.search');
         Route::post('/studio/shows/{show}/playlist/items', [StudioShowPlaylistController::class, 'store'])->name('studio.shows.playlist.items.store');
@@ -93,6 +96,8 @@ Route::middleware('auth')->group(function () {
             ->name('studio.shows.playlist.chart.upload.store');
     });
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
+    Route::get('/studio/shows/{show}/setlist/download', [StudioShowSetlistPdfController::class, 'download'])
+        ->name('studio.shows.setlist.download');
     Route::get('/studio/calendar', [StudioCalendarController::class, 'index'])->name('studio.calendar.index');
     Route::get('/studio/performances', [StudioPerformancesController::class, 'index'])->name('studio.performances.index');
     Route::get('/studio/performances/{performance}/calendar.ics', [StudioPerformancesController::class, 'calendar'])

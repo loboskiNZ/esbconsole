@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Contracts\DocxToPdfConverterInterface;
 use App\Mail\Transport\GraphTransport;
-use App\Services\MicrosoftGraph\GraphAccessTokenProvider;
 use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Models\Library\SongAsset;
 use App\Models\Library\SongInstrumentPart;
+use App\Services\LibreOfficeDocxToPdfConverter;
+use App\Services\MicrosoftGraph\GraphAccessTokenProvider;
 use App\Support\StudioLibraryAvailability;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(DocxToPdfConverterInterface::class, LibreOfficeDocxToPdfConverter::class);
     }
 
     /**

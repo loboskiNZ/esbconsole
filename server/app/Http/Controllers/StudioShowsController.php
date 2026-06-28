@@ -8,6 +8,7 @@ use App\Models\Show;
 use App\Services\StudioPerformanceService;
 use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
+use App\Services\StudioShowSetlistPdfService;
 use App\Support\StudioLibraryAvailability;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -50,6 +51,7 @@ class StudioShowsController extends Controller
         StudioShowService $shows,
         StudioPerformanceService $performances,
         StudioShowPlaylistService $playlist,
+        StudioShowSetlistPdfService $setlistPdf,
         StudioLibraryAvailability $library,
     ): View {
         $user = auth()->user();
@@ -64,6 +66,7 @@ class StudioShowsController extends Controller
             'showInstrumentParts' => $playlistView['show_instrument_parts'],
             'libraryAvailable' => $library->isAvailable(),
             'isDirector' => $user?->isDirector() ?? false,
+            'latestSetlistGeneration' => $setlistPdf->latestForShow($portalShow->id),
         ]);
     }
 

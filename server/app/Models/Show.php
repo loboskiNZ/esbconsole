@@ -86,6 +86,14 @@ class Show extends Model
         return $this->hasMany(Performance::class);
     }
 
+    /**
+     * @return HasMany<ShowSetlistGeneration, $this>
+     */
+    public function setlistGenerations(): HasMany
+    {
+        return $this->hasMany(ShowSetlistGeneration::class);
+    }
+
     public function statusLabel(): string
     {
         return match ($this->lifecycle_state) {

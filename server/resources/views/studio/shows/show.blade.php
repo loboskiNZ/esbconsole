@@ -111,6 +111,13 @@
                 @else
                     @include('studio.shows.partials._playlist-inline-summary')
 
+                    @include('studio.shows.partials._playlist-setlist-pdf', [
+                        'show' => $show,
+                        'isDirector' => $isDirector,
+                        'playlistEntries' => $playlistEntries,
+                        'latestSetlistGeneration' => $latestSetlistGeneration,
+                    ])
+
                     @if ($isDirector)
                         <p
                             id="playlist-action-feedback"

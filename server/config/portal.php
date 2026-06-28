@@ -95,4 +95,21 @@ return [
 
     'song_asset_max_kb' => (int) env('PORTAL_SONG_ASSET_MAX_KB', 153600),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Show setlist PDF generation
+    |--------------------------------------------------------------------------
+    |
+    | Generated setlist PDFs are stored on the media disk (esb-media). The DOCX
+    | template is filled server-side and converted with LibreOffice headless.
+    |
+    */
+
+    'setlist_template_path' => env(
+        'PORTAL_SETLIST_TEMPLATE_PATH',
+        dirname(base_path()).'/templates/esb_setlist_template_tagged.docx',
+    ),
+
+    'setlist_pdf_binary' => env('PORTAL_SETLIST_PDF_BINARY'),
+
 ];
