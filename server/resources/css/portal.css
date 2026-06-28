@@ -2319,15 +2319,15 @@
     display: inline-flex;
     flex: 0 0 auto;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.45rem;
 }
 
 .esb-studio__playlist-song-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.35rem;
-    height: 1.35rem;
+    width: 2.75rem;
+    height: 2.75rem;
     border-radius: 999px;
     color: rgba(233, 203, 160, 0.82);
     text-decoration: none;
@@ -2354,8 +2354,8 @@
 }
 
 .esb-studio__playlist-song-link-icon {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 1.9rem;
+    height: 1.9rem;
     display: block;
 }
 
