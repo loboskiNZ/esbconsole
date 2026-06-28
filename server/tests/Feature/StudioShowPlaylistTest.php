@@ -178,12 +178,17 @@ class StudioShowPlaylistTest extends TestCase
         $song = $this->seedSongWithParts('Shadows Intro', withChartFor: ['Lead Vocal', 'Trumpet'], withoutChartFor: ['Keyboard']);
         $this->seedPlaylistItem($show, $song, position: 1);
 
-        $this->actingAs($director)->get(route('studio.shows.show', $show))
-            ->assertOk()
-            ->assertSeeInOrder(['01', 'Shadows Intro'], false)
-            ->assertSee('esb-studio__setlist-card', false)
-            ->assertSee('esb-studio__playlist-item-columns', false)
-            ->assertSee('esb-studio__playlist-item-notes', false)
+        $response = $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $response->assertOk()
+            ->assertSee('esb-studio__setlist-ribbon', false)
+            ->assertSee('esb-studio__setlist-ribbon-header', false)
+            ->assertSee('esb-studio__setlist-ribbon-details', false)
+            ->assertSee('Shadows Intro', false)
+            ->assertSee('esb-studio__setlist-order-badge">01', false)
+            ->assertDontSee('esb-studio__setlist-order-label', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('Expand song details', false)
             ->assertSee('120', false)
             ->assertSee('4/4', false)
             ->assertSee('G major', false)
@@ -194,21 +199,51 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('📄✓', false)
             ->assertSee('📄✕', false)
             ->assertSee('Required parts', false)
+            ->assertSee('Save notes', false)
+            ->assertSee('Move up', false)
             ->assertSee('Playlist summary', false);
+
+        $this->assertMatchesRegularExpression(
+            '/id="playlist-details-\d+"[^>]*hidden/s',
+            (string) $response->getContent(),
+        );
     }
 
-    public function test_playlist_order_number_is_zero_padded_in_setlist_title(): void
+    public function test_playlist_order_number_appears_once_in_ribbon_header(): void
     {
         $director = $this->createDirectorUser();
         $show = $this->seedShow(['name' => 'Order Label Show']);
         $song = $this->seedSongWithParts('Electronic Love');
         $this->seedPlaylistItem($show, $song, position: 3);
 
+        $response = $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $response->assertOk()
+            ->assertSee('esb-studio__setlist-order-badge">03', false)
+            ->assertSee('>Electronic Love<', false)
+            ->assertDontSee('esb-studio__setlist-order-label', false)
+            ->assertDontSee('03 · Electronic Love', false);
+
+        $this->assertSame(
+            1,
+            substr_count((string) $response->getContent(), 'esb-studio__setlist-order-badge">03'),
+        );
+    }
+
+    public function test_playlist_ribbon_exposes_expand_controls_for_accessibility(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Expand Control Show']);
+        $song = $this->seedSongWithParts('Expandable Song');
+        $this->seedPlaylistItem($show, $song);
+
         $this->actingAs($director)->get(route('studio.shows.show', $show))
             ->assertOk()
-            ->assertSee('esb-studio__setlist-order-label">03', false)
-            ->assertSee('esb-studio__setlist-song-name">Electronic Love', false)
-            ->assertSee('esb-studio__setlist-order-badge" aria-hidden="true">03', false);
+            ->assertSee('esb-studio__setlist-toggle', false)
+            ->assertSee('aria-controls="playlist-details-', false)
+            ->assertSee('aria-expanded="false"', false)
+            ->assertSee('Expand song details', false)
+            ->assertSee('Collapse song details', false);
     }
 
     public function test_musician_sees_notes_column_when_playlist_item_has_notes(): void
@@ -219,13 +254,19 @@ class StudioShowPlaylistTest extends TestCase
         $song = $this->seedSongWithParts('Noted Song');
         $this->seedPlaylistItem($show, $song, notes: 'Watch the intro vamp.');
 
-        $this->actingAs($musician)->get(route('studio.shows.show', $show))
-            ->assertOk()
-            ->assertSee('esb-studio__setlist-order-label">01', false)
-            ->assertSee('esb-studio__setlist-song-name">Noted Song', false)
+        $response = $this->actingAs($musician)->get(route('studio.shows.show', $show));
+
+        $response->assertOk()
+            ->assertSee('Noted Song', false)
+            ->assertSee('esb-studio__setlist-ribbon-details', false)
             ->assertSee('Watch the intro vamp.', false)
             ->assertSee('esb-studio__playlist-item-notes', false)
             ->assertDontSee('Save notes', false);
+
+        $this->assertMatchesRegularExpression(
+            '/id="playlist-details-\d+"[^>]*hidden/s',
+            (string) $response->getContent(),
+        );
     }
 
     public function test_playlist_summary_counts_are_correct(): void
