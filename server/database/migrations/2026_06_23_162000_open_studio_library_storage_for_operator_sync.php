@@ -13,8 +13,8 @@ return new class extends Migration
             storage_path('app/library/charts'),
             storage_path('app/library/incoming'),
         ] as $directory) {
-            if (File::isDirectory($directory)) {
-                chmod($directory, 0777);
+            if (File::isDirectory($directory) && is_writable($directory)) {
+                @chmod($directory, 0777);
             }
         }
 
