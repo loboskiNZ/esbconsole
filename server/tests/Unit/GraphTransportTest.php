@@ -33,7 +33,8 @@ class GraphTransportTest extends TestCase
 
             return $request->hasHeader('Authorization', 'Bearer graph-token-123')
                 && ($request['message']['subject'] ?? null) === 'Graph transport subject'
-                && ($request['message']['body']['content'] ?? null) === 'Graph transport body';
+                && ($request['message']['body']['content'] ?? null) === 'Graph transport body'
+                && ($request['message']['from']['emailAddress']['address'] ?? null) === 'bookings@example.com';
         });
     }
 
@@ -56,6 +57,8 @@ class GraphTransportTest extends TestCase
         config([
             'mail.default' => 'graph',
             'mail.mailers.graph.send_as' => $sendAs,
+            'mail.from.address' => $sendAs !== '' ? $sendAs : 'fallback@example.com',
+            'mail.from.name' => 'ESB Cloud Studio',
             'services.microsoft.tenant_id' => 'tenant-id',
             'services.microsoft.client_id' => 'client-id',
             'services.microsoft.client_secret' => 'client-secret',

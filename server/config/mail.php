@@ -81,7 +81,7 @@ return [
 
         'graph' => [
             'transport' => 'graph',
-            'send_as' => env('GRAPH_SEND_AS', env('BOOKING_MAILBOX', env('MAIL_FROM_ADDRESS'))),
+            'send_as' => env('BOOKING_MAILBOX', ''),
         ],
 
         'failover' => [
@@ -116,7 +116,7 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'address' => env('BOOKING_MAILBOX', env('MAIL_FROM_ADDRESS', 'bookings@edandtheshadowboys.com')),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 

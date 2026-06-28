@@ -22,6 +22,8 @@ class GraphMailPasswordResetTest extends TestCase
         config([
             'mail.default' => 'graph',
             'mail.mailers.graph.send_as' => 'bookings@example.com',
+            'mail.from.address' => 'bookings@example.com',
+            'mail.from.name' => 'ESB Cloud Studio',
             'services.microsoft.tenant_id' => 'tenant-id',
             'services.microsoft.client_id' => 'client-id',
             'services.microsoft.client_secret' => 'client-secret',

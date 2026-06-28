@@ -59,6 +59,12 @@ class GraphTransport extends AbstractTransport
                     'contentType' => $contentType,
                     'content' => $content,
                 ],
+                'from' => [
+                    'emailAddress' => [
+                        'address' => $this->sendAsMailbox,
+                        'name' => (string) config('mail.from.name', ''),
+                    ],
+                ],
                 'toRecipients' => $this->mapAddresses($this->primaryRecipients($email, $envelope)),
                 'ccRecipients' => $this->mapAddresses($email->getCc()),
                 'bccRecipients' => $this->mapAddresses($email->getBcc()),
