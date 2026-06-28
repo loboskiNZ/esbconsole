@@ -98,6 +98,17 @@ class Song extends Model
         return $this->status === self::STATUS_ARCHIVED;
     }
 
+    public function statusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_DRAFT => 'Draft',
+            self::STATUS_IN_PROGRESS => 'In progress',
+            self::STATUS_READY => 'Ready',
+            self::STATUS_ARCHIVED => 'Archived',
+            default => str((string) ($this->status ?? self::STATUS_DRAFT))->replace('_', ' ')->title()->toString(),
+        };
+    }
+
     /**
      * @param  Builder<Song>  $query
      * @return Builder<Song>

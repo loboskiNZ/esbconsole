@@ -14,19 +14,29 @@
     $editUrl = route('songs.edit', ['song' => $song, 'return_to' => $libraryReturnTo]);
     $archiveConfirm = 'Archive this song? It will be hidden from the active library and playlist picker. Existing playlists and all charts, assets, and parts are preserved.';
     $restoreConfirm = 'Restore this song to the active library?';
+    $statusClass = match ($song->status) {
+        \App\Models\Library\Song::STATUS_READY => 'esb-studio__song-status-pill--ready',
+        \App\Models\Library\Song::STATUS_ARCHIVED => 'esb-studio__song-status-pill--archived',
+        \App\Models\Library\Song::STATUS_IN_PROGRESS => 'esb-studio__song-status-pill--progress',
+        default => 'esb-studio__song-status-pill--draft',
+    };
+    $usedInLabel = $showNames !== [] ? implode(', ', $showNames) : 'Unknown';
 @endphp
 
 <li
-    class="esb-studio__song-library-card esb-studio__setlist-ribbon"
+    class="esb-studio__song-library-item-card"
     x-data="{ expanded: false }"
-    :class="{ 'esb-studio__setlist-ribbon--expanded': expanded }"
+    :class="{ 'esb-studio__song-library-item-card--expanded': expanded }"
 >
-    <div class="esb-studio__setlist-ribbon-header">
-        <span class="esb-studio__song-library-code">{{ $song->song_code }}</span>
+    <div class="esb-studio__song-library-item-header">
+        <span class="esb-studio__setlist-order-badge esb-studio__song-library-code-badge">{{ $song->song_code }}</span>
 
         <div class="esb-studio__song-library-head-main">
-            <h2 class="esb-studio__playlist-song-title">{{ $song->name }}</h2>
-            <ul class="esb-studio__song-library-facts">
+            <div class="esb-studio__song-library-title-row">
+                <h3 class="esb-studio__song-library-title">{{ $song->name }}</h3>
+                <span class="esb-studio__song-status-pill {{ $statusClass }}">{{ $song->statusLabel() }}</span>
+            </div>
+            <ul class="esb-studio__song-library-facts" aria-label="Song summary">
                 @if ($song->bpm)
                     <li>{{ $song->bpm }} BPM</li>
                 @endif
@@ -39,7 +49,7 @@
             </ul>
         </div>
 
-        <div class="esb-studio__setlist-ribbon-actions">
+        <div class="esb-studio__song-library-item-actions">
             <a href="{{ $editUrl }}" class="esb-studio__show-pill">Edit</a>
 
             <button
@@ -53,8 +63,8 @@
                 <span class="esb-studio__setlist-toggle-icon" aria-hidden="true" x-show="! expanded">+</span>
                 <span class="esb-studio__setlist-toggle-icon" aria-hidden="true" x-show="expanded" x-cloak>−</span>
                 <span class="esb-studio__setlist-toggle-label">
-                    <span x-show="! expanded">Expand</span>
-                    <span x-show="expanded" x-cloak>Collapse</span>
+                    <span x-show="! expanded">Expand song details</span>
+                    <span x-show="expanded" x-cloak>Collapse song details</span>
                 </span>
             </button>
         </div>
@@ -62,7 +72,7 @@
 
     <div
         id="{{ $detailsId }}"
-        class="esb-studio__setlist-ribbon-details esb-studio__song-library-details"
+        class="esb-studio__song-library-details"
         x-show="expanded"
         x-cloak
         hidden
@@ -87,6 +97,14 @@
                     <dd>{{ $song->reference_title }}</dd>
                 </div>
             @endif
+            <div>
+                <dt>Used in</dt>
+                <dd>{{ $usedInLabel }}</dd>
+            </div>
+            <div>
+                <dt>Last played</dt>
+                <dd>Not available</dd>
+            </div>
             @if ($song->director_notes)
                 <div class="esb-studio__song-library-notes">
                     <dt>Director notes</dt>
@@ -97,7 +115,7 @@
 
         @if ($song->spotify_url || $song->youtube_url || $song->reference_url)
             <div class="esb-studio__song-reference mt-4">
-                <h3 class="esb-studio__song-brief-label">Links</h3>
+                <h4 class="esb-studio__song-brief-label">Links</h4>
                 <ul class="esb-studio__song-library-links">
                     @if ($song->spotify_url)
                         <li><a href="{{ $song->spotify_url }}" class="esb-studio__song-reference-link" target="_blank" rel="noopener noreferrer">Spotify</a></li>
@@ -113,8 +131,8 @@
         @endif
 
         <div class="esb-studio__song-library-expanded-grid mt-4">
-            <section>
-                <h3 class="esb-studio__song-brief-label">Instrument parts</h3>
+            <section aria-label="Instrument parts">
+                <h4 class="esb-studio__song-brief-label">Instrument parts</h4>
                 @if ($partCount === 0)
                     <p class="esb-studio__card-body">No instrument parts defined.</p>
                 @else
@@ -126,8 +144,8 @@
                 @endif
             </section>
 
-            <section>
-                <h3 class="esb-studio__song-brief-label">Charts</h3>
+            <section aria-label="Charts">
+                <h4 class="esb-studio__song-brief-label">Charts</h4>
                 @if ($chartCount === 0)
                     <p class="esb-studio__card-body">No charts uploaded.</p>
                 @else
@@ -142,8 +160,8 @@
                 @endif
             </section>
 
-            <section>
-                <h3 class="esb-studio__song-brief-label">Song assets</h3>
+            <section aria-label="Song assets">
+                <h4 class="esb-studio__song-brief-label">Song assets</h4>
                 @if ($assetCount === 0)
                     <p class="esb-studio__card-body">No song files uploaded.</p>
                 @else

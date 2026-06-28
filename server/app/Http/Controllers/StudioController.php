@@ -7,6 +7,7 @@ use App\Services\StudioChartAccessService;
 use App\Services\StudioMusicianResolverService;
 use App\Services\StudioScheduleService;
 use App\Services\StudioShowService;
+use App\Services\StudioSongLibraryService;
 use Illuminate\View\View;
 
 class StudioController extends Controller
@@ -17,6 +18,7 @@ class StudioController extends Controller
         StudioShowService $shows,
         StudioScheduleService $schedule,
         StudioMusicianResolverService $musicians,
+        StudioSongLibraryService $songLibrary,
     ): View {
         $user = auth()->user();
         $person = $user?->load(['person.instruments'])->person;
@@ -44,6 +46,7 @@ class StudioController extends Controller
             'shows' => $shows->activeShowsForPortal(limit: 5),
             'scheduleItems' => $schedule->buildScheduleItems($upcomingPerformances, $musician),
             'hasMusicianLink' => $musician !== null,
+            'musicLibrarySummary' => $isDirector ? $songLibrary->summaryForBand() : null,
         ]);
     }
 }

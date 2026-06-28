@@ -21,15 +21,17 @@ class StudioSongsController extends Controller
         $showArchived = $request->boolean('archived');
         $query = $request->string('q')->toString();
         $genre = $request->string('genre')->toString();
+        $songs = $library->songsForLibrary(
+            showArchived: $showArchived,
+            query: $query !== '' ? $query : null,
+            genre: $genre !== '' ? $genre : null,
+        );
 
         return view('studio.songs.index', [
-            'songs' => $library->songsForLibrary(
-                showArchived: $showArchived,
-                query: $query !== '' ? $query : null,
-                genre: $genre !== '' ? $genre : null,
-            ),
+            'songs' => $songs,
             'summary' => $library->summaryForBand(),
             'genreOptions' => $library->genreOptionsForBand(),
+            'showUsageBySongId' => $library->showNamesForSongs($songs->pluck('id')->all()),
             'showArchived' => $showArchived,
             'query' => $query,
             'genre' => $genre,

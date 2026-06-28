@@ -45,12 +45,84 @@ class StudioSongLibraryTest extends TestCase
         $this->actingAs($director)->get(route('studio'))
             ->assertOk()
             ->assertSee('Music Library', false)
-            ->assertSee('Manage Songs', false);
+            ->assertSee('Manage Songs', false)
+            ->assertSee('esb-studio__music-library-dashboard', false);
 
         $this->actingAs($director)->get(route('songs.index'))
             ->assertOk()
             ->assertSee('+ New Song', false)
-            ->assertSee('Song Library', false);
+            ->assertSee('Music Library', false)
+            ->assertSee('esb-studio__song-library-panel', false);
+    }
+
+    public function test_music_library_parent_card_and_song_cards_render(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedSong('Catalogue Song', '020');
+
+        $this->actingAs($director)->get(route('songs.index'))
+            ->assertOk()
+            ->assertSee('esb-studio__song-library-panel', false)
+            ->assertSee('esb-studio__song-library-summary-grid', false)
+            ->assertSee('esb-studio__song-library-item-card', false)
+            ->assertSee('esb-studio__song-library-title">Catalogue Song', false)
+            ->assertSee('esb-studio__song-status-pill', false)
+            ->assertSee('Ready', false);
+    }
+
+    public function test_dashboard_music_library_summary_renders_from_existing_data(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSongWithRelationships('Dashboard Summary Song', '021');
+
+        $this->actingAs($director)->get(route('studio'))
+            ->assertOk()
+            ->assertSee('esb-studio__music-library-dashboard-stats', false)
+            ->assertSee('Manage Songs →', false);
+
+        $this->actingAs($director)->get(route('songs.index'))
+            ->assertOk()
+            ->assertSee('>Songs</dt>', false)
+            ->assertSee('>1</dd>', false)
+            ->assertSee('>Charts</dt>', false);
+    }
+
+    public function test_library_search_matches_spotify_and_youtube_urls(): void
+    {
+        $director = $this->createDirectorUser();
+
+        Song::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'song_code' => '030',
+            'name' => 'Streaming Reference',
+            'spotify_url' => 'https://open.spotify.com/track/abc123unique',
+            'youtube_url' => 'https://www.youtube.com/watch?v=xyz789unique',
+            'status' => Song::STATUS_READY,
+        ]);
+
+        $this->actingAs($director)->get(route('songs.index', ['q' => 'abc123unique']))
+            ->assertOk()
+            ->assertSee('esb-studio__song-library-title">Streaming Reference', false);
+
+        $this->actingAs($director)->get(route('songs.index', ['q' => 'xyz789unique']))
+            ->assertOk()
+            ->assertSee('esb-studio__song-library-title">Streaming Reference', false);
+    }
+
+    public function test_expanded_song_card_shows_show_usage_when_on_playlist(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Summer Tour']);
+        $song = $this->seedSong('Playlist Member', '031');
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('songs.index'))
+            ->assertOk()
+            ->assertSee('Used in', false)
+            ->assertSee('Summer Tour', false)
+            ->assertSee('Last played', false)
+            ->assertSee('Not available', false);
     }
 
     public function test_musician_cannot_see_song_library_entry_points(): void
@@ -98,7 +170,7 @@ class StudioSongLibraryTest extends TestCase
 
         $this->actingAs($director)->get(route('songs.index'))
             ->assertOk()
-            ->assertSee('Library Created Song', false);
+            ->assertSee('esb-studio__song-library-title">Library Created Song', false);
     }
 
     public function test_created_song_appears_in_playlist_picker(): void
@@ -157,7 +229,7 @@ class StudioSongLibraryTest extends TestCase
 
         $this->actingAs($director)->get(route('songs.index'))
             ->assertOk()
-            ->assertDontSee('esb-studio__playlist-song-title">Hidden When Archived', false);
+            ->assertDontSee('esb-studio__song-library-title">Hidden When Archived', false);
 
         $this->actingAs($director)->getJson(route('studio.shows.playlist.songs.search', [
             'show' => $show,
@@ -168,7 +240,7 @@ class StudioSongLibraryTest extends TestCase
 
         $this->actingAs($director)->get(route('songs.index', ['archived' => 1]))
             ->assertOk()
-            ->assertSee('Hidden When Archived', false);
+            ->assertSee('esb-studio__song-library-title">Hidden When Archived', false);
     }
 
     public function test_archived_song_remains_on_existing_playlist_with_relationships_preserved(): void
@@ -213,7 +285,7 @@ class StudioSongLibraryTest extends TestCase
 
         $this->actingAs($director)->get(route('songs.index'))
             ->assertOk()
-            ->assertSee('Restore Me', false);
+            ->assertSee('esb-studio__song-library-title">Restore Me', false);
     }
 
     public function test_adding_archived_song_to_playlist_is_rejected(): void

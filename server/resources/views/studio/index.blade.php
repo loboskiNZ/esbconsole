@@ -31,6 +31,9 @@
                     <aside class="esb-studio__sidebar">
                         @include('studio.profile._identity-widget', ['person' => $person])
                         @if ($isDirector)
+                            @include('studio.partials._music-library-dashboard-card', [
+                                'musicLibrarySummary' => $musicLibrarySummary,
+                            ])
                             @include('studio.partials._director-tools')
                             @include('studio.partials._band-invites', [
                                 'bandInvites' => $bandInvites,

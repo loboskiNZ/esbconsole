@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Library\Chart;
 use App\Models\Library\Song;
 use App\Models\Library\SongAsset;
+use App\Models\ShowPlaylistItem;
 use App\Support\StudioLibraryAvailability;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Schema;
@@ -124,6 +125,45 @@ class StudioSongLibraryService
         return $songs
             ->filter(fn (Song $song): bool => $this->songMatchesSearch($song, $query))
             ->values();
+    }
+
+    /**
+     * @param  list<int>  $songIds
+     * @return array<int, list<string>>
+     */
+    public function showNamesForSongs(array $songIds): array
+    {
+        if ($songIds === [] || ! $this->library->isAvailable()) {
+            return [];
+        }
+
+        /** @var array<int, list<string>> $map */
+        $map = [];
+
+        ShowPlaylistItem::query()
+            ->whereIn('song_id', $songIds)
+            ->active()
+            ->with('show:id,name')
+            ->get()
+            ->each(function (ShowPlaylistItem $item) use (&$map): void {
+                if ($item->show === null) {
+                    return;
+                }
+
+                $songId = (int) $item->song_id;
+                $name = (string) $item->show->name;
+
+                if (! in_array($name, $map[$songId] ?? [], true)) {
+                    $map[$songId][] = $name;
+                }
+            });
+
+        foreach ($map as $songId => $names) {
+            sort($names, SORT_NATURAL | SORT_FLAG_CASE);
+            $map[$songId] = $names;
+        }
+
+        return $map;
     }
 
     /**
@@ -261,6 +301,8 @@ class StudioSongLibraryService
             (string) $song->name,
             filled($song->reference_title) ? (string) $song->reference_title : null,
             filled($song->genre) ? (string) $song->genre : null,
+            filled($song->spotify_url) ? (string) $song->spotify_url : null,
+            filled($song->youtube_url) ? (string) $song->youtube_url : null,
         ], static fn (?string $value): bool => filled($value)));
     }
 }
