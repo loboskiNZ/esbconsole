@@ -46,18 +46,15 @@
                     class="esb-studio__show-pill"
                 >Edit</a>
 
-                <form
-                    method="POST"
-                    action="{{ route('studio.shows.playlist.items.destroy', [$show, $item]) }}"
-                    class="esb-studio__playlist-remove-form"
+                <button
+                    type="button"
+                    class="esb-studio__show-pill esb-studio__show-pill--danger"
+                    data-playlist-remove
+                    data-remove-url="{{ route('studio.shows.playlist.items.destroy', [$show, $item]) }}"
                     data-confirm-remove="{{ $removeConfirm }}"
                 >
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="esb-studio__show-pill esb-studio__show-pill--danger">
-                        Remove
-                    </button>
-                </form>
+                    Remove
+                </button>
             @endif
 
             <button

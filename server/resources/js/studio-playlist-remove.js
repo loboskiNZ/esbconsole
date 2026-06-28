@@ -1,5 +1,33 @@
 import { csrfToken, updatePlaylistSummary } from './studio-playlist-order';
 
+function showPlaylistActionFeedback(message, isError = false) {
+    const feedback = document.getElementById('playlist-action-feedback');
+
+    if (! feedback) {
+        return;
+    }
+
+    feedback.textContent = message;
+    feedback.hidden = false;
+    feedback.classList.toggle('esb-portal__error', isError);
+    feedback.classList.toggle('esb-portal__success', ! isError);
+    feedback.setAttribute('role', isError ? 'alert' : 'status');
+}
+
+function renumberPlaylistBadges(list) {
+    if (! list) {
+        return;
+    }
+
+    list.querySelectorAll('[data-playlist-item-id]').forEach((element, index) => {
+        const badge = element.querySelector('[data-playlist-order-badge]');
+
+        if (badge) {
+            badge.textContent = String(index + 1).padStart(2, '0');
+        }
+    });
+}
+
 function ensureEmptyPlaylistMessage(list) {
     const playlistSection = document.getElementById('playlist');
 
@@ -20,73 +48,75 @@ function ensureEmptyPlaylistMessage(list) {
     document.getElementById('playlist-order-feedback')?.remove();
 }
 
-function showRemoveFeedback(message, isError = false) {
-    const feedback = document.getElementById('playlist-add-feedback');
+async function removePlaylistItem(button) {
+    const removeUrl = button.dataset.removeUrl ?? '';
+    const confirmMessage = button.dataset.confirmRemove
+        ?? 'Remove this song from this playlist? The song will remain in the library.';
 
-    if (! feedback) {
+    if (! removeUrl || ! window.confirm(confirmMessage)) {
         return;
     }
 
-    feedback.textContent = message;
-    feedback.hidden = false;
-    feedback.classList.toggle('esb-portal__error', isError);
-    feedback.classList.toggle('esb-portal__success', ! isError);
-    feedback.setAttribute('role', isError ? 'alert' : 'status');
+    const item = button.closest('[data-playlist-item-id]');
+    const list = document.getElementById('playlist-sortable-list');
+
+    button.disabled = true;
+
+    try {
+        const response = await fetch(removeUrl, {
+            method: 'DELETE',
+            headers: {
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': csrfToken(),
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin',
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (! response.ok) {
+            throw new Error(payload.message ?? 'Unable to remove song from playlist.');
+        }
+
+        item?.remove();
+        updatePlaylistSummary(payload.summary);
+        renumberPlaylistBadges(list);
+
+        if (list && list.querySelectorAll('[data-playlist-item-id]').length === 0) {
+            ensureEmptyPlaylistMessage(list);
+        }
+
+        showPlaylistActionFeedback(payload.message ?? 'Song removed from playlist.');
+    } catch (error) {
+        button.disabled = false;
+        showPlaylistActionFeedback(
+            error instanceof Error ? error.message : 'Unable to remove song from playlist.',
+            true,
+        );
+    }
 }
 
 export function initStudioPlaylistRemove(root = document) {
-    root.querySelectorAll('.esb-studio__playlist-remove-form').forEach((form) => {
-        if (form.dataset.removeReady === 'true') {
+    const playlist = root instanceof HTMLElement && root.id === 'playlist'
+        ? root
+        : root.getElementById?.('playlist') ?? document.getElementById('playlist');
+
+    if (! playlist || playlist.dataset.removeReady === 'true') {
+        return;
+    }
+
+    playlist.dataset.removeReady = 'true';
+
+    playlist.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-playlist-remove]');
+
+        if (! button || ! playlist.contains(button)) {
             return;
         }
 
-        form.dataset.removeReady = 'true';
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-
-            const confirmMessage = form.dataset.confirmRemove
-                ?? 'Remove this song from this playlist? The song will remain in the library.';
-
-            if (! window.confirm(confirmMessage)) {
-                return;
-            }
-
-            const item = form.closest('[data-playlist-item-id]');
-            const list = document.getElementById('playlist-sortable-list');
-            const formData = new FormData(form);
-
-            try {
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        Accept: 'application/json',
-                        'X-CSRF-TOKEN': csrfToken(),
-                    },
-                    body: formData,
-                });
-
-                const payload = await response.json().catch(() => ({}));
-
-                if (! response.ok) {
-                    throw new Error(payload.message ?? 'Unable to remove song from playlist.');
-                }
-
-                item?.remove();
-                updatePlaylistSummary(payload.summary);
-
-                if (list && list.querySelectorAll('[data-playlist-item-id]').length === 0) {
-                    ensureEmptyPlaylistMessage(list);
-                }
-
-                showRemoveFeedback(payload.message ?? 'Song removed from playlist.');
-            } catch (error) {
-                showRemoveFeedback(
-                    error instanceof Error ? error.message : 'Unable to remove song from playlist.',
-                    true,
-                );
-            }
-        });
+        event.preventDefault();
+        removePlaylistItem(button);
     });
 }
 

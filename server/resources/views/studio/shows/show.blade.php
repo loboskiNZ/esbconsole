@@ -111,6 +111,15 @@
                 @else
                     @include('studio.shows.partials._playlist-inline-summary')
 
+                    @if ($isDirector)
+                        <p
+                            id="playlist-action-feedback"
+                            class="esb-portal__success mt-3"
+                            role="status"
+                            hidden
+                        ></p>
+                    @endif
+
                     @if ($playlistEntries->isEmpty())
                         <p class="esb-studio__card-body mt-3" id="playlist-empty-message">No songs on this playlist yet.</p>
                     @else

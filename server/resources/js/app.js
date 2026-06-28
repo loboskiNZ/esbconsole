@@ -19,14 +19,16 @@ Alpine.data('studioChartsLauncher', studioChartsLauncher);
 Alpine.data('studioSchedule', studioSchedule);
 Alpine.data('studioCalendar', studioCalendar);
 Alpine.data('studioPlaylistPicker', studioPlaylistPicker);
-Alpine.start();
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        bootStudioPlaylistOrder();
-        bootStudioPlaylistRemove();
-    });
-} else {
+function bootStudioPlaylistUi() {
     bootStudioPlaylistOrder();
     bootStudioPlaylistRemove();
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootStudioPlaylistUi);
+} else {
+    bootStudioPlaylistUi();
+}
+
+Alpine.start();
