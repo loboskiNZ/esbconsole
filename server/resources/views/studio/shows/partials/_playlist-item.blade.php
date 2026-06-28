@@ -13,15 +13,28 @@
     $songTitle = $song?->name ?? 'Song';
     $showNotesColumn = $isDirector;
     $detailsId = 'playlist-details-'.$item->id;
+    $removeConfirm = 'Remove this song from this playlist? The song will remain in the library.';
 @endphp
 
 <li
     class="esb-studio__playlist-item esb-studio__setlist-ribbon"
+    data-playlist-item-id="{{ $item->id }}"
     x-data="{ expanded: false }"
     :class="{ 'esb-studio__setlist-ribbon--expanded': expanded }"
 >
     <div class="esb-studio__setlist-ribbon-header">
-        <span class="esb-studio__setlist-order-badge">{{ $positionLabel }}</span>
+        @if ($isDirector)
+            <button
+                type="button"
+                class="esb-studio__playlist-drag-handle"
+                draggable="true"
+                aria-label="Drag to reorder {{ $songTitle }}"
+            >
+                <span aria-hidden="true">⋮⋮</span>
+            </button>
+        @endif
+
+        <span class="esb-studio__setlist-order-badge" data-playlist-order-badge>{{ $positionLabel }}</span>
 
         <h3 class="esb-studio__playlist-song-title">{{ $songTitle }}</h3>
 
@@ -31,6 +44,19 @@
                     href="{{ route('songs.edit', ['song' => $song, 'return_to' => $songEditReturnTo]) }}"
                     class="esb-studio__show-pill"
                 >Edit</a>
+
+                <form
+                    method="POST"
+                    action="{{ route('studio.shows.playlist.items.destroy', [$show, $item]) }}"
+                    class="esb-studio__playlist-remove-form"
+                    onsubmit="return confirm(@json($removeConfirm));"
+                >
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="esb-studio__show-pill esb-studio__show-pill--danger">
+                        Remove
+                    </button>
+                </form>
             @endif
 
             <button
@@ -104,52 +130,25 @@
                         @endif
                     </div>
                 @endif
-
-                @if ($isDirector)
-                    <div class="esb-studio__playlist-actions">
-                        <form method="POST" action="{{ route('studio.shows.playlist.move-up', [$show, $item]) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="esb-studio__show-pill esb-studio__show-pill--action">Move up</button>
-                        </form>
-                        <form method="POST" action="{{ route('studio.shows.playlist.move-down', [$show, $item]) }}">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="esb-studio__show-pill esb-studio__show-pill--action">Move down</button>
-                        </form>
-                        <form method="POST" action="{{ route('studio.shows.playlist.archive', [$show, $item]) }}" onsubmit="return confirm('Archive this playlist item?');">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="esb-studio__show-pill esb-studio__show-pill--action">Archive</button>
-                        </form>
-                    </div>
-                @endif
             </div>
 
             @if ($showNotesColumn)
                 <aside class="esb-studio__playlist-item-notes" aria-label="Playlist notes for {{ $songTitle }}">
-                    @if ($isDirector)
-                        <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form">
-                            @csrf
-                            @method('PATCH')
-                            <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Notes</label>
-                            <textarea
-                                id="playlist-notes-{{ $item->id }}"
-                                name="notes"
-                                rows="6"
-                                class="esb-portal__input esb-studio__band-textarea esb-studio__playlist-notes-input"
-                                placeholder="Cue notes, arrangement reminders, or production notes for this song."
-                            >{{ old('notes', $item->notes) }}</textarea>
-                            <div class="esb-studio__band-form-actions mt-3">
-                                <button type="submit" class="esb-portal__button esb-portal__button--secondary">Save notes</button>
-                            </div>
-                        </form>
-                    @else
-                        <div class="esb-studio__playlist-notes-block">
-                            <span class="esb-studio__playlist-notes-label">Notes</span>
-                            <p class="esb-studio__playlist-notes">{{ $item->notes }}</p>
+                    <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form">
+                        @csrf
+                        @method('PATCH')
+                        <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Notes</label>
+                        <textarea
+                            id="playlist-notes-{{ $item->id }}"
+                            name="notes"
+                            rows="6"
+                            class="esb-portal__input esb-studio__band-textarea esb-studio__playlist-notes-input"
+                            placeholder="Cue notes, arrangement reminders, or production notes for this song."
+                        >{{ old('notes', $item->notes) }}</textarea>
+                        <div class="esb-studio__band-form-actions mt-3">
+                            <button type="submit" class="esb-portal__button esb-portal__button--secondary">Save notes</button>
                         </div>
-                    @endif
+                    </form>
                 </aside>
             @endif
         </div>

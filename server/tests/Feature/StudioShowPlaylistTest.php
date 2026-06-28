@@ -136,7 +136,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Director-only note.', false)
             ->assertSee('Bass', false)
             ->assertSee('Keyboard', false)
-            ->assertSee('Move up', false);
+            ->assertSee('esb-studio__playlist-drag-handle', false);
     }
 
     public function test_musician_only_sees_chart_pills_for_assigned_instrument_parts(): void
@@ -167,7 +167,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertDontSee(route('studio.charts.file', $bassChart), false)
             ->assertDontSee(route('songs.edit', $song), false)
             ->assertDontSee('Save notes', false)
-            ->assertDontSee('Move up', false);
+            ->assertDontSee('esb-studio__playlist-drag-handle', false);
     }
 
     public function test_musician_with_no_assigned_parts_sees_no_chart_pills(): void
@@ -299,7 +299,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('esb-studio__setlist-ribbon-header', false)
             ->assertSee('esb-studio__setlist-ribbon-details', false)
             ->assertSee('Shadows Intro', false)
-            ->assertSee('esb-studio__setlist-order-badge">01', false)
+            ->assertSee('data-playlist-order-badge>01', false)
             ->assertDontSee('esb-studio__setlist-order-label', false)
             ->assertSee('aria-expanded="false"', false)
             ->assertSee('Expand song details', false)
@@ -314,7 +314,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('📄✕', false)
             ->assertSee('Required parts', false)
             ->assertSee('Save notes', false)
-            ->assertSee('Move up', false)
+            ->assertSee('esb-studio__playlist-drag-handle', false)
             ->assertSee('Playlist summary', false);
 
         $this->assertMatchesRegularExpression(
@@ -333,14 +333,14 @@ class StudioShowPlaylistTest extends TestCase
         $response = $this->actingAs($director)->get(route('studio.shows.show', $show));
 
         $response->assertOk()
-            ->assertSee('esb-studio__setlist-order-badge">03', false)
+            ->assertSee('data-playlist-order-badge>03', false)
             ->assertSee('>Electronic Love<', false)
             ->assertDontSee('esb-studio__setlist-order-label', false)
             ->assertDontSee('03 · Electronic Love', false);
 
         $this->assertSame(
             1,
-            substr_count((string) $response->getContent(), 'esb-studio__setlist-order-badge">03'),
+            substr_count((string) $response->getContent(), 'data-playlist-order-badge>03'),
         );
     }
 
@@ -527,7 +527,7 @@ class StudioShowPlaylistTest extends TestCase
         $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
 
         $this->actingAs($director)
-            ->post(route('studio.shows.playlist.store', $show), [
+            ->post(route('studio.shows.playlist.items.store', $show), [
                 '_token' => session()->token(),
                 'song_id' => $song->id,
             ])
@@ -547,17 +547,90 @@ class StudioShowPlaylistTest extends TestCase
         $show = $this->seedShow(['name' => 'Reorder Show']);
         $first = $this->seedSongWithParts('First Song');
         $second = $this->seedSongWithParts('Second Song');
+        $third = $this->seedSongWithParts('Third Song');
         $firstItem = $this->seedPlaylistItem($show, $first, position: 1);
         $secondItem = $this->seedPlaylistItem($show, $second, position: 2);
+        $thirdItem = $this->seedPlaylistItem($show, $third, position: 3);
 
         $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
 
         $this->actingAs($director)
-            ->patch(route('studio.shows.playlist.move-down', [$show, $firstItem]), ['_token' => session()->token()])
-            ->assertRedirect();
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->patchJson(route('studio.shows.playlist.reorder', $show), [
+                'order' => [$thirdItem->id, $firstItem->id, $secondItem->id],
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('positions.'.$thirdItem->id, 1)
+            ->assertJsonPath('positions.'.$firstItem->id, 2)
+            ->assertJsonPath('positions.'.$secondItem->id, 3);
 
+        $this->assertSame(1, ShowPlaylistItem::query()->find($thirdItem->id)?->position);
         $this->assertSame(2, ShowPlaylistItem::query()->find($firstItem->id)?->position);
-        $this->assertSame(1, ShowPlaylistItem::query()->find($secondItem->id)?->position);
+        $this->assertSame(3, ShowPlaylistItem::query()->find($secondItem->id)?->position);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('data-playlist-order-badge>01', false)
+            ->assertSee('Third Song', false);
+    }
+
+    public function test_musician_cannot_reorder_playlist_items(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Locked Reorder Show']);
+        $first = $this->seedSongWithParts('First Song');
+        $second = $this->seedSongWithParts('Second Song');
+        $firstItem = $this->seedPlaylistItem($show, $first, position: 1);
+        $secondItem = $this->seedPlaylistItem($show, $second, position: 2);
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show));
+
+        $this->actingAs($musician)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->patchJson(route('studio.shows.playlist.reorder', $show), [
+                'order' => [$secondItem->id, $firstItem->id],
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(1, ShowPlaylistItem::query()->find($firstItem->id)?->position);
+        $this->assertSame(2, ShowPlaylistItem::query()->find($secondItem->id)?->position);
+    }
+
+    public function test_director_can_remove_playlist_item_without_deleting_song_or_library_data(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Remove Show']);
+        $song = $this->seedSongWithParts('Removable Song', withChartFor: ['Bass']);
+        $item = $this->seedPlaylistItem($show, $song);
+        $songCount = Song::query()->count();
+        $chartCount = Chart::query()->count();
+        $partCount = SongInstrumentPart::query()->count();
+        $rowCount = DB::table('show_playlist_items')->count();
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
+
+        $this->actingAs($director)
+            ->delete(route('studio.shows.playlist.items.destroy', [$show, $item]), [
+                '_token' => session()->token(),
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('playlist_updated');
+
+        $this->assertSame($rowCount, DB::table('show_playlist_items')->count());
+        $this->assertDatabaseHas('show_playlist_items', [
+            'id' => $item->id,
+            'is_active' => false,
+        ]);
+        $this->assertSame($songCount, Song::query()->count());
+        $this->assertSame($chartCount, Chart::query()->count());
+        $this->assertSame($partCount, SongInstrumentPart::query()->count());
+        $this->assertTrue(Song::query()->whereKey($song->id)->exists());
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertDontSee('esb-studio__playlist-song-title">Removable Song', false);
     }
 
     public function test_director_can_archive_playlist_item_without_deleting_row(): void
@@ -598,18 +671,32 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Readable Song', false)
             ->assertSee('Instrument parts', false)
             ->assertDontSee('Add song', false)
-            ->assertDontSee('Move up', false)
+            ->assertDontSee('Remove', false)
+            ->assertDontSee('esb-studio__playlist-drag-handle', false)
             ->assertDontSee(route('songs.edit', $song), false);
 
+        $this->actingAs($musician)->get(route('studio.shows.index'));
+
         $this->actingAs($musician)
-            ->post(route('studio.shows.playlist.store', $show), [
-                '_token' => csrf_token(),
+            ->post(route('studio.shows.playlist.items.store', $show), [
+                '_token' => session()->token(),
                 'song_id' => $song->id,
             ])
             ->assertForbidden();
 
         $this->actingAs($musician)
-            ->patch(route('studio.shows.playlist.archive', [$show, $item]), ['_token' => csrf_token()])
+            ->delete(route('studio.shows.playlist.items.destroy', [$show, $item]), [
+                '_token' => session()->token(),
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show));
+
+        $this->actingAs($musician)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->patchJson(route('studio.shows.playlist.reorder', $show), [
+                'order' => [$item->id],
+            ])
             ->assertForbidden();
 
         $this->actingAs($musician)->get(route('songs.edit', $song))->assertForbidden();
@@ -714,15 +801,14 @@ class StudioShowPlaylistTest extends TestCase
         $this->assertSame('Immutable Song', Song::query()->find($song->id)?->name);
     }
 
-    public function test_no_delete_route_exists_for_show_playlist_items(): void
+    public function test_playlist_remove_route_archives_item(): void
     {
         $deleteRoutes = collect(app('router')->getRoutes())->filter(
             static fn ($route): bool => in_array('DELETE', $route->methods(), true)
-                && str_contains($route->uri(), 'studio/shows')
-                && str_contains($route->uri(), 'playlist')
+                && $route->getName() === 'studio.shows.playlist.items.destroy'
         );
 
-        $this->assertTrue($deleteRoutes->isEmpty());
+        $this->assertCount(1, $deleteRoutes);
     }
 
     /**

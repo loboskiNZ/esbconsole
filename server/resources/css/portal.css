@@ -1935,6 +1935,62 @@
     min-width: 0;
 }
 
+.esb-studio__playlist-drag-handle {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    padding: 0;
+    border-radius: 0.45rem;
+    border: 1px solid rgba(233, 203, 160, 0.22);
+    background: rgba(12, 10, 8, 0.35);
+    color: rgba(233, 203, 160, 0.85);
+    font-size: 0.85rem;
+    font-weight: 800;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;
+}
+
+.esb-studio__playlist-drag-handle:active {
+    cursor: grabbing;
+}
+
+.esb-studio__playlist-drag-handle:hover,
+.esb-studio__playlist-drag-handle:focus-visible {
+    border-color: rgba(255, 178, 62, 0.55);
+    background: rgba(255, 178, 62, 0.12);
+    outline: none;
+}
+
+.esb-studio__setlist-ribbon--dragging {
+    opacity: 0.72;
+    border-color: rgba(255, 178, 62, 0.75);
+}
+
+.esb-studio__playlist-list--saving {
+    opacity: 0.82;
+    pointer-events: none;
+}
+
+.esb-studio__playlist-remove-form {
+    display: inline-flex;
+}
+
+.esb-studio__show-pill--danger {
+    border-color: rgba(255, 130, 130, 0.45);
+    background: color-mix(in srgb, #ff8282 16%, transparent);
+    color: rgba(255, 210, 210, 0.95);
+}
+
+.esb-studio__show-pill--danger:hover,
+.esb-studio__show-pill--danger:focus-visible {
+    border-color: rgba(255, 130, 130, 0.75);
+    background: color-mix(in srgb, #ff8282 28%, transparent);
+}
+
 .esb-studio__setlist-order-badge {
     display: inline-flex;
     flex-shrink: 0;

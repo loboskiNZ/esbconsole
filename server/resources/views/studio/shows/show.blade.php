@@ -111,7 +111,24 @@
                 @elseif ($playlistEntries->isEmpty())
                     <p class="esb-studio__card-body mt-3">No songs on this playlist yet.</p>
                 @else
-                    <ul class="esb-studio__playlist-list mt-4">
+                    @if ($isDirector)
+                        <p
+                            id="playlist-order-feedback"
+                            class="esb-portal__success mt-3"
+                            role="status"
+                            hidden
+                        ></p>
+                    @endif
+
+                    <ul
+                        @class([
+                            'esb-studio__playlist-list mt-4',
+                        ])
+                        @if ($isDirector)
+                            id="playlist-sortable-list"
+                            data-reorder-url="{{ route('studio.shows.playlist.reorder', $show) }}"
+                        @endif
+                    >
                         @foreach ($playlistEntries as $entry)
                             @include('studio.shows.partials._playlist-item', [
                                 'entry' => $entry,
@@ -123,7 +140,7 @@
                 @endif
 
                 @if ($isDirector && $libraryAvailable)
-                    <form method="POST" action="{{ route('studio.shows.playlist.store', $show) }}" class="esb-studio__playlist-add-form mt-6">
+                    <form method="POST" action="{{ route('studio.shows.playlist.items.store', $show) }}" class="esb-studio__playlist-add-form mt-6">
                         @csrf
                         <label class="esb-portal__label mb-2 block" for="playlist-song-id">Add song</label>
                         <div class="esb-studio__playlist-add-row">

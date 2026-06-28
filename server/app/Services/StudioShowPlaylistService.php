@@ -236,6 +236,41 @@ class StudioShowPlaylistService
         ]);
     }
 
+    /**
+     * @return array<int, int>
+     */
+    public function reorderPlaylistItems(Show $show, array $orderedItemIds, ?int $bandId = null): array
+    {
+        $bandId ??= (int) config('portal.band_id', 1);
+        $portalShow = $this->shows->showForPortal($show->id, $bandId);
+        $activeIds = $this->activeOrderedItemIds($portalShow->id);
+
+        $orderedItemIds = array_values(array_map(static fn ($id): int => (int) $id, $orderedItemIds));
+
+        if (count($orderedItemIds) !== count($activeIds)) {
+            throw new InvalidArgumentException('Playlist order must include each active song once.');
+        }
+
+        $expected = $activeIds;
+        sort($expected);
+        $received = $orderedItemIds;
+        sort($received);
+
+        if ($expected !== $received) {
+            throw new InvalidArgumentException('Playlist order must include each active song once.');
+        }
+
+        $this->applyOrder($portalShow->id, $orderedItemIds);
+
+        $positions = [];
+
+        foreach ($orderedItemIds as $index => $itemId) {
+            $positions[$itemId] = $index + 1;
+        }
+
+        return $positions;
+    }
+
     public function archivePlaylistItem(ShowPlaylistItem $item, ?int $bandId = null): ShowPlaylistItem
     {
         $portalItem = $this->playlistItemForPortal($item->id, $bandId);

@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReorderShowPlaylistRequest;
 use App\Http\Requests\StoreShowPlaylistItemRequest;
 use App\Http\Requests\UpdateShowPlaylistItemNotesRequest;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
-use App\Services\StudioPerformanceService;
 use App\Services\StudioShowPlaylistService;
-use App\Services\StudioShowService;
-use App\Support\StudioLibraryAvailability;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\View\View;
 use InvalidArgumentException;
 
 class StudioShowPlaylistController extends Controller
@@ -26,6 +24,35 @@ class StudioShowPlaylistController extends Controller
         } catch (InvalidArgumentException $exception) {
             return back()->withErrors(['song_id' => $exception->getMessage()]);
         }
+
+        return back()->with('playlist_updated', true);
+    }
+
+    public function reorder(
+        ReorderShowPlaylistRequest $request,
+        Show $show,
+        StudioShowPlaylistService $playlist,
+    ): JsonResponse {
+        try {
+            $positions = $playlist->reorderPlaylistItems($show, $request->validated()['order']);
+        } catch (InvalidArgumentException $exception) {
+            return response()->json(['message' => $exception->getMessage()], 422);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'positions' => $positions,
+        ]);
+    }
+
+    public function destroy(
+        Show $show,
+        ShowPlaylistItem $playlistItem,
+        StudioShowPlaylistService $playlist,
+    ): RedirectResponse {
+        abort_unless($playlistItem->show_id === $show->id, 404);
+
+        $playlist->archivePlaylistItem($playlistItem);
 
         return back()->with('playlist_updated', true);
     }
