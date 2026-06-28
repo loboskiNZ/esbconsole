@@ -70,9 +70,9 @@ class ShowSetlistTemplateRenderer
 
     private function prepareTemplateCopy(string $templatePath): string
     {
-        $tempCopy = storage_path('app/temp/setlist-templates/'.uniqid('template-', true).'.docx');
+        $tempCopy = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-templates/'.uniqid('template-', true).'.docx';
 
-        if (! is_dir(dirname($tempCopy)) && ! mkdir(dirname($tempCopy), 0777, true) && ! is_dir(dirname($tempCopy))) {
+        if (! is_dir(dirname($tempCopy)) && ! mkdir(dirname($tempCopy), 0700, true) && ! is_dir(dirname($tempCopy))) {
             throw new RuntimeException('Unable to create temporary template directory.');
         }
 

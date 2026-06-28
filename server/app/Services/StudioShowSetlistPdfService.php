@@ -71,7 +71,7 @@ class StudioShowSetlistPdfService
             ?: 'Director';
         $timestamp = now()->format('YmdHis');
         $storageReference = $this->mediaStorage->setlistReference($portalShow->id, $timestamp);
-        $tempDirectory = storage_path('app/temp/setlists/'.$portalShow->id.'/'.Str::uuid());
+        $tempDirectory = $this->tempDirectoryForShow($portalShow->id);
         $tempDocx = $tempDirectory.'/setlist.docx';
         $tempPdf = $tempDirectory.'/setlist.pdf';
 
@@ -91,6 +91,8 @@ class StudioShowSetlistPdfService
                     'estimated_duration' => (string) $summary['estimated_duration_label'],
                 ],
             );
+
+            $this->assertRenderedDocxIsValid($tempDocx);
 
             $this->pdfConverter->convert($tempDocx, $tempPdf);
 
@@ -239,6 +241,38 @@ class StudioShowSetlistPdfService
         }
 
         return basename($templatePath);
+    }
+
+    private function tempDirectoryForShow(int $showId): string
+    {
+        $directory = rtrim(sys_get_temp_dir(), '/').'/esb-setlists/'.$showId.'/'.Str::uuid();
+
+        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
+            throw new RuntimeException("Unable to create temporary directory at {$directory}.");
+        }
+
+        return $directory;
+    }
+
+    private function assertRenderedDocxIsValid(string $docxPath): void
+    {
+        if (! is_file($docxPath)) {
+            throw new RuntimeException('Generated setlist DOCX is missing.');
+        }
+
+        $size = filesize($docxPath);
+
+        if ($size === false || $size < 1024) {
+            throw new RuntimeException('Generated setlist DOCX is empty or invalid.');
+        }
+
+        $zip = new \ZipArchive;
+
+        if ($zip->open($docxPath) !== true) {
+            throw new RuntimeException('Generated setlist DOCX is not a valid archive.');
+        }
+
+        $zip->close();
     }
 
     private function cleanupTempDirectory(string $directory): void

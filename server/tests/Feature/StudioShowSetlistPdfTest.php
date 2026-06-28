@@ -205,7 +205,7 @@ class StudioShowSetlistPdfTest extends TestCase
         Storage::disk('media')->assertExists($generation->storage_reference);
         Storage::disk('local')->assertMissing($generation->storage_reference);
 
-        $tempRoot = storage_path('app/temp/setlists/'.$show->id);
+        $tempRoot = rtrim(sys_get_temp_dir(), '/').'/esb-setlists/'.$show->id;
         $this->assertFalse(is_dir($tempRoot));
     }
 

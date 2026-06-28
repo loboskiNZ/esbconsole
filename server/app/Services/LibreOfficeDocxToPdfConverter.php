@@ -14,10 +14,16 @@ class LibreOfficeDocxToPdfConverter implements DocxToPdfConverterInterface
             throw new RuntimeException("DOCX source not found at {$docxPath}.");
         }
 
-        $outputDir = dirname($pdfPath);
+        $docxPath = realpath($docxPath) ?: $docxPath;
+        $outputDir = realpath(dirname($pdfPath)) ?: dirname($pdfPath);
+        $pdfPath = $outputDir.'/'.basename($pdfPath);
         $binary = $this->resolveBinary();
         $profileDir = $this->createProfileDirectory();
         $userInstallation = 'file://'.$profileDir;
+
+        if (! is_dir($outputDir) && ! mkdir($outputDir, 0700, true) && ! is_dir($outputDir)) {
+            throw new RuntimeException("Unable to create PDF output directory at {$outputDir}.");
+        }
 
         try {
             $process = new Process([
@@ -33,7 +39,7 @@ class LibreOfficeDocxToPdfConverter implements DocxToPdfConverterInterface
             ]);
             $process->setTimeout(120);
             $process->setEnv([
-                'HOME' => $profileDir,
+                'HOME' => $this->resolveHomeDirectory($profileDir),
                 'TMPDIR' => sys_get_temp_dir(),
             ]);
             $process->run();
@@ -76,6 +82,27 @@ class LibreOfficeDocxToPdfConverter implements DocxToPdfConverterInterface
         }
 
         throw new RuntimeException('LibreOffice (soffice) is not available for PDF conversion.');
+    }
+
+    private function resolveHomeDirectory(string $profileDir): string
+    {
+        $configured = config('portal.setlist_runtime_home');
+
+        if (is_string($configured) && $configured !== '' && is_dir($configured)) {
+            return $configured;
+        }
+
+        $home = getenv('HOME') ?: ($_SERVER['HOME'] ?? '');
+
+        if ($home !== '' && is_dir($home)) {
+            return $home;
+        }
+
+        if (is_dir('/home/forge')) {
+            return '/home/forge';
+        }
+
+        return $profileDir;
     }
 
     private function createProfileDirectory(): string

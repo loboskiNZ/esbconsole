@@ -112,4 +112,6 @@ return [
 
     'setlist_pdf_binary' => env('PORTAL_SETLIST_PDF_BINARY'),
 
+    'setlist_runtime_home' => env('PORTAL_SETLIST_RUNTIME_HOME', '/home/forge'),
+
 ];
