@@ -53,6 +53,43 @@ class ShowSetlistTemplateRendererTest extends TestCase
         @unlink($outputPath);
     }
 
+    public function test_renderer_escapes_ampersands_in_song_titles(): void
+    {
+        $templatePath = dirname(base_path()).'/templates/esb_setlist_template_tagged.docx';
+        $outputPath = storage_path('app/temp/setlist-ampersand-test.docx');
+
+        @mkdir(dirname($outputPath), 0777, true);
+
+        app(ShowSetlistTemplateRenderer::class)->render(
+            templatePath: $templatePath,
+            outputDocxPath: $outputPath,
+            setlistName: 'Ampersand Show',
+            songs: [
+                [
+                    'idx' => 1,
+                    'title' => 'Surfing & Surfing',
+                    'song_code' => '012',
+                    'key' => 'G major',
+                    'bpm' => '120',
+                    'duration' => '00:03:30',
+                    'instrument_parts' => 'Keys',
+                    'notes' => 'Tom & Jerry',
+                ],
+            ],
+        );
+
+        $zip = new \ZipArchive;
+        $zip->open($outputPath);
+        $xml = $zip->getFromName('word/document.xml') ?: '';
+        $zip->close();
+
+        $this->assertStringContainsString('Surfing &amp; Surfing', $xml);
+        $this->assertStringNotContainsString('Surfing & Surfing', $xml);
+        $this->assertStringContainsString('Tom &amp; Jerry', $xml);
+
+        @unlink($outputPath);
+    }
+
     /**
      * @return list<string>
      */

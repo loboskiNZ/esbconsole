@@ -40,7 +40,7 @@ class ShowSetlistTemplateRenderer
             $template->setMacroClosingChars('}');
 
             $values = array_merge(['setlist' => $setlistName], $headerValues);
-            $template->setValues($values);
+            $template->setValues($this->escapeTemplateValues($values));
 
             if ($songs === []) {
                 $template->deleteBlock('songs');
@@ -50,7 +50,7 @@ class ShowSetlistTemplateRenderer
                 foreach ($songs as $index => $song) {
                     $row = (string) ($index + 1);
 
-                    foreach ($song as $field => $value) {
+                    foreach ($this->escapeTemplateValues($song) as $field => $value) {
                         $template->setValue("{$field}#{$row}", $value);
                     }
                 }
@@ -98,5 +98,29 @@ class ShowSetlistTemplateRenderer
         $zip->close();
 
         return $tempCopy;
+    }
+
+    /**
+     * @param  array<string, mixed>  $values
+     * @return array<string, string>
+     */
+    private function escapeTemplateValues(array $values): array
+    {
+        $escaped = [];
+
+        foreach ($values as $key => $value) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            $escaped[$key] = $this->escapeTemplateValue($value);
+        }
+
+        return $escaped;
+    }
+
+    private function escapeTemplateValue(mixed $value): string
+    {
+        return htmlspecialchars((string) $value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
     }
 }
