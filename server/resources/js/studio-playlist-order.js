@@ -117,7 +117,6 @@ export function initStudioPlaylistOrder(list) {
     let draggingItem = null;
     let placeholder = null;
     let previousOrder = orderFromList(list);
-    let dropHandled = false;
 
     const clearDragState = () => {
         if (draggingItem) {
@@ -128,12 +127,14 @@ export function initStudioPlaylistOrder(list) {
             placeholder.remove();
         }
 
+        list.classList.remove('esb-studio__playlist-list--dragging');
+        document.body.classList.remove('esb-studio__playlist-drag-active');
         draggingItem = null;
         placeholder = null;
     };
 
-    const movePlaceholder = (clientY) => {
-        if (! placeholder) {
+    const repositionDraggedItem = (clientY) => {
+        if (! draggingItem || ! placeholder) {
             return;
         }
 
@@ -144,67 +145,13 @@ export function initStudioPlaylistOrder(list) {
         } else {
             list.insertBefore(placeholder, afterElement);
         }
+
+        if (placeholder.nextElementSibling !== draggingItem) {
+            list.insertBefore(draggingItem, placeholder.nextElementSibling);
+        }
     };
 
-    list.addEventListener('dragstart', (event) => {
-        const handle = event.target.closest('.esb-studio__setlist-order-badge--draggable');
-
-        if (! handle) {
-            return;
-        }
-
-        const item = handle.closest('[data-playlist-item-id]');
-
-        if (! item) {
-            return;
-        }
-
-        dropHandled = false;
-        draggingItem = item;
-        previousOrder = orderFromList(list);
-        placeholder = document.createElement('li');
-        placeholder.className = 'esb-studio__playlist-drop-placeholder';
-        placeholder.setAttribute('aria-hidden', 'true');
-        placeholder.style.height = `${item.getBoundingClientRect().height}px`;
-        list.insertBefore(placeholder, item);
-        item.classList.add('esb-studio__setlist-ribbon--dragging');
-        event.dataTransfer.effectAllowed = 'move';
-        event.dataTransfer.setData('text/plain', item.dataset.playlistItemId ?? '');
-
-        if (event.dataTransfer.setDragImage) {
-            event.dataTransfer.setDragImage(item, 20, 20);
-        }
-    });
-
-    list.addEventListener('dragenter', (event) => {
-        if (! draggingItem || ! placeholder) {
-            return;
-        }
-
-        event.preventDefault();
-    });
-
-    list.addEventListener('dragover', (event) => {
-        if (! draggingItem || ! placeholder) {
-            return;
-        }
-
-        event.preventDefault();
-        event.dataTransfer.dropEffect = 'move';
-        movePlaceholder(event.clientY);
-    });
-
-    list.addEventListener('drop', async (event) => {
-        if (! draggingItem || ! placeholder) {
-            return;
-        }
-
-        event.preventDefault();
-        dropHandled = true;
-
-        list.insertBefore(draggingItem, placeholder);
-        clearDragState();
-
+    const persistOrder = async () => {
         const nextOrder = orderFromList(list);
 
         if (nextOrder.join(',') === previousOrder.join(',')) {
@@ -243,15 +190,81 @@ export function initStudioPlaylistOrder(list) {
         } finally {
             list.classList.remove('esb-studio__playlist-list--saving');
         }
-    });
+    };
 
-    list.addEventListener('dragend', () => {
-        if (! dropHandled && draggingItem && placeholder) {
-            list.insertBefore(draggingItem, placeholder);
+    const finishPointerDrag = async () => {
+        if (! draggingItem || ! placeholder) {
+            clearDragState();
+
+            return;
         }
 
         clearDragState();
-        dropHandled = false;
+        await persistOrder();
+    };
+
+    list.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) {
+            return;
+        }
+
+        const handle = event.target.closest('[data-playlist-drag-handle]');
+
+        if (! handle || ! list.contains(handle)) {
+            return;
+        }
+
+        const item = handle.closest('[data-playlist-item-id]');
+
+        if (! item) {
+            return;
+        }
+
+        event.preventDefault();
+
+        draggingItem = item;
+        previousOrder = orderFromList(list);
+        placeholder = document.createElement('li');
+        placeholder.className = 'esb-studio__playlist-drop-placeholder';
+        placeholder.setAttribute('aria-hidden', 'true');
+        placeholder.style.height = `${item.getBoundingClientRect().height}px`;
+        list.insertBefore(placeholder, item);
+        item.classList.add('esb-studio__setlist-ribbon--dragging');
+        list.classList.add('esb-studio__playlist-list--dragging');
+        document.body.classList.add('esb-studio__playlist-drag-active');
+
+        if (handle.setPointerCapture) {
+            try {
+                handle.setPointerCapture(event.pointerId);
+            } catch {
+                // Some browsers reject capture on non-interactive nodes.
+            }
+        }
+
+        const onPointerMove = (moveEvent) => {
+            if (moveEvent.pointerId !== event.pointerId) {
+                return;
+            }
+
+            moveEvent.preventDefault();
+            repositionDraggedItem(moveEvent.clientY);
+        };
+
+        const onPointerEnd = async (endEvent) => {
+            if (endEvent.pointerId !== event.pointerId) {
+                return;
+            }
+
+            document.removeEventListener('pointermove', onPointerMove);
+            document.removeEventListener('pointerup', onPointerEnd);
+            document.removeEventListener('pointercancel', onPointerEnd);
+
+            await finishPointerDrag();
+        };
+
+        document.addEventListener('pointermove', onPointerMove);
+        document.addEventListener('pointerup', onPointerEnd);
+        document.addEventListener('pointercancel', onPointerEnd);
     });
 }
 

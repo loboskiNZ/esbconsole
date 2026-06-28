@@ -1947,10 +1947,18 @@
     cursor: grab;
     touch-action: none;
     user-select: none;
-    -webkit-user-drag: element;
-    padding: 0.2rem 0.45rem;
-    font: inherit;
-    appearance: none;
+}
+
+.esb-studio__playlist-drag-active {
+    user-select: none;
+}
+
+.esb-studio__playlist-list--dragging {
+    cursor: grabbing;
+}
+
+.esb-studio__playlist-list--dragging .esb-studio__setlist-order-badge--draggable {
+    cursor: grabbing;
 }
 
 .esb-studio__setlist-order-badge--draggable:active {
