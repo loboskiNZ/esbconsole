@@ -988,4 +988,26 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH071B
+---
+
+## PH072 — Data Preservation Authority
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 305 | **Data Preservation Authority is a standing governance rule** — all existing user data is valuable and must be preserved across Cloud Database, Live Stage Database, Website Workspace, Cloud Studio Workspace, and Live Stage Workspace. | PH072; codifies practical stabilisation and production-safety lessons |
+| 306 | **Before any schema change affecting an existing table**, agents must create a recoverable backup or snapshot, record row counts, record backup location, and record rollback procedure. | Enables verified rollback without reconstruction |
+| 307 | **Forbidden without explicit operator approval:** `DROP TABLE`, `DROP COLUMN`, `TRUNCATE`, `DELETE`, `migrate:fresh`, `migrate:refresh`, `db:wipe`, destructive seeders, table recreation, manual migration table edits, and destructive file replacement. | Prevents accidental or agent-initiated data loss |
+| 308 | **All migrations must be additive by default** — any operation that may remove, overwrite, orphan, or make user data inaccessible requires explicit operator approval. | Aligns with cloud-first rebuild and CCMM additive posture |
+| 309 | **If rollback is requested, restore from the preserved copy** — agents must not attempt reconstruction from memory, partial diffs, or inferred state. | Rollback integrity and auditability |
+
+### PH072 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Governance amendment complete |
+| **Document** | `AGENTS.md` — Data Preservation Authority |
+| **Authority** | Applies to Cloud Database, Live Stage Database, Website Workspace, Cloud Studio Workspace, Live Stage Workspace |
+
+---
+
+End of Decision Log — PH072

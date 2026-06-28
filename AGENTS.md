@@ -1,6 +1,6 @@
 # X32/Ableton Rebuild Agent Governance
 
-Status: PH058 Amended (Cloud-First Canonical Schema Stabilisation)
+Status: PH072 Amended (Data Preservation Authority)
 
 ## Authority Order
 
@@ -153,6 +153,47 @@ During production data-integrity investigations or incidents:
 Violations require incident documentation in `docs/DECISION_LOG.md` before further implementation resumes.
 
 Active production incident recovery plan: `docs/PH056_PRODUCTION_RECOVERY_PLAN.md` (PH056 — **no production mutation until operator closes incident**).
+
+## Data Preservation Authority (PH072 — mandatory)
+
+All existing user data is considered valuable and must be preserved.
+
+Before any schema change affecting an existing table:
+
+- Create a recoverable backup or snapshot.
+- Record row counts.
+- Record backup location.
+- Record rollback procedure.
+
+Forbidden without explicit operator approval:
+
+- `DROP TABLE`
+- `DROP COLUMN`
+- `TRUNCATE`
+- `DELETE`
+- `migrate:fresh`
+- `migrate:refresh`
+- `db:wipe`
+- destructive seeders
+- table recreation
+- manual migration table edits
+- destructive file replacement
+
+All migrations must be additive by default.
+
+Any operation that may remove, overwrite, orphan, or make user data inaccessible requires explicit operator approval.
+
+If a rollback is requested, the agent must restore from the preserved copy rather than attempting reconstruction.
+
+This authority applies to:
+
+- Cloud Database
+- Live Stage Database
+- Website Workspace
+- Cloud Studio Workspace
+- Live Stage Workspace
+
+Formal ADR: `docs/DECISION_LOG.md` PH072.
 
 ## Development Rules
 
