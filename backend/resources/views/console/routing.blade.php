@@ -44,6 +44,9 @@
                     @if (! empty($routingDetail['production']['learned_meta']['secondary']))
                         <span class="vx32-routing-workspace__sync-hint">{{ $routingDetail['production']['learned_meta']['secondary'] }}</span>
                     @endif
+                    <a href="{{ route('shows.console.bus.layout', [$show, 1]) }}" class="vx32-configuration-workspace__link">
+                        View monitor buses →
+                    </a>
                 </div>
             </header>
 
@@ -165,7 +168,10 @@
                                         @endif
 
                                         @if ($destination['key'] === 'iems' && ! empty($destination['columns']))
-                                            @include('console._routing-iem-bus-grid', ['columns' => $destination['columns']])
+                                            @include('console._routing-iem-bus-grid', [
+                                                'show' => $show,
+                                                'columns' => $destination['columns'],
+                                            ])
                                         @else
                                             <ul class="vx32-routing-dest-card__lines">
                                                 @foreach ($destination['lines'] as $line)
@@ -180,12 +186,19 @@
                                             </ul>
                                         @endif
 
-                                        <button
-                                            type="button"
-                                            class="vx32-routing-source-card__configure"
-                                            disabled
-                                            title="Not available yet"
-                                        >Configure</button>
+                                        @if ($destination['key'] === 'iems')
+                                            <a
+                                                href="{{ route('shows.console.bus.layout', [$show, 1]) }}"
+                                                class="vx32-routing-source-card__configure vx32-routing-source-card__configure--link"
+                                            >Configure</a>
+                                        @else
+                                            <button
+                                                type="button"
+                                                class="vx32-routing-source-card__configure"
+                                                disabled
+                                                title="Not available yet"
+                                            >Configure</button>
+                                        @endif
                                     </article>
                                 @endforeach
                             </div>

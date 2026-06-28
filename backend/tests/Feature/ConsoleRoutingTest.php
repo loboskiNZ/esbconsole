@@ -94,7 +94,36 @@ class ConsoleRoutingTest extends TestCase
             ->assertDontSee('Connected')
             ->assertSee('Configure')
             ->assertSee('Not available yet', false)
+            ->assertSee('View monitor buses →')
+            ->assertSee(route('shows.console.bus.layout', [$show, 1], false))
+            ->assertSee(route('shows.console.bus.layout', [$show, 5], false))
             ->assertDontSee('Source Row', false);
+    }
+
+    public function test_routing_page_links_to_monitors_workspace(): void
+    {
+        $user = $this->createDirectorUser();
+        $band = Band::factory()->create();
+        $show = Show::factory()->forBand($band)->create(['name' => 'Monitors Nav Show']);
+        $device = $this->createX32Device($band);
+        $snapshot = app(X32ConsoleLearningService::class)->startLearning($show, $device, '01');
+        app(ShowConsoleBaselineService::class)->saveFromSnapshot($snapshot, 'Monitors Nav Baseline');
+
+        $this->actingAs($user)
+            ->get(route('shows.console.routing', $show))
+            ->assertOk()
+            ->assertSee(route('shows.console.bus.layout', [$show, 1], false))
+            ->assertSee('vx32-routing-iem-grid__line--link', false);
+
+        $this->actingAs($user)
+            ->get(route('shows.console.bus.layout', [$show, 1]))
+            ->assertOk()
+            ->assertSee('Bus 1', false);
+
+        $this->actingAs($user)
+            ->get(route('shows.console.bus.layout', [$show, 5]))
+            ->assertOk()
+            ->assertSee('Bus 5', false);
     }
 
     public function test_configuration_detail_row_renders_three_column_workspace(): void
