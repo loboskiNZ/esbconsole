@@ -25,14 +25,23 @@ class StudioShowPlaylistChartController extends Controller
 
         abort_if($part->chart_id !== null, 404);
 
+        $showId = (int) $show->id;
+        $songId = (int) $song->id;
+        $partId = (int) $part->id;
+
         return view('studio.shows.chart-upload', [
-            'show' => $show,
-            'song' => $song,
-            'songInstrumentPart' => $part,
+            'pageTitle' => 'Upload Chart — '.$song->name,
+            'songName' => $song->name,
+            'partName' => $part->instrumentPart?->name ?? 'Instrument part',
             'returnTo' => $redirects->resolve(
                 $request->query('return_to'),
-                $redirects->showPlaylistReturnPath($show->id),
+                $redirects->showPlaylistReturnPath($showId),
             ),
+            'uploadAction' => route('studio.shows.playlist.chart.upload.store', [
+                'show' => $showId,
+                'song' => $songId,
+                'songInstrumentPart' => $partId,
+            ]),
         ]);
     }
 

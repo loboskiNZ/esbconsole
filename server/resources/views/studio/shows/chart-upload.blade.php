@@ -1,7 +1,7 @@
 @extends('layouts.portal')
 
 @section('title')
-    Upload Chart — {{ $song->name }}
+    {{ $pageTitle }}
 @endsection
 
 @section('body-attributes')
@@ -14,7 +14,7 @@
             <p class="esb-portal__eyebrow mb-2">ESB Studio · Show Playlist</p>
             <h1 class="esb-portal__title">Upload chart</h1>
             <p class="esb-studio__card-body mt-2">
-                {{ $song->name }} · {{ $songInstrumentPart->instrumentPart?->name ?? 'Instrument part' }}
+                {{ $songName }} · {{ $partName }}
             </p>
         </header>
 
@@ -26,11 +26,7 @@
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"
-                action="{{ route('studio.shows.playlist.chart.upload.store', [
-                    'show' => $show->getKey(),
-                    'song' => $song->getKey(),
-                    'songInstrumentPart' => $songInstrumentPart->getKey(),
-                ]) }}"
+                action="{{ $uploadAction }}"
                 enctype="multipart/form-data"
             >
                 @csrf
@@ -48,7 +44,7 @@
 
                 <p class="esb-studio__card-body">
                     Upload a PDF chart for this song and instrument part. The chart will be linked only to
-                    {{ $songInstrumentPart->instrumentPart?->name ?? 'this part' }} on {{ $song->name }}.
+                    {{ $partName }} on {{ $songName }}.
                 </p>
 
                 <div class="esb-studio__band-form-grid mt-4">
