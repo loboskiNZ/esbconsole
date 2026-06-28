@@ -66,6 +66,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/songs/{song}', [StudioSongsController::class, 'update'])->name('songs.update');
         Route::post('/songs/{song}/instrument-parts', [StudioSongInstrumentPartController::class, 'store'])
             ->name('songs.instrument-parts.store');
+        Route::delete('/songs/{song}/instrument-parts/{songInstrumentPart}', [StudioSongInstrumentPartController::class, 'destroy'])
+            ->name('songs.instrument-parts.destroy');
         Route::post('/songs/{song}/assets', [StudioSongAssetController::class, 'store'])
             ->name('songs.assets.store');
         Route::get('/songs/{song}/assets/{songAsset}/file', [StudioSongAssetController::class, 'file'])

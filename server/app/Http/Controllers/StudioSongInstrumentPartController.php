@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Library\InstrumentPart;
 use App\Models\Library\Song;
+use App\Models\Library\SongInstrumentPart;
 use App\Services\StudioSongInstrumentPartService;
 use App\Support\SafeInternalRedirect;
 use Illuminate\Http\RedirectResponse;
@@ -63,6 +64,26 @@ class StudioSongInstrumentPartController extends Controller
         return redirect()
             ->to($this->editUrl($song, $validated['return_to'] ?? null, $redirects))
             ->with('song_part_added', true);
+    }
+
+    public function destroy(
+        Request $request,
+        Song $song,
+        SongInstrumentPart $songInstrumentPart,
+        StudioSongInstrumentPartService $parts,
+        SafeInternalRedirect $redirects,
+    ): RedirectResponse {
+        abort_unless($song->band_id === (int) config('portal.band_id', 1), 404);
+
+        $validated = $request->validate([
+            'return_to' => ['nullable', 'string', 'max:2048'],
+        ]);
+
+        $hadChart = $parts->detachFromSong($song, $songInstrumentPart);
+
+        return redirect()
+            ->to($this->editUrl($song, $validated['return_to'] ?? null, $redirects))
+            ->with('song_part_removed', $hadChart ? 'chart_preserved' : true);
     }
 
     private function editUrl(Song $song, ?string $returnTo, SafeInternalRedirect $redirects): string

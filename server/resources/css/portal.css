@@ -2141,6 +2141,93 @@
     border-top: 1px solid rgba(233, 203, 160, 0.12);
 }
 
+.esb-studio__song-edit-layout {
+    display: grid;
+    gap: 1rem;
+    align-items: start;
+}
+
+@media (min-width: 960px) {
+    .esb-studio__song-edit-layout {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+        gap: 1.25rem;
+    }
+}
+
+.esb-studio__song-edit-main,
+.esb-studio__song-edit-aside {
+    min-width: 0;
+}
+
+.esb-studio__director-notes-field {
+    padding: 1rem 1.05rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(255, 178, 62, 0.35);
+    background: color-mix(in srgb, #ffb23e 12%, rgba(12, 10, 8, 0.28));
+}
+
+.esb-studio__director-notes-input {
+    min-height: 7.5rem;
+}
+
+.esb-studio__song-edit-save--desktop {
+    display: none;
+}
+
+@media (min-width: 960px) {
+    .esb-studio__song-edit-save--mobile {
+        display: none;
+    }
+
+    .esb-studio__song-edit-save--desktop {
+        display: grid;
+    }
+}
+
+.esb-studio__song-part-list {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.esb-studio__song-part-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(233, 203, 160, 0.14);
+    background: rgba(12, 10, 8, 0.22);
+}
+
+.esb-studio__song-part-remove-form {
+    margin-left: auto;
+}
+
+.esb-studio__song-part-remove-button {
+    min-height: 1.85rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 130, 130, 0.45);
+    background: color-mix(in srgb, #ff8282 16%, transparent);
+    color: rgba(255, 210, 210, 0.95);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.esb-studio__song-part-remove-button:hover,
+.esb-studio__song-part-remove-button:focus-visible {
+    border-color: rgba(255, 130, 130, 0.75);
+    background: color-mix(in srgb, #ff8282 28%, transparent);
+    outline: none;
+}
+
 .esb-studio__song-asset-list {
     display: grid;
     gap: 0.75rem;

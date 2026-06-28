@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Models\Library\Chart;
 use App\Models\Library\InstrumentPart;
 use App\Models\Library\MusicalKey;
 use App\Models\Library\Song;
 use App\Models\Library\SongInstrumentPart;
+use App\Models\Library\SongAsset;
 use App\Models\Library\SongMood;
 use App\Models\Library\TimeSignature;
 use App\Models\Show;
@@ -48,7 +50,74 @@ class StudioSongInstrumentPartTest extends TestCase
             ->assertSee('Instrument parts', false)
             ->assertSee('Bass', false)
             ->assertSee('Trumpet', false)
-            ->assertSee('📄✕', false);
+            ->assertSee('📄✕', false)
+            ->assertSee('Remove', false);
+    }
+
+    public function test_song_edit_page_renders_two_column_layout(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Layout Song');
+
+        $this->actingAs($director)->get(route('songs.edit', $song))
+            ->assertOk()
+            ->assertSee('esb-studio__song-edit-layout', false)
+            ->assertSee('esb-studio__song-edit-main', false)
+            ->assertSee('esb-studio__song-edit-aside', false);
+    }
+
+    public function test_director_notes_appear_at_top_of_card(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Notes Order Song');
+        $song->update(['director_notes' => 'Start soft.']);
+
+        $response = $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $response->assertOk()
+            ->assertSee('esb-studio__director-notes-field', false)
+            ->assertSeeInOrder([
+                'id="song-director-notes"',
+                'id="song-name"',
+            ], false);
+    }
+
+    public function test_song_details_and_instrument_parts_are_in_left_column(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Left Column Song');
+        $this->attachPart($song, 'Bass');
+
+        $html = $this->actingAs($director)->get(route('songs.edit', $song))->getContent();
+
+        $mainPos = strpos($html, 'esb-studio__song-edit-main');
+        $asidePos = strpos($html, 'esb-studio__song-edit-aside');
+        $titlePos = strpos($html, 'id="song-name"');
+        $partsPos = strpos($html, 'Instrument parts');
+
+        $this->assertNotFalse($mainPos);
+        $this->assertNotFalse($asidePos);
+        $this->assertNotFalse($titlePos);
+        $this->assertNotFalse($partsPos);
+        $this->assertLessThan($asidePos, $mainPos);
+        $this->assertGreaterThan($mainPos, $titlePos);
+        $this->assertLessThan($asidePos, $partsPos);
+    }
+
+    public function test_external_links_and_song_files_are_in_right_column(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Right Column Song');
+
+        $html = $this->actingAs($director)->get(route('songs.edit', $song))->getContent();
+
+        preg_match('/<div class="esb-studio__song-edit-aside">(.*?)<\/div>\s*<\/div>\s*<\/div>\s*<footer/s', $html, $matches);
+        $this->assertNotEmpty($matches[1] ?? null);
+
+        $asideHtml = $matches[1];
+        $this->assertStringContainsString('External links', $asideHtml);
+        $this->assertStringContainsString('Song files', $asideHtml);
+        $this->assertStringContainsString('id="song-spotify-url"', $asideHtml);
     }
 
     public function test_director_can_attach_existing_instrument_part_from_song_edit(): void
@@ -176,6 +245,121 @@ class StudioSongInstrumentPartTest extends TestCase
         );
     }
 
+    public function test_director_can_remove_song_instrument_part(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Remove Part Song');
+        $row = $this->attachPart($song, 'Bass');
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+        ])->assertRedirect(route('songs.edit', $song, absolute: false))
+            ->assertSessionHas('song_part_removed');
+
+        $this->assertFalse(
+            SongInstrumentPart::query()->where('id', $row->id)->exists(),
+        );
+        $this->actingAs($director)->get(route('songs.edit', $song))
+            ->assertOk()
+            ->assertSee('No instrument parts defined', false)
+            ->assertDontSee('esb-studio__song-part-row', false);
+    }
+
+    public function test_removing_song_part_does_not_delete_global_instrument_part(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Global Part Song');
+        $row = $this->attachPart($song, 'Trumpet');
+        $instrumentPartId = $row->instrument_part_id;
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+        ])->assertRedirect();
+
+        $this->assertTrue(InstrumentPart::query()->where('id', $instrumentPartId)->exists());
+    }
+
+    public function test_removing_song_part_does_not_delete_chart_files(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Chart Preserve Song');
+        $row = $this->attachPartWithChart($song, 'Keyboard');
+        $chartId = $row->chart_id;
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+        ])->assertRedirect()
+            ->assertSessionHas('song_part_removed', 'chart_preserved');
+
+        $this->assertTrue(Chart::query()->where('id', $chartId)->exists());
+    }
+
+    public function test_removing_song_part_does_not_delete_song_assets(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Asset Preserve Song');
+        $row = $this->attachPart($song, 'Bass');
+        $asset = SongAsset::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'song_id' => $song->id,
+            'label' => 'Backing track',
+            'asset_type' => 'backing_track',
+            'storage_disk' => 'library',
+            'original_filename' => 'backing.mp3',
+            'storage_reference' => 'songs/'.$song->id.'/backing.mp3',
+            'checksum' => hash('sha256', 'backing'),
+            'mime_type' => 'audio/mpeg',
+            'file_size' => 1024,
+        ]);
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+        ])->assertRedirect();
+
+        $this->assertTrue(SongAsset::query()->where('id', $asset->id)->exists());
+    }
+
+    public function test_non_director_cannot_remove_song_parts(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $song = $this->seedSong('Locked Remove Song');
+        $row = $this->attachPart($song, 'Bass');
+
+        $this->actingAs($musician)->get(route('studio.shows.index'));
+
+        $this->actingAs($musician)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+        ])->assertForbidden();
+
+        $this->assertTrue(SongInstrumentPart::query()->where('id', $row->id)->exists());
+    }
+
+    public function test_removing_part_preserves_return_to_on_song_edit_redirect(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Remove Return Show']);
+        $song = $this->seedSong('Remove Return Song');
+        $this->seedPlaylistItem($show, $song);
+        $row = $this->attachPart($song, 'Bass');
+        $returnTo = '/studio/shows/'.$show->id.'#playlist';
+
+        $this->actingAs($director)->get(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]));
+
+        $this->actingAs($director)->delete(route('songs.instrument-parts.destroy', [$song, $row]), [
+            '_token' => session()->token(),
+            'return_to' => $returnTo,
+        ])->assertRedirect(route('songs.edit', ['song' => $song, 'return_to' => $returnTo], absolute: false));
+    }
+
     private function seedSong(string $name): Song
     {
         return Song::query()->create([
@@ -204,6 +388,34 @@ class StudioSongInstrumentPartTest extends TestCase
             'public_id' => (string) Str::uuid(),
             'song_id' => $song->id,
             'instrument_part_id' => $part->id,
+        ]);
+    }
+
+    private function attachPartWithChart(Song $song, string $partName): SongInstrumentPart
+    {
+        $part = InstrumentPart::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'name' => $partName,
+            'active' => true,
+        ]);
+
+        $chart = Chart::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'song_id' => $song->id,
+            'title' => $partName.' Chart',
+            'original_filename' => Str::slug($partName).'.pdf',
+            'storage_reference' => 'charts/1/'.$song->song_code.'/'.Str::slug($partName).'.pdf',
+            'checksum' => hash('sha256', $partName),
+            'mime_type' => 'application/pdf',
+            'file_size' => 100,
+        ]);
+
+        return SongInstrumentPart::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'song_id' => $song->id,
+            'instrument_part_id' => $part->id,
+            'chart_id' => $chart->id,
         ]);
     }
 

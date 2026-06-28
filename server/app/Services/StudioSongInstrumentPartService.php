@@ -119,4 +119,25 @@ class StudioSongInstrumentPartService
             'instrument_part_id' => $instrumentPart->id,
         ]);
     }
+
+    /**
+     * Detach an instrument part from this song only. Preserves the global instrument
+     * part definition and any linked chart record or file.
+     */
+    public function detachFromSong(
+        Song $song,
+        SongInstrumentPart $songInstrumentPart,
+        ?int $bandId = null,
+    ): bool {
+        $bandId ??= (int) config('portal.band_id', 1);
+
+        abort_unless($song->band_id === $bandId, 404);
+        abort_unless((int) $songInstrumentPart->song_id === (int) $song->id, 404);
+
+        $hadChart = $songInstrumentPart->chart_id !== null;
+
+        $songInstrumentPart->delete();
+
+        return $hadChart;
+    }
 }
