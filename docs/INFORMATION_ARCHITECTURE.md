@@ -1,6 +1,6 @@
 # Information Architecture
 
-Status: PH048A Amended (Narrative Onboarding Experience Governance)  
+Status: PH049 Amended (ESB Studio Musician Evaluation Prohibition)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical navigation structure, hierarchy, and visibility rules for the Live Performance Orchestration System
 
@@ -249,7 +249,7 @@ Band Portal (`band.edandtheshadowboys.com`) is a **cloud-only** surface. It does
 | Landing / staged login | Public | Username → password scaffold (PH046.01A); returning members → ESB Studio when implemented |
 | Narrative onboarding | `/invite/{token}` (unlisted) | Invitation-driven journey (PH048A); no self-registration |
 | Email verification gate | Authenticated, unverified | Blocks ESB Studio after 24h (Decision 181) |
-| ESB Studio | Authenticated + verified | Member home (Decision 180) |
+| ESB Studio | Authenticated + verified | Member home (Decision 180); factual preparation only — no musician evaluation (Decision 178A) |
 | Authenticated portal | Post-login | Session (Laravel) — future phases |
 
 ### Staged login UX (current scaffold)
@@ -324,7 +324,7 @@ Member → username + password login → ESB Studio (or Verify Your Email gate)
 
 | Level | Scope | Primary user |
 |-------|-------|--------------|
-| **ESB Studio** | Member home; post-onboarding destination | Invited Person / User |
+| **ESB Studio** | Member home; post-onboarding destination; factual preparation surfaces only (PH049) | Invited Person / User |
 | My profile | Person record (self-service permitted fields) | Member |
 | Onboarding continuation | Progressive Person completion (passport, banking, bio, etc.) | Member |
 | Invitation management | Person list, invitations, status | Administrator |
@@ -337,7 +337,8 @@ Band Portal navigation is **Person-centric** for profile data and **User-centric
 - Screens that manage login identifier or password operate on **User** — never on Person.
 - Username and password inputs must enforce Decision **176** and **177** validation rules.
 - Administrator invitation management operates on **Person Invitation** + **Person** — not by writing credentials onto Person.
+- ESB Studio surfaces present **factual information only** (Decision 178A) — no readiness scores, rankings, or musician evaluation UX.
 
 ---
 
-End of Information Architecture — PH048A
+End of Information Architecture — PH049

@@ -1,6 +1,6 @@
 # UX Model
 
-Status: PH048A Amended (Narrative Onboarding Experience Governance)  
+Status: PH049 Amended (ESB Studio Musician Evaluation Prohibition)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical user experience, screen behaviour, and operational workflows for the Live Performance Orchestration System
 
@@ -531,7 +531,7 @@ Canonical screen inventory.
 
 Every screen, workflow, and interaction must be traceable to at least one principle. Conflicts resolve in favour of higher-priority principles (Show First > Musician Guidance > Minimal Cognitive Load > … > Preparation Supports Performance).
 
-**Band Portal exception (PH048A):** Principles 1–8 govern the Live Performance Orchestration System (Director, Local Show Runtime, show day). Band Portal narrative onboarding is a **separate cloud surface** governed by Decisions **178–181** and PH048A below. Band Portal UX serves member initiation and personnel administration — not live show execution.
+**Band Portal exception (PH048A / PH049):** Principles 1–8 govern the Live Performance Orchestration System (Director, Local Show Runtime, show day). Band Portal narrative onboarding and ESB Studio are a **separate cloud surface** governed by Decisions **178–181**, **178A**, and PH048A/PH049 below. Band Portal UX serves member initiation, personnel administration, and factual preparation access — not live show execution and not musician evaluation.
 
 ---
 
@@ -745,6 +745,44 @@ ESB Studio is a **UX destination** — not a separate domain entity. It surfaces
 
 ---
 
+## PH049 — ESB Studio Musician Evaluation Prohibition
+
+Authority: Decision **178A** (`docs/DECISION_LOG.md` PH049)
+
+**Scope:** UX and behavioural governance for ESB Studio. No implementation in this phase.
+
+### Core UX principle (Decision 178A)
+
+ESB Studio is a **facilitation and preparation platform**. It must not behave like a performance-management or talent-evaluation system.
+
+| Mandate | Avoid |
+|---------|-------|
+| Present factual preparation information | Readiness scores, traffic lights, or inferred preparedness |
+| Support collaboration and resource access | Musician quality, engagement, or productivity ratings |
+| Show what exists (charts, assignments, plans) | Practice scores, participation scores, performance ratings |
+| Leave artistic judgement to humans | League tables, leaderboards, rankings |
+
+### Permitted factual surfaces
+
+| Surface | Examples |
+|---------|----------|
+| Assignments | Songs assigned to a performance |
+| Charts | Charts available; charts updated |
+| Collaboration | Notes added; messages and activity |
+| Planning | Running plans; rehearsal materials |
+| Calendar | Upcoming performances |
+| Administration | Administrative requirements |
+
+### Human interpretation boundary
+
+Whether a musician is ready for rehearsal or performance is **not** a Studio UX decision. Musical director, band leadership, rehearsal process, and professional judgement own that interpretation.
+
+### Relationship to Soundcheck / Readiness
+
+Soundcheck and Performance Readiness (Decisions 035, 047, 048) are collaborative, operator-led processes on the **live performance layer**. PH049 prohibits translating those concepts into musician scores or rankings inside ESB Studio.
+
+---
+
 ### Email verification (Decision 181)
 
 | Attribute | Value |
@@ -794,4 +832,4 @@ PH048A establishes the **experience scaffold** only. Implementation follows in l
 
 ---
 
-End of UX Model — PH048A
+End of UX Model — PH049

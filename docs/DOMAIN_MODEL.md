@@ -1,6 +1,6 @@
 # Domain Model
 
-Status: PH048A Amended (Narrative Onboarding Experience Governance)  
+Status: PH049 Amended (ESB Studio Musician Evaluation Prohibition)  
 Authority: `docs/PROJECT_CHARTER.md`  
 Purpose: Canonical entity definitions for the Live Performance Orchestration System
 
@@ -366,11 +366,13 @@ Full chapter specification: `docs/UX_MODEL.md` PH048A.
 
 ---
 
-## ESB Studio (UX destination — PH048A)
+## ESB Studio (UX destination — PH048A / PH049)
 
 ### Definition
 
 The **authenticated member home** of the Band Portal — onboarding arrival surface (Chapter 8), future login destination, and primary portal landing page for invited members.
+
+ESB Studio is a **facilitation and preparation platform** (Decision 178A). It exists to support preparation, collaboration, communication, and access to resources — not to measure artistic capability, artistic readiness, or artistic performance.
 
 ### Ownership / Source of Truth
 
@@ -378,11 +380,35 @@ The **authenticated member home** of the Band Portal — onboarding arrival surf
 - Surfaces Person-linked member content and progressive profile completion prompts.
 - Requires authenticated User with linked Person; **email verification** required for access after 24h pending (Decision 181).
 
+### Permitted presentation (Decision 178A)
+
+Factual information only, including:
+
+- Songs assigned to a performance
+- Charts available; charts updated
+- Notes added
+- Running plans; rehearsal materials
+- Upcoming performances
+- Administrative requirements
+- Messages and activity
+
+### Prohibited behaviour (Decision 178A)
+
+ESB Studio shall **not** calculate, display, infer, score, rank, evaluate, grade, review, or estimate:
+
+- Musician, performance, or rehearsal readiness
+- Musician quality, engagement, or productivity
+- Participation scores, practice scores, or performance ratings
+- League tables or rankings
+
+Interpretation of musician readiness for rehearsal or performance is **exclusively human** — musical director, band leadership, rehearsal process, and professional judgement.
+
 ### Must Not Be Confused With
 
 - **Live Show View** — local runtime performance execution (Priority #1 elsewhere in the platform).
 - **Director preparation surfaces** — show authoring and performance preparation.
 - **Person** — Studio is a portal surface; Person remains the canonical profile record.
+- **Readiness (Performance)** — operational gate after Soundcheck on a Performance; collaborative human process, not Studio musician scoring.
 
 ---
 
