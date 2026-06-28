@@ -180,7 +180,10 @@ class StudioShowPlaylistTest extends TestCase
 
         $this->actingAs($director)->get(route('studio.shows.show', $show))
             ->assertOk()
-            ->assertSee('Shadows Intro', false)
+            ->assertSeeInOrder(['01', 'Shadows Intro'], false)
+            ->assertSee('esb-studio__setlist-card', false)
+            ->assertSee('esb-studio__playlist-item-columns', false)
+            ->assertSee('esb-studio__playlist-item-notes', false)
             ->assertSee('120', false)
             ->assertSee('4/4', false)
             ->assertSee('G major', false)
@@ -192,6 +195,37 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('📄✕', false)
             ->assertSee('Required parts', false)
             ->assertSee('Playlist summary', false);
+    }
+
+    public function test_playlist_order_number_is_zero_padded_in_setlist_title(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Order Label Show']);
+        $song = $this->seedSongWithParts('Electronic Love');
+        $this->seedPlaylistItem($show, $song, position: 3);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('esb-studio__setlist-order-label">03', false)
+            ->assertSee('esb-studio__setlist-song-name">Electronic Love', false)
+            ->assertSee('esb-studio__setlist-order-badge" aria-hidden="true">03', false);
+    }
+
+    public function test_musician_sees_notes_column_when_playlist_item_has_notes(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Musician Notes Show']);
+        $song = $this->seedSongWithParts('Noted Song');
+        $this->seedPlaylistItem($show, $song, notes: 'Watch the intro vamp.');
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('esb-studio__setlist-order-label">01', false)
+            ->assertSee('esb-studio__setlist-song-name">Noted Song', false)
+            ->assertSee('Watch the intro vamp.', false)
+            ->assertSee('esb-studio__playlist-item-notes', false)
+            ->assertDontSee('Save notes', false);
     }
 
     public function test_playlist_summary_counts_are_correct(): void
