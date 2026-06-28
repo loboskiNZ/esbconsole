@@ -245,9 +245,18 @@ class StudioShowSetlistPdfService
 
     private function tempDirectoryForShow(int $showId): string
     {
-        $directory = rtrim(sys_get_temp_dir(), '/').'/esb-setlists/'.$showId.'/'.Str::uuid();
+        $configured = config('portal.setlist_temp_path');
 
-        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
+        if (is_string($configured) && $configured !== '') {
+            $directory = rtrim($configured, '/').'/'.$showId.'/'.Str::uuid();
+        } else {
+            // Single directory under system temp — forge can always write here without
+            // depending on a shared parent such as /tmp/esb-setlists (which may be
+            // root-owned or created by another deploy user with restrictive mode).
+            $directory = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-'.$showId.'-'.Str::uuid();
+        }
+
+        if (! is_dir($directory) && ! @mkdir($directory, 0700, true) && ! is_dir($directory)) {
             throw new RuntimeException("Unable to create temporary directory at {$directory}.");
         }
 
@@ -288,10 +297,5 @@ class StudioShowSetlistPdfService
         }
 
         @rmdir($directory);
-
-        $parent = dirname($directory);
-        if (is_dir($parent) && (glob($parent.'/*') ?: []) === []) {
-            @rmdir($parent);
-        }
     }
 }

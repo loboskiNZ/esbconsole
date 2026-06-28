@@ -114,4 +114,6 @@ return [
 
     'setlist_runtime_home' => env('PORTAL_SETLIST_RUNTIME_HOME', '/home/forge'),
 
+    'setlist_temp_path' => env('PORTAL_SETLIST_TEMP_PATH'),
+
 ];

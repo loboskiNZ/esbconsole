@@ -8,7 +8,6 @@ use App\Services\StudioShowSetlistPdfService;
 use App\Support\CloudStudioMediaStorage;
 use Illuminate\Http\RedirectResponse;
 use InvalidArgumentException;
-use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudioShowSetlistPdfController extends Controller
@@ -30,7 +29,7 @@ class StudioShowSetlistPdfController extends Controller
                 ->route('studio.shows.show', $portalShow)
                 ->withFragment('playlist')
                 ->with('setlist_pdf_error', $exception->getMessage());
-        } catch (RuntimeException $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
 
             return redirect()

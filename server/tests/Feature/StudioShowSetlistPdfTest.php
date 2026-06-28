@@ -205,8 +205,28 @@ class StudioShowSetlistPdfTest extends TestCase
         Storage::disk('media')->assertExists($generation->storage_reference);
         Storage::disk('local')->assertMissing($generation->storage_reference);
 
-        $tempRoot = rtrim(sys_get_temp_dir(), '/').'/esb-setlists/'.$show->id;
-        $this->assertFalse(is_dir($tempRoot));
+        $tempPattern = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-'.$show->id.'-*';
+        $this->assertSame([], glob($tempPattern) ?: []);
+    }
+
+    public function test_generation_surfaces_user_error_instead_of_server_error_when_temp_dir_fails(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Temp Failure Show']);
+        $song = $this->seedSong('Temp Song');
+        $this->seedPlaylistItem($show, $song);
+
+        config(['portal.setlist_temp_path' => '/root/no-write-setlist-temp']);
+
+        $this->startPortalSession($director, $show);
+
+        $this->actingAs($director)->post(route('studio.shows.setlist.generate', $show), [
+            '_token' => session()->token(),
+        ])
+            ->assertRedirect(route('studio.shows.show', $show).'#playlist')
+            ->assertSessionHas('setlist_pdf_error', 'Unable to generate setlist PDF right now.');
+
+        $this->assertSame(0, ShowSetlistGeneration::query()->count());
     }
 
     private function startPortalSession(User $user, Show $show): void
