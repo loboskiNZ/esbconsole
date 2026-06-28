@@ -10,15 +10,19 @@ use App\Support\StudioLibraryAvailability;
 use App\Support\StudioSongMetadata;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
 
 class StudioShowPlaylistService
 {
+    private const PLAYLIST_SONG_SEARCH_LIMIT = 12;
+
     public function __construct(
         private readonly StudioShowService $shows,
         private readonly StudioSongMetadata $songMetadata,
         private readonly StudioLibraryAvailability $library,
         private readonly StudioChartAccessService $chartAccess,
+        private readonly StudioChartSearchService $chartSearch,
     ) {}
 
     /**
@@ -42,6 +46,9 @@ class StudioShowPlaylistService
      *         instrument_part_count: int,
      *         charts_available: int,
      *         charts_missing: int,
+     *         charts_count: int,
+     *         estimated_duration_seconds: int|null,
+     *         estimated_duration_label: string,
      *     },
      *     show_instrument_parts: list<array{name: string}>,
      * }
@@ -50,7 +57,126 @@ class StudioShowPlaylistService
     {
         $isDirector = $viewer?->isDirector() ?? false;
         $entries = $this->playlistEntriesForShow($showId, $bandId, $viewer, $isDirector);
+        $summary = $this->buildPlaylistSummary($entries);
 
+        $showInstrumentParts = collect($summary['distinct_part_names'])
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->map(fn (string $name): array => ['name' => $name])
+            ->values()
+            ->all();
+
+        unset($summary['distinct_part_names']);
+
+        return [
+            'entries' => $entries,
+            'summary' => $summary,
+            'show_instrument_parts' => $showInstrumentParts,
+        ];
+    }
+
+    /**
+     * @return list<array{
+     *     song_id: int,
+     *     song_code: string,
+     *     name: string,
+     *     artist: string|null,
+     *     on_playlist: bool,
+     * }>
+     */
+    public function searchSongsForPlaylist(int $showId, string $query, ?int $bandId = null): array
+    {
+        $bandId ??= (int) config('portal.band_id', 1);
+        $show = $this->shows->showForPortal($showId, $bandId);
+        $query = trim($query);
+
+        if ($query === '' || ! $this->library->isAvailable()) {
+            return [];
+        }
+
+        $activeSongIds = ShowPlaylistItem::query()
+            ->where('show_id', $show->id)
+            ->active()
+            ->pluck('song_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        return Song::query()
+            ->where('band_id', $bandId)
+            ->orderBy('name')
+            ->get()
+            ->filter(fn (Song $song): bool => $this->songMatchesPlaylistSearch($song, $query))
+            ->take(self::PLAYLIST_SONG_SEARCH_LIMIT)
+            ->map(fn (Song $song): array => [
+                'song_id' => (int) $song->id,
+                'song_code' => (string) $song->song_code,
+                'name' => (string) $song->name,
+                'artist' => $this->artistLabelForSong($song),
+                'on_playlist' => in_array((int) $song->id, $activeSongIds, true),
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array{
+     *     song_count: int,
+     *     instrument_part_count: int,
+     *     charts_available: int,
+     *     charts_missing: int,
+     *     charts_count: int,
+     *     estimated_duration_seconds: int|null,
+     *     estimated_duration_label: string,
+     * }  $summary
+     * @return array{
+     *     song_count: int,
+     *     instrument_part_count: int,
+     *     charts_count: int,
+     *     estimated_duration_label: string,
+     * }
+     */
+    public function summaryForResponse(array $summary): array
+    {
+        return [
+            'song_count' => $summary['song_count'],
+            'instrument_part_count' => $summary['instrument_part_count'],
+            'charts_count' => $summary['charts_count'],
+            'estimated_duration_label' => $summary['estimated_duration_label'],
+        ];
+    }
+
+    public function formatEstimatedDurationLabel(?int $totalSeconds): string
+    {
+        if ($totalSeconds === null || $totalSeconds <= 0) {
+            return 'Unknown';
+        }
+
+        $hours = intdiv($totalSeconds, 3600);
+        $minutes = intdiv($totalSeconds % 3600, 60);
+        $seconds = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    }
+
+    /**
+     * @param  Collection<int, array{
+     *     item: ShowPlaylistItem,
+     *     metadata: array<string, mixed>,
+     *     instrument_parts: list<array<string, mixed>>,
+     *     required_part_count: int,
+     * }>  $entries
+     * @return array{
+     *     song_count: int,
+     *     instrument_part_count: int,
+     *     charts_available: int,
+     *     charts_missing: int,
+     *     charts_count: int,
+     *     estimated_duration_seconds: int|null,
+     *     estimated_duration_label: string,
+     *     distinct_part_names: list<string>,
+     * }
+     */
+    private function buildPlaylistSummary(Collection $entries): array
+    {
         $chartsAvailable = 0;
         $chartsMissing = 0;
         /** @var array<string, string> $distinctParts */
@@ -69,22 +195,90 @@ class StudioShowPlaylistService
             }
         }
 
-        $showInstrumentParts = collect($distinctParts)
-            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-            ->map(fn (string $name): array => ['name' => $name])
-            ->values()
-            ->all();
+        $durationSeconds = $this->estimatedDurationSeconds($entries);
 
         return [
-            'entries' => $entries,
-            'summary' => [
-                'song_count' => $entries->count(),
-                'instrument_part_count' => count($distinctParts),
-                'charts_available' => $chartsAvailable,
-                'charts_missing' => $chartsMissing,
-            ],
-            'show_instrument_parts' => $showInstrumentParts,
+            'song_count' => $entries->count(),
+            'instrument_part_count' => count($distinctParts),
+            'charts_available' => $chartsAvailable,
+            'charts_missing' => $chartsMissing,
+            'charts_count' => $chartsAvailable,
+            'estimated_duration_seconds' => $durationSeconds,
+            'estimated_duration_label' => $this->formatEstimatedDurationLabel($durationSeconds),
+            'distinct_part_names' => array_values($distinctParts),
         ];
+    }
+
+    private function songMatchesPlaylistSearch(Song $song, string $query): bool
+    {
+        foreach ($this->searchableSongFields($song) as $field) {
+            if ($this->chartSearch->matchesQuery($field, $query)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function searchableSongFields(Song $song): array
+    {
+        return array_values(array_filter([
+            (string) $song->song_code,
+            (string) $song->name,
+            filled($song->reference_title) ? (string) $song->reference_title : null,
+            filled($song->genre) ? (string) $song->genre : null,
+        ], static fn (?string $value): bool => filled($value)));
+    }
+
+    private function artistLabelForSong(Song $song): ?string
+    {
+        if (filled($song->reference_title)) {
+            return trim((string) $song->reference_title);
+        }
+
+        if (filled($song->genre)) {
+            return trim((string) $song->genre);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  Collection<int, array{
+     *     item: ShowPlaylistItem,
+     *     metadata: array<string, mixed>,
+     *     instrument_parts: list<array<string, mixed>>,
+     *     required_part_count: int,
+     * }>  $entries
+     */
+    private function estimatedDurationSeconds(Collection $entries): ?int
+    {
+        if ($entries->isEmpty()) {
+            return null;
+        }
+
+        $connection = config('portal.library_connection');
+
+        if (! is_string($connection) || ! Schema::connection($connection)->hasColumn('songs', 'duration_seconds')) {
+            return null;
+        }
+
+        $total = 0;
+
+        foreach ($entries as $entry) {
+            $song = $entry['item']->song;
+
+            if ($song === null || $song->duration_seconds === null) {
+                return null;
+            }
+
+            $total += max(0, (int) $song->duration_seconds);
+        }
+
+        return $total;
     }
 
     /**

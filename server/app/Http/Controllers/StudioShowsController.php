@@ -62,7 +62,6 @@ class StudioShowsController extends Controller
             'playlistEntries' => $playlistView['entries'],
             'playlistSummary' => $playlistView['summary'],
             'showInstrumentParts' => $playlistView['show_instrument_parts'],
-            'selectableSongs' => $user?->isDirector() ? $playlist->selectableSongsForShow($portalShow->id) : collect(),
             'libraryAvailable' => $library->isAvailable(),
             'isDirector' => $user?->isDirector() ?? false,
         ]);

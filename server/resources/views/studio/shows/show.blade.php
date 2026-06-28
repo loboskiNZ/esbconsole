@@ -108,54 +108,48 @@
 
                 @if (! $libraryAvailable)
                     <p class="esb-studio__card-body mt-3">Music library is not available in this environment.</p>
-                @elseif ($playlistEntries->isEmpty())
-                    <p class="esb-studio__card-body mt-3">No songs on this playlist yet.</p>
                 @else
-                    @if ($isDirector)
-                        <p
-                            id="playlist-order-feedback"
-                            class="esb-portal__success mt-3"
-                            role="status"
-                            hidden
-                        ></p>
-                    @endif
+                    @include('studio.shows.partials._playlist-inline-summary')
 
-                    <ul
-                        @class([
-                            'esb-studio__playlist-list mt-4',
-                        ])
+                    @if ($playlistEntries->isEmpty())
+                        <p class="esb-studio__card-body mt-3" id="playlist-empty-message">No songs on this playlist yet.</p>
+                    @else
+                        @if ($isDirector)
+                            <p
+                                id="playlist-order-feedback"
+                                class="esb-portal__success mt-3 esb-studio__playlist-order-feedback"
+                                role="status"
+                                hidden
+                            ></p>
+                        @endif
+
+                        <ul
+                            @class([
+                                'esb-studio__playlist-list mt-4',
+                            ])
                         @if ($isDirector)
                             id="playlist-sortable-list"
                             data-reorder-url="{{ route('studio.shows.playlist.reorder', $show) }}"
                         @endif
-                    >
-                        @foreach ($playlistEntries as $entry)
-                            @include('studio.shows.partials._playlist-item', [
-                                'entry' => $entry,
-                                'show' => $show,
-                                'isDirector' => $isDirector,
-                            ])
-                        @endforeach
-                    </ul>
-                @endif
+                        >
+                            @foreach ($playlistEntries as $entry)
+                                @include('studio.shows.partials._playlist-item', [
+                                    'entry' => $entry,
+                                    'show' => $show,
+                                    'isDirector' => $isDirector,
+                                ])
+                            @endforeach
+                        </ul>
+                    @endif
 
-                @if ($isDirector && $libraryAvailable)
-                    <form method="POST" action="{{ route('studio.shows.playlist.items.store', $show) }}" class="esb-studio__playlist-add-form mt-6">
-                        @csrf
-                        <label class="esb-portal__label mb-2 block" for="playlist-song-id">Add song</label>
-                        <div class="esb-studio__playlist-add-row">
-                            <select id="playlist-song-id" name="song_id" class="esb-portal__input" required>
-                                <option value="" disabled @selected(true)>Select a song</option>
-                                @foreach ($selectableSongs as $song)
-                                    <option value="{{ $song->id }}">{{ $song->name }}</option>
-                                @endforeach
-                            </select>
-                            <button type="submit" class="esb-portal__button esb-portal__button--primary">Add song</button>
+                    @if ($isDirector)
+                        <div
+                            class="esb-studio__playlist-add mt-6"
+                            data-reorder-url="{{ route('studio.shows.playlist.reorder', $show) }}"
+                        >
+                            @include('studio.shows.partials._playlist-song-picker')
                         </div>
-                        @error('song_id')
-                            <p class="esb-portal__error mt-2">{{ $message }}</p>
-                        @enderror
-                    </form>
+                    @endif
                 @endif
             </section>
 

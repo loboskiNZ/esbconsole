@@ -24,17 +24,16 @@
 >
     <div class="esb-studio__setlist-ribbon-header">
         @if ($isDirector)
-            <button
-                type="button"
-                class="esb-studio__playlist-drag-handle"
+            <span
+                class="esb-studio__setlist-order-badge esb-studio__setlist-order-badge--draggable"
+                data-playlist-order-badge
                 draggable="true"
                 aria-label="Drag to reorder {{ $songTitle }}"
-            >
-                <span aria-hidden="true">⋮⋮</span>
-            </button>
+                title="Drag to reorder"
+            >{{ $positionLabel }}</span>
+        @else
+            <span class="esb-studio__setlist-order-badge" data-playlist-order-badge>{{ $positionLabel }}</span>
         @endif
-
-        <span class="esb-studio__setlist-order-badge" data-playlist-order-badge>{{ $positionLabel }}</span>
 
         <h3 class="esb-studio__playlist-song-title">{{ $songTitle }}</h3>
 

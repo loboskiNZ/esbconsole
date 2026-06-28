@@ -78,6 +78,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('/studio/shows/{show}/archive', [StudioShowsController::class, 'archive'])->name('studio.shows.archive');
         Route::patch('/studio/shows/{show}/restore', [StudioShowsController::class, 'restore'])->name('studio.shows.restore');
         Route::post('/studio/shows/{show}/playlist', [StudioShowPlaylistController::class, 'store'])->name('studio.shows.playlist.store');
+        Route::get('/studio/shows/{show}/playlist/songs/search', [StudioShowPlaylistController::class, 'searchSongs'])
+            ->name('studio.shows.playlist.songs.search');
         Route::post('/studio/shows/{show}/playlist/items', [StudioShowPlaylistController::class, 'store'])->name('studio.shows.playlist.items.store');
         Route::patch('/studio/shows/{show}/playlist/reorder', [StudioShowPlaylistController::class, 'reorder'])->name('studio.shows.playlist.reorder');
         Route::delete('/studio/shows/{show}/playlist/items/{playlistItem}', [StudioShowPlaylistController::class, 'destroy'])->name('studio.shows.playlist.items.destroy');

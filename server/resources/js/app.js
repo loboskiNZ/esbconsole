@@ -7,6 +7,7 @@ import { studioChartsLauncher } from './studio-home';
 import { studioCalendar, studioSchedule } from './studio-schedule';
 
 import { initStudioPlaylistOrder } from './studio-playlist-order';
+import { studioPlaylistPicker } from './studio-playlist-picker';
 
 window.Alpine = Alpine;
 Alpine.data('portalLanding', (restoreUsername = '', loginFailed = false) => portalLanding(restoreUsername, loginFailed));
@@ -16,6 +17,7 @@ Alpine.data('studioBandInvites', studioBandInvites);
 Alpine.data('studioChartsLauncher', studioChartsLauncher);
 Alpine.data('studioSchedule', studioSchedule);
 Alpine.data('studioCalendar', studioCalendar);
+Alpine.data('studioPlaylistPicker', studioPlaylistPicker);
 Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -136,7 +136,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Director-only note.', false)
             ->assertSee('Bass', false)
             ->assertSee('Keyboard', false)
-            ->assertSee('esb-studio__playlist-drag-handle', false);
+            ->assertSee('esb-studio__setlist-order-badge--draggable', false);
     }
 
     public function test_musician_only_sees_chart_pills_for_assigned_instrument_parts(): void
@@ -167,7 +167,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertDontSee(route('studio.charts.file', $bassChart), false)
             ->assertDontSee(route('songs.edit', $song), false)
             ->assertDontSee('Save notes', false)
-            ->assertDontSee('esb-studio__playlist-drag-handle', false);
+            ->assertDontSee('esb-studio__setlist-order-badge--draggable', false);
     }
 
     public function test_musician_with_no_assigned_parts_sees_no_chart_pills(): void
@@ -299,7 +299,6 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('esb-studio__setlist-ribbon-header', false)
             ->assertSee('esb-studio__setlist-ribbon-details', false)
             ->assertSee('Shadows Intro', false)
-            ->assertSee('data-playlist-order-badge>01', false)
             ->assertDontSee('esb-studio__setlist-order-label', false)
             ->assertSee('aria-expanded="false"', false)
             ->assertSee('Expand song details', false)
@@ -314,8 +313,13 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('📄✕', false)
             ->assertSee('Required parts', false)
             ->assertSee('Save notes', false)
-            ->assertSee('esb-studio__playlist-drag-handle', false)
+            ->assertSee('esb-studio__setlist-order-badge--draggable', false)
             ->assertSee('Playlist summary', false);
+
+        $this->assertMatchesRegularExpression(
+            '/data-playlist-order-badge[^>]*>\s*01\s*</',
+            (string) $response->getContent(),
+        );
 
         $this->assertMatchesRegularExpression(
             '/id="playlist-details-\d+"[^>]*hidden/s',
@@ -332,15 +336,17 @@ class StudioShowPlaylistTest extends TestCase
 
         $response = $this->actingAs($director)->get(route('studio.shows.show', $show));
 
+        $html = (string) $response->getContent();
+
         $response->assertOk()
-            ->assertSee('data-playlist-order-badge>03', false)
             ->assertSee('>Electronic Love<', false)
             ->assertDontSee('esb-studio__setlist-order-label', false)
             ->assertDontSee('03 · Electronic Love', false);
 
+        $this->assertMatchesRegularExpression('/data-playlist-order-badge[^>]*>\s*03\s*</', $html);
         $this->assertSame(
             1,
-            substr_count((string) $response->getContent(), 'data-playlist-order-badge>03'),
+            preg_match_all('/data-playlist-order-badge[^>]*>\s*03\s*</', $html),
         );
     }
 
@@ -398,6 +404,9 @@ class StudioShowPlaylistTest extends TestCase
         $this->assertSame(3, $summary['instrument_part_count']);
         $this->assertSame(3, $summary['charts_available']);
         $this->assertSame(1, $summary['charts_missing']);
+        $this->assertSame(3, $summary['charts_count']);
+        $this->assertSame('Unknown', $summary['estimated_duration_label']);
+        $this->assertNull($summary['estimated_duration_seconds']);
     }
 
     public function test_distinct_instrument_parts_appear_once_in_overview(): void
@@ -569,10 +578,15 @@ class StudioShowPlaylistTest extends TestCase
         $this->assertSame(2, ShowPlaylistItem::query()->find($firstItem->id)?->position);
         $this->assertSame(3, ShowPlaylistItem::query()->find($secondItem->id)?->position);
 
-        $this->actingAs($director)->get(route('studio.shows.show', $show))
-            ->assertOk()
-            ->assertSee('data-playlist-order-badge>01', false)
+        $refresh = $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $refresh->assertOk()
             ->assertSee('Third Song', false);
+
+        $this->assertMatchesRegularExpression(
+            '/data-playlist-order-badge[^>]*>\s*01\s*</',
+            (string) $refresh->getContent(),
+        );
     }
 
     public function test_musician_cannot_reorder_playlist_items(): void
@@ -672,7 +686,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Instrument parts', false)
             ->assertDontSee('Add song', false)
             ->assertDontSee('Remove', false)
-            ->assertDontSee('esb-studio__playlist-drag-handle', false)
+            ->assertDontSee('esb-studio__setlist-order-badge--draggable', false)
             ->assertDontSee(route('songs.edit', $song), false);
 
         $this->actingAs($musician)->get(route('studio.shows.index'));
@@ -809,6 +823,180 @@ class StudioShowPlaylistTest extends TestCase
         );
 
         $this->assertCount(1, $deleteRoutes);
+    }
+
+    public function test_searchable_song_picker_renders_for_director(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Picker Show']);
+        $this->seedSongWithParts('Picker Song');
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('esb-studio__playlist-picker', false)
+            ->assertSee('id="playlist-song-picker-search"', false)
+            ->assertSee('Add song to playlist', false)
+            ->assertSee('data-playlist-summary-songs', false)
+            ->assertSee('Estimated duration', false);
+    }
+
+    public function test_playlist_song_search_filters_by_name_and_code(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Search Show']);
+
+        Song::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'song_code' => '042',
+            'name' => 'Electronic Love',
+            'status' => 'ready',
+        ]);
+
+        Song::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'song_code' => '099',
+            'name' => 'Acoustic Morning',
+            'reference_title' => 'Original Artist',
+            'status' => 'ready',
+        ]);
+
+        $this->actingAs($director)->getJson(route('studio.shows.playlist.songs.search', [
+            'show' => $show,
+            'q' => '042',
+        ]))
+            ->assertOk()
+            ->assertJsonPath('results.0.name', 'Electronic Love');
+
+        $this->actingAs($director)->getJson(route('studio.shows.playlist.songs.search', [
+            'show' => $show,
+            'q' => 'electronic',
+        ]))
+            ->assertOk()
+            ->assertJsonPath('results.0.song_code', '042');
+
+        $this->actingAs($director)->getJson(route('studio.shows.playlist.songs.search', [
+            'show' => $show,
+            'q' => 'artist',
+        ]))
+            ->assertOk()
+            ->assertJsonPath('results.0.name', 'Acoustic Morning');
+    }
+
+    public function test_duplicate_song_add_is_prevented_via_json(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Duplicate Show']);
+        $song = $this->seedSongWithParts('Duplicate Song');
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $this->actingAs($director)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->postJson(route('studio.shows.playlist.items.store', $show), [
+                'song_id' => $song->id,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Song is already on this playlist.');
+
+        $this->assertSame(1, ShowPlaylistItem::query()->where('show_id', $show->id)->active()->count());
+    }
+
+    public function test_director_can_add_song_via_json_picker(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Json Add Show']);
+        $song = $this->seedSongWithParts('Json Added Song', withChartFor: ['Bass']);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $response = $this->actingAs($director)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->postJson(route('studio.shows.playlist.items.store', $show), [
+                'song_id' => $song->id,
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('summary.song_count', 1)
+            ->assertJsonPath('summary.charts_count', 1);
+
+        $this->assertStringContainsString('Json Added Song', (string) $response->json('html'));
+        $this->assertStringContainsString('esb-studio__setlist-order-badge--draggable', (string) $response->json('html'));
+        $this->assertDatabaseHas('show_playlist_items', [
+            'show_id' => $show->id,
+            'song_id' => $song->id,
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_musician_cannot_access_playlist_song_search_or_json_add(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'Musician Picker Show']);
+        $song = $this->seedSongWithParts('Hidden Song');
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertDontSee('esb-studio__playlist-picker', false)
+            ->assertDontSee('playlist-song-picker-search', false);
+
+        $this->actingAs($musician)->getJson(route('studio.shows.playlist.songs.search', [
+            'show' => $show,
+            'q' => 'hidden',
+        ]))->assertForbidden();
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show));
+
+        $this->actingAs($musician)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->postJson(route('studio.shows.playlist.items.store', $show), [
+                'song_id' => $song->id,
+            ])
+            ->assertForbidden();
+    }
+
+    public function test_playlist_inline_summary_renders_unknown_duration(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Duration Show']);
+        $song = $this->seedSongWithParts('Duration Song', withChartFor: ['Bass']);
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('data-playlist-summary-duration', false)
+            ->assertSee('Unknown', false);
+
+        $service = app(StudioShowPlaylistService::class);
+        $this->assertSame('Unknown', $service->formatEstimatedDurationLabel(null));
+        $this->assertSame('02:08:35', $service->formatEstimatedDurationLabel(7715));
+    }
+
+    public function test_reorder_endpoint_returns_positions_for_client_feedback(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Feedback Show']);
+        $first = $this->seedSongWithParts('First Song');
+        $second = $this->seedSongWithParts('Second Song');
+        $firstItem = $this->seedPlaylistItem($show, $first, position: 1);
+        $secondItem = $this->seedPlaylistItem($show, $second, position: 2);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('id="playlist-order-feedback"', false);
+
+        $this->actingAs($director)
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->patchJson(route('studio.shows.playlist.reorder', $show), [
+                'order' => [$secondItem->id, $firstItem->id],
+            ])
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('positions.'.$secondItem->id, 1);
     }
 
     /**
