@@ -2,6 +2,8 @@ function csrfToken() {
     return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
 }
 
+export { csrfToken };
+
 function orderFromList(list) {
     return [...list.querySelectorAll('[data-playlist-item-id]')]
         .map((element) => Number.parseInt(element.dataset.playlistItemId ?? '', 10))

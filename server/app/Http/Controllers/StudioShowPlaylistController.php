@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateShowPlaylistItemNotesRequest;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
 use App\Services\StudioShowPlaylistService;
+use App\Support\SafeInternalRedirect;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use InvalidArgumentException;
@@ -87,12 +88,25 @@ class StudioShowPlaylistController extends Controller
         Show $show,
         ShowPlaylistItem $playlistItem,
         StudioShowPlaylistService $playlist,
-    ): RedirectResponse {
+        SafeInternalRedirect $redirects,
+    ): JsonResponse|RedirectResponse {
         abort_unless($playlistItem->show_id === $show->id, 404);
 
         $playlist->archivePlaylistItem($playlistItem);
 
-        return back()->with('playlist_updated', true);
+        if (request()->wantsJson()) {
+            $view = $playlist->playlistViewForShow($show->id, viewer: request()->user());
+
+            return response()->json([
+                'ok' => true,
+                'message' => 'Song removed from playlist.',
+                'summary' => $playlist->summaryForResponse($view['summary']),
+            ]);
+        }
+
+        return redirect()
+            ->to($redirects->showPlaylistReturnPath($show->id))
+            ->with('playlist_updated', true);
     }
 
     public function updateNotes(
@@ -112,12 +126,15 @@ class StudioShowPlaylistController extends Controller
         Show $show,
         ShowPlaylistItem $playlistItem,
         StudioShowPlaylistService $playlist,
+        SafeInternalRedirect $redirects,
     ): RedirectResponse {
         abort_unless($playlistItem->show_id === $show->id, 404);
 
         $playlist->archivePlaylistItem($playlistItem);
 
-        return back()->with('playlist_updated', true);
+        return redirect()
+            ->to($redirects->showPlaylistReturnPath($show->id))
+            ->with('playlist_updated', true);
     }
 
     public function moveUp(

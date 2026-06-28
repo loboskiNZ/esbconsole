@@ -626,11 +626,11 @@ class StudioShowPlaylistTest extends TestCase
         $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
 
         $this->actingAs($director)
-            ->delete(route('studio.shows.playlist.items.destroy', [$show, $item]), [
-                '_token' => session()->token(),
-            ])
-            ->assertRedirect()
-            ->assertSessionHas('playlist_updated');
+            ->withHeader('X-CSRF-TOKEN', session()->token())
+            ->deleteJson(route('studio.shows.playlist.items.destroy', [$show, $item]))
+            ->assertOk()
+            ->assertJsonPath('ok', true)
+            ->assertJsonPath('summary.song_count', 0);
 
         $this->assertSame($rowCount, DB::table('show_playlist_items')->count());
         $this->assertDatabaseHas('show_playlist_items', [

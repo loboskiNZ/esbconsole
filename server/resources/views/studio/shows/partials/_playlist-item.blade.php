@@ -50,7 +50,7 @@
                     method="POST"
                     action="{{ route('studio.shows.playlist.items.destroy', [$show, $item]) }}"
                     class="esb-studio__playlist-remove-form"
-                    onsubmit="return confirm(@json($removeConfirm));"
+                    data-confirm-remove="{{ $removeConfirm }}"
                 >
                     @csrf
                     @method('DELETE')

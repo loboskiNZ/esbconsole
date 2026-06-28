@@ -8,6 +8,7 @@ import { studioCalendar, studioSchedule } from './studio-schedule';
 
 import { bootStudioPlaylistOrder, initStudioPlaylistOrder } from './studio-playlist-order';
 import { studioPlaylistPicker } from './studio-playlist-picker';
+import { bootStudioPlaylistRemove } from './studio-playlist-remove';
 
 window.Alpine = Alpine;
 Alpine.data('portalLanding', (restoreUsername = '', loginFailed = false) => portalLanding(restoreUsername, loginFailed));
@@ -21,7 +22,11 @@ Alpine.data('studioPlaylistPicker', studioPlaylistPicker);
 Alpine.start();
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootStudioPlaylistOrder);
+    document.addEventListener('DOMContentLoaded', () => {
+        bootStudioPlaylistOrder();
+        bootStudioPlaylistRemove();
+    });
 } else {
     bootStudioPlaylistOrder();
+    bootStudioPlaylistRemove();
 }
