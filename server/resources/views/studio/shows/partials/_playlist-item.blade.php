@@ -37,7 +37,37 @@
             <span class="esb-studio__setlist-order-badge" data-playlist-order-badge>{{ $positionLabel }}</span>
         @endif
 
-        <h3 class="esb-studio__playlist-song-title">{{ $songTitle }}</h3>
+        <div class="esb-studio__playlist-song-head">
+            <h3 class="esb-studio__playlist-song-title">{{ $songTitle }}</h3>
+
+            @if ($song !== null && (filled($song->spotify_url) || filled($song->youtube_url)))
+                <div class="esb-studio__playlist-song-links">
+                    @if (filled($song->spotify_url))
+                        <a
+                            href="{{ $song->spotify_url }}"
+                            class="esb-studio__playlist-song-link esb-studio__playlist-song-link--spotify"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Open Spotify for {{ $songTitle }}"
+                        >
+                            @include('studio.partials.icons.spotify')
+                        </a>
+                    @endif
+
+                    @if (filled($song->youtube_url))
+                        <a
+                            href="{{ $song->youtube_url }}"
+                            class="esb-studio__playlist-song-link esb-studio__playlist-song-link--youtube"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Open YouTube for {{ $songTitle }}"
+                        >
+                            @include('studio.partials.icons.youtube')
+                        </a>
+                    @endif
+                </div>
+            @endif
+        </div>
 
         <div class="esb-studio__setlist-ribbon-actions">
             @if ($isDirector && $song !== null)

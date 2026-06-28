@@ -2299,13 +2299,64 @@
 
 .esb-studio__playlist-song-title {
     margin: 0;
-    flex: 1 1 auto;
     min-width: 0;
     font-size: clamp(1rem, 2.1vw, 1.28rem);
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -0.01em;
     color: var(--esb-ink);
+}
+
+.esb-studio__playlist-song-head {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
+.esb-studio__playlist-song-links {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.esb-studio__playlist-song-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    color: rgba(233, 203, 160, 0.82);
+    text-decoration: none;
+    transition:
+        color 0.15s ease,
+        background 0.15s ease;
+}
+
+.esb-studio__playlist-song-link:hover,
+.esb-studio__playlist-song-link:focus-visible {
+    color: var(--esb-ink);
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+}
+
+.esb-studio__playlist-song-link--spotify:hover,
+.esb-studio__playlist-song-link--spotify:focus-visible {
+    color: #1ed760;
+}
+
+.esb-studio__playlist-song-link--youtube:hover,
+.esb-studio__playlist-song-link--youtube:focus-visible {
+    color: #ff4e45;
+}
+
+.esb-studio__playlist-song-link-icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    display: block;
 }
 
 .esb-studio__playlist-metadata {

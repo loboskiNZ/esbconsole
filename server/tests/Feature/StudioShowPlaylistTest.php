@@ -483,6 +483,42 @@ class StudioShowPlaylistTest extends TestCase
             ->assertDontSee(route('songs.edit', $song), false);
     }
 
+    public function test_playlist_song_ribbon_shows_external_link_icons_when_urls_exist(): void
+    {
+        $director = $this->createDirectorUser();
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+
+        $show = $this->seedShow(['name' => 'External Links Show']);
+        $linked = $this->seedSongWithParts('Linked Song');
+        $linked->update([
+            'spotify_url' => 'https://open.spotify.com/track/playlist-link-test',
+            'youtube_url' => 'https://www.youtube.com/watch?v=playlist-link-test',
+        ]);
+        $plain = $this->seedSongWithParts('Plain Song');
+        $this->seedPlaylistItem($show, $linked, position: 1);
+        $this->seedPlaylistItem($show, $plain, position: 2);
+
+        $directorResponse = $this->actingAs($director)->get(route('studio.shows.show', $show))->assertOk();
+
+        $directorResponse
+            ->assertSee('aria-label="Open Spotify for Linked Song"', false)
+            ->assertSee('aria-label="Open YouTube for Linked Song"', false)
+            ->assertSee('href="https://open.spotify.com/track/playlist-link-test"', false)
+            ->assertSee('href="https://www.youtube.com/watch?v=playlist-link-test"', false)
+            ->assertSee('target="_blank"', false)
+            ->assertSee('rel="noopener noreferrer"', false)
+            ->assertSee('esb-studio__playlist-song-link--spotify', false)
+            ->assertSee('esb-studio__playlist-song-link--youtube', false)
+            ->assertDontSee('aria-label="Open Spotify for Plain Song"', false)
+            ->assertDontSee('aria-label="Open YouTube for Plain Song"', false);
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('aria-label="Open Spotify for Linked Song"', false)
+            ->assertSee('aria-label="Open YouTube for Linked Song"', false);
+    }
+
     public function test_show_overview_does_not_modify_library_or_playlist_rows(): void
     {
         $director = $this->createDirectorUser();
