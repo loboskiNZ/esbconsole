@@ -11,7 +11,7 @@
         : null;
     $positionLabel = str_pad((string) $item->position, 2, '0', STR_PAD_LEFT);
     $songTitle = $song?->name ?? 'Song';
-    $showNotesColumn = $isDirector || filled($item->notes);
+    $showNotesColumn = $isDirector;
     $detailsId = 'playlist-details-'.$item->id;
 @endphp
 
@@ -81,27 +81,29 @@
                     </div>
                 </dl>
 
-                <div class="esb-studio__playlist-required-parts">
-                    <div class="esb-studio__playlist-required-parts-head">
-                        <h4 class="esb-studio__playlist-parts-title">Required parts</h4>
-                        <span class="esb-studio__playlist-required-count">{{ $requiredPartCount }}</span>
-                    </div>
-
-                    @if ($parts === [])
-                        <p class="esb-studio__card-body">No instrument parts defined.</p>
-                    @else
-                        <div class="esb-studio__part-pill-grid">
-                            @foreach ($parts as $part)
-                                @include('studio.shows.partials._instrument-part-pill', [
-                                    'part' => $part,
-                                    'actionable' => true,
-                                    'show' => $show,
-                                    'isDirector' => $isDirector,
-                                ])
-                            @endforeach
+                @if ($isDirector || $parts !== [])
+                    <div class="esb-studio__playlist-required-parts">
+                        <div class="esb-studio__playlist-required-parts-head">
+                            <h4 class="esb-studio__playlist-parts-title">Required parts</h4>
+                            <span class="esb-studio__playlist-required-count">{{ $requiredPartCount }}</span>
                         </div>
-                    @endif
-                </div>
+
+                        @if ($parts === [])
+                            <p class="esb-studio__card-body">No instrument parts defined.</p>
+                        @else
+                            <div class="esb-studio__part-pill-grid">
+                                @foreach ($parts as $part)
+                                    @include('studio.shows.partials._instrument-part-pill', [
+                                        'part' => $part,
+                                        'actionable' => true,
+                                        'show' => $show,
+                                        'isDirector' => $isDirector,
+                                    ])
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 @if ($isDirector)
                     <div class="esb-studio__playlist-actions">

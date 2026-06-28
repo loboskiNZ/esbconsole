@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\InstrumentReference;
 use App\Models\Library\Chart;
 use App\Models\Library\InstrumentPart;
 use App\Models\Library\MusicalKey;
@@ -14,6 +15,7 @@ use App\Models\ShowPlaylistItem;
 use App\Models\User;
 use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
+use App\Support\InstrumentCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -98,6 +100,9 @@ class StudioShowPlaylistTest extends TestCase
     {
         $musician = User::factory()->create();
         $this->assignMusicianRole($musician);
+        $keysRef = InstrumentReference::query()->where('slug', 'scaffold-keys')->firstOrFail();
+        $musician->person->instruments()->attach($keysRef->id, ['is_primary' => true]);
+
         $show = $this->seedShow(['name' => 'Musician Upload Show']);
         $song = $this->seedSongWithParts('Musician Upload Song', withoutChartFor: ['Keyboard']);
         $this->seedPlaylistItem($show, $song);
@@ -115,6 +120,115 @@ class StudioShowPlaylistTest extends TestCase
                 'song' => $song,
                 'songInstrumentPart' => $songInstrumentPart,
             ]), false);
+    }
+
+    public function test_director_sees_edit_pill_notes_and_all_chart_pills(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Director Visibility Show']);
+        $song = $this->seedSongWithParts('Director Song', withChartFor: ['Bass'], withoutChartFor: ['Keyboard']);
+        $this->seedPlaylistItem($show, $song, notes: 'Director-only note.');
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee(route('songs.edit', ['song' => $song, 'return_to' => '/studio/shows/'.$show->id.'#playlist']), false)
+            ->assertSee('Save notes', false)
+            ->assertSee('Director-only note.', false)
+            ->assertSee('Bass', false)
+            ->assertSee('Keyboard', false)
+            ->assertSee('Move up', false);
+    }
+
+    public function test_musician_only_sees_chart_pills_for_assigned_instrument_parts(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $keysRef = InstrumentReference::query()->where('slug', 'scaffold-keys')->firstOrFail();
+        $musician->person->instruments()->attach($keysRef->id, ['is_primary' => true]);
+
+        $show = $this->seedShow(['name' => 'Assigned Parts Show']);
+        $song = $this->seedSongWithParts('Assigned Song', withChartFor: ['Keyboard', 'Bass']);
+        $this->seedPlaylistItem($show, $song);
+
+        $keyboardChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('songInstrumentParts.instrumentPart', fn ($query) => $query->where('name', 'Keyboard'))
+            ->firstOrFail();
+        $bassChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('songInstrumentParts.instrumentPart', fn ($query) => $query->where('name', 'Bass'))
+            ->firstOrFail();
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Assigned Song', false)
+            ->assertSee('Keyboard', false)
+            ->assertSee(route('studio.charts.file', $keyboardChart), false)
+            ->assertDontSee(route('studio.charts.file', $bassChart), false)
+            ->assertDontSee(route('songs.edit', $song), false)
+            ->assertDontSee('Save notes', false)
+            ->assertDontSee('Move up', false);
+    }
+
+    public function test_musician_with_no_assigned_parts_sees_no_chart_pills(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $show = $this->seedShow(['name' => 'No Assignment Show']);
+        $song = $this->seedSongWithParts('Unassigned Song', withChartFor: ['Bass', 'Keyboard']);
+        $this->seedPlaylistItem($show, $song);
+
+        $bassChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('songInstrumentParts.instrumentPart', fn ($query) => $query->where('name', 'Bass'))
+            ->firstOrFail();
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Unassigned Song', false)
+            ->assertDontSee('Required parts', false)
+            ->assertDontSee(route('studio.charts.file', $bassChart), false);
+    }
+
+    public function test_musician_cannot_access_unassigned_chart_file(): void
+    {
+        Storage::fake('library');
+        config(['portal.library_chart_disk' => 'library']);
+
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $keysRef = InstrumentReference::query()->where('slug', 'scaffold-keys')->firstOrFail();
+        $musician->person->instruments()->attach($keysRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithParts('Chart Access Song', withChartFor: ['Keyboard', 'Bass']);
+        $bassChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('songInstrumentParts.instrumentPart', fn ($query) => $query->where('name', 'Bass'))
+            ->firstOrFail();
+        Storage::disk('library')->put($bassChart->storage_reference, '%PDF-1.4 bass chart');
+
+        $this->actingAs($musician)->get(route('studio.charts.file', $bassChart))
+            ->assertForbidden();
+    }
+
+    public function test_musician_can_access_assigned_chart_file(): void
+    {
+        Storage::fake('library');
+        config(['portal.library_chart_disk' => 'library']);
+
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $keysRef = InstrumentReference::query()->where('slug', 'scaffold-keys')->firstOrFail();
+        $musician->person->instruments()->attach($keysRef->id, ['is_primary' => true]);
+
+        $song = $this->seedSongWithParts('Assigned Chart Song', withChartFor: ['Keyboard']);
+        $keyboardChart = Chart::query()->where('song_id', $song->id)->firstOrFail();
+        Storage::disk('library')->put($keyboardChart->storage_reference, '%PDF-1.4 keyboard chart');
+
+        $response = $this->actingAs($musician)->get(route('studio.charts.file', $keyboardChart));
+
+        $response->assertOk();
+        $this->assertStringContainsString('%PDF-1.4 keyboard chart', $response->streamedContent());
     }
 
     public function test_director_can_upload_chart_for_missing_song_instrument_part(): void
@@ -246,7 +360,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Collapse song details', false);
     }
 
-    public function test_musician_sees_notes_column_when_playlist_item_has_notes(): void
+    public function test_musician_does_not_see_notes_area(): void
     {
         $musician = User::factory()->create();
         $this->assignMusicianRole($musician);
@@ -254,19 +368,12 @@ class StudioShowPlaylistTest extends TestCase
         $song = $this->seedSongWithParts('Noted Song');
         $this->seedPlaylistItem($show, $song, notes: 'Watch the intro vamp.');
 
-        $response = $this->actingAs($musician)->get(route('studio.shows.show', $show));
-
-        $response->assertOk()
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
             ->assertSee('Noted Song', false)
-            ->assertSee('esb-studio__setlist-ribbon-details', false)
-            ->assertSee('Watch the intro vamp.', false)
-            ->assertSee('esb-studio__playlist-item-notes', false)
+            ->assertDontSee('Watch the intro vamp.', false)
+            ->assertDontSee('esb-studio__playlist-item-notes', false)
             ->assertDontSee('Save notes', false);
-
-        $this->assertMatchesRegularExpression(
-            '/id="playlist-details-\d+"[^>]*hidden/s',
-            (string) $response->getContent(),
-        );
     }
 
     public function test_playlist_summary_counts_are_correct(): void
@@ -338,22 +445,31 @@ class StudioShowPlaylistTest extends TestCase
             ->assertDontSee('esb-studio__playlist-song-title">Archived Song', false);
     }
 
-    public function test_musicians_see_same_read_only_playlist_information(): void
+    public function test_musicians_see_only_assigned_playlist_chart_pills(): void
     {
         $musician = User::factory()->create();
         $this->assignMusicianRole($musician);
+        $bassRef = InstrumentReference::query()->where('slug', 'scaffold-bass-guitar')->firstOrFail();
+        $musician->person->instruments()->attach($bassRef->id, ['is_primary' => true]);
+
         $show = $this->seedShow(['name' => 'Musician Read Show']);
         $song = $this->seedSongWithParts('Readable Song', withChartFor: ['Bass'], withoutChartFor: ['Drums']);
         $this->seedPlaylistItem($show, $song);
+
+        $bassChart = Chart::query()
+            ->where('song_id', $song->id)
+            ->whereHas('songInstrumentParts.instrumentPart', fn ($query) => $query->where('name', 'Bass'))
+            ->firstOrFail();
 
         $this->actingAs($musician)->get(route('studio.shows.show', $show))
             ->assertOk()
             ->assertSee('Playlist summary', false)
             ->assertSee('Required parts', false)
             ->assertSee('📄✓', false)
-            ->assertSee('📄✕', false)
             ->assertSee('Bass chart available', false)
-            ->assertSee('Drums chart missing', false)
+            ->assertSee(route('studio.charts.file', $bassChart), false)
+            ->assertDontSee('Drums', false)
+            ->assertDontSee('📄✕', false)
             ->assertDontSee('Add song', false)
             ->assertDontSee(route('songs.edit', $song), false);
     }
@@ -706,20 +822,30 @@ class StudioShowPlaylistTest extends TestCase
 
     private function seedReferenceTables(): void
     {
-        if (SongMood::query()->exists()) {
-            return;
+        if (! SongMood::query()->exists()) {
+            SongMood::query()->create([
+                'name' => 'Happy',
+                'slug' => 'happy',
+                'colour_hex' => '#FFB23E',
+                'accent_colour_hex' => '#FFD27A',
+                'sort_order' => 20,
+                'active' => true,
+            ]);
+
+            TimeSignature::query()->create(['label' => '4/4', 'sort_order' => 10, 'active' => true]);
+            MusicalKey::query()->create(['label' => 'G major', 'tonic' => 'G', 'mode' => 'major', 'sort_order' => 10, 'active' => true]);
         }
 
-        SongMood::query()->create([
-            'name' => 'Happy',
-            'slug' => 'happy',
-            'colour_hex' => '#FFB23E',
-            'accent_colour_hex' => '#FFD27A',
-            'sort_order' => 20,
-            'active' => true,
-        ]);
-
-        TimeSignature::query()->create(['label' => '4/4', 'sort_order' => 10, 'active' => true]);
-        MusicalKey::query()->create(['label' => 'G major', 'tonic' => 'G', 'mode' => 'major', 'sort_order' => 10, 'active' => true]);
+        if (! InstrumentReference::query()->exists()) {
+            foreach (InstrumentCatalog::definitions() as $instrument) {
+                InstrumentReference::query()->create([
+                    'public_id' => (string) Str::uuid(),
+                    'slug' => $instrument['slug'],
+                    'name' => $instrument['name'],
+                    'family' => $instrument['family'] ?? null,
+                    'is_active' => true,
+                ]);
+            }
+        }
     }
 }

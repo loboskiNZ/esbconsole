@@ -54,7 +54,7 @@ class StudioShowsController extends Controller
     ): View {
         $user = auth()->user();
         $portalShow = $shows->showForPortal($show->id);
-        $playlistView = $playlist->playlistViewForShow($portalShow->id);
+        $playlistView = $playlist->playlistViewForShow($portalShow->id, viewer: $user);
 
         return view('studio.shows.show', [
             'show' => $portalShow,

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Library\Song;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
+use App\Models\User;
 use App\Support\StudioLibraryAvailability;
 use App\Support\StudioSongMetadata;
 use Illuminate\Support\Collection;
@@ -17,6 +18,7 @@ class StudioShowPlaylistService
         private readonly StudioShowService $shows,
         private readonly StudioSongMetadata $songMetadata,
         private readonly StudioLibraryAvailability $library,
+        private readonly StudioChartAccessService $chartAccess,
     ) {}
 
     /**
@@ -44,9 +46,10 @@ class StudioShowPlaylistService
      *     show_instrument_parts: list<array{name: string}>,
      * }
      */
-    public function playlistViewForShow(int $showId, ?int $bandId = null): array
+    public function playlistViewForShow(int $showId, ?int $bandId = null, ?User $viewer = null): array
     {
-        $entries = $this->playlistEntriesForShow($showId, $bandId);
+        $isDirector = $viewer?->isDirector() ?? false;
+        $entries = $this->playlistEntriesForShow($showId, $bandId, $viewer, $isDirector);
 
         $chartsAvailable = 0;
         $chartsMissing = 0;
@@ -100,8 +103,13 @@ class StudioShowPlaylistService
      *     required_part_count: int,
      * }>
      */
-    public function playlistEntriesForShow(int $showId, ?int $bandId = null): Collection
-    {
+    public function playlistEntriesForShow(
+        int $showId,
+        ?int $bandId = null,
+        ?User $viewer = null,
+        ?bool $isDirector = null,
+    ): Collection {
+        $isDirector ??= $viewer?->isDirector() ?? false;
         $show = $this->shows->showForPortal($showId, $bandId);
 
         if (! $this->library->isAvailable()) {
@@ -120,7 +128,7 @@ class StudioShowPlaylistService
 
         $songs = $this->loadSongsForPlaylist($items->pluck('song_id')->all());
 
-        return $items->map(function (ShowPlaylistItem $item) use ($songs): array {
+        return $items->map(function (ShowPlaylistItem $item) use ($songs, $viewer, $isDirector): array {
             /** @var Song|null $song */
             $song = $songs->get($item->song_id);
 
@@ -129,6 +137,7 @@ class StudioShowPlaylistService
             }
 
             $instrumentParts = $song ? $this->instrumentPartsForSong($song) : [];
+            $instrumentParts = $this->filterInstrumentPartsForViewer($instrumentParts, $viewer, $isDirector);
 
             return [
                 'item' => $item,
@@ -317,6 +326,52 @@ class StudioShowPlaylistService
             })
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  list<array{
+     *     song_id: int,
+     *     song_instrument_part_id: int,
+     *     instrument_part_id: int|null,
+     *     chart_id: int|null,
+     *     name: string,
+     *     has_chart: bool,
+     *     chart_status_label: string,
+     * }>  $parts
+     * @return list<array{
+     *     song_id: int,
+     *     song_instrument_part_id: int,
+     *     instrument_part_id: int|null,
+     *     chart_id: int|null,
+     *     name: string,
+     *     has_chart: bool,
+     *     chart_status_label: string,
+     * }>
+     */
+    private function filterInstrumentPartsForViewer(array $parts, ?User $viewer, bool $isDirector): array
+    {
+        if ($isDirector || $viewer === null) {
+            return $parts;
+        }
+
+        $viewer->loadMissing('person.instruments');
+        $person = $viewer->person;
+
+        if ($person === null) {
+            return [];
+        }
+
+        $allowedPartIds = $this->chartAccess->matchingInstrumentPartIds($person);
+
+        if ($allowedPartIds === []) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            $parts,
+            fn (array $part): bool => $part['instrument_part_id'] !== null
+                && in_array($part['instrument_part_id'], $allowedPartIds, true),
+        ));
     }
 
     private function nextPosition(int $showId): int
