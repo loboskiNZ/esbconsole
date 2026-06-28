@@ -25,6 +25,25 @@ function updateOrderBadges(list, positions) {
     });
 }
 
+function getDragAfterElement(list, y, draggingItem) {
+    const siblings = [...list.querySelectorAll('[data-playlist-item-id]')]
+        .filter((element) => element !== draggingItem);
+
+    return siblings.reduce(
+        (closest, element) => {
+            const box = element.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+                return { offset, element };
+            }
+
+            return closest;
+        },
+        { offset: Number.NEGATIVE_INFINITY, element: null },
+    ).element;
+}
+
 let feedbackFadeTimer = null;
 
 function showFeedback(feedbackElement, message, isError = false) {
@@ -98,6 +117,7 @@ export function initStudioPlaylistOrder(list) {
     let draggingItem = null;
     let placeholder = null;
     let previousOrder = orderFromList(list);
+    let dropHandled = false;
 
     const clearDragState = () => {
         if (draggingItem) {
@@ -112,19 +132,34 @@ export function initStudioPlaylistOrder(list) {
         placeholder = null;
     };
 
-    list.addEventListener('dragstart', (event) => {
-        const badge = event.target.closest('.esb-studio__setlist-order-badge--draggable');
-
-        if (! badge) {
+    const movePlaceholder = (clientY) => {
+        if (! placeholder) {
             return;
         }
 
-        const item = badge.closest('[data-playlist-item-id]');
+        const afterElement = getDragAfterElement(list, clientY, draggingItem);
+
+        if (afterElement === null) {
+            list.appendChild(placeholder);
+        } else {
+            list.insertBefore(placeholder, afterElement);
+        }
+    };
+
+    list.addEventListener('dragstart', (event) => {
+        const handle = event.target.closest('.esb-studio__setlist-order-badge--draggable');
+
+        if (! handle) {
+            return;
+        }
+
+        const item = handle.closest('[data-playlist-item-id]');
 
         if (! item) {
             return;
         }
 
+        dropHandled = false;
         draggingItem = item;
         previousOrder = orderFromList(list);
         placeholder = document.createElement('li');
@@ -135,10 +170,18 @@ export function initStudioPlaylistOrder(list) {
         item.classList.add('esb-studio__setlist-ribbon--dragging');
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', item.dataset.playlistItemId ?? '');
+
+        if (event.dataTransfer.setDragImage) {
+            event.dataTransfer.setDragImage(item, 20, 20);
+        }
     });
 
-    list.addEventListener('dragend', () => {
-        clearDragState();
+    list.addEventListener('dragenter', (event) => {
+        if (! draggingItem || ! placeholder) {
+            return;
+        }
+
+        event.preventDefault();
     });
 
     list.addEventListener('dragover', (event) => {
@@ -147,21 +190,8 @@ export function initStudioPlaylistOrder(list) {
         }
 
         event.preventDefault();
-
-        const targetItem = event.target.closest('[data-playlist-item-id]');
-
-        if (! targetItem || targetItem === draggingItem) {
-            return;
-        }
-
-        const targetRect = targetItem.getBoundingClientRect();
-        const insertBefore = event.clientY < targetRect.top + targetRect.height / 2;
-
-        if (insertBefore) {
-            list.insertBefore(placeholder, targetItem);
-        } else {
-            list.insertBefore(placeholder, targetItem.nextElementSibling);
-        }
+        event.dataTransfer.dropEffect = 'move';
+        movePlaceholder(event.clientY);
     });
 
     list.addEventListener('drop', async (event) => {
@@ -170,6 +200,7 @@ export function initStudioPlaylistOrder(list) {
         }
 
         event.preventDefault();
+        dropHandled = true;
 
         list.insertBefore(draggingItem, placeholder);
         clearDragState();
@@ -213,4 +244,17 @@ export function initStudioPlaylistOrder(list) {
             list.classList.remove('esb-studio__playlist-list--saving');
         }
     });
+
+    list.addEventListener('dragend', () => {
+        if (! dropHandled && draggingItem && placeholder) {
+            list.insertBefore(draggingItem, placeholder);
+        }
+
+        clearDragState();
+        dropHandled = false;
+    });
+}
+
+export function bootStudioPlaylistOrder() {
+    initStudioPlaylistOrder(document.getElementById('playlist-sortable-list'));
 }

@@ -6,7 +6,7 @@ import { studioBandInvites } from './studio-band-invites';
 import { studioChartsLauncher } from './studio-home';
 import { studioCalendar, studioSchedule } from './studio-schedule';
 
-import { initStudioPlaylistOrder } from './studio-playlist-order';
+import { bootStudioPlaylistOrder, initStudioPlaylistOrder } from './studio-playlist-order';
 import { studioPlaylistPicker } from './studio-playlist-picker';
 
 window.Alpine = Alpine;
@@ -20,6 +20,8 @@ Alpine.data('studioCalendar', studioCalendar);
 Alpine.data('studioPlaylistPicker', studioPlaylistPicker);
 Alpine.start();
 
-document.addEventListener('DOMContentLoaded', () => {
-    initStudioPlaylistOrder(document.getElementById('playlist-sortable-list'));
-});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootStudioPlaylistOrder);
+} else {
+    bootStudioPlaylistOrder();
+}

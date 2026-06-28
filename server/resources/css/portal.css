@@ -1947,6 +1947,10 @@
     cursor: grab;
     touch-action: none;
     user-select: none;
+    -webkit-user-drag: element;
+    padding: 0.2rem 0.45rem;
+    font: inherit;
+    appearance: none;
 }
 
 .esb-studio__setlist-order-badge--draggable:active {
