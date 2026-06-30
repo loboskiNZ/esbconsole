@@ -135,6 +135,10 @@
                     </div>
                 </dl>
 
+                @if ($song !== null && filled($song->notes))
+                    <p class="esb-studio__playlist-song-notes">{{ $song->notes }}</p>
+                @endif
+
                 @if ($isDirector || $parts !== [])
                     <div class="esb-studio__playlist-required-parts">
                         <div class="esb-studio__playlist-required-parts-head">

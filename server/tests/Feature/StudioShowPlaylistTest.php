@@ -382,6 +382,48 @@ class StudioShowPlaylistTest extends TestCase
             ->assertDontSee('Save notes', false);
     }
 
+    public function test_playlist_displays_song_notes_for_all_users(): void
+    {
+        $director = $this->createDirectorUser();
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+
+        $show = $this->seedShow(['name' => 'Song Notes Show']);
+        $withNotes = $this->seedSongWithParts('Corazón');
+        $withNotes->update([
+            'notes' => "Intro starts with percussion only.\nLeave space before verse.",
+            'director_notes' => 'Director-only production guidance.',
+        ]);
+        $plain = $this->seedSongWithParts('Plain Song');
+        $this->seedPlaylistItem($show, $withNotes, position: 1);
+        $this->seedPlaylistItem($show, $plain, position: 2);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('esb-studio__playlist-song-notes', false)
+            ->assertSee('Intro starts with percussion only.', false)
+            ->assertSee('Leave space before verse.', false)
+            ->assertDontSee('Director-only production guidance', false);
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Intro starts with percussion only.', false)
+            ->assertDontSee('Director-only production guidance', false)
+            ->assertDontSee('Save notes', false);
+    }
+
+    public function test_playlist_hides_song_notes_when_empty(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Empty Song Notes Show']);
+        $song = $this->seedSongWithParts('No Notes Song');
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertDontSee('esb-studio__playlist-song-notes', false);
+    }
+
     public function test_playlist_summary_counts_are_correct(): void
     {
         $director = $this->createDirectorUser();

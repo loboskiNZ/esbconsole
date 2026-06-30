@@ -2396,6 +2396,14 @@
     white-space: pre-wrap;
 }
 
+.esb-studio__playlist-song-notes {
+    margin: 0.65rem 0 0;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    color: var(--esb-muted);
+    white-space: pre-line;
+}
+
 .esb-studio__playlist-actions {
     display: flex;
     flex-wrap: wrap;
