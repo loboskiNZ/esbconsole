@@ -41,7 +41,7 @@
         </div>
     @elseif ($isDirector)
         <p class="esb-studio__card-body mt-2">
-            Generate a printable setlist PDF from the current playlist order.
+            Generate a printable setlist PDF from the current playlist order, including song and playlist notes.
         </p>
 
         <form

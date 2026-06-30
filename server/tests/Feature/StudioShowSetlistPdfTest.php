@@ -34,6 +34,9 @@ class StudioShowSetlistPdfTest extends TestCase
     {
         parent::setUp();
 
+        FakeDocxToPdfConverter::$lastDocxPath = null;
+        FakeDocxToPdfConverter::$lastDocxContents = null;
+
         config([
             'portal.band_id' => 1,
             'portal.library_connection' => 'sqlite',
@@ -120,6 +123,37 @@ class StudioShowSetlistPdfTest extends TestCase
             ->assertSee('Download Setlist PDF', false)
             ->assertDontSee('Generate Setlist PDF', false)
             ->assertDontSee('Regenerate Setlist PDF', false);
+    }
+
+    public function test_generated_setlist_docx_includes_playlist_and_song_notes(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Notes Setlist Show']);
+        $song = $this->seedSong('Teardrop', bpm: 120);
+        $song->update([
+            'notes' => "Intro starts with percussion only.\nLeave space before verse.",
+        ]);
+        $this->seedPlaylistItem($show, $song, position: 22, notes: "Gat chords:\nIntro: A\nPart 1:\nA, G, D, A");
+
+        $this->generateSetlistAs($director, $show)->assertRedirect();
+
+        $docxContents = FakeDocxToPdfConverter::$lastDocxContents;
+        $this->assertNotNull($docxContents);
+
+        $docxPath = tempnam(sys_get_temp_dir(), 'setlist-notes-test-').'.docx';
+        file_put_contents($docxPath, $docxContents);
+
+        $text = implode("\n", $this->docxPlainText($docxPath));
+
+        @unlink($docxPath);
+
+        $this->assertStringContainsString('1. Teardrop', $text);
+        $this->assertStringContainsString('Song notes:', $text);
+        $this->assertStringContainsString('Intro starts with percussion only.', $text);
+        $this->assertStringContainsString('Notes:', $text);
+        $this->assertStringContainsString('Gat chords:', $text);
+        $this->assertStringContainsString('Intro: A', $text);
+        $this->assertStringContainsString('A, G, D, A', $text);
     }
 
     public function test_generated_setlist_stores_playlist_hash(): void
@@ -308,5 +342,20 @@ class StudioShowSetlistPdfTest extends TestCase
                 ]);
             }
         }
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function docxPlainText(string $docxPath): array
+    {
+        $zip = new \ZipArchive;
+        $zip->open($docxPath);
+        $xml = $zip->getFromName('word/document.xml') ?: '';
+        $zip->close();
+
+        $plain = strip_tags(str_replace('</w:p>', "\n", $xml));
+
+        return array_values(array_filter(array_map('trim', preg_split('/\R+/', $plain) ?: [])));
     }
 }

@@ -7,11 +7,18 @@ use RuntimeException;
 
 class FakeDocxToPdfConverter implements DocxToPdfConverterInterface
 {
+    public static ?string $lastDocxPath = null;
+
+    public static ?string $lastDocxContents = null;
+
     public function convert(string $docxPath, string $pdfPath): void
     {
         if (! is_file($docxPath)) {
             throw new RuntimeException("DOCX source not found at {$docxPath}.");
         }
+
+        self::$lastDocxPath = $docxPath;
+        self::$lastDocxContents = file_get_contents($docxPath) ?: null;
 
         $directory = dirname($pdfPath);
 

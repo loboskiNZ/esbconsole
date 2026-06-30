@@ -195,15 +195,17 @@ class StudioShowSetlistPdfService
 
     private function notesForSetlistRow(ShowPlaylistItem $item, ?Song $song): string
     {
-        if (filled($item->notes)) {
-            return trim((string) $item->notes);
-        }
+        $sections = [];
 
         if ($song !== null && filled($song->notes)) {
-            return trim((string) $song->notes);
+            $sections[] = "Song notes:\n".trim((string) $song->notes);
         }
 
-        return '';
+        if (filled($item->notes)) {
+            $sections[] = "Notes:\n".trim((string) $item->notes);
+        }
+
+        return implode("\n\n", $sections);
     }
 
     private function durationLabelForSong(?Song $song): string
