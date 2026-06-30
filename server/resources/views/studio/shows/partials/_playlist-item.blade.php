@@ -136,7 +136,17 @@
                 </dl>
 
                 @if ($song !== null && filled($song->notes))
-                    <p class="esb-studio__playlist-song-notes">{{ $song->notes }}</p>
+                    <div class="esb-studio__playlist-song-notes-block">
+                        <p class="esb-studio__playlist-song-notes-label">Song notes</p>
+                        <p class="esb-studio__playlist-song-notes">{{ $song->notes }}</p>
+                    </div>
+                @endif
+
+                @if (filled($item->notes))
+                    <div class="esb-studio__playlist-song-notes-block">
+                        <p class="esb-studio__playlist-song-notes-label">Notes</p>
+                        <p class="esb-studio__playlist-song-notes">{{ $item->notes }}</p>
+                    </div>
                 @endif
 
                 @if ($isDirector || $parts !== [])
@@ -169,13 +179,13 @@
                     <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form">
                         @csrf
                         @method('PATCH')
-                        <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Notes</label>
+                        <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Edit playlist notes</label>
                         <textarea
                             id="playlist-notes-{{ $item->id }}"
                             name="notes"
                             rows="6"
                             class="esb-portal__input esb-studio__band-textarea esb-studio__playlist-notes-input"
-                            placeholder="Cue notes, arrangement reminders, or production notes for this song."
+                            placeholder="Chord charts, cue notes, or arrangement reminders for this song on this show."
                         >{{ old('notes', $item->notes) }}</textarea>
                         <div class="esb-studio__band-form-actions mt-3">
                             <button type="submit" class="esb-portal__button esb-portal__button--secondary">Save notes</button>

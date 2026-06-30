@@ -366,7 +366,7 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Collapse song details', false);
     }
 
-    public function test_musician_does_not_see_notes_area(): void
+    public function test_musician_does_not_see_playlist_notes_editor(): void
     {
         $musician = User::factory()->create();
         $this->assignMusicianRole($musician);
@@ -377,12 +377,14 @@ class StudioShowPlaylistTest extends TestCase
         $this->actingAs($musician)->get(route('studio.shows.show', $show))
             ->assertOk()
             ->assertSee('Noted Song', false)
-            ->assertDontSee('Watch the intro vamp.', false)
+            ->assertSee('Watch the intro vamp.', false)
+            ->assertSee('esb-studio__playlist-song-notes', false)
             ->assertDontSee('esb-studio__playlist-item-notes', false)
+            ->assertDontSee('Edit playlist notes', false)
             ->assertDontSee('Save notes', false);
     }
 
-    public function test_playlist_displays_song_notes_for_all_users(): void
+    public function test_playlist_displays_song_and_playlist_notes_for_all_users(): void
     {
         $director = $this->createDirectorUser();
         $musician = User::factory()->create();
@@ -395,20 +397,22 @@ class StudioShowPlaylistTest extends TestCase
             'director_notes' => 'Director-only production guidance.',
         ]);
         $plain = $this->seedSongWithParts('Plain Song');
-        $this->seedPlaylistItem($show, $withNotes, position: 1);
+        $this->seedPlaylistItem($show, $withNotes, position: 1, notes: 'Gat chords: Intro A');
         $this->seedPlaylistItem($show, $plain, position: 2);
 
         $this->actingAs($director)->get(route('studio.shows.show', $show))
             ->assertOk()
-            ->assertSee('esb-studio__playlist-song-notes', false)
             ->assertSee('Intro starts with percussion only.', false)
-            ->assertSee('Leave space before verse.', false)
+            ->assertSee('Gat chords: Intro A', false)
+            ->assertSee('Edit playlist notes', false)
             ->assertDontSee('Director-only production guidance', false);
 
         $this->actingAs($musician)->get(route('studio.shows.show', $show))
             ->assertOk()
+            ->assertSee('Gat chords: Intro A', false)
             ->assertSee('Intro starts with percussion only.', false)
             ->assertDontSee('Director-only production guidance', false)
+            ->assertDontSee('Edit playlist notes', false)
             ->assertDontSee('Save notes', false);
     }
 
