@@ -83,8 +83,19 @@
                         @endif
 
                         <div class="esb-studio__director-notes-field">
+                            <label class="esb-portal__label mb-2 block" for="song-notes">Song notes</label>
+                            <p class="esb-studio__card-body mb-3">Canonical song information shown on the show playlist for all musicians.</p>
+                            <textarea
+                                id="song-notes"
+                                name="notes"
+                                rows="5"
+                                class="esb-portal__input esb-studio__band-textarea"
+                            >{{ old('notes', $song->notes) }}</textarea>
+                        </div>
+
+                        <div class="esb-studio__director-notes-field mt-6">
                             <label class="esb-portal__label mb-2 block" for="song-director-notes">Director notes</label>
-                            <p class="esb-studio__card-body mb-3">Performance guidance visible to musicians on the song page.</p>
+                            <p class="esb-studio__card-body mb-3">Internal production guidance. Not shown on the show playlist.</p>
                             <textarea
                                 id="song-director-notes"
                                 name="director_notes"
