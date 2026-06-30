@@ -175,17 +175,17 @@
             </div>
 
             @if ($showNotesColumn)
-                <aside class="esb-studio__playlist-item-notes" aria-label="Playlist notes for {{ $songTitle }}">
+                <aside class="esb-studio__playlist-item-notes" aria-label="Notes for {{ $songTitle }}">
                     <form method="POST" action="{{ route('studio.shows.playlist.notes', [$show, $item]) }}" class="esb-studio__playlist-notes-form">
                         @csrf
                         @method('PATCH')
-                        <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Edit playlist notes</label>
+                        <label class="esb-portal__label mb-2 block" for="playlist-notes-{{ $item->id }}">Notes</label>
                         <textarea
                             id="playlist-notes-{{ $item->id }}"
                             name="notes"
                             rows="6"
                             class="esb-portal__input esb-studio__band-textarea esb-studio__playlist-notes-input"
-                            placeholder="Chord charts, cue notes, or arrangement reminders for this song on this show."
+                            placeholder="Cue notes, arrangement reminders, or production notes for this song."
                         >{{ old('notes', $item->notes) }}</textarea>
                         <div class="esb-studio__band-form-actions mt-3">
                             <button type="submit" class="esb-portal__button esb-portal__button--secondary">Save notes</button>

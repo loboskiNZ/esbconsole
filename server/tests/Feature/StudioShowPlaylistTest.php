@@ -380,7 +380,6 @@ class StudioShowPlaylistTest extends TestCase
             ->assertSee('Watch the intro vamp.', false)
             ->assertSee('esb-studio__playlist-song-notes', false)
             ->assertDontSee('esb-studio__playlist-item-notes', false)
-            ->assertDontSee('Edit playlist notes', false)
             ->assertDontSee('Save notes', false);
     }
 
@@ -402,17 +401,19 @@ class StudioShowPlaylistTest extends TestCase
 
         $this->actingAs($director)->get(route('studio.shows.show', $show))
             ->assertOk()
+            ->assertSee('Song notes', false)
             ->assertSee('Intro starts with percussion only.', false)
             ->assertSee('Gat chords: Intro A', false)
-            ->assertSee('Edit playlist notes', false)
+            ->assertSee('esb-studio__playlist-item-notes', false)
             ->assertDontSee('Director-only production guidance', false);
 
         $this->actingAs($musician)->get(route('studio.shows.show', $show))
             ->assertOk()
+            ->assertSee('Song notes', false)
             ->assertSee('Gat chords: Intro A', false)
             ->assertSee('Intro starts with percussion only.', false)
             ->assertDontSee('Director-only production guidance', false)
-            ->assertDontSee('Edit playlist notes', false)
+            ->assertDontSee('esb-studio__playlist-item-notes', false)
             ->assertDontSee('Save notes', false);
     }
 
