@@ -53,6 +53,40 @@ class ShowSetlistTemplateRendererTest extends TestCase
         @unlink($outputPath);
     }
 
+    public function test_renderer_uses_flat_temp_file_not_shared_template_directory(): void
+    {
+        $templatePath = dirname(base_path()).'/templates/esb_setlist_template_tagged.docx';
+        $outputPath = storage_path('app/temp/setlist-flat-temp-test.docx');
+
+        @mkdir(dirname($outputPath), 0777, true);
+
+        app(ShowSetlistTemplateRenderer::class)->render(
+            templatePath: $templatePath,
+            outputDocxPath: $outputPath,
+            setlistName: 'Flat Temp Show',
+            songs: [
+                [
+                    'idx' => 1,
+                    'title' => 'Temp Song',
+                    'song_code' => '001',
+                    'key' => 'C major',
+                    'bpm' => '120',
+                    'duration' => '—',
+                    'instrument_parts' => 'Guitar',
+                    'notes' => 'Notes block present',
+                ],
+            ],
+        );
+
+        $sharedTemplateDir = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-templates';
+        $leftoverSharedCopies = glob($sharedTemplateDir.'/template-*.docx') ?: [];
+
+        $this->assertSame([], $leftoverSharedCopies);
+        $this->assertStringContainsString('Notes block present', implode("\n", $this->docxPlainText($outputPath)));
+
+        @unlink($outputPath);
+    }
+
     public function test_renderer_escapes_ampersands_in_song_titles(): void
     {
         $templatePath = dirname(base_path()).'/templates/esb_setlist_template_tagged.docx';

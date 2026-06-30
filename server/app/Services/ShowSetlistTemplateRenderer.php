@@ -70,11 +70,10 @@ class ShowSetlistTemplateRenderer
 
     private function prepareTemplateCopy(string $templatePath): string
     {
-        $tempCopy = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-templates/'.uniqid('template-', true).'.docx';
-
-        if (! is_dir(dirname($tempCopy)) && ! mkdir(dirname($tempCopy), 0700, true) && ! is_dir(dirname($tempCopy))) {
-            throw new RuntimeException('Unable to create temporary template directory.');
-        }
+        // Use a flat per-request file under system temp. A shared directory such as
+        // /tmp/esb-setlist-templates may be root- or esbops-owned (mode 0700), which
+        // blocks PHP-FPM (forge) from writing after another deploy user created it.
+        $tempCopy = rtrim(sys_get_temp_dir(), '/').'/esb-setlist-template-'.uniqid('', true).'.docx';
 
         if (! copy($templatePath, $tempCopy)) {
             throw new RuntimeException('Unable to copy setlist template for processing.');
