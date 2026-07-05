@@ -2,9 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\InviteLinkAcceptance;
 use App\Models\Musician;
+use App\Models\Person;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class StudioMusicianResolverService
 {
@@ -50,7 +55,102 @@ class StudioMusicianResolverService
             }
         }
 
-        return null;
+        return $this->materializePortalMusician($user, $portalBandId);
+    }
+
+    private function materializePortalMusician(User $user, int $portalBandId): ?Musician
+    {
+        if ($user->person_id === null || ! $user->hasRole(Role::KEY_MUSICIAN, $portalBandId)) {
+            return null;
+        }
+
+        $person = $user->person;
+
+        if ($person === null) {
+            return null;
+        }
+
+        foreach ($this->candidateEmails($user) as $email) {
+            $existing = Musician::query()
+                ->where('band_id', $portalBandId)
+                ->whereRaw('LOWER(TRIM(email)) = ?', [$email])
+                ->orderByDesc('active')
+                ->orderByDesc('user_id')
+                ->first();
+
+            if ($existing !== null) {
+                return $this->linkMusicianToUser($existing, $user);
+            }
+        }
+
+        foreach ($this->candidateNames($user) as $name) {
+            $normalizedName = strtolower($name);
+
+            $existing = Musician::query()
+                ->where('band_id', $portalBandId)
+                ->where(function (Builder $query) use ($normalizedName): void {
+                    $query->whereRaw('LOWER(TRIM(display_name)) = ?', [$normalizedName])
+                        ->orWhereRaw("LOWER(TRIM(CONCAT(first_name, ' ', last_name))) = ?", [$normalizedName]);
+                })
+                ->orderByDesc('active')
+                ->orderByDesc('user_id')
+                ->first();
+
+            if ($existing !== null) {
+                return $this->linkMusicianToUser($existing, $user);
+            }
+        }
+
+        if (! Schema::hasTable('invite_link_acceptances')
+            || ! InviteLinkAcceptance::query()->where('user_id', $user->id)->exists()) {
+            return null;
+        }
+
+        return $this->createMusicianFromPerson($user, $person, $portalBandId);
+    }
+
+    private function linkMusicianToUser(Musician $musician, User $user): ?Musician
+    {
+        if ($musician->user_id !== null && (int) $musician->user_id !== (int) $user->id) {
+            return null;
+        }
+
+        if ($musician->user_id === null) {
+            $musician->forceFill(['user_id' => $user->id])->save();
+        }
+
+        return $musician->fresh();
+    }
+
+    private function createMusicianFromPerson(User $user, Person $person, int $portalBandId): Musician
+    {
+        $firstName = trim((string) $person->legal_first_name);
+        $lastName = trim((string) $person->legal_last_name);
+
+        if ($firstName === '') {
+            $firstName = trim((string) ($user->name ?: $user->username ?: 'Musician'));
+        }
+
+        if ($lastName === '') {
+            $lastName = 'Musician';
+        }
+
+        $displayName = trim((string) ($person->artistic_name ?: $user->name ?: $user->username ?: $person->legalName()));
+
+        if ($displayName === '') {
+            $displayName = $firstName;
+        }
+
+        return Musician::create([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => $portalBandId,
+            'user_id' => $user->id,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'display_name' => $displayName,
+            'email' => $person->email ?? $user->email,
+            'active' => true,
+        ]);
     }
 
     private function bandMusiciansQuery(int $bandId): Builder

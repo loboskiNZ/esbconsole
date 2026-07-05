@@ -2,18 +2,23 @@
 
 namespace Tests\Unit;
 
+use App\Models\InviteLinkAcceptance;
 use App\Models\User;
 use App\Services\StudioMusicianResolverService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Str;
 use Tests\Concerns\AssignsStudioRoles;
+use Tests\Concerns\CreatesInviteLinks;
 use Tests\Concerns\EnsuresPortalBand;
 use Tests\TestCase;
 
 class StudioMusicianResolverServiceTest extends TestCase
 {
     use AssignsStudioRoles;
+    use CreatesInviteLinks;
     use EnsuresPortalBand;
     use RefreshDatabase;
 
@@ -23,6 +28,8 @@ class StudioMusicianResolverServiceTest extends TestCase
 
         config(['portal.band_id' => 1]);
         $this->ensurePortalBand();
+        $this->ensureInviteLinksTable();
+        $this->ensureInviteLinkAcceptancesTable();
     }
 
     public function test_resolves_active_musician_by_user_id(): void
@@ -220,6 +227,64 @@ class StudioMusicianResolverServiceTest extends TestCase
         $this->assertSame($musicianId, $resolved?->id);
     }
 
+    public function test_materializes_musician_from_person_when_portal_account_has_no_roster_row(): void
+    {
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'username' => 'demo',
+            'email' => 'ed@loboski.co.uk',
+            'name' => 'Demo',
+        ]);
+        $user->person->update([
+            'email' => 'ed@loboski.co.uk',
+            'artistic_name' => 'Demo',
+            'legal_first_name' => 'Demo',
+            'legal_last_name' => 'Account test',
+        ]);
+        $this->assignMusicianRole($user);
+
+        InviteLinkAcceptance::query()->insert([
+            'invite_link_id' => $this->seedInviteLink(),
+            'person_id' => $user->person_id,
+            'user_id' => $user->id,
+            'accepted_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $resolved = app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person']));
+
+        $this->assertNotNull($resolved);
+        $this->assertSame($user->id, $resolved->user_id);
+        $this->assertSame('Demo', $resolved->display_name);
+        $this->assertSame('ed@loboski.co.uk', $resolved->email);
+        $this->assertTrue((bool) $resolved->active);
+    }
+
+    public function test_links_existing_inactive_musician_to_portal_user_by_email(): void
+    {
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'username' => 'demo',
+            'email' => 'ed@loboski.co.uk',
+            'name' => 'Demo',
+        ]);
+        $user->person->update(['email' => 'ed@loboski.co.uk', 'artistic_name' => 'Demo']);
+        $this->assignMusicianRole($user);
+
+        $musicianId = $this->seedMusician([
+            'user_id' => null,
+            'email' => 'ed@loboski.co.uk',
+            'display_name' => 'Demo',
+            'active' => false,
+        ]);
+
+        $resolved = app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person']));
+
+        $this->assertSame($musicianId, $resolved?->id);
+        $this->assertSame($user->id, $resolved?->user_id);
+    }
+
     /**
      * @param  array<string, mixed>  $overrides
      */
@@ -238,5 +303,33 @@ class StudioMusicianResolverServiceTest extends TestCase
             'created_at' => now(),
             'updated_at' => now(),
         ], $overrides));
+    }
+
+    private function seedInviteLink(): int
+    {
+        return (int) DB::table('invite_links')->insertGetId([
+            'name' => 'Test Invite',
+            'token_hash' => hash('sha256', 'test-token'),
+            'expires_at' => now()->addDay(),
+            'used_count' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    private function ensureInviteLinkAcceptancesTable(): void
+    {
+        if (Schema::hasTable('invite_link_acceptances')) {
+            return;
+        }
+
+        Schema::create('invite_link_acceptances', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('invite_link_id')->constrained('invite_links')->cascadeOnDelete();
+            $table->foreignId('person_id')->constrained('people')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->timestamp('accepted_at');
+            $table->timestamps();
+        });
     }
 }
