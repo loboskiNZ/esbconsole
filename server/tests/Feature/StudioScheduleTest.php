@@ -192,6 +192,151 @@ class StudioScheduleTest extends TestCase
         $this->assertSame(0, DB::table('performance_assignments')->count());
     }
 
+    public function test_linked_musician_via_user_email_can_open_calendar_and_rsvp(): void
+    {
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'email' => 'calendar-linked@example.com',
+            'name' => 'Calendar Player',
+        ]);
+        $this->assignMusicianRole($user);
+        $user->person->update(['email' => null, 'artistic_name' => 'Calendar Player']);
+
+        $musicianId = (int) DB::table('musicians')->insertGetId([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'user_id' => null,
+            'first_name' => 'Calendar',
+            'last_name' => 'Player',
+            'display_name' => 'Calendar Player',
+            'email' => 'calendar-linked@example.com',
+            'active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $show = $this->seedShow(['name' => 'Email Linked Show']);
+        $performance = $this->seedPerformance($show, ['performance_date' => '2026-06-19']);
+
+        $this->actingAs($user)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee('studioCalendar', false)
+            ->assertSee(', true)', false);
+
+        $this->actingAs($user)
+            ->post(route('studio.performances.rsvp', $performance), [
+                '_token' => session()->token(),
+                'response' => 'yes',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('rsvp_saved');
+
+        $this->assertDatabaseHas('performance_assignments', [
+            'performance_id' => $performance->id,
+            'musician_id' => $musicianId,
+            'availability_status' => PerformanceAssignment::AVAILABILITY_AVAILABLE,
+        ]);
+    }
+
+    public function test_linked_musician_can_rsvp_maybe(): void
+    {
+        [$user, $musicianId] = $this->createMusicianUser('Maybe Musician');
+        $show = $this->seedShow(['name' => 'Maybe Show']);
+        $performance = $this->seedPerformance($show, ['performance_date' => '2026-06-22']);
+
+        $this->actingAs($user)->get('/studio/calendar')->assertOk();
+
+        $this->actingAs($user)
+            ->post(route('studio.performances.rsvp', $performance), [
+                '_token' => session()->token(),
+                'response' => 'maybe',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('rsvp_saved');
+
+        $this->assertDatabaseHas('performance_assignments', [
+            'performance_id' => $performance->id,
+            'musician_id' => $musicianId,
+            'availability_status' => PerformanceAssignment::AVAILABILITY_MAYBE,
+        ]);
+    }
+
+    public function test_musician_linked_to_other_band_cannot_rsvp_for_portal_band(): void
+    {
+        DB::table('bands')->insert([
+            'id' => 2,
+            'public_id' => (string) Str::uuid(),
+            'name' => 'Other Band',
+            'primary_director_musician_id' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'email' => 'other-band@example.com',
+        ]);
+        $this->assignMusicianRole($user);
+        $user->person->update(['email' => null]);
+
+        DB::table('musicians')->insert([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 2,
+            'user_id' => null,
+            'first_name' => 'Other',
+            'last_name' => 'Band',
+            'display_name' => 'Other Band',
+            'email' => 'other-band@example.com',
+            'active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $show = $this->seedShow(['name' => 'Portal Band Show']);
+        $performance = $this->seedPerformance($show, ['performance_date' => '2026-06-23']);
+
+        $this->actingAs($user)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee(', false)', false);
+
+        $this->actingAs($user)
+            ->post(route('studio.performances.rsvp', $performance), [
+                '_token' => session()->token(),
+                'response' => 'yes',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('rsvp_error');
+
+        $this->assertSame(0, DB::table('performance_assignments')->count());
+    }
+
+    public function test_director_with_linked_musician_profile_can_still_view_calendar(): void
+    {
+        $director = $this->createDirectorUser();
+        $director->forceFill(['email' => 'director-linked@example.com'])->save();
+        $director->person?->update(['email' => null]);
+
+        DB::table('musicians')->insert([
+            'public_id' => (string) Str::uuid(),
+            'band_id' => 1,
+            'user_id' => $director->id,
+            'first_name' => 'Director',
+            'last_name' => 'Linked',
+            'display_name' => 'Director Linked',
+            'email' => 'director-linked@example.com',
+            'active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $show = $this->seedShow(['name' => 'Director Calendar Show']);
+        $this->seedPerformance($show, ['performance_date' => '2026-06-24']);
+
+        $this->actingAs($director)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee(', true)', false);
+    }
+
     public function test_studio_calendar_page_loads_with_list_and_calendar_views(): void
     {
         [$user] = $this->createMusicianUser();
