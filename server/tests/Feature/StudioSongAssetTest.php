@@ -212,6 +212,108 @@ class StudioSongAssetTest extends TestCase
         $this->assertSame(0, SongAsset::query()->where('song_id', $song->id)->count());
     }
 
+    public function test_director_can_delete_song_asset(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Delete Asset Song');
+
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('remove-me.mp3', 80, 'audio/mpeg'), 'audio', 'Remove me');
+        $asset = SongAsset::query()->where('song_id', $song->id)->firstOrFail();
+        $storageReference = $asset->storage_reference;
+
+        Storage::disk('media')->assertExists($storageReference);
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.assets.destroy', [$song, $asset]), [
+            '_token' => session()->token(),
+        ])->assertRedirect(route('songs.edit', $song))
+            ->assertSessionHas('song_asset_deleted', 'Remove me');
+
+        $this->assertNull(SongAsset::query()->find($asset->id));
+        Storage::disk('media')->assertMissing($storageReference);
+        $this->assertTrue(Song::query()->whereKey($song->id)->exists());
+    }
+
+    public function test_deleting_one_song_asset_leaves_other_assets_untouched(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Partial Delete Song');
+
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('keep.mp3', 80, 'audio/mpeg'), 'audio', 'Keep mix');
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('remove.mp3', 80, 'audio/mpeg'), 'audio', 'Remove mix');
+
+        $assets = SongAsset::query()->where('song_id', $song->id)->orderBy('sort_order')->get();
+        $keep = $assets->firstWhere('label', 'Keep mix');
+        $remove = $assets->firstWhere('label', 'Remove mix');
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->delete(route('songs.assets.destroy', [$song, $remove]), [
+            '_token' => session()->token(),
+        ])->assertRedirect(route('songs.edit', $song));
+
+        $this->assertNull(SongAsset::query()->find($remove->id));
+        $this->assertNotNull(SongAsset::query()->find($keep->id));
+        Storage::disk('media')->assertExists($keep->storage_reference);
+        Storage::disk('media')->assertMissing($remove->storage_reference);
+    }
+
+    public function test_cannot_delete_song_asset_through_wrong_song_route(): void
+    {
+        $director = $this->createDirectorUser();
+        $songA = $this->seedSong('Song A');
+        $songB = $this->seedSong('Song B');
+
+        $this->uploadAsset($director, $songB, UploadedFile::fake()->create('owned-by-b.mp3', 80, 'audio/mpeg'), 'audio', 'Owned by B');
+        $asset = SongAsset::query()->where('song_id', $songB->id)->firstOrFail();
+
+        $this->actingAs($director)->get(route('songs.edit', $songA));
+
+        $this->actingAs($director)->delete(route('songs.assets.destroy', [$songA, $asset]), [
+            '_token' => session()->token(),
+        ])->assertNotFound();
+
+        $this->assertNotNull(SongAsset::query()->find($asset->id));
+        Storage::disk('media')->assertExists($asset->storage_reference);
+    }
+
+    public function test_musician_cannot_delete_song_asset(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Protected Asset Song');
+
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('protected.mp3', 80, 'audio/mpeg'), 'audio', 'Protected mix');
+        $asset = SongAsset::query()->where('song_id', $song->id)->firstOrFail();
+
+        $this->actingAs($musician)->delete(route('songs.assets.destroy', [$song, $asset]), [
+            '_token' => session()->token(),
+        ])->assertForbidden();
+
+        $this->assertNotNull(SongAsset::query()->find($asset->id));
+        Storage::disk('media')->assertExists($asset->storage_reference);
+    }
+
+    public function test_delete_song_asset_preserves_return_to_on_redirect(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Return To Delete Song');
+        $returnTo = '/songs';
+
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('return-delete.mp3', 80, 'audio/mpeg'), 'audio', 'Return delete');
+        $asset = SongAsset::query()->where('song_id', $song->id)->firstOrFail();
+
+        $this->actingAs($director)->get(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]));
+
+        $this->actingAs($director)->delete(route('songs.assets.destroy', [$song, $asset]), [
+            '_token' => session()->token(),
+            'return_to' => $returnTo,
+        ])->assertRedirect(route('songs.edit', ['song' => $song, 'return_to' => $returnTo]))
+            ->assertSessionHas('song_asset_deleted', 'Return delete');
+    }
+
     private function uploadAsset(
         \App\Models\User $director,
         Song $song,

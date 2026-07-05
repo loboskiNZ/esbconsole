@@ -93,4 +93,15 @@ class SongAssetStorageService
 
         return SongAssetType::inferFromFilename($file->getClientOriginalName());
     }
+
+    public function destroy(SongAsset $asset): void
+    {
+        $reference = $asset->storage_reference;
+
+        if ($reference !== null && $reference !== '') {
+            $this->mediaStorage->delete($reference);
+        }
+
+        $asset->delete();
+    }
 }

@@ -9,6 +9,7 @@ use App\Services\SongAssetStorageService;
 use App\Support\CloudStudioMediaStorage;
 use App\Support\SafeInternalRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -67,6 +68,49 @@ class StudioSongAssetController extends Controller
             $songAsset->original_filename,
             $songAsset->mime_type,
         );
+    }
+
+    public function destroy(
+        Request $request,
+        Song $song,
+        SongAsset $songAsset,
+        SongAssetStorageService $assetStorage,
+        SafeInternalRedirect $redirects,
+    ): RedirectResponse {
+        $this->ensureSongBelongsToPortalBand($song);
+        abort_unless((int) $songAsset->song_id === (int) $song->id, 404);
+
+        $validated = $request->validate([
+            'return_to' => ['nullable', 'string', 'max:2048'],
+        ]);
+
+        $label = $songAsset->displayName();
+
+        try {
+            $assetStorage->destroy($songAsset);
+        } catch (\Throwable) {
+            return redirect()
+                ->to($this->editUrl($song, $validated['return_to'] ?? null, $redirects))
+                ->withErrors(['song_asset' => 'Unable to delete song file. Please try again.']);
+        }
+
+        return redirect()
+            ->to($this->editUrl($song, $validated['return_to'] ?? null, $redirects))
+            ->with('song_asset_deleted', $label);
+    }
+
+    private function editUrl(Song $song, ?string $returnTo, SafeInternalRedirect $redirects): string
+    {
+        $params = ['song' => $song];
+
+        if ($returnTo !== null && trim($returnTo) !== '') {
+            $params['return_to'] = $redirects->resolve(
+                $returnTo,
+                route('studio.charts.show', $song, absolute: false),
+            );
+        }
+
+        return route('songs.edit', $params, absolute: false);
     }
 
     private function ensureSongBelongsToPortalBand(Song $song): void

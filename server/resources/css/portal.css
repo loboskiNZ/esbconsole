@@ -2657,6 +2657,18 @@
     white-space: pre-wrap;
 }
 
+.esb-studio__song-asset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.15rem;
+}
+
+.esb-studio__song-asset-delete-form {
+    margin: 0;
+}
+
 .esb-studio__director-tools-heading {
     margin: 0;
     font-size: 0.78rem;

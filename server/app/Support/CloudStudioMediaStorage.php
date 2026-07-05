@@ -229,6 +229,16 @@ class CloudStudioMediaStorage
             return;
         }
 
+        $key = ltrim($storageReference, '/');
+
+        try {
+            if (Storage::disk($this->mediaDisk())->exists($key)) {
+                Storage::disk($this->mediaDisk())->delete($key);
+            }
+        } catch (\Throwable) {
+            //
+        }
+
         if ($this->s3Configured()) {
             try {
                 foreach ($this->s3KeysForReference($storageReference) as $key) {

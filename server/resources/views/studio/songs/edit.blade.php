@@ -57,6 +57,12 @@
                 <p class="esb-portal__success mb-4" role="status">Song file uploaded.</p>
             @endif
 
+            @if (session('song_asset_deleted'))
+                <p class="esb-portal__success mb-4" role="status">
+                    Song file deleted: {{ session('song_asset_deleted') }}.
+                </p>
+            @endif
+
             @if ($errors->any())
                 <div class="esb-portal__error mb-6" role="alert">
                     <ul class="esb-studio__users-error-list">
@@ -311,10 +317,29 @@
                                         @if ($asset->notes)
                                             <p class="esb-studio__song-asset-notes">{{ $asset->notes }}</p>
                                         @endif
-                                        <a
-                                            href="{{ route('songs.assets.file', [$song, $asset]) }}"
-                                            class="esb-studio__show-pill esb-studio__show-pill--action mt-3"
-                                        >Open / download</a>
+                                        <div class="esb-studio__song-asset-actions">
+                                            <a
+                                                href="{{ route('songs.assets.file', [$song, $asset]) }}"
+                                                class="esb-studio__show-pill esb-studio__show-pill--action"
+                                            >Open / download</a>
+                                            <form
+                                                method="POST"
+                                                action="{{ route('songs.assets.destroy', [$song, $asset]) }}"
+                                                class="esb-studio__song-asset-delete-form"
+                                                onsubmit="return confirm(@json('Delete '.$asset->displayName().'? This removes the uploaded file permanently.'));"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+
+                                                @if ($returnTo)
+                                                    <input type="hidden" name="return_to" value="{{ $returnTo }}">
+                                                @endif
+
+                                                <button type="submit" class="esb-studio__song-part-remove-button">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </div>
                                     </li>
                                 @endforeach
                             </ul>
