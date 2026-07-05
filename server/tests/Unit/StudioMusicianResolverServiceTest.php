@@ -106,17 +106,38 @@ class StudioMusicianResolverServiceTest extends TestCase
         $this->assertSame($musicianId, $resolved?->id);
     }
 
-    public function test_does_not_resolve_inactive_musician(): void
+    public function test_resolves_musician_by_user_id_even_when_marked_inactive(): void
     {
         $user = User::factory()->create(['band_id' => 1]);
 
-        $this->seedMusician([
+        $musicianId = $this->seedMusician([
             'user_id' => $user->id,
+            'display_name' => 'Linked Player',
+            'active' => false,
+        ]);
+
+        $resolved = app(StudioMusicianResolverService::class)->musicianForUser($user);
+
+        $this->assertSame($musicianId, $resolved?->id);
+    }
+
+    public function test_does_not_resolve_inactive_musician_without_user_id_link(): void
+    {
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'email' => 'inactive@example.com',
+            'name' => 'Inactive Player',
+        ]);
+        $user->person->update(['email' => null, 'artistic_name' => 'Inactive Player']);
+
+        $this->seedMusician([
+            'user_id' => null,
+            'email' => 'inactive@example.com',
             'display_name' => 'Inactive Player',
             'active' => false,
         ]);
 
-        $this->assertNull(app(StudioMusicianResolverService::class)->musicianForUser($user));
+        $this->assertNull(app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person'])));
     }
 
     public function test_does_not_resolve_musician_from_another_band(): void

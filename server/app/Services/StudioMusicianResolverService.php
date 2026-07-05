@@ -12,7 +12,8 @@ class StudioMusicianResolverService
     {
         $portalBandId = $bandId ?? (int) config('portal.band_id', 1);
 
-        $byUserId = $this->bandMusiciansQuery($portalBandId)
+        $byUserId = Musician::query()
+            ->where('band_id', $portalBandId)
             ->where('user_id', $user->id)
             ->first();
 
