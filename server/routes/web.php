@@ -76,8 +76,6 @@ Route::middleware('auth')->group(function () {
             ->name('songs.instrument-parts.destroy');
         Route::post('/songs/{song}/assets', [StudioSongAssetController::class, 'store'])
             ->name('songs.assets.store');
-        Route::get('/songs/{song}/assets/{songAsset}/file', [StudioSongAssetController::class, 'file'])
-            ->name('songs.assets.file');
 
         Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');
         Route::put('/studio/shows/{show}', [StudioShowsController::class, 'update'])->name('studio.shows.update');
@@ -100,6 +98,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/studio/shows/{show}/playlist/songs/{song}/parts/{songInstrumentPart}/chart/upload', [StudioShowPlaylistChartController::class, 'store'])
             ->name('studio.shows.playlist.chart.upload.store');
     });
+    Route::get('/songs/{song}/assets/{songAsset}/file', [StudioSongAssetController::class, 'file'])
+        ->name('songs.assets.file');
     Route::get('/studio/shows/{show}', [StudioShowsController::class, 'show'])->name('studio.shows.show');
     Route::get('/studio/shows/{show}/setlist/download', [StudioShowSetlistPdfController::class, 'download'])
         ->name('studio.shows.setlist.download');

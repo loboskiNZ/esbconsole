@@ -7,6 +7,7 @@ use App\Models\Library\Chart;
 use App\Models\Library\InstrumentPart;
 use App\Models\Library\MusicalKey;
 use App\Models\Library\Song;
+use App\Models\Library\SongAsset;
 use App\Models\Library\SongInstrumentPart;
 use App\Models\Library\SongMood;
 use App\Models\Library\TimeSignature;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Services\StudioShowPlaylistService;
 use App\Services\StudioShowService;
 use App\Support\InstrumentCatalog;
+use App\Support\SongAssetType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +43,10 @@ class StudioShowPlaylistTest extends TestCase
         ]);
         $this->ensurePortalBand();
         $this->seedReferenceTables();
+
+        Storage::fake('media');
+        Storage::fake('library');
+        Storage::fake('local');
     }
 
     public function test_show_overview_uses_three_column_summary_layout(): void
@@ -1082,6 +1088,90 @@ class StudioShowPlaylistTest extends TestCase
             ->assertJsonPath('positions.'.$secondItem->id, 1);
     }
 
+    public function test_playlist_without_assets_unchanged(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'No Assets Show']);
+        $song = $this->seedSongWithParts('Plain Song');
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertDontSee('esb-studio__playlist-song-assets', false);
+    }
+
+    public function test_playlist_displays_song_assets_with_download_links(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Assets Show']);
+        $song = $this->seedSongWithParts('Asset Song');
+        $mp3 = $this->seedSongAsset($song, 'Studio Mix', 'studio-mix.mp3', 'audio/mpeg', SongAssetType::AUDIO);
+        $midi = $this->seedSongAsset($song, 'Horns MIDI', 'horns.mid', 'audio/midi', SongAssetType::MIDI);
+        $this->seedPlaylistItem($show, $song);
+
+        $this->actingAs($director)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('esb-studio__playlist-song-assets', false)
+            ->assertSee('Studio Mix', false)
+            ->assertSee('Horns MIDI', false)
+            ->assertSee(route('songs.assets.file', [$song, $mp3]), false)
+            ->assertSee(route('songs.assets.file', [$song, $midi]), false)
+            ->assertSee('esb-studio__playlist-asset-audio', false)
+            ->assertDontSee('esb-studio__song-asset-upload-form', false);
+    }
+
+    public function test_playlist_shows_inline_audio_for_mp3_and_wav(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Audio Preview Show']);
+        $song = $this->seedSongWithParts('Audio Song');
+        $mp3 = $this->seedSongAsset($song, 'Full mix', 'full-mix.mp3', 'audio/mpeg', SongAssetType::AUDIO);
+        $wav = $this->seedSongAsset($song, '', 'drums.wav', 'audio/wav', SongAssetType::STEM);
+        $this->seedPlaylistItem($show, $song);
+
+        $response = $this->actingAs($director)->get(route('studio.shows.show', $show));
+
+        $response->assertOk()
+            ->assertSee('type="audio/mpeg"', false)
+            ->assertSee('type="audio/wav"', false)
+            ->assertSee('aria-label="Preview Full mix"', false)
+            ->assertSee('aria-label="Preview drums.wav"', false);
+
+        $html = $response->getContent();
+        $this->assertSame(2, substr_count($html, 'esb-studio__playlist-asset-audio'));
+        $this->assertStringContainsString(route('songs.assets.file', [$song, $mp3]), $html);
+        $this->assertStringContainsString(route('songs.assets.file', [$song, $wav]), $html);
+    }
+
+    public function test_musician_can_view_and_download_playlist_song_assets(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+
+        $show = $this->seedShow(['name' => 'Musician Assets Show']);
+        $song = $this->seedSongWithParts('Musician Asset Song');
+        $asset = $this->seedSongAsset($song, 'Reference track', 'reference.mp3', 'audio/mpeg', SongAssetType::REFERENCE);
+        $this->seedPlaylistItem($show, $song);
+
+        Storage::disk('media')->put($asset->storage_reference, 'fake-audio-bytes');
+
+        $this->actingAs($musician)->get(route('studio.shows.show', $show))
+            ->assertOk()
+            ->assertSee('Reference track', false)
+            ->assertSee('esb-studio__playlist-asset-audio', false)
+            ->assertDontSee('esb-studio__song-asset-upload-form', false);
+
+        $this->actingAs($musician)->get(route('songs.assets.file', [$song, $asset]))
+            ->assertOk();
+
+        $this->actingAs($musician)->post(route('songs.assets.store', $song), [
+            '_token' => session()->token(),
+            'file' => UploadedFile::fake()->create('blocked.mp3', 80, 'audio/mpeg'),
+            'asset_type' => SongAssetType::AUDIO,
+            'label' => 'Blocked upload',
+        ])->assertForbidden();
+    }
+
     /**
      * @param  list<string>  $withChartFor
      * @param  list<string>  $withoutChartFor
@@ -1163,6 +1253,32 @@ class StudioShowPlaylistTest extends TestCase
             'position' => $position,
             'notes' => $notes,
             'is_active' => $isActive,
+        ]);
+    }
+
+    private function seedSongAsset(
+        Song $song,
+        string $label,
+        string $originalFilename,
+        string $mimeType,
+        string $assetType,
+    ): SongAsset {
+        $storageReference = 'library/songs/'.$song->id.'/assets/'.$assetType.'/'.$originalFilename;
+
+        Storage::disk('media')->put($storageReference, 'seeded-bytes');
+
+        return SongAsset::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'song_id' => $song->id,
+            'asset_type' => $assetType,
+            'label' => $label,
+            'storage_disk' => 'media',
+            'storage_reference' => $storageReference,
+            'original_filename' => $originalFilename,
+            'mime_type' => $mimeType,
+            'file_size' => 1024,
+            'checksum' => hash('sha256', $originalFilename),
+            'sort_order' => (int) SongAsset::query()->where('song_id', $song->id)->max('sort_order') + 1,
         ]);
     }
 

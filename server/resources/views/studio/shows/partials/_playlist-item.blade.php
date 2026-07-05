@@ -135,6 +135,10 @@
                     </div>
                 </dl>
 
+                @if ($song !== null && $song->assets->isNotEmpty())
+                    @include('studio.shows.partials._playlist-song-assets', ['song' => $song])
+                @endif
+
                 @if ($song !== null && filled($song->notes))
                     <div class="esb-studio__playlist-song-notes-block">
                         <p class="esb-studio__playlist-song-notes-label">Song notes</p>

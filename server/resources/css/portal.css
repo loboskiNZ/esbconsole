@@ -2417,6 +2417,57 @@
     color: rgba(233, 203, 160, 0.72);
 }
 
+.esb-studio__playlist-song-assets {
+    margin-top: 0.65rem;
+}
+
+.esb-studio__playlist-asset-list {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.esb-studio__playlist-asset {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.esb-studio__playlist-asset-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.84rem;
+    line-height: 1.35;
+}
+
+.esb-studio__playlist-asset-icon {
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.esb-studio__playlist-asset-link {
+    color: var(--esb-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+    word-break: break-word;
+}
+
+.esb-studio__playlist-asset-link:hover,
+.esb-studio__playlist-asset-link:focus-visible {
+    color: var(--esb-text);
+}
+
+.esb-studio__playlist-asset-audio {
+    display: block;
+    width: min(100%, 14rem);
+    height: 1.75rem;
+    margin: 0;
+}
+
 .esb-studio__playlist-actions {
     display: flex;
     flex-wrap: wrap;

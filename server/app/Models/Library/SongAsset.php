@@ -61,4 +61,24 @@ class SongAsset extends Model
 
         return number_format($bytes / (1024 * 1024), 1).' MB';
     }
+
+    public function displayName(): string
+    {
+        $label = trim($this->label ?? '');
+
+        return $label !== '' ? $label : $this->original_filename;
+    }
+
+    public function isInlinePlayable(): bool
+    {
+        $extension = strtolower(pathinfo($this->original_filename, PATHINFO_EXTENSION));
+
+        if (in_array($extension, ['mp3', 'wav'], true)) {
+            return true;
+        }
+
+        $mime = strtolower($this->mime_type ?? '');
+
+        return in_array($mime, ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/wave'], true);
+    }
 }

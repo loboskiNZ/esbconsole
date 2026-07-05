@@ -6,6 +6,7 @@ use App\Models\Library\Song;
 use App\Models\Library\SongAsset;
 use App\Models\Show;
 use App\Models\ShowPlaylistItem;
+use App\Models\User;
 use App\Services\StudioShowService;
 use App\Support\SongAssetType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -175,6 +176,22 @@ class StudioSongAssetTest extends TestCase
         Storage::disk('media')->put($asset->storage_reference, 'fake-audio-bytes');
 
         $this->actingAs($director)->get(route('songs.assets.file', [$song, $asset]))
+            ->assertOk();
+    }
+
+    public function test_musician_can_download_song_asset_file(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Musician Download Song');
+
+        $this->uploadAsset($director, $song, UploadedFile::fake()->create('musician.mp3', 80, 'audio/mpeg'), 'audio');
+        $asset = SongAsset::query()->where('song_id', $song->id)->firstOrFail();
+
+        Storage::disk('media')->put($asset->storage_reference, 'fake-audio-bytes');
+
+        $this->actingAs($musician)->get(route('songs.assets.file', [$song, $asset]))
             ->assertOk();
     }
 

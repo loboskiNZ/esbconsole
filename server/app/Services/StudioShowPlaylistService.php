@@ -364,6 +364,7 @@ class StudioShowPlaylistService
                 'timeSignature',
                 'musicalKey',
                 'mood',
+                'assets',
                 'songInstrumentParts.instrumentPart',
                 'songInstrumentParts.chart',
             ])
