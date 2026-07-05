@@ -143,6 +143,62 @@ class StudioMusicianResolverServiceTest extends TestCase
         $this->assertNull(app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person'])));
     }
 
+    public function test_resolves_musician_by_username_when_display_name_differs_by_case(): void
+    {
+        $user = User::factory()->create([
+            'band_id' => 1,
+            'username' => 'demo',
+            'email' => 'demo@example.com',
+            'name' => 'Demo',
+        ]);
+        $user->person->update([
+            'email' => 'different@example.com',
+            'artistic_name' => 'Demo',
+        ]);
+
+        $musicianId = $this->seedMusician([
+            'user_id' => null,
+            'email' => null,
+            'display_name' => 'demo',
+            'first_name' => 'Demo',
+            'last_name' => 'Account',
+        ]);
+
+        $resolved = app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person']));
+
+        $this->assertSame($musicianId, $resolved?->id);
+    }
+
+    public function test_resolves_musician_on_portal_band_when_user_band_id_is_wrong(): void
+    {
+        DB::table('bands')->insert([
+            'id' => 2,
+            'public_id' => (string) Str::uuid(),
+            'name' => 'Other Band',
+            'primary_director_musician_id' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $user = User::factory()->create([
+            'band_id' => 2,
+            'username' => 'demo',
+            'email' => 'ed@loboski.co.uk',
+            'name' => 'Demo',
+        ]);
+        $user->person->update(['email' => 'ed@loboski.co.uk', 'artistic_name' => 'Demo']);
+
+        $musicianId = $this->seedMusician([
+            'user_id' => null,
+            'email' => 'ed@loboski.co.uk',
+            'display_name' => 'Demo',
+        ]);
+
+        $resolved = app(StudioMusicianResolverService::class)->musicianForUser($user->fresh(['person']));
+
+        $this->assertSame($musicianId, $resolved?->id);
+    }
+
     /**
      * @param  array<string, mixed>  $overrides
      */

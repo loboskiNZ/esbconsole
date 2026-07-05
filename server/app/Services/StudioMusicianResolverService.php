@@ -10,9 +10,9 @@ class StudioMusicianResolverService
 {
     public function musicianForUser(User $user, ?int $bandId = null): ?Musician
     {
-        $bandId ??= (int) ($user->band_id ?? config('portal.band_id', 1));
+        $portalBandId = $bandId ?? (int) config('portal.band_id', 1);
 
-        $byUserId = $this->bandMusiciansQuery($bandId)
+        $byUserId = $this->bandMusiciansQuery($portalBandId)
             ->where('user_id', $user->id)
             ->first();
 
@@ -23,7 +23,7 @@ class StudioMusicianResolverService
         $user->loadMissing('person');
 
         foreach ($this->candidateEmails($user) as $email) {
-            $byEmail = $this->bandMusiciansQuery($bandId)
+            $byEmail = $this->bandMusiciansQuery($portalBandId)
                 ->whereRaw('LOWER(TRIM(email)) = ?', [$email])
                 ->orderByDesc('user_id')
                 ->first();
@@ -34,10 +34,12 @@ class StudioMusicianResolverService
         }
 
         foreach ($this->candidateNames($user) as $name) {
-            $byName = $this->bandMusiciansQuery($bandId)
-                ->where(function (Builder $query) use ($name): void {
-                    $query->where('display_name', $name)
-                        ->orWhereRaw("TRIM(CONCAT(first_name, ' ', last_name)) = ?", [$name]);
+            $normalizedName = strtolower($name);
+
+            $byName = $this->bandMusiciansQuery($portalBandId)
+                ->where(function (Builder $query) use ($normalizedName): void {
+                    $query->whereRaw('LOWER(TRIM(display_name)) = ?', [$normalizedName])
+                        ->orWhereRaw("LOWER(TRIM(CONCAT(first_name, ' ', last_name))) = ?", [$normalizedName]);
                 })
                 ->orderByDesc('user_id')
                 ->first();
@@ -79,6 +81,7 @@ class StudioMusicianResolverService
     private function candidateNames(User $user): array
     {
         $names = collect([
+            $user->username,
             $user->name,
             $user->person?->artistic_name,
         ]);
