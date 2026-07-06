@@ -2,7 +2,7 @@
     $card = $item['card'];
 @endphp
 
-<li class="esb-studio__schedule-item">
+<li class="esb-studio__schedule-item" :class="{ 'esb-studio__schedule-item--rsvp-open': isRsvpOpen(@js($card)) }">
     <div class="esb-studio__schedule-item-main">
         <a href="{{ $card['show_url'] }}" class="esb-studio__schedule-item-link">
             <span class="esb-studio__schedule-show">{{ $card['show_name'] }}</span>
@@ -15,9 +15,11 @@
         <button
             type="button"
             class="esb-studio__show-pill esb-studio__show-pill--action"
-            @click="openRsvp(@js($card))"
+            :class="{ 'esb-studio__show-pill--active': isRsvpOpen(@js($card)) }"
+            :aria-expanded="isRsvpOpen(@js($card))"
+            @click="toggleRsvp(@js($card))"
         >
-            RSVP
+            <span x-text="isRsvpOpen(@js($card)) ? 'Close' : 'RSVP'"></span>
         </button>
         <a href="{{ $card['ics_url'] }}" class="esb-studio__show-pill esb-studio__show-pill--action">
             Add to calendar
@@ -26,4 +28,6 @@
             View
         </a>
     </div>
+
+    @include('studio.partials._rsvp-inline', ['card' => $card])
 </li>

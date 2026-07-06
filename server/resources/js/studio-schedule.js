@@ -62,30 +62,49 @@ function rsvpResponseFromCard(card) {
     }
 }
 
-export function studioSchedule(cards = [], hasMusicianLink = true) {
+function rsvpInteractionState() {
     return {
-        cards,
-        hasMusicianLink,
-        modalOpen: false,
-        activeCard: null,
+        activeCardId: null,
         response: 'yes',
         notes: '',
 
-        openRsvp(card) {
-            this.activeCard = card;
+        isRsvpOpen(card) {
+            return card !== null && card !== undefined && this.activeCardId === card.id;
+        },
+
+        toggleRsvp(card) {
+            if (this.isRsvpOpen(card)) {
+                this.closeRsvp();
+
+                return;
+            }
+
+            this.activeCardId = card.id;
             this.response = rsvpResponseFromCard(card);
             this.notes = '';
-            this.modalOpen = true;
+        },
+
+        openRsvp(card) {
+            this.activeCardId = card.id;
+            this.response = rsvpResponseFromCard(card);
+            this.notes = '';
         },
 
         closeRsvp() {
-            this.modalOpen = false;
-            this.activeCard = null;
+            this.activeCardId = null;
         },
 
         showNotesField() {
             return this.response === 'no';
         },
+    };
+}
+
+export function studioSchedule(cards = [], hasMusicianLink = true) {
+    return {
+        cards,
+        hasMusicianLink,
+        ...rsvpInteractionState(),
     };
 }
 
@@ -98,29 +117,10 @@ export function studioCalendar(cards = [], upcomingCards = [], hasMusicianLink =
         hasMusicianLink,
         view: window.matchMedia('(max-width: 767px)').matches ? 'week' : 'month',
         focusDate: new Date(),
-        modalOpen: false,
-        activeCard: null,
-        response: 'yes',
-        notes: '',
+        ...rsvpInteractionState(),
 
         setView(nextView) {
             this.view = nextView;
-        },
-
-        openRsvp(card) {
-            this.activeCard = card;
-            this.response = rsvpResponseFromCard(card);
-            this.notes = '';
-            this.modalOpen = true;
-        },
-
-        closeRsvp() {
-            this.modalOpen = false;
-            this.activeCard = null;
-        },
-
-        showNotesField() {
-            return this.response === 'no';
         },
 
         previousPeriod() {

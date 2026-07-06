@@ -221,8 +221,6 @@
                                         View Calendar
                                     </a>
                                 </div>
-
-                                @include('studio.partials._rsvp-modal')
                             </article>
                         </div>
                     </section>

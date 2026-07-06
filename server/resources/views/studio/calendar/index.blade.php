@@ -50,7 +50,7 @@
                     </template>
                     <ul class="esb-studio__schedule-list" x-show="listItems().length > 0">
                         <template x-for="card in listItems()" :key="card.id">
-                            <li class="esb-studio__schedule-item">
+                            <li class="esb-studio__schedule-item" :class="{ 'esb-studio__schedule-item--rsvp-open': isRsvpOpen(card) }">
                                 <div class="esb-studio__schedule-item-main">
                                     <a :href="card.show_url" class="esb-studio__schedule-item-link">
                                         <span class="esb-studio__schedule-show" x-text="card.show_name"></span>
@@ -60,10 +60,19 @@
                                     </a>
                                 </div>
                                 <div class="esb-studio__schedule-item-actions">
-                                    <button type="button" class="esb-studio__show-pill esb-studio__show-pill--action" @click="openRsvp(card)">RSVP</button>
+                                    <button
+                                        type="button"
+                                        class="esb-studio__show-pill esb-studio__show-pill--action"
+                                        :class="{ 'esb-studio__show-pill--active': isRsvpOpen(card) }"
+                                        :aria-expanded="isRsvpOpen(card)"
+                                        @click="toggleRsvp(card)"
+                                    >
+                                        <span x-text="isRsvpOpen(card) ? 'Close' : 'RSVP'"></span>
+                                    </button>
                                     <a :href="card.ics_url" class="esb-studio__show-pill esb-studio__show-pill--action">Add to calendar</a>
                                     <a :href="card.show_url" class="esb-studio__show-pill esb-studio__show-pill--action">View</a>
                                 </div>
+                                @include('studio.partials._rsvp-inline', ['useAlpineCard' => true])
                             </li>
                         </template>
                     </ul>
@@ -78,15 +87,24 @@
                                     <p class="esb-studio__calendar-empty">—</p>
                                 </template>
                                 <template x-for="card in performancesForDate(day)" :key="card.id">
-                                    <article class="esb-studio__calendar-event">
+                                    <article class="esb-studio__calendar-event" :class="{ 'esb-studio__calendar-event--rsvp-open': isRsvpOpen(card) }">
                                         <a :href="card.show_url" class="esb-studio__calendar-event-link">
                                             <span class="esb-studio__calendar-event-title" x-text="card.show_name"></span>
                                             <span class="esb-studio__calendar-event-meta" x-text="card.time + ' · ' + card.type"></span>
                                         </a>
                                         <div class="esb-studio__schedule-item-actions">
-                                            <button type="button" class="esb-studio__show-pill esb-studio__show-pill--action" @click="openRsvp(card)">RSVP</button>
+                                            <button
+                                                type="button"
+                                                class="esb-studio__show-pill esb-studio__show-pill--action"
+                                                :class="{ 'esb-studio__show-pill--active': isRsvpOpen(card) }"
+                                                :aria-expanded="isRsvpOpen(card)"
+                                                @click="toggleRsvp(card)"
+                                            >
+                                                <span x-text="isRsvpOpen(card) ? 'Close' : 'RSVP'"></span>
+                                            </button>
                                             <a :href="card.show_url" class="esb-studio__show-pill esb-studio__show-pill--action">View</a>
                                         </div>
+                                        @include('studio.partials._rsvp-inline', ['useAlpineCard' => true])
                                     </article>
                                 </template>
                             </section>
@@ -118,8 +136,6 @@
                     </template>
                 </div>
             </section>
-
-            @include('studio.partials._rsvp-modal')
         </div>
 
         <footer class="esb-studio__chrome-footer">

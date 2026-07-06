@@ -1601,8 +1601,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 1.65rem;
-    padding: 0.2rem 0.65rem;
+    min-height: 2.25rem;
+    padding: 0.35rem 0.85rem;
     border-radius: 999px;
     border: 1px solid rgba(255, 178, 62, 0.55);
     background: color-mix(in srgb, #ffb23e 22%, transparent);
@@ -3042,26 +3042,37 @@
     justify-content: space-between;
 }
 
-.esb-studio__rsvp-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    display: grid;
-    place-items: center;
-    padding: 1rem;
+.esb-studio__rsvp-inline {
+    margin-top: 0.75rem;
+    padding: 0.85rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 178, 62, 0.28);
+    background: rgba(12, 10, 8, 0.45);
 }
 
-.esb-studio__rsvp-backdrop {
-    position: absolute;
-    inset: 0;
-    background: rgba(5, 4, 3, 0.72);
+.esb-studio__rsvp-inline-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--esb-ink);
 }
 
-.esb-studio__rsvp-dialog {
-    position: relative;
-    z-index: 1;
-    width: min(100%, 28rem);
-    padding: 1.25rem;
+.esb-studio__rsvp-inline-event {
+    margin-top: 0.35rem;
+    font-size: 0.84rem;
+}
+
+.esb-studio__rsvp-inline-form {
+    margin-top: 0.75rem;
+}
+
+.esb-studio__rsvp-inline-actions {
+    gap: 0.5rem;
+}
+
+.esb-studio__schedule-item--rsvp-open,
+.esb-studio__calendar-event--rsvp-open {
+    border-color: rgba(255, 178, 62, 0.38);
 }
 
 .esb-studio__rsvp-options {
