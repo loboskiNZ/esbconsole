@@ -114,7 +114,7 @@
                             <p class="esb-studio__card-body mb-3">
                                 Enter tagged lyrics for this song. Use a tag on its own line, such as
                                 <code>{intro}</code>, <code>{verse1}</code>, or <code>{chorus1}</code>, followed by the lyric lines for that section.
-                                Tags become section headings in the generated PDF. Save the song first, then generate a PDF — it is saved to Song files and downloaded.
+                                Tags become section headings in the generated PDF. Save the song first, then generate — the PDF is saved to Song files.
                             </p>
                             <textarea
                                 id="song-lyrics"
@@ -124,12 +124,14 @@
                                 spellcheck="false"
                             >{{ old('lyrics', $song->lyrics) }}</textarea>
                             <div class="esb-studio__band-form-actions mt-4">
-                                <form method="POST" action="{{ route('songs.lyrics.pdf', $song) }}">
-                                    @csrf
-                                    <button type="submit" class="esb-portal__button esb-portal__button--secondary">
-                                        Generate Lyrics PDF
-                                    </button>
-                                </form>
+                                <button
+                                    type="submit"
+                                    formaction="{{ route('songs.lyrics.pdf', $song) }}"
+                                    formmethod="POST"
+                                    class="esb-portal__button esb-portal__button--secondary"
+                                >
+                                    Generate Lyrics PDF
+                                </button>
                             </div>
                         </div>
 

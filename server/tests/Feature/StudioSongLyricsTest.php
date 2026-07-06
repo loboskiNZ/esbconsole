@@ -64,6 +64,17 @@ LYRICS;
         Storage::fake('local');
     }
 
+    public function test_song_edit_form_does_not_nest_lyrics_pdf_form(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Form Structure Song');
+
+        $this->actingAs($director)->get(route('songs.edit', $song))
+            ->assertOk()
+            ->assertSee('formaction="'.route('songs.lyrics.pdf', $song).'"', false)
+            ->assertDontSee('<form method="POST" action="'.route('songs.lyrics.pdf', $song).'"', false);
+    }
+
     public function test_director_sees_lyrics_section_on_song_edit_page(): void
     {
         $director = $this->createDirectorUser();
