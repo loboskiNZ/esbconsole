@@ -709,16 +709,37 @@
     }
 }
 
+@media (max-width: 899px) {
+    .esb-studio__hero-actions {
+        align-items: start;
+    }
+
+    .esb-studio__hero-card {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .esb-studio__hero-card-foot {
+        margin-top: 0;
+    }
+}
+
 .esb-studio__hero-card {
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 0.95rem;
-    min-height: 100%;
+    min-height: auto;
     padding: 1.15rem 1.2rem 1.2rem;
     border-radius: 1rem;
     transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+@media (min-width: 900px) {
+    .esb-studio__hero-card {
+        min-height: 100%;
+    }
 }
 
 .esb-studio__hero-card--charts {
