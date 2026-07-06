@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Contracts\DocxToPdfConverterInterface;
 use App\Models\Library\Song;
+use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use RuntimeException;
@@ -13,6 +14,7 @@ class StudioSongLyricsPdfService
     public function __construct(
         private readonly TaggedLyricsParser $parser,
         private readonly DocxToPdfConverterInterface $pdfConverter,
+        private readonly SongAssetStorageService $assetStorage,
     ) {}
 
     public function filenameFor(Song $song): string
@@ -25,7 +27,7 @@ class StudioSongLyricsPdfService
     /**
      * @return array{contents: string, filename: string}
      */
-    public function generateFromSavedLyrics(Song $song): array
+    public function generateFromSavedLyrics(Song $song, User $director): array
     {
         $song->loadMissing(['musicalKey', 'timeSignature']);
 
@@ -58,6 +60,8 @@ class StudioSongLyricsPdfService
             if ($contents === false || $contents === '') {
                 throw new RuntimeException('Lyrics PDF conversion produced an empty file.');
             }
+
+            $this->assetStorage->storeGeneratedLyricsPdf($song, $contents, $director);
 
             return [
                 'contents' => $contents,

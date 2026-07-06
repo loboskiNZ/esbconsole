@@ -16,7 +16,7 @@ class StudioSongLyricsPdfController extends Controller
         abort_unless($song->band_id === (int) config('portal.band_id', 1), 404);
 
         try {
-            $result = $lyricsPdf->generateFromSavedLyrics($song->fresh());
+            $result = $lyricsPdf->generateFromSavedLyrics($song->fresh(), auth()->user());
         } catch (InvalidArgumentException $exception) {
             return redirect()
                 ->route('songs.edit', $song)

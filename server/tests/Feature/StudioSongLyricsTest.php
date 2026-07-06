@@ -12,7 +12,9 @@ use App\Models\Library\SongInstrumentPart;
 use App\Models\Library\SongMood;
 use App\Models\Library\TimeSignature;
 use App\Models\User;
+use App\Support\SongAssetType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\Concerns\AssignsStudioRoles;
 use Tests\Concerns\EnsuresPortalBand;
@@ -57,6 +59,9 @@ LYRICS;
         $this->ensurePortalBand();
         $this->seedReferenceTables();
         $this->app->instance(DocxToPdfConverterInterface::class, new FakeDocxToPdfConverter);
+
+        Storage::fake('media');
+        Storage::fake('local');
     }
 
     public function test_director_sees_lyrics_section_on_song_edit_page(): void
@@ -68,7 +73,7 @@ LYRICS;
             ->assertOk()
             ->assertSee('for="song-lyrics">Lyrics', false)
             ->assertSee('{intro}', false)
-            ->assertSee('Generate Lyrics PDF', false)
+            ->assertSee('saved to Song files', false)
             ->assertSee(route('songs.lyrics.pdf', $song), false);
     }
 
@@ -121,6 +126,14 @@ LYRICS;
         $this->assertStringContainsString('Instrumental opening', $html);
         $this->assertStringNotContainsString('{intro}', $html);
         $this->assertStringNotContainsString('{chorus1}', $html);
+
+        $asset = SongAsset::query()
+            ->where('song_id', $song->id)
+            ->where('asset_type', SongAssetType::LYRICS_PDF)
+            ->first();
+        $this->assertNotNull($asset);
+        $this->assertSame('Lyrics PDF', $asset->label);
+        Storage::disk('media')->assertExists($asset->storage_reference);
     }
 
     public function test_braces_inside_lyric_lines_remain_in_pdf_body(): void

@@ -108,7 +108,7 @@
                             <p class="esb-studio__card-body mb-3">
                                 Enter tagged lyrics for this song. Use a tag on its own line, such as
                                 <code>{intro}</code>, <code>{verse1}</code>, or <code>{chorus1}</code>, followed by the lyric lines for that section.
-                                Tags become section headings in the generated PDF. Save the song before generating a PDF.
+                                Tags become section headings in the generated PDF. Save the song first, then generate a PDF — it is saved to Song files and downloaded.
                             </p>
                             <textarea
                                 id="song-lyrics"

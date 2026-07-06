@@ -18,6 +18,8 @@ class SongAssetType
 
     public const OTHER = 'other';
 
+    public const LYRICS_PDF = 'lyrics_pdf';
+
     /**
      * @return list<string>
      */
@@ -31,6 +33,7 @@ class SongAssetType
             self::REFERENCE,
             self::DEMO,
             self::OTHER,
+            self::LYRICS_PDF,
         ];
     }
 
@@ -47,6 +50,7 @@ class SongAssetType
             self::REFERENCE => 'Reference',
             self::DEMO => 'Demo',
             self::OTHER => 'Other',
+            self::LYRICS_PDF => 'Lyrics PDF',
         ];
     }
 

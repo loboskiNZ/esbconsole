@@ -104,4 +104,39 @@ class SongAssetStorageService
 
         $asset->delete();
     }
+
+    public function storeGeneratedLyricsPdf(Song $song, string $pdfContents, User $user): SongAsset
+    {
+        SongAsset::query()
+            ->where('song_id', $song->id)
+            ->where('asset_type', SongAssetType::LYRICS_PDF)
+            ->get()
+            ->each(fn (SongAsset $asset) => $this->destroy($asset));
+
+        $originalFilename = str($song->name)->slug('_')->limit(60, '')->toString().'-lyrics.pdf';
+        $filename = Str::slug(pathinfo($originalFilename, PATHINFO_FILENAME)).'-'.Str::lower(Str::random(8)).'.pdf';
+        $storageReference = $this->mediaStorage->songAssetReference($song->id, SongAssetType::LYRICS_PDF, $filename);
+
+        $this->mediaStorage->putMediaObject($storageReference, $pdfContents);
+
+        $nextSort = (int) SongAsset::query()
+            ->where('song_id', $song->id)
+            ->max('sort_order') + 1;
+
+        return SongAsset::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'song_id' => $song->id,
+            'asset_type' => SongAssetType::LYRICS_PDF,
+            'label' => 'Lyrics PDF',
+            'storage_disk' => $this->mediaStorage->mediaDisk(),
+            'storage_reference' => $storageReference,
+            'original_filename' => $originalFilename,
+            'mime_type' => 'application/pdf',
+            'file_size' => strlen($pdfContents),
+            'checksum' => hash('sha256', $pdfContents),
+            'uploaded_by' => $user->id,
+            'sort_order' => $nextSort,
+            'notes' => null,
+        ]);
+    }
 }
