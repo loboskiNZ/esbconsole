@@ -79,7 +79,7 @@ Route::middleware('auth')->group(function () {
             ->name('songs.assets.store');
         Route::delete('/songs/{song}/assets/{songAsset}', [StudioSongAssetController::class, 'destroy'])
             ->name('songs.assets.destroy');
-        Route::get('/songs/{song}/lyrics/pdf', [StudioSongLyricsPdfController::class, 'download'])
+        Route::post('/songs/{song}/lyrics/pdf', [StudioSongLyricsPdfController::class, 'generate'])
             ->name('songs.lyrics.pdf');
 
         Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');

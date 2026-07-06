@@ -13,6 +13,7 @@ class StudioSongLyricsPdfService
 {
     public function __construct(
         private readonly TaggedLyricsParser $parser,
+        private readonly SongLyricsDocxRenderer $docxRenderer,
         private readonly DocxToPdfConverterInterface $pdfConverter,
         private readonly SongAssetStorageService $assetStorage,
     ) {}
@@ -38,22 +39,16 @@ class StudioSongLyricsPdfService
         }
 
         $sections = $this->parser->parse($lyrics);
-        $html = view('studio.songs.lyrics-pdf', [
-            'songTitle' => $song->name,
-            'metadata' => $this->metadataLine($song),
-            'sections' => $sections,
-        ])->render();
+        $metadata = $this->metadataLine($song);
 
         $tempDirectory = $this->createTempDirectory();
-        $htmlPath = $tempDirectory.'/lyrics.html';
+        $docxPath = $tempDirectory.'/lyrics.docx';
         $pdfPath = $tempDirectory.'/lyrics.pdf';
 
         try {
-            if (file_put_contents($htmlPath, $html) === false) {
-                throw new RuntimeException('Unable to write lyrics HTML for PDF conversion.');
-            }
+            $this->docxRenderer->render($docxPath, $song->name, $metadata, $sections);
 
-            $this->pdfConverter->convert($htmlPath, $pdfPath);
+            $this->pdfConverter->convert($docxPath, $pdfPath);
 
             $contents = file_get_contents($pdfPath);
 

@@ -39,6 +39,12 @@
                 <p class="esb-portal__success mb-4" role="status">Song updated.</p>
             @endif
 
+            @if (session('lyrics_pdf_generated'))
+                <p class="esb-portal__success mb-4" role="status">
+                    Lyrics PDF saved to Song files. Open it from the Song files panel below.
+                </p>
+            @endif
+
             @if (session('lyrics_pdf_error'))
                 <p class="esb-portal__error mb-4" role="alert">{{ session('lyrics_pdf_error') }}</p>
             @endif
@@ -118,12 +124,12 @@
                                 spellcheck="false"
                             >{{ old('lyrics', $song->lyrics) }}</textarea>
                             <div class="esb-studio__band-form-actions mt-4">
-                                <a
-                                    href="{{ route('songs.lyrics.pdf', $song) }}"
-                                    class="esb-portal__button esb-portal__button--secondary"
-                                >
-                                    Generate Lyrics PDF
-                                </a>
+                                <form method="POST" action="{{ route('songs.lyrics.pdf', $song) }}">
+                                    @csrf
+                                    <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                                        Generate Lyrics PDF
+                                    </button>
+                                </form>
                             </div>
                         </div>
 

@@ -111,21 +111,24 @@ LYRICS;
         $song = $this->seedSong('PDF Lyrics Song');
         $song->update(['lyrics' => self::EXAMPLE_LYRICS]);
 
-        $response = $this->actingAs($director)->get(route('songs.lyrics.pdf', $song));
+        $response = $this->actingAs($director)->post(route('songs.lyrics.pdf', $song), [
+            '_token' => session()->token(),
+        ]);
 
-        $response->assertOk();
-        $response->assertHeader('content-type', 'application/pdf');
-        $response->assertDownload('pdf_lyrics_song-lyrics.pdf');
+        $response
+            ->assertRedirect(route('songs.edit', $song))
+            ->assertSessionHas('lyrics_pdf_generated', true);
 
-        $html = FakeDocxToPdfConverter::$lastDocxContents;
-        $this->assertNotNull($html);
-        $this->assertStringContainsString('PDF Lyrics Song', $html);
-        $this->assertStringContainsString('<h2>Intro</h2>', $html);
-        $this->assertStringContainsString('<h2>Verse 1</h2>', $html);
-        $this->assertStringContainsString('<h2>Chorus 1</h2>', $html);
-        $this->assertStringContainsString('Instrumental opening', $html);
-        $this->assertStringNotContainsString('{intro}', $html);
-        $this->assertStringNotContainsString('{chorus1}', $html);
+        $docx = FakeDocxToPdfConverter::$lastDocxContents;
+        $this->assertNotNull($docx);
+        $documentXml = $this->docxDocumentXml($docx);
+        $this->assertStringContainsString('PDF Lyrics Song', $documentXml);
+        $this->assertStringContainsString('INTRO', $documentXml);
+        $this->assertStringContainsString('VERSE 1', $documentXml);
+        $this->assertStringContainsString('CHORUS 1', $documentXml);
+        $this->assertStringContainsString('Instrumental opening', $documentXml);
+        $this->assertStringNotContainsString('{intro}', $documentXml);
+        $this->assertStringNotContainsString('{chorus1}', $documentXml);
 
         $asset = SongAsset::query()
             ->where('song_id', $song->id)
@@ -144,12 +147,15 @@ LYRICS;
             'lyrics' => "{verse1}\nShe said {hello} to me\nNot a {tag}",
         ]);
 
-        $this->actingAs($director)->get(route('songs.lyrics.pdf', $song))->assertOk();
+        $this->actingAs($director)->post(route('songs.lyrics.pdf', $song), [
+            '_token' => session()->token(),
+        ])
+            ->assertRedirect(route('songs.edit', $song))
+            ->assertSessionHas('lyrics_pdf_generated', true);
 
-        $html = FakeDocxToPdfConverter::$lastDocxContents;
-        $this->assertNotNull($html);
-        $this->assertStringContainsString('She said {hello} to me', $html);
-        $this->assertStringContainsString('Not a {tag}', $html);
+        $documentXml = $this->docxDocumentXml(FakeDocxToPdfConverter::$lastDocxContents);
+        $this->assertStringContainsString('She said {hello} to me', $documentXml);
+        $this->assertStringContainsString('Not a {tag}', $documentXml);
     }
 
     public function test_generate_lyrics_pdf_requires_saved_lyrics(): void
@@ -157,7 +163,9 @@ LYRICS;
         $director = $this->createDirectorUser();
         $song = $this->seedSong('No Lyrics Yet');
 
-        $this->actingAs($director)->get(route('songs.lyrics.pdf', $song))
+        $this->actingAs($director)->post(route('songs.lyrics.pdf', $song), [
+            '_token' => session()->token(),
+        ])
             ->assertRedirect(route('songs.edit', $song))
             ->assertSessionHas('lyrics_pdf_error');
     }
@@ -170,7 +178,9 @@ LYRICS;
         $song->update(['lyrics' => self::EXAMPLE_LYRICS]);
 
         $this->actingAs($musician)->get(route('songs.edit', $song))->assertForbidden();
-        $this->actingAs($musician)->get(route('songs.lyrics.pdf', $song))->assertForbidden();
+        $this->actingAs($musician)->post(route('songs.lyrics.pdf', $song), [
+            '_token' => session()->token(),
+        ])->assertForbidden();
     }
 
     public function test_existing_chart_and_file_behaviour_is_unchanged_after_lyrics_save(): void
@@ -265,5 +275,24 @@ LYRICS;
 
         TimeSignature::query()->create(['label' => '4/4', 'sort_order' => 10, 'active' => true]);
         MusicalKey::query()->create(['label' => 'G major', 'tonic' => 'G', 'mode' => 'major', 'sort_order' => 10, 'active' => true]);
+    }
+
+    private function docxDocumentXml(?string $docx): string
+    {
+        $this->assertNotNull($docx);
+
+        $zip = new \ZipArchive;
+        $temp = tempnam(sys_get_temp_dir(), 'lyrics-docx-');
+        file_put_contents($temp, $docx);
+
+        try {
+            $this->assertTrue($zip->open($temp) === true);
+            $xml = $zip->getFromName('word/document.xml');
+            $zip->close();
+
+            return $xml !== false ? $xml : '';
+        } finally {
+            @unlink($temp);
+        }
     }
 }
