@@ -868,7 +868,7 @@ class StudioShowPlaylistTest extends TestCase
     {
         $director = $this->createDirectorUser();
         $song = $this->seedSongWithParts('Safe Redirect Song');
-        $fallback = route('studio.charts.show', $song, absolute: false);
+        $fallback = route('songs.edit', $song, absolute: false);
 
         $this->actingAs($director)->get(route('songs.edit', $song));
 

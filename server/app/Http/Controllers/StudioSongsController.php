@@ -117,7 +117,7 @@ class StudioSongsController extends Controller
 
         $song->update($validated);
 
-        $fallback = route('studio.charts.show', $song, absolute: false);
+        $fallback = route('songs.edit', $song, absolute: false);
 
         return redirect()
             ->to($redirects->resolve($returnTo, $fallback))

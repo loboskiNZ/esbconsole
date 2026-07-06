@@ -2541,6 +2541,11 @@
     background: color-mix(in srgb, #ffb23e 12%, rgba(12, 10, 8, 0.28));
 }
 
+.esb-studio__song-lyrics-generate-form {
+    margin-top: 1rem;
+    margin-bottom: 1.25rem;
+}
+
 .esb-studio__director-notes-input {
     min-height: 7.5rem;
 }

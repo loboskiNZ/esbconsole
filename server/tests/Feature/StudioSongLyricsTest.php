@@ -97,7 +97,7 @@ LYRICS;
             ->assertOk()
             ->assertSee('for="song-lyrics">Lyrics', false)
             ->assertSee('{intro}', false)
-            ->assertSee('Generate Lyrics PDF below', false)
+            ->assertSee('Save the song, then click Generate Lyrics PDF', false)
             ->assertSee(route('songs.lyrics.pdf', $song), false);
     }
 
@@ -116,7 +116,7 @@ LYRICS;
             'musical_key_id' => $keyId,
             'notes' => 'Playlist-visible notes',
             'lyrics' => self::EXAMPLE_LYRICS,
-        ])->assertRedirect(route('studio.charts.show', $song));
+        ])->assertRedirect(route('songs.edit', $song));
 
         $song->refresh();
         $this->assertSame(self::EXAMPLE_LYRICS, $song->lyrics);
@@ -218,7 +218,7 @@ LYRICS;
             '_token' => session()->token(),
             'name' => 'Relationship Song',
             'lyrics' => self::EXAMPLE_LYRICS,
-        ])->assertRedirect(route('studio.charts.show', $song));
+        ])->assertRedirect(route('songs.edit', $song));
 
         $this->assertSame(1, Chart::query()->where('song_id', $song->id)->count());
         $this->assertSame(1, SongAsset::query()->where('song_id', $song->id)->count());
