@@ -20,6 +20,7 @@ use App\Http\Controllers\StudioShowsController;
 use App\Http\Controllers\StudioShowSetlistPdfController;
 use App\Http\Controllers\StudioSongAssetController;
 use App\Http\Controllers\StudioSongInstrumentPartController;
+use App\Http\Controllers\StudioSongLyricsPdfController;
 use App\Http\Controllers\StudioSongsController;
 use App\Http\Controllers\StudioUsersController;
 use Illuminate\Support\Facades\Route;
@@ -78,6 +79,8 @@ Route::middleware('auth')->group(function () {
             ->name('songs.assets.store');
         Route::delete('/songs/{song}/assets/{songAsset}', [StudioSongAssetController::class, 'destroy'])
             ->name('songs.assets.destroy');
+        Route::get('/songs/{song}/lyrics/pdf', [StudioSongLyricsPdfController::class, 'download'])
+            ->name('songs.lyrics.pdf');
 
         Route::get('/studio/shows/{show}/edit', [StudioShowsController::class, 'edit'])->name('studio.shows.edit');
         Route::put('/studio/shows/{show}', [StudioShowsController::class, 'update'])->name('studio.shows.update');

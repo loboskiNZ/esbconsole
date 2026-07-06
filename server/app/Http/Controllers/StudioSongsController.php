@@ -9,6 +9,7 @@ use App\Models\Library\TimeSignature;
 use App\Services\StudioSongInstrumentPartService;
 use App\Services\StudioSongLibraryService;
 use App\Support\SafeInternalRedirect;
+use App\Support\SongAssetType;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -101,7 +102,7 @@ class StudioSongsController extends Controller
             'returnTo' => $request->query('return_to'),
             'songInstrumentParts' => $instrumentParts->partsForSongEdit($song),
             'attachableInstrumentParts' => $instrumentParts->attachablePartsForSong($song),
-            'songAssetTypes' => \App\Support\SongAssetType::labels(),
+            'songAssetTypes' => SongAssetType::labels(),
             'songAssetMaxMb' => (int) ceil(((int) config('portal.song_asset_max_kb', 153600)) / 1024),
         ]);
     }
@@ -166,6 +167,7 @@ class StudioSongsController extends Controller
             'count_in' => ['nullable', 'integer', 'min:0', 'max:16'],
             'description' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
+            'lyrics' => ['nullable', 'string'],
             'director_notes' => ['nullable', 'string'],
             'mood_intention' => ['nullable', 'string'],
             'performance_feel' => ['nullable', 'string'],

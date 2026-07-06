@@ -37,6 +37,7 @@ class Song extends Model
         'count_in',
         'description',
         'notes',
+        'lyrics',
         'director_notes',
         'mood_intention',
         'performance_feel',

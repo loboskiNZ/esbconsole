@@ -39,6 +39,10 @@
                 <p class="esb-portal__success mb-4" role="status">Song updated.</p>
             @endif
 
+            @if (session('lyrics_pdf_error'))
+                <p class="esb-portal__error mb-4" role="alert">{{ session('lyrics_pdf_error') }}</p>
+            @endif
+
             @if (session('song_part_added'))
                 <p class="esb-portal__success mb-4" role="status">Instrument part added.</p>
             @endif
@@ -97,6 +101,30 @@
                                 rows="5"
                                 class="esb-portal__input esb-studio__band-textarea"
                             >{{ old('notes', $song->notes) }}</textarea>
+                        </div>
+
+                        <div class="esb-studio__director-notes-field mt-6">
+                            <label class="esb-portal__label mb-2 block" for="song-lyrics">Lyrics</label>
+                            <p class="esb-studio__card-body mb-3">
+                                Enter tagged lyrics for this song. Use a tag on its own line, such as
+                                <code>{intro}</code>, <code>{verse1}</code>, or <code>{chorus1}</code>, followed by the lyric lines for that section.
+                                Tags become section headings in the generated PDF. Save the song before generating a PDF.
+                            </p>
+                            <textarea
+                                id="song-lyrics"
+                                name="lyrics"
+                                rows="14"
+                                class="esb-portal__input esb-studio__band-textarea esb-studio__song-lyrics-input"
+                                spellcheck="false"
+                            >{{ old('lyrics', $song->lyrics) }}</textarea>
+                            <div class="esb-studio__band-form-actions mt-4">
+                                <a
+                                    href="{{ route('songs.lyrics.pdf', $song) }}"
+                                    class="esb-portal__button esb-portal__button--secondary"
+                                >
+                                    Generate Lyrics PDF
+                                </a>
+                            </div>
                         </div>
 
                         <div class="esb-studio__director-notes-field mt-6">
