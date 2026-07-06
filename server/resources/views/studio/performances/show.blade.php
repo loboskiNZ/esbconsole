@@ -8,21 +8,24 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">{{ $performance->show?->name ?? 'Performance' }}</h1>
-            <p class="esb-studio__card-body mt-2">{{ $performance->typeLabel() }} · {{ $performance->statusLabel() }}</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => $performance->show?->name ?? 'Performance',
+            'pageLead' => $performance->typeLabel().' · '.$performance->statusLabel(),
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Schedule', 'url' => route('studio.calendar.index')],
+                ['label' => $performance->show?->name ?? 'Performance'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4 flex flex-wrap items-center justify-between gap-3">
-                <a href="{{ route('studio.performances.index') }}" class="esb-studio__back-link">← Back to Performances</a>
-                @if ($isDirector)
+            @if ($isDirector)
+                <div class="esb-studio__charts-nav mb-4 flex flex-wrap items-center justify-end gap-3">
                     <a href="{{ route('studio.performances.edit', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
                         Edit
                     </a>
-                @endif
-            </div>
+                </div>
+            @endif
 
             @if (session('performance_created'))
                 <p class="esb-portal__success mb-4" role="status">Performance created.</p>

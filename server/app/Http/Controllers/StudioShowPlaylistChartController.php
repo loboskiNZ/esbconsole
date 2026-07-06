@@ -30,6 +30,7 @@ class StudioShowPlaylistChartController extends Controller
         $partId = (int) $part->id;
 
         return view('studio.shows.chart-upload', [
+            'show' => $show,
             'pageTitle' => 'Upload Chart — '.$song->name,
             'songName' => $song->name,
             'partName' => $part->instrumentPart?->name ?? 'Instrument part',

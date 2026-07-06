@@ -8,17 +8,17 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Add Show</h1>
-            <p class="esb-studio__card-body mt-2">Create a reusable show production.</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Add Show',
+            'pageLead' => 'Create a reusable show production.',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Shows', 'url' => route('studio.shows.index')],
+                ['label' => 'Add Show'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio.shows.index') }}" class="esb-studio__back-link">← Back to Shows</a>
-            </div>
-
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"

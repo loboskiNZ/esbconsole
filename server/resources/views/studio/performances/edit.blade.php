@@ -8,17 +8,18 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Edit Performance</h1>
-            <p class="esb-studio__card-body mt-2">{{ $performance->show?->name }}</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Edit Performance',
+            'pageLead' => $performance->show?->name,
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Schedule', 'url' => route('studio.calendar.index')],
+                ['label' => $performance->show?->name ?? 'Performance', 'url' => route('studio.performances.show', $performance)],
+                ['label' => 'Edit'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio.performances.show', $performance) }}" class="esb-studio__back-link">← Back to Performance</a>
-            </div>
-
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__performance-form"
                 method="POST"

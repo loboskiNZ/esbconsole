@@ -8,17 +8,16 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Manage Band</h1>
-            <p class="esb-studio__card-body mt-2">Update your band profile, branding, and public-facing details.</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Manage Band',
+            'pageLead' => 'Update your band profile, branding, and public-facing details.',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Band'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio') }}" class="esb-studio__back-link">← Back to Studio</a>
-            </div>
-
             @if (session('band_updated'))
                 <p class="esb-portal__success mb-4" role="status">
                     Band profile saved.

@@ -8,17 +8,16 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Users</h1>
-            <p class="esb-studio__card-body mt-2">Manage Studio accounts, access, and roles.</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Users',
+            'pageLead' => 'Manage Studio accounts, access, and roles.',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Users'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio') }}" class="esb-studio__back-link">← Back to Studio</a>
-            </div>
-
             @if (session('user_updated'))
                 <p class="esb-portal__success mb-4" role="status">
                     Updated {{ session('user_updated') }}.

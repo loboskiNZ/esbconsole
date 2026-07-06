@@ -8,10 +8,12 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">The Studio</h1>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'The Studio',
+            'breadcrumbs' => [
+                ['label' => 'Studio'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
             @if (session('profile_updated'))

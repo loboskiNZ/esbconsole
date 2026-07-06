@@ -8,16 +8,16 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio · Charts</p>
-            <h1 class="esb-portal__title">{{ $song->name }}</h1>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => $song->name,
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Charts', 'url' => route('studio.charts.index')],
+                ['label' => $song->name],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio.charts.index') }}" class="esb-studio__back-link">← All songs</a>
-            </div>
-
             @include('studio.charts._song-metadata', ['metadata' => $songMetadata])
 
             <section class="esb-portal__panel esb-studio__card esb-studio__song-detail-panel mt-4">

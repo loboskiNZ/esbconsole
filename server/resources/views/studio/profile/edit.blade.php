@@ -11,7 +11,17 @@
     <main class="relative z-10 min-h-dvh px-4 py-8 sm:px-6 sm:py-10">
         <div class="mx-auto w-full max-w-2xl">
             <header class="text-center">
-                <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
+                <p class="esb-portal__eyebrow mb-2">
+                    <a href="{{ route('studio') }}" class="esb-studio__brand-link">ESB Studio</a>
+                </p>
+                <div class="esb-studio__breadcrumbs--centered">
+                    @include('studio.partials._breadcrumbs', [
+                        'breadcrumbs' => [
+                            ['label' => 'Studio', 'url' => route('studio')],
+                            ['label' => 'Profile'],
+                        ],
+                    ])
+                </div>
                 <h1 class="esb-portal__title">Edit profile</h1>
                 <p class="esb-onboarding__lead mx-auto mt-4 max-w-lg">
                     Update your musician profile. Legal name, username, and secure fields are managed separately.

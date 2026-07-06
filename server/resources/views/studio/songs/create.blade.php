@@ -8,17 +8,17 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio · Music Library</p>
-            <h1 class="esb-portal__title">New Song</h1>
-            <p class="esb-studio__card-body mt-2">Song code is assigned automatically when the song is created.</p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'New Song',
+            'pageLead' => 'Song code is assigned automatically when the song is created.',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Songs', 'url' => route('songs.index')],
+                ['label' => 'New Song'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('songs.index') }}" class="esb-studio__back-link">← Back to Song Library</a>
-            </div>
-
             <form
                 class="esb-portal__panel esb-studio__card esb-studio__show-form"
                 method="POST"

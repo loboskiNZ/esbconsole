@@ -8,16 +8,15 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">The Studio</h1>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'The Studio',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Songs'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio') }}" class="esb-studio__back-link">← Back to Studio</a>
-            </div>
-
             @if (session('song_archived'))
                 <p class="esb-portal__success mb-4" role="status">{{ session('song_archived') }} archived.</p>
             @endif

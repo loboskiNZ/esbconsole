@@ -8,16 +8,16 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Archived Shows</h1>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Archived Shows',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Shows', 'url' => route('studio.shows.index')],
+                ['label' => 'Archived Shows'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio.shows.index') }}" class="esb-studio__back-link">← Back to Shows</a>
-            </div>
-
             @if ($shows->isEmpty())
                 <section class="esb-portal__panel esb-studio__card">
                     <p class="esb-studio__card-body">No archived shows.</p>

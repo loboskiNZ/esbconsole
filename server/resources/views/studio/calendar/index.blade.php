@@ -11,16 +11,15 @@
         class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col"
         x-data="studioCalendar(@js($scheduleItems->pluck('card')->values()), @js($upcomingItems->pluck('card')->values()), @js($hasMusicianLink))"
     >
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio</p>
-            <h1 class="esb-portal__title">Calendar</h1>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Calendar',
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Schedule'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
-            <div class="esb-studio__charts-nav mb-4">
-                <a href="{{ route('studio') }}" class="esb-studio__back-link">← Back to Studio</a>
-            </div>
-
             @if (session('rsvp_saved'))
                 <p class="esb-portal__success mb-4" role="status">RSVP saved.</p>
             @endif

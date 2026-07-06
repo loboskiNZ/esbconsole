@@ -10,13 +10,16 @@
 
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
-        <header class="esb-studio__chrome-header">
-            <p class="esb-portal__eyebrow mb-2">ESB Studio · Show Playlist</p>
-            <h1 class="esb-portal__title">Upload chart</h1>
-            <p class="esb-studio__card-body mt-2">
-                {{ $songName }} · {{ $partName }}
-            </p>
-        </header>
+        @include('studio.partials._chrome-header', [
+            'pageTitle' => 'Upload chart',
+            'pageLead' => $songName.' · '.$partName,
+            'breadcrumbs' => [
+                ['label' => 'Studio', 'url' => route('studio')],
+                ['label' => 'Shows', 'url' => route('studio.shows.index')],
+                ['label' => $show->name, 'url' => route('studio.shows.show', $show)],
+                ['label' => 'Upload chart'],
+            ],
+        ])
 
         <div class="esb-studio__shell-body">
             <div class="esb-studio__charts-nav mb-4">
