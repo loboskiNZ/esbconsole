@@ -71,8 +71,21 @@ LYRICS;
 
         $this->actingAs($director)->get(route('songs.edit', $song))
             ->assertOk()
-            ->assertSee('formaction="'.route('songs.lyrics.pdf', $song).'"', false)
-            ->assertDontSee('<form method="POST" action="'.route('songs.lyrics.pdf', $song).'"', false);
+            ->assertSee('action="'.route('songs.lyrics.pdf', $song).'"', false)
+            ->assertSee('esb-studio__song-lyrics-generate-form', false)
+            ->assertSee('id="song-edit-form"', false);
+    }
+
+    public function test_put_to_lyrics_pdf_route_is_not_allowed(): void
+    {
+        $director = $this->createDirectorUser();
+        $song = $this->seedSong('Method Check Song');
+
+        $this->actingAs($director)->get(route('songs.edit', $song));
+
+        $this->actingAs($director)->put(route('songs.lyrics.pdf', $song), [
+            '_token' => session()->token(),
+        ])->assertStatus(405);
     }
 
     public function test_director_sees_lyrics_section_on_song_edit_page(): void
@@ -84,7 +97,7 @@ LYRICS;
             ->assertOk()
             ->assertSee('for="song-lyrics">Lyrics', false)
             ->assertSee('{intro}', false)
-            ->assertSee('saved to Song files', false)
+            ->assertSee('Generate Lyrics PDF below', false)
             ->assertSee(route('songs.lyrics.pdf', $song), false);
     }
 

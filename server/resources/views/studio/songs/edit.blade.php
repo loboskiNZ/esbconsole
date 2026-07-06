@@ -85,136 +85,138 @@
 
             <div class="esb-studio__song-edit-layout">
                 <div class="esb-studio__song-edit-main">
-                    <form
-                        id="song-edit-form"
-                        class="esb-portal__panel esb-studio__card esb-studio__show-form"
-                        method="POST"
-                        action="{{ route('songs.update', $song) }}"
-                    >
-                        @csrf
-                        @method('PUT')
+                    <div class="esb-portal__panel esb-studio__card esb-studio__show-form">
+                        <form
+                            id="song-edit-form"
+                            method="POST"
+                            action="{{ route('songs.update', $song) }}"
+                        >
+                            @csrf
+                            @method('PUT')
 
-                        @if ($returnTo)
-                            <input type="hidden" name="return_to" value="{{ $returnTo }}">
-                        @endif
+                            @if ($returnTo)
+                                <input type="hidden" name="return_to" value="{{ $returnTo }}">
+                            @endif
 
-                        <div class="esb-studio__director-notes-field">
-                            <label class="esb-portal__label mb-2 block" for="song-notes">Song notes</label>
-                            <p class="esb-studio__card-body mb-3">Canonical song information shown on the show playlist for all musicians.</p>
-                            <textarea
-                                id="song-notes"
-                                name="notes"
-                                rows="5"
-                                class="esb-portal__input esb-studio__band-textarea"
-                            >{{ old('notes', $song->notes) }}</textarea>
-                        </div>
+                            <div class="esb-studio__director-notes-field">
+                                <label class="esb-portal__label mb-2 block" for="song-notes">Song notes</label>
+                                <p class="esb-studio__card-body mb-3">Canonical song information shown on the show playlist for all musicians.</p>
+                                <textarea
+                                    id="song-notes"
+                                    name="notes"
+                                    rows="5"
+                                    class="esb-portal__input esb-studio__band-textarea"
+                                >{{ old('notes', $song->notes) }}</textarea>
+                            </div>
 
-                        <div class="esb-studio__director-notes-field mt-6">
-                            <label class="esb-portal__label mb-2 block" for="song-lyrics">Lyrics</label>
-                            <p class="esb-studio__card-body mb-3">
-                                Enter tagged lyrics for this song. Use a tag on its own line, such as
-                                <code>{intro}</code>, <code>{verse1}</code>, or <code>{chorus1}</code>, followed by the lyric lines for that section.
-                                Tags become section headings in the generated PDF. Save the song first, then generate — the PDF is saved to Song files.
-                            </p>
-                            <textarea
-                                id="song-lyrics"
-                                name="lyrics"
-                                rows="14"
-                                class="esb-portal__input esb-studio__band-textarea esb-studio__song-lyrics-input"
-                                spellcheck="false"
-                            >{{ old('lyrics', $song->lyrics) }}</textarea>
-                            <div class="esb-studio__band-form-actions mt-4">
-                                <button
-                                    type="submit"
-                                    formaction="{{ route('songs.lyrics.pdf', $song) }}"
-                                    formmethod="POST"
-                                    class="esb-portal__button esb-portal__button--secondary"
-                                >
-                                    Generate Lyrics PDF
+                            <div class="esb-studio__director-notes-field mt-6">
+                                <label class="esb-portal__label mb-2 block" for="song-lyrics">Lyrics</label>
+                                <p class="esb-studio__card-body mb-3">
+                                    Enter tagged lyrics for this song. Use a tag on its own line, such as
+                                    <code>{intro}</code>, <code>{verse1}</code>, or <code>{chorus1}</code>, followed by the lyric lines for that section.
+                                    Tags become section headings in the generated PDF. Save the song first, then use Generate Lyrics PDF below.
+                                </p>
+                                <textarea
+                                    id="song-lyrics"
+                                    name="lyrics"
+                                    rows="14"
+                                    class="esb-portal__input esb-studio__band-textarea esb-studio__song-lyrics-input"
+                                    spellcheck="false"
+                                >{{ old('lyrics', $song->lyrics) }}</textarea>
+                            </div>
+
+                            <div class="esb-studio__director-notes-field mt-6">
+                                <label class="esb-portal__label mb-2 block" for="song-director-notes">Director notes</label>
+                                <p class="esb-studio__card-body mb-3">Internal production guidance. Not shown on the show playlist.</p>
+                                <textarea
+                                    id="song-director-notes"
+                                    name="director_notes"
+                                    rows="5"
+                                    class="esb-portal__input esb-studio__band-textarea esb-studio__director-notes-input"
+                                >{{ old('director_notes', $song->director_notes) }}</textarea>
+                            </div>
+
+                            <div class="esb-studio__band-form-grid mt-6">
+                                <div>
+                                    <label class="esb-portal__label mb-2 block" for="song-name">Song title</label>
+                                    <input
+                                        id="song-name"
+                                        name="name"
+                                        type="text"
+                                        class="esb-portal__input"
+                                        value="{{ old('name', $song->name) }}"
+                                        required
+                                    >
+                                </div>
+
+                                <div>
+                                    <label class="esb-portal__label mb-2 block" for="song-bpm">BPM</label>
+                                    <input
+                                        id="song-bpm"
+                                        name="bpm"
+                                        type="number"
+                                        min="20"
+                                        max="300"
+                                        class="esb-portal__input"
+                                        value="{{ old('bpm', $song->bpm) }}"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label class="esb-portal__label mb-2 block" for="song-time-signature">Time signature</label>
+                                    <select id="song-time-signature" name="time_signature_id" class="esb-portal__input">
+                                        <option value="">—</option>
+                                        @foreach ($timeSignatures as $timeSignature)
+                                            <option value="{{ $timeSignature->id }}" @selected((string) old('time_signature_id', $song->time_signature_id) === (string) $timeSignature->id)>
+                                                {{ $timeSignature->label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="esb-portal__label mb-2 block" for="song-key">Key</label>
+                                    <select id="song-key" name="musical_key_id" class="esb-portal__input">
+                                        <option value="">—</option>
+                                        @foreach ($musicalKeys as $musicalKey)
+                                            <option value="{{ $musicalKey->id }}" @selected((string) old('musical_key_id', $song->musical_key_id) === (string) $musicalKey->id)>
+                                                {{ $musicalKey->label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="esb-portal__label mb-2 block" for="song-mood">Mood</label>
+                                    <select id="song-mood" name="mood_id" class="esb-portal__input">
+                                        <option value="">—</option>
+                                        @foreach ($moods as $mood)
+                                            <option value="{{ $mood->id }}" @selected((string) old('mood_id', $song->mood_id) === (string) $mood->id)>
+                                                {{ $mood->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="esb-studio__band-form-actions mt-6 esb-studio__song-edit-save--mobile">
+                                <button type="submit" class="esb-portal__button esb-portal__button--primary">
+                                    Save song
                                 </button>
                             </div>
-                        </div>
+                        </form>
 
-                        <div class="esb-studio__director-notes-field mt-6">
-                            <label class="esb-portal__label mb-2 block" for="song-director-notes">Director notes</label>
-                            <p class="esb-studio__card-body mb-3">Internal production guidance. Not shown on the show playlist.</p>
-                            <textarea
-                                id="song-director-notes"
-                                name="director_notes"
-                                rows="5"
-                                class="esb-portal__input esb-studio__band-textarea esb-studio__director-notes-input"
-                            >{{ old('director_notes', $song->director_notes) }}</textarea>
-                        </div>
-
-                        <div class="esb-studio__band-form-grid mt-6">
-                            <div>
-                                <label class="esb-portal__label mb-2 block" for="song-name">Song title</label>
-                                <input
-                                    id="song-name"
-                                    name="name"
-                                    type="text"
-                                    class="esb-portal__input"
-                                    value="{{ old('name', $song->name) }}"
-                                    required
-                                >
-                            </div>
-
-                            <div>
-                                <label class="esb-portal__label mb-2 block" for="song-bpm">BPM</label>
-                                <input
-                                    id="song-bpm"
-                                    name="bpm"
-                                    type="number"
-                                    min="20"
-                                    max="300"
-                                    class="esb-portal__input"
-                                    value="{{ old('bpm', $song->bpm) }}"
-                                >
-                            </div>
-
-                            <div>
-                                <label class="esb-portal__label mb-2 block" for="song-time-signature">Time signature</label>
-                                <select id="song-time-signature" name="time_signature_id" class="esb-portal__input">
-                                    <option value="">—</option>
-                                    @foreach ($timeSignatures as $timeSignature)
-                                        <option value="{{ $timeSignature->id }}" @selected((string) old('time_signature_id', $song->time_signature_id) === (string) $timeSignature->id)>
-                                            {{ $timeSignature->label }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="esb-portal__label mb-2 block" for="song-key">Key</label>
-                                <select id="song-key" name="musical_key_id" class="esb-portal__input">
-                                    <option value="">—</option>
-                                    @foreach ($musicalKeys as $musicalKey)
-                                        <option value="{{ $musicalKey->id }}" @selected((string) old('musical_key_id', $song->musical_key_id) === (string) $musicalKey->id)>
-                                            {{ $musicalKey->label }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="esb-portal__label mb-2 block" for="song-mood">Mood</label>
-                                <select id="song-mood" name="mood_id" class="esb-portal__input">
-                                    <option value="">—</option>
-                                    @foreach ($moods as $mood)
-                                        <option value="{{ $mood->id }}" @selected((string) old('mood_id', $song->mood_id) === (string) $mood->id)>
-                                            {{ $mood->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="esb-studio__band-form-actions mt-6 esb-studio__song-edit-save--mobile">
-                            <button type="submit" class="esb-portal__button esb-portal__button--primary">
-                                Save song
+                        <form
+                            method="POST"
+                            action="{{ route('songs.lyrics.pdf', $song) }}"
+                            class="esb-studio__band-form-actions mt-6 esb-studio__song-lyrics-generate-form"
+                        >
+                            @csrf
+                            <button type="submit" class="esb-portal__button esb-portal__button--secondary">
+                                Generate Lyrics PDF
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
 
                     <section class="esb-portal__panel esb-studio__card esb-studio__show-form mt-4">
                         <h2 class="esb-studio__card-title">Instrument parts</h2>
