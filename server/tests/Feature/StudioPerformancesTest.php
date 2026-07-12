@@ -209,6 +209,73 @@ class StudioPerformancesTest extends TestCase
             ->assertSee('esb-studio__date-input', false);
     }
 
+    public function test_director_can_access_create_with_valid_date_query_parameter(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedShow(['name' => 'Date Query Show']);
+
+        $this->actingAs($director)
+            ->get('/studio/performances/create?date=2026-07-18')
+            ->assertOk()
+            ->assertSee('value="2026-07-18"', false);
+    }
+
+    public function test_old_input_takes_precedence_over_calendar_date_query_parameter(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Old Input Show']);
+
+        $this->actingAs($director)->get('/studio/performances/create?date=2026-07-18')->assertOk();
+
+        $this->actingAs($director)
+            ->post('/studio/performances', [
+                '_token' => session()->token(),
+                'show_id' => '',
+                'performance_type' => Performance::TYPE_REHEARSAL,
+                'status' => Performance::STATUS_NOT_CONFIRMED,
+                'location_name' => 'Rehearsal Room',
+                'performance_date' => '2026-08-01',
+            ])
+            ->assertSessionHasErrors('show_id');
+
+        $this->actingAs($director)
+            ->get('/studio/performances/create?date=2026-07-18')
+            ->assertOk()
+            ->assertSee('value="2026-08-01"', false)
+            ->assertDontSee('value="2026-07-18"', false);
+    }
+
+    public function test_invalid_date_query_parameter_does_not_cause_server_error(): void
+    {
+        $director = $this->createDirectorUser();
+        $this->seedShow(['name' => 'Invalid Date Show']);
+
+        $this->actingAs($director)
+            ->get('/studio/performances/create?date=not-a-date')
+            ->assertOk()
+            ->assertDontSee('value="not-a-date"', false);
+
+        $this->actingAs($director)
+            ->get('/studio/performances/create?date=2026-13-45')
+            ->assertOk()
+            ->assertDontSee('value="2026-13-45"', false);
+    }
+
+    public function test_musician_cannot_access_create_with_date_query_parameter(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $this->seedShow(['name' => 'Protected Date Show']);
+
+        $this->actingAs($musician)
+            ->get('/studio/performances/create?date=2026-07-18')
+            ->assertForbidden();
+
+        $this->actingAs($musician)
+            ->post('/studio/performances', $this->performancePayload($this->seedShow(['name' => 'Blocked Store Show'])))
+            ->assertForbidden();
+    }
+
     public function test_edit_form_includes_calendar_date_picker_input(): void
     {
         $director = $this->createDirectorUser();

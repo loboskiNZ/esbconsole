@@ -1,6 +1,7 @@
 @props([
     'shows',
     'performance' => null,
+    'prefillDate' => null,
 ])
 
 @php
@@ -66,7 +67,7 @@
             name="performance_date"
             type="date"
             class="esb-portal__input esb-studio__date-input"
-            value="{{ old('performance_date', $performance?->performance_date?->format('Y-m-d')) }}"
+            value="{{ old('performance_date', $performance?->performance_date?->format('Y-m-d') ?? $prefillDate) }}"
             required
         >
         <p class="esb-studio__field-hint mt-1">Use the calendar picker to choose a date.</p>

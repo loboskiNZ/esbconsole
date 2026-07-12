@@ -32,6 +32,8 @@ class StudioCalendarController extends Controller
                 $musician,
             ),
             'hasMusicianLink' => $musician !== null,
+            'isDirector' => $user?->isDirector() ?? false,
+            'performanceCreateUrl' => route('studio.performances.create'),
         ]);
     }
 }

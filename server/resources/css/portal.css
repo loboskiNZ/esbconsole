@@ -3264,6 +3264,31 @@
     margin-bottom: 0.45rem;
 }
 
+.esb-studio__calendar-day-header {
+    margin-bottom: 0.15rem;
+}
+
+.esb-studio__calendar-date-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0.35rem;
+    margin: -0.15rem -0.15rem 0.15rem;
+    padding: 0.15rem;
+}
+
+.esb-studio__calendar-date-link:hover,
+.esb-studio__calendar-date-link:focus-visible {
+    background: rgba(255, 178, 62, 0.12);
+    outline: 2px solid rgba(255, 178, 62, 0.45);
+    outline-offset: 1px;
+}
+
+.esb-studio__calendar-date-link .esb-studio__calendar-day-label,
+.esb-studio__calendar-date-link .esb-studio__calendar-month-day {
+    margin-bottom: 0;
+}
+
 .esb-studio__calendar-event,
 .esb-studio__calendar-month-event {
     display: grid;
@@ -3276,6 +3301,18 @@
     color: inherit;
     text-decoration: none;
     font-size: 0.78rem;
+}
+
+.esb-studio__calendar-month-event-type {
+    display: block;
+    font-weight: 700;
+    color: var(--esb-ink);
+}
+
+.esb-studio__calendar-month-event-meta {
+    display: block;
+    color: var(--esb-muted);
+    font-size: 0.7rem;
 }
 
 .esb-studio__calendar-event-title {

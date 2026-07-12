@@ -9,7 +9,7 @@
 @section('content')
     <main
         class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col"
-        x-data="studioCalendar(@js($scheduleItems->pluck('card')->values()), @js($upcomingItems->pluck('card')->values()), @js($hasMusicianLink))"
+        x-data="studioCalendar(@js($scheduleItems->pluck('card')->values()), @js($upcomingItems->pluck('card')->values()), @js($hasMusicianLink), @js($isDirector), @js($performanceCreateUrl))"
     >
         @include('studio.partials._chrome-header', [
             'pageTitle' => 'Calendar',
@@ -52,9 +52,9 @@
                             <li class="esb-studio__schedule-item" :class="{ 'esb-studio__schedule-item--rsvp-open': isRsvpOpen(card) }">
                                 <div class="esb-studio__schedule-item-main">
                                     <a :href="card.show_url" class="esb-studio__schedule-item-link">
-                                        <span class="esb-studio__schedule-show" x-text="card.show_name"></span>
-                                        <span class="esb-studio__schedule-meta" x-text="card.type + ' · ' + card.status"></span>
-                                        <span class="esb-studio__schedule-meta" x-text="card.date + ' · ' + card.time + ' · ' + card.location"></span>
+                                        <span class="esb-studio__schedule-show" x-text="card.type"></span>
+                                        <span class="esb-studio__schedule-meta" x-text="card.show_name + ' · ' + card.status"></span>
+                                        <span class="esb-studio__schedule-meta" x-text="card.date + (cardSecondaryMeta(card) ? ' · ' + cardSecondaryMeta(card) : '')"></span>
                                         <span class="esb-studio__schedule-rsvp" x-text="'RSVP: ' + card.rsvp_label"></span>
                                     </a>
                                 </div>
@@ -80,16 +80,32 @@
                 <div class="esb-studio__calendar-view" x-show="view === 'week'" x-cloak>
                     <div class="esb-studio__calendar-week">
                         <template x-for="day in weekDays()" :key="day.toISOString()">
-                            <section class="esb-studio__calendar-day" :class="{ 'is-today': isToday(day) }">
-                                <h2 class="esb-studio__calendar-day-label" x-text="dayLabel(day)"></h2>
+                            <section class="esb-studio__calendar-day @if ($isDirector) is-director @endif" :class="{ 'is-today': isToday(day) }">
+                                <div class="esb-studio__calendar-day-header">
+                                    @if ($isDirector)
+                                        <a
+                                            :href="createPerformanceUrl(day)"
+                                            class="esb-studio__calendar-date-link"
+                                            :aria-label="addPerformanceLabel(day)"
+                                        >
+                                            <h2 class="esb-studio__calendar-day-label" x-text="dayLabel(day)"></h2>
+                                        </a>
+                                    @else
+                                        <h2 class="esb-studio__calendar-day-label" x-text="dayLabel(day)"></h2>
+                                    @endif
+                                </div>
                                 <template x-if="performancesForDate(day).length === 0">
                                     <p class="esb-studio__calendar-empty">—</p>
                                 </template>
                                 <template x-for="card in performancesForDate(day)" :key="card.id">
                                     <article class="esb-studio__calendar-event" :class="{ 'esb-studio__calendar-event--rsvp-open': isRsvpOpen(card) }">
                                         <a :href="card.show_url" class="esb-studio__calendar-event-link">
-                                            <span class="esb-studio__calendar-event-title" x-text="card.show_name"></span>
-                                            <span class="esb-studio__calendar-event-meta" x-text="card.time + ' · ' + card.type"></span>
+                                            <span class="esb-studio__calendar-event-title" x-text="card.type"></span>
+                                            <span
+                                                class="esb-studio__calendar-event-meta"
+                                                x-show="cardSecondaryMeta(card)"
+                                                x-text="cardSecondaryMeta(card)"
+                                            ></span>
                                         </a>
                                         <div class="esb-studio__schedule-item-actions">
                                             <button
@@ -119,15 +135,32 @@
                         <div class="esb-studio__calendar-month-week">
                             <template x-for="day in week" :key="day.toISOString()">
                                 <section
-                                    class="esb-studio__calendar-month-cell"
+                                    class="esb-studio__calendar-month-cell @if ($isDirector) is-director @endif"
                                     :class="{
                                         'is-muted': !isSameMonth(day),
                                         'is-today': isToday(day),
                                     }"
                                 >
-                                    <div class="esb-studio__calendar-month-day" x-text="day.getDate()"></div>
+                                    @if ($isDirector)
+                                        <a
+                                            :href="createPerformanceUrl(day)"
+                                            class="esb-studio__calendar-date-link"
+                                            :aria-label="addPerformanceLabel(day)"
+                                        >
+                                            <div class="esb-studio__calendar-month-day" x-text="day.getDate()"></div>
+                                        </a>
+                                    @else
+                                        <div class="esb-studio__calendar-month-day" x-text="day.getDate()"></div>
+                                    @endif
                                     <template x-for="card in performancesForDate(day).slice(0, 2)" :key="card.id">
-                                        <a :href="card.show_url" class="esb-studio__calendar-month-event" x-text="card.show_name"></a>
+                                        <a :href="card.show_url" class="esb-studio__calendar-month-event">
+                                            <span class="esb-studio__calendar-month-event-type" x-text="card.type"></span>
+                                            <span
+                                                class="esb-studio__calendar-month-event-meta"
+                                                x-show="cardSecondaryMeta(card)"
+                                                x-text="cardSecondaryMeta(card)"
+                                            ></span>
+                                        </a>
                                     </template>
                                 </section>
                             </template>

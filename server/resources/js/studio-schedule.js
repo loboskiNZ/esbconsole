@@ -108,13 +108,21 @@ export function studioSchedule(cards = [], hasMusicianLink = true) {
     };
 }
 
-export function studioCalendar(cards = [], upcomingCards = [], hasMusicianLink = true) {
+export function studioCalendar(
+    cards = [],
+    upcomingCards = [],
+    hasMusicianLink = true,
+    isDirector = false,
+    performanceCreateUrl = '',
+) {
     const todayIso = isoDate(new Date());
 
     return {
         cards,
         upcomingCards,
         hasMusicianLink,
+        isDirector,
+        performanceCreateUrl,
         view: window.matchMedia('(max-width: 767px)').matches ? 'week' : 'month',
         focusDate: new Date(),
         ...rsvpInteractionState(),
@@ -187,6 +195,38 @@ export function studioCalendar(cards = [], upcomingCards = [], hasMusicianLink =
 
         dayLabel(date) {
             return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' });
+        },
+
+        createPerformanceUrl(date) {
+            if (!this.isDirector || !this.performanceCreateUrl) {
+                return '#';
+            }
+
+            return `${this.performanceCreateUrl}?date=${isoDate(date)}`;
+        },
+
+        addPerformanceLabel(date) {
+            const formatted = date.toLocaleDateString(undefined, {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            });
+
+            return `Add performance on ${formatted}`;
+        },
+
+        cardSecondaryMeta(card) {
+            const parts = [];
+
+            if (card?.time && card.time !== '—') {
+                parts.push(card.time);
+            }
+
+            if (card?.location && card.location !== '—') {
+                parts.push(card.location);
+            }
+
+            return parts.join(' · ');
         },
     };
 }

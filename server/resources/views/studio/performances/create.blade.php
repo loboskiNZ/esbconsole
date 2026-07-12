@@ -36,7 +36,10 @@
                     </div>
                 @endif
 
-                @include('studio.performances.partials._form', ['shows' => $shows])
+                @include('studio.performances.partials._form', [
+                    'shows' => $shows,
+                    'prefillDate' => $prefillDate ?? null,
+                ])
 
                 <div class="esb-studio__band-form-actions mt-6">
                     <button type="submit" class="esb-portal__button esb-portal__button--primary">

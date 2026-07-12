@@ -221,7 +221,7 @@ class StudioScheduleTest extends TestCase
         $this->actingAs($user)->get('/studio/calendar')
             ->assertOk()
             ->assertSee('studioCalendar', false)
-            ->assertSee(', true)', false);
+            ->assertSee(', true, false,', false);
 
         $this->actingAs($user)
             ->post(route('studio.performances.rsvp', $performance), [
@@ -297,7 +297,7 @@ class StudioScheduleTest extends TestCase
 
         $this->actingAs($user)->get('/studio/calendar')
             ->assertOk()
-            ->assertSee(', false)', false);
+            ->assertSee(', false, false,', false);
 
         $this->actingAs($user)
             ->post(route('studio.performances.rsvp', $performance), [
@@ -334,7 +334,7 @@ class StudioScheduleTest extends TestCase
 
         $this->actingAs($director)->get('/studio/calendar')
             ->assertOk()
-            ->assertSee(', true)', false);
+            ->assertSee(', true, true,', false);
     }
 
     public function test_studio_calendar_page_loads_with_list_and_calendar_views(): void
@@ -395,6 +395,89 @@ class StudioScheduleTest extends TestCase
         $performance = $this->seedPerformance($show);
 
         $this->actingAs($director)->get(route('studio.performances.edit', $performance))->assertOk();
+    }
+
+    public function test_director_calendar_includes_add_performance_date_links(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Director Add Show']);
+        $this->seedPerformance($show, ['performance_date' => '2026-06-18']);
+
+        $this->actingAs($director)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee('esb-studio__calendar-date-link', false)
+            ->assertSee(':aria-label="addPerformanceLabel(day)"', false)
+            ->assertSee('studio\/performances\/create', false)
+            ->assertSee(', false, true,', false);
+    }
+
+    public function test_musician_calendar_does_not_include_add_performance_date_links(): void
+    {
+        [$user] = $this->createMusicianUser();
+        $show = $this->seedShow(['name' => 'Musician Add Show']);
+        $this->seedPerformance($show, ['performance_date' => '2026-06-18']);
+
+        $this->actingAs($user)->get('/studio/calendar')
+            ->assertOk()
+            ->assertDontSee('esb-studio__calendar-date-link', false)
+            ->assertDontSee(':aria-label="addPerformanceLabel(day)"', false)
+            ->assertSee(', true, false,', false);
+    }
+
+    public function test_calendar_entries_display_performance_type_time_and_location(): void
+    {
+        [$user] = $this->createMusicianUser();
+        $show = $this->seedShow(['name' => 'Info Show']);
+        $this->seedPerformance($show, [
+            'performance_type' => Performance::TYPE_LIVE,
+            'location_name' => 'Town Hall',
+            'performance_date' => '2026-06-18',
+            'performance_time' => '19:30:00',
+        ]);
+
+        $this->actingAs($user)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee('Live', false)
+            ->assertSee('19:30', false)
+            ->assertSee('Town Hall', false);
+    }
+
+    public function test_calendar_performance_entry_links_remain_correct(): void
+    {
+        [$user] = $this->createMusicianUser();
+        $show = $this->seedShow(['name' => 'Link Show']);
+        $performance = $this->seedPerformance($show, [
+            'performance_date' => '2026-06-18',
+            'location_name' => 'Link Venue',
+        ]);
+
+        $this->actingAs($user)->get('/studio/calendar')
+            ->assertOk()
+            ->assertSee('Link Venue', false)
+            ->assertSee(':href="card.show_url"', false)
+            ->assertSee('\u0022id\u0022:'.$performance->id, false);
+    }
+
+    public function test_calendar_location_is_loaded_without_additional_queries(): void
+    {
+        $director = $this->createDirectorUser();
+        $show = $this->seedShow(['name' => 'Query Show']);
+        $this->seedPerformance($show, [
+            'location_name' => 'Inline Venue',
+            'performance_date' => '2026-06-18',
+        ]);
+
+        DB::enableQueryLog();
+        DB::flushQueryLog();
+
+        $this->actingAs($director)->get('/studio/calendar')->assertOk();
+
+        $queries = DB::getQueryLog();
+        $locationTableQueries = array_filter($queries, static function (array $query): bool {
+            return str_contains(strtolower($query['query']), 'locations');
+        });
+
+        $this->assertSame([], array_values($locationTableQueries));
     }
 
     public function test_rsvp_does_not_delete_performance_or_assignment_rows(): void

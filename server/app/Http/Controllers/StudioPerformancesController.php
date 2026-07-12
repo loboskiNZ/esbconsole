@@ -13,6 +13,7 @@ use App\Services\StudioPerformanceRsvpService;
 use App\Services\StudioPerformanceService;
 use App\Services\StudioScheduleService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\View\View;
 
@@ -26,11 +27,27 @@ class StudioPerformancesController extends Controller
         ]);
     }
 
-    public function create(StudioPerformanceService $performances): View
+    public function create(Request $request, StudioPerformanceService $performances): View
     {
         return view('studio.performances.create', [
             'shows' => $performances->selectableShowsForPortal(),
+            'prefillDate' => $this->resolvePrefillDate($request->query('date')),
         ]);
+    }
+
+    private function resolvePrefillDate(mixed $date): ?string
+    {
+        if (! is_string($date) || $date === '') {
+            return null;
+        }
+
+        $parsed = \DateTime::createFromFormat('Y-m-d', $date);
+
+        if ($parsed === false || $parsed->format('Y-m-d') !== $date) {
+            return null;
+        }
+
+        return $date;
     }
 
     public function store(StoreStudioPerformanceRequest $request, StudioPerformanceService $performances): RedirectResponse
