@@ -60,6 +60,14 @@ class StudioPerformanceTicketingController extends Controller
             $ticketing->save($portalPerformance, $request->validatedPayload(), $request->user());
         } catch (PerformanceTicketingException $exception) {
             return back()->withInput()->with('ticketing_error', $exception->getMessage());
+        } catch (\Throwable $exception) {
+            try {
+                report($exception);
+            } catch (\Throwable) {
+                // A logging failure must not replace the message the director sees.
+            }
+
+            return back()->withInput()->with('ticketing_error', 'Ticketing could not be saved. Nothing was stored.');
         }
 
         return redirect()

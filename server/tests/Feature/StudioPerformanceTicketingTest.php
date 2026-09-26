@@ -733,6 +733,200 @@ class StudioPerformanceTicketingTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_save_persists_configuration_and_a_reload_shows_the_stored_row(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $response = $this->actingAs($director)
+            ->followingRedirects()
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'enabled' => '1',
+                'capacity' => 150,
+                'currency' => 'NZD',
+                'timezone' => 'Pacific/Auckland',
+                'sales_open_at' => '2026-10-01T09:00',
+                'sales_close_at' => '2026-10-17T18:00',
+                'public_sales_enabled' => '1',
+                'walk_in_sales_enabled' => '1',
+                'interest_registration_enabled' => '1',
+                'private_offers_enabled' => '0',
+                'marketing_registration_enabled' => '0',
+                'offer_validity_minutes' => 720,
+                'abandoned_checkout_reminder_minutes' => 90,
+                'complimentary_allocation' => 8,
+                'promotional_allocation' => 4,
+                'tiers' => [[
+                    'public_id' => '',
+                    'name' => 'Door',
+                    'amount' => '10.00',
+                    'currency' => 'NZD',
+                    'category' => 'General',
+                    'starts_at' => '',
+                    'ends_at' => '',
+                    'enabled' => '1',
+                ]],
+            ]));
+
+        $response->assertOk()->assertSee('Ticketing settings saved.', false);
+
+        $configuration = PerformanceTicketingConfiguration::query()->where('performance_id', $performance->id)->firstOrFail();
+        $this->assertSame(1, PerformanceTicketingConfiguration::query()->where('performance_id', $performance->id)->count());
+        $this->assertTrue($configuration->enabled);
+        $this->assertSame(150, $configuration->capacity);
+        $this->assertSame('NZD', $configuration->currency);
+        $this->assertSame('Pacific/Auckland', $configuration->timezone);
+        $this->assertSame(720, $configuration->offer_validity_minutes);
+        $this->assertSame(90, $configuration->abandoned_checkout_reminder_minutes);
+        $this->assertSame(8, $configuration->complimentary_allocation);
+        $this->assertSame(4, $configuration->promotional_allocation);
+        $this->assertTrue($configuration->public_sales_enabled);
+        $this->assertTrue($configuration->walk_in_sales_enabled);
+        $this->assertTrue($configuration->interest_registration_enabled);
+        $this->assertFalse($configuration->private_offers_enabled);
+        $this->assertFalse($configuration->marketing_registration_enabled);
+
+        $tier = TicketPriceTier::query()->where('performance_ticketing_configuration_id', $configuration->id)->firstOrFail();
+        $this->assertSame('Door', $tier->name);
+        $this->assertSame(1000, $tier->amount_minor);
+        $this->assertSame('NZD', $tier->currency);
+        $this->assertSame('General', $tier->category);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertOk()
+            ->assertSee('value="150"', false)
+            ->assertSee('value="NZD"', false)
+            ->assertSee('value="Pacific/Auckland" selected', false)
+            ->assertSee('value="720"', false)
+            ->assertSee('value="90"', false)
+            ->assertSee('value="8"', false)
+            ->assertSee('value="4"', false)
+            ->assertSee('Door', false)
+            ->assertSee('10.00', false)
+            ->assertSee('General', false)
+            ->assertSee('Venue capacity', false)
+            ->assertSee('>150<', false);
+    }
+
+    public function test_second_save_updates_the_same_row_and_can_turn_booleans_off(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+        $this->saveTicketing($director, $performance, [
+            'capacity' => 150,
+            'public_sales_enabled' => '1',
+            'walk_in_sales_enabled' => '1',
+            'interest_registration_enabled' => '1',
+            'marketing_registration_enabled' => '1',
+        ]);
+
+        $originalId = $performance->ticketingConfiguration()->firstOrFail()->id;
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'enabled' => '0',
+                'capacity' => 120,
+                'currency' => 'NZD',
+                'public_sales_enabled' => '0',
+                'walk_in_sales_enabled' => '0',
+                'interest_registration_enabled' => '0',
+                'private_offers_enabled' => '0',
+                'marketing_registration_enabled' => '0',
+                'complimentary_allocation' => 2,
+                'promotional_allocation' => 1,
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $this->assertSame(1, PerformanceTicketingConfiguration::query()->count());
+        $configuration = $performance->ticketingConfiguration()->firstOrFail();
+        $this->assertSame($originalId, $configuration->id);
+        $this->assertFalse($configuration->enabled);
+        $this->assertSame(120, $configuration->capacity);
+        $this->assertFalse($configuration->public_sales_enabled);
+        $this->assertFalse($configuration->walk_in_sales_enabled);
+        $this->assertFalse($configuration->interest_registration_enabled);
+        $this->assertFalse($configuration->marketing_registration_enabled);
+        $this->assertSame(2, $configuration->complimentary_allocation);
+        $this->assertSame(1, $configuration->promotional_allocation);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertOk()
+            ->assertSee('value="120"', false)
+            ->assertDontSee('checked', false);
+    }
+
+    public function test_empty_price_tier_row_does_not_block_saving_capacity(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'capacity' => 150,
+                'public_sales_enabled' => '0',
+                'tiers' => [[
+                    'public_id' => '',
+                    'name' => '',
+                    'amount' => '',
+                    'currency' => '',
+                    'category' => '',
+                    'starts_at' => '',
+                    'ends_at' => '',
+                    'enabled' => '1',
+                ]],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $configuration = $performance->ticketingConfiguration()->firstOrFail();
+        $this->assertSame(150, $configuration->capacity);
+        $this->assertSame(0, TicketPriceTier::query()->count());
+    }
+
+    public function test_validation_failure_does_not_write_a_configuration(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $response = $this->actingAs($director)
+            ->from(route('studio.performances.ticketing.edit', $performance))
+            ->followingRedirects()
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'capacity' => 150,
+                'currency' => '',
+                'public_sales_enabled' => '1',
+                'tiers' => [[
+                    'name' => 'Door',
+                    'amount' => '10.00',
+                    'currency' => '',
+                    'category' => 'General',
+                    'enabled' => '1',
+                ]],
+            ]));
+
+        $response->assertOk()
+            ->assertSee('Ticketing was not saved.', false)
+            ->assertSee('Each price tier needs a name, amount, and currency.', false)
+            ->assertSee('value="150"', false);
+
+        $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+        $this->assertSame(0, TicketPriceTier::query()->count());
+    }
+
+    public function test_musician_cannot_save_ticketing_configuration(): void
+    {
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $performance = $this->seedPerformance();
+
+        $this->actingAs($musician)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload())
+            ->assertForbidden();
+
+        $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+    }
+
     /**
      * @return list<string>
      */

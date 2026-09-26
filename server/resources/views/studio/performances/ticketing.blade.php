@@ -26,7 +26,7 @@
             ])
 
             @if (session('ticketing_saved'))
-                <p class="esb-portal__success mb-4" role="status">Ticketing saved.</p>
+                <p class="esb-portal__success mb-4" role="status">Ticketing settings saved.</p>
             @endif
             @if (session('guest_saved'))
                 <p class="esb-portal__success mb-4" role="status">Guest added.</p>
@@ -41,7 +41,20 @@
                 <p class="esb-portal__success mb-4" role="status">Manual admission created. This is not a payment.</p>
             @endif
             @if (session('ticketing_error'))
-                <p class="esb-portal__error mb-4" role="alert">{{ session('ticketing_error') }}</p>
+                <div class="esb-portal__error mb-4" role="alert">
+                    <p>Ticketing was not saved.</p>
+                    <p>{{ session('ticketing_error') }}</p>
+                </div>
+            @endif
+            @if ($errors->any())
+                <div class="esb-portal__error mb-4" role="alert">
+                    <p>Ticketing was not saved.</p>
+                    <ul class="esb-studio__users-error-list">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
             @include('studio.performances.partials._ticketing-capacity', ['capacity' => $capacity])
@@ -53,16 +66,6 @@
             >
                 @csrf
                 @method('PUT')
-
-                @if ($errors->any())
-                    <div class="esb-portal__error mb-6" role="alert">
-                        <ul class="esb-studio__users-error-list">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
 
                 <section class="esb-studio__band-section">
                     <h2 class="esb-studio__band-section-title">General</h2>
@@ -76,6 +79,9 @@
                         <div>
                             <label class="esb-portal__label mb-2 block" for="ticketing-capacity">Venue capacity</label>
                             <input id="ticketing-capacity" name="capacity" type="number" min="0" class="esb-portal__input" value="{{ old('capacity', $configuration?->capacity) }}">
+                            @error('capacity')
+                                <p class="esb-portal__error mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
@@ -87,26 +93,38 @@
                                 @endforeach
                             </datalist>
                             <p class="esb-studio__field-hint mt-1">ISO 4217 code for new prices. Existing tiers and sales keep the currency they were given.</p>
+                            @error('currency')
+                                <p class="esb-portal__error mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="esb-portal__label mb-2 block" for="ticketing-timezone">Timezone</label>
                             <select id="ticketing-timezone" name="timezone" class="esb-portal__input" required>
                                 @foreach ($timezones as $timezone)
-                                    <option value="{{ $timezone }}" @selected(old('timezone', $configuration->timezone ?? 'UTC') === $timezone)>{{ $timezone }}</option>
+                                    <option value="{{ $timezone }}" @selected(old('timezone', $configuration?->timezone ?? 'UTC') === $timezone)>{{ $timezone }}</option>
                                 @endforeach
                             </select>
                             <p class="esb-studio__field-hint mt-1">Sales times are entered in this timezone and stored in UTC. Check-in times are shown in this timezone.</p>
+                            @error('timezone')
+                                <p class="esb-portal__error mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="esb-portal__label mb-2 block" for="ticketing-sales-open">Sales open</label>
                             <input id="ticketing-sales-open" name="sales_open_at" type="datetime-local" class="esb-portal__input" value="{{ old('sales_open_at', $configuration ? $configuration->localInput($configuration->sales_open_at) : '') }}">
+                            @error('sales_open_at')
+                                <p class="esb-portal__error mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="esb-portal__label mb-2 block" for="ticketing-sales-close">Sales close</label>
                             <input id="ticketing-sales-close" name="sales_close_at" type="datetime-local" class="esb-portal__input" value="{{ old('sales_close_at', $configuration ? $configuration->localInput($configuration->sales_close_at) : '') }}">
+                            @error('sales_close_at')
+                                <p class="esb-portal__error mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <label class="esb-studio__users-role-option">
@@ -164,6 +182,12 @@
                 >
                     <h2 class="esb-studio__band-section-title">Price tiers</h2>
                     <p class="esb-studio__field-hint">Each tier keeps its own amount and currency. Mark one tier as the private-offer price when private offers are on.</p>
+                    @error('tiers')
+                        <p class="esb-portal__error mt-2">{{ $message }}</p>
+                    @enderror
+                    @error('default_offer_tier')
+                        <p class="esb-portal__error mt-2">{{ $message }}</p>
+                    @enderror
 
                     <template x-for="(tier, index) in tiers" :key="index">
                         <div class="esb-studio__ticketing-tier mt-4">
