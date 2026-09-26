@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\StudioMusicianNotLinkedException;
 use App\Http\Requests\StorePerformanceRsvpRequest;
 use App\Http\Requests\StoreStudioPerformanceRequest;
 use App\Http\Requests\UpdateStudioPerformanceRequest;
-use App\Exceptions\StudioMusicianNotLinkedException;
 use App\Models\Performance;
+use App\Services\PerformanceCapacityService;
 use App\Services\PerformanceIcsExportService;
 use App\Services\StudioMusicianResolverService;
 use App\Services\StudioPerformanceRsvpService;
@@ -65,6 +66,7 @@ class StudioPerformancesController extends Controller
         StudioMusicianResolverService $musicians,
         StudioPerformanceRsvpService $rsvp,
         StudioScheduleService $schedule,
+        PerformanceCapacityService $capacity,
     ): View {
         $user = auth()->user();
         $musician = $musicians->musicianForUser($user);
@@ -79,6 +81,7 @@ class StudioPerformancesController extends Controller
             'rsvpAssignment' => $assignment,
             'rsvpLabel' => $rsvp->rsvpLabelForAssignment($assignment),
             'scheduleCard' => $schedule->serializePerformanceCard($portalPerformance, $assignment),
+            'ticketingCapacity' => ($user?->isDirector() ?? false) ? $capacity->snapshot($portalPerformance) : null,
         ]);
     }
 

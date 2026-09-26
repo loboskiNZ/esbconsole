@@ -118,6 +118,30 @@
                 </dl>
             </section>
 
+            @if ($isDirector)
+                <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                    <div class="esb-studio__schedule-rsvp-head">
+                        <h2 class="esb-studio__card-title">Ticketing</h2>
+                        <span class="esb-studio__schedule-rsvp">{{ $ticketingCapacity['enabled'] ? 'On' : 'Off' }}</span>
+                    </div>
+                    @if (! $ticketingCapacity['configured'] || ! $ticketingCapacity['enabled'])
+                        <p class="esb-studio__card-body mt-3">Ticketing is off for this performance. The schedule above is unchanged.</p>
+                    @else
+                        @include('studio.performances.partials._ticketing-capacity', ['capacity' => $ticketingCapacity])
+                    @endif
+                    <div class="esb-studio__schedule-item-actions mt-4">
+                        <a href="{{ route('studio.performances.ticketing.edit', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
+                            Configure ticketing
+                        </a>
+                        @if ($ticketingCapacity['enabled'])
+                            <a href="{{ route('studio.performances.door', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
+                                Door
+                            </a>
+                        @endif
+                    </div>
+                </section>
+            @endif
+
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">People availability</h2>
 

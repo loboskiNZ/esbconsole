@@ -5,6 +5,7 @@ import { profileEditor } from './profile-editor';
 import { studioBandInvites } from './studio-band-invites';
 import { studioChartsLauncher } from './studio-home';
 import { studioCalendar, studioSchedule } from './studio-schedule';
+import { studioTicketing } from './studio-ticketing';
 
 import { bootStudioPlaylistOrder, initStudioPlaylistOrder } from './studio-playlist-order';
 import { studioPlaylistPicker } from './studio-playlist-picker';
@@ -18,6 +19,7 @@ Alpine.data('studioBandInvites', studioBandInvites);
 Alpine.data('studioChartsLauncher', studioChartsLauncher);
 Alpine.data('studioSchedule', studioSchedule);
 Alpine.data('studioCalendar', studioCalendar);
+Alpine.data('studioTicketing', studioTicketing);
 Alpine.data('studioPlaylistPicker', studioPlaylistPicker);
 
 function bootStudioPlaylistUi() {

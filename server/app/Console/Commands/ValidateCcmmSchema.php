@@ -76,6 +76,25 @@ class ValidateCcmmSchema extends Command
         'migrations',
     ];
 
+    /**
+     * Audience ticketing belongs to Cloud Studio and the public website.
+     * These tables are not shared with Live Stage.
+     *
+     * @var list<string>
+     */
+    private const CLOUD_ONLY_TABLES = [
+        'performance_ticketing_configurations',
+        'ticket_price_tiers',
+        'audience_registrations',
+        'purchase_offers',
+        'ticket_orders',
+        'tickets',
+        'guest_list_entries',
+        'promotional_allocations',
+        'check_ins',
+        'ticketing_audit_entries',
+    ];
+
     /** @var list<string> */
     private const FORBIDDEN = [
         'invite_links',
@@ -101,7 +120,9 @@ class ValidateCcmmSchema extends Command
         ))->pluck('tablename')->values();
 
         $missing = collect(self::CCMM_TABLES)->reject(fn (string $t) => Schema::hasTable($t))->values();
-        $unexpected = $existing->diff(collect(self::CCMM_TABLES)->merge(self::LARAVEL_INFRA))->values();
+        $unexpected = $existing->diff(
+            collect(self::CCMM_TABLES)->merge(self::LARAVEL_INFRA)->merge(self::CLOUD_ONLY_TABLES)
+        )->values();
         $forbiddenPresent = collect(self::FORBIDDEN)->filter(fn (string $t) => Schema::hasTable($t))->values();
 
         $fkViolations = $this->findOrphanForeignKeys();

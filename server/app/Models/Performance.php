@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Performance extends Model
 {
@@ -83,6 +84,30 @@ class Performance extends Model
     public function assignments(): HasMany
     {
         return $this->hasMany(PerformanceAssignment::class);
+    }
+
+    /**
+     * @return HasOne<PerformanceTicketingConfiguration, $this>
+     */
+    public function ticketingConfiguration(): HasOne
+    {
+        return $this->hasOne(PerformanceTicketingConfiguration::class);
+    }
+
+    /**
+     * @return HasMany<GuestListEntry, $this>
+     */
+    public function guestListEntries(): HasMany
+    {
+        return $this->hasMany(GuestListEntry::class);
+    }
+
+    /**
+     * @return HasMany<PromotionalAllocation, $this>
+     */
+    public function promotionalAllocations(): HasMany
+    {
+        return $this->hasMany(PromotionalAllocation::class);
     }
 
     public function typeLabel(): string

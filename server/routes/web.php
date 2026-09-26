@@ -14,6 +14,7 @@ use App\Http\Controllers\StudioChartsController;
 use App\Http\Controllers\StudioChartSearchController;
 use App\Http\Controllers\StudioController;
 use App\Http\Controllers\StudioPerformancesController;
+use App\Http\Controllers\StudioPerformanceTicketingController;
 use App\Http\Controllers\StudioShowPlaylistChartController;
 use App\Http\Controllers\StudioShowPlaylistController;
 use App\Http\Controllers\StudioShowsController;
@@ -119,6 +120,15 @@ Route::middleware('auth')->group(function () {
         Route::post('/studio/performances', [StudioPerformancesController::class, 'store'])->name('studio.performances.store');
         Route::get('/studio/performances/{performance}/edit', [StudioPerformancesController::class, 'edit'])->name('studio.performances.edit');
         Route::put('/studio/performances/{performance}', [StudioPerformancesController::class, 'update'])->name('studio.performances.update');
+        Route::get('/studio/performances/{performance}/ticketing', [StudioPerformanceTicketingController::class, 'edit'])->name('studio.performances.ticketing.edit');
+        Route::put('/studio/performances/{performance}/ticketing', [StudioPerformanceTicketingController::class, 'update'])->name('studio.performances.ticketing.update');
+        Route::post('/studio/performances/{performance}/guests', [StudioPerformanceTicketingController::class, 'storeGuest'])->name('studio.performances.guests.store');
+        Route::delete('/studio/performances/{performance}/guests/{guestListEntry}', [StudioPerformanceTicketingController::class, 'destroyGuest'])->name('studio.performances.guests.destroy');
+        Route::post('/studio/performances/{performance}/promos', [StudioPerformanceTicketingController::class, 'storePromo'])->name('studio.performances.promos.store');
+        Route::patch('/studio/performances/{performance}/promos/{promotionalAllocation}', [StudioPerformanceTicketingController::class, 'updatePromo'])->name('studio.performances.promos.update');
+        Route::post('/studio/performances/{performance}/manual-admissions', [StudioPerformanceTicketingController::class, 'storeManualAdmission'])->name('studio.performances.manual-admissions.store');
+        Route::get('/studio/performances/{performance}/door', [StudioPerformanceTicketingController::class, 'door'])->name('studio.performances.door');
+        Route::post('/studio/performances/{performance}/door/check-in', [StudioPerformanceTicketingController::class, 'checkIn'])->name('studio.performances.door.check-in');
     });
     Route::get('/studio/performances/{performance}', [StudioPerformancesController::class, 'show'])->name('studio.performances.show');
     Route::post('/studio/invites', [StudioBandInviteController::class, 'store'])

@@ -1010,4 +1010,23 @@ End of Decision Log — PH064
 
 ---
 
-End of Decision Log — PH072
+## PH073 — Cloud-only Performance ticketing
+
+| ID | Decision | Rationale |
+|----|----------|-----------|
+| 310 | **Audience ticketing is an optional Cloud-only capability of Performance.** Performance remains one dated occurrence of a Show. No Gig or Event aggregate is introduced. Order status, payment status, and check-in stay separate: a confirmed manual order is not a payment and is not a check-in. | Operator direction for ESB Studio. Live execution, Ableton authority, and local-first performance are unchanged. |
+| 311 | **Ticketing tables are not shared ESB entities.** Cloud Studio migrations create them on the Cloud Database only. Live Stage does not load them and must not depend on them. CCMM schema parity does not apply. The public website may use the same tables in a later phase. | Decision 198 parity applies to shared entities. Door commerce must not become a live-show dependency. |
+| 312 | **Phase 1 inserts no production ticketing configuration.** Capacity, currency, prices, guests, and promotional allocations are entered in ESB Studio after deployment. | PH072. The migration creates empty tables and does not modify existing Performance rows. |
+| 313 | **Manual admission and party arrival are separate records.** A director manual admission is a TicketOrder with channel `manual`, status `confirmed`, and payment status `not_applicable`. Its Tickets are valid and consume capacity. Physical arrival is a CheckIn. Guest-list and promotional quantities may arrive in parts: each arrival is a CheckIn row with its own quantity, and those quantities sum to the allocated quantity. A Ticket checks in once, with quantity 1. | Operator adjustment to Phase 1. Order status, payment status, and check-in stay separate. |
+
+### PH073 — Status
+
+| Field | Value |
+|-------|-------|
+| **Status** | Phase 1 implemented in Cloud Studio source. Not migrated in production. |
+| **Schema** | Cloud Database only, via `server/database/migrations/` |
+| **Excluded** | Live Stage, CCMM, public website, Stripe checkout |
+
+---
+
+End of Decision Log — PH073
