@@ -178,14 +178,11 @@
 
                 <section
                     class="esb-studio__band-section"
-                    x-data="studioTicketing(@js($tierRows), @js((string) $defaultOfferIndex))"
+                    x-data="studioTicketing(@js($tierRows))"
                 >
                     <h2 class="esb-studio__band-section-title">Price tiers</h2>
-                    <p class="esb-studio__field-hint">Each tier keeps its own amount and currency. Mark one tier as the private-offer price when private offers are on.</p>
+                    <p class="esb-studio__field-hint">Each tier keeps its own amount and currency. Mark every tier that can be sent as its own private-offer link. Tiers with different dates stay separate choices.</p>
                     @error('tiers')
-                        <p class="esb-portal__error mt-2">{{ $message }}</p>
-                    @enderror
-                    @error('default_offer_tier')
                         <p class="esb-portal__error mt-2">{{ $message }}</p>
                     @enderror
 
@@ -226,8 +223,9 @@
                                 </div>
                                 <div class="esb-studio__ticketing-tier-actions">
                                     <label class="esb-studio__users-role-option">
-                                        <input type="radio" name="default_offer_tier" :value="index" x-model="defaultOfferIndex">
-                                        <span>Private offer tier</span>
+                                        <input type="hidden" :name="`tiers[${index}][private_offer]`" value="0">
+                                        <input type="checkbox" value="1" :name="`tiers[${index}][private_offer]`" x-model="tier.private_offer">
+                                        <span>Private offer</span>
                                     </label>
                                     <button type="button" class="esb-portal__button esb-portal__button--secondary" @click="removeTier(index)">Remove</button>
                                 </div>

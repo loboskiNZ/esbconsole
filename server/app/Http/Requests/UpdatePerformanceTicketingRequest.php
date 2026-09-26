@@ -36,7 +36,6 @@ class UpdatePerformanceTicketingRequest extends FormRequest
             'abandoned_checkout_reminder_minutes' => ['required', 'integer', 'min:1', 'max:43200'],
             'complimentary_allocation' => ['required', 'integer', 'min:0', 'max:100000'],
             'promotional_allocation' => ['required', 'integer', 'min:0', 'max:100000'],
-            'default_offer_tier' => ['nullable', 'string', 'max:20'],
             'tiers' => ['nullable', 'array'],
             'tiers.*.public_id' => ['nullable', 'uuid'],
             'tiers.*.name' => ['nullable', 'string', 'max:120'],
@@ -46,6 +45,7 @@ class UpdatePerformanceTicketingRequest extends FormRequest
             'tiers.*.starts_at' => ['nullable', 'date'],
             'tiers.*.ends_at' => ['nullable', 'date'],
             'tiers.*.enabled' => ['nullable', 'boolean'],
+            'tiers.*.private_offer' => ['nullable', 'boolean'],
         ];
     }
 
@@ -84,10 +84,20 @@ class UpdatePerformanceTicketingRequest extends FormRequest
             $tiers = $this->filledTiers($validator);
             $needsTier = $this->boolean('public_sales_enabled') || $this->boolean('private_offers_enabled');
             $enabledTier = false;
+            $enabledPrivateOffer = false;
+            $disabledPrivateOffer = false;
 
             foreach ($tiers as $tier) {
                 if ($tier['enabled']) {
                     $enabledTier = true;
+                }
+
+                if ($tier['private_offer'] && $tier['enabled']) {
+                    $enabledPrivateOffer = true;
+                }
+
+                if ($tier['private_offer'] && ! $tier['enabled']) {
+                    $disabledPrivateOffer = true;
                 }
 
                 if ($tier['starts_at'] !== null && $tier['ends_at'] !== null && strtotime($tier['ends_at']) <= strtotime($tier['starts_at'])) {
@@ -105,18 +115,12 @@ class UpdatePerformanceTicketingRequest extends FormRequest
                 $validator->errors()->add('tiers', 'Add an enabled price tier before opening public sales or private offers.');
             }
 
-            $defaultIndex = $this->input('default_offer_tier');
-            $tierIndexMap = $this->filledTierIndexMap();
-            if ($this->boolean('private_offers_enabled')) {
-                $mappedIndex = is_string($defaultIndex) && ctype_digit($defaultIndex)
-                    ? ($tierIndexMap[(int) $defaultIndex] ?? null)
-                    : null;
+            if ($disabledPrivateOffer) {
+                $validator->errors()->add('tiers', 'A private-offer tier must be enabled.');
+            }
 
-                if ($mappedIndex === null || ! isset($tiers[$mappedIndex])) {
-                    $validator->errors()->add('default_offer_tier', 'Choose the price tier used for new private offers.');
-                } elseif (! $tiers[$mappedIndex]['enabled']) {
-                    $validator->errors()->add('default_offer_tier', 'The private-offer tier must be enabled.');
-                }
+            if ($this->boolean('private_offers_enabled') && ! $enabledPrivateOffer) {
+                $validator->errors()->add('tiers', 'Mark at least one enabled price tier as a private offer.');
             }
         });
     }
@@ -138,7 +142,6 @@ class UpdatePerformanceTicketingRequest extends FormRequest
      *     abandoned_checkout_reminder_minutes: int,
      *     complimentary_allocation: int,
      *     promotional_allocation: int,
-     *     default_offer_tier: ?string,
      *     tiers: list<array{
      *         public_id: ?string,
      *         name: string,
@@ -148,6 +151,7 @@ class UpdatePerformanceTicketingRequest extends FormRequest
      *         starts_at: ?string,
      *         ends_at: ?string,
      *         enabled: bool,
+     *         private_offer: bool,
      *     }>,
      * }
      */
@@ -156,7 +160,6 @@ class UpdatePerformanceTicketingRequest extends FormRequest
         $capacity = $this->input('capacity');
         $currency = strtoupper(trim((string) $this->input('currency', '')));
         $tiers = $this->filledTiers();
-        $default = $this->input('default_offer_tier');
 
         return [
             'enabled' => $this->boolean('enabled'),
@@ -174,7 +177,6 @@ class UpdatePerformanceTicketingRequest extends FormRequest
             'abandoned_checkout_reminder_minutes' => (int) $this->input('abandoned_checkout_reminder_minutes'),
             'complimentary_allocation' => (int) $this->input('complimentary_allocation'),
             'promotional_allocation' => (int) $this->input('promotional_allocation'),
-            'default_offer_tier' => is_string($default) && ctype_digit($default) ? (string) ($this->filledTierIndexMap()[(int) $default] ?? '') : null,
             'tiers' => $tiers,
         ];
     }
@@ -189,6 +191,7 @@ class UpdatePerformanceTicketingRequest extends FormRequest
      *     starts_at: ?string,
      *     ends_at: ?string,
      *     enabled: bool,
+     *     private_offer: bool,
      * }>
      */
     private function filledTiers(?Validator $validator = null): array
@@ -235,48 +238,11 @@ class UpdatePerformanceTicketingRequest extends FormRequest
                 'starts_at' => $starts,
                 'ends_at' => $ends,
                 'enabled' => filter_var($tier['enabled'] ?? false, FILTER_VALIDATE_BOOL),
+                'private_offer' => filter_var($tier['private_offer'] ?? false, FILTER_VALIDATE_BOOL),
             ];
         }
 
         return $filled;
-    }
-
-    /**
-     * @return array<int, int>
-     */
-    private function filledTierIndexMap(): array
-    {
-        $rows = $this->input('tiers', []);
-        if (! is_array($rows)) {
-            return [];
-        }
-
-        $map = [];
-        $filledIndex = 0;
-
-        foreach (array_values($rows) as $index => $tier) {
-            if (! is_array($tier)) {
-                continue;
-            }
-
-            $publicId = $this->nullableValue($tier['public_id'] ?? null);
-            $name = trim((string) ($tier['name'] ?? ''));
-            $amount = trim((string) ($tier['amount'] ?? ''));
-            $currency = trim((string) ($tier['currency'] ?? ''));
-            $category = $this->nullableValue($tier['category'] ?? null);
-            $starts = $this->nullableValue($tier['starts_at'] ?? null);
-            $ends = $this->nullableValue($tier['ends_at'] ?? null);
-            $blank = $publicId === null && $name === '' && $amount === '' && $currency === '' && $category === null && $starts === null && $ends === null;
-
-            if ($blank) {
-                continue;
-            }
-
-            $map[$index] = $filledIndex;
-            $filledIndex++;
-        }
-
-        return $map;
     }
 
     private function nullableString(string $key): ?string

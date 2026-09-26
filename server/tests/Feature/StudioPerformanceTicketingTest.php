@@ -952,6 +952,239 @@ class StudioPerformanceTicketingTest extends TestCase
             ->snapshot($performance->fresh())['remaining'];
     }
 
+    public function test_each_price_tier_can_be_a_private_offer_independently(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'private_offers_enabled' => '1',
+                'tiers' => [
+                    [
+                        'name' => 'Early Bird',
+                        'amount' => '19.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-09-01T09:00',
+                        'ends_at' => '2026-09-30T23:59',
+                        'enabled' => '1',
+                        'private_offer' => '1',
+                    ],
+                    [
+                        'name' => 'General',
+                        'amount' => '35.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-10-01T00:00',
+                        'ends_at' => '2026-10-17T18:00',
+                        'enabled' => '1',
+                        'private_offer' => '1',
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $configuration = $performance->ticketingConfiguration()->firstOrFail();
+        $tiers = $configuration->priceTiers()->orderBy('sort_order')->orderBy('id')->get();
+        $this->assertCount(2, $tiers);
+        $this->assertTrue($tiers[0]->private_offer);
+        $this->assertTrue($tiers[1]->private_offer);
+        $this->assertNull($configuration->fresh()->default_offer_price_tier_id);
+
+        $page = $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertOk()
+            ->assertSee('Private offer', false)
+            ->assertDontSee('type="radio"', false)
+            ->assertDontSee('name="default_offer_tier"', false)
+            ->assertDontSee('Private offer tier', false);
+
+        $this->assertSame(2, substr_count($page->getContent(), '\u0022private_offer\u0022:true'));
+
+        $unchanged = $this->ticketingPayload([
+            'private_offers_enabled' => '1',
+            'tiers' => [
+                [
+                    'public_id' => $tiers[0]->public_id,
+                    'name' => 'Early Bird',
+                    'amount' => '19.00',
+                    'currency' => 'NZD',
+                    'starts_at' => '2026-09-01T09:00',
+                    'ends_at' => '2026-09-30T23:59',
+                    'enabled' => '1',
+                    'private_offer' => '1',
+                ],
+                [
+                    'public_id' => $tiers[1]->public_id,
+                    'name' => 'General',
+                    'amount' => '35.00',
+                    'currency' => 'NZD',
+                    'starts_at' => '2026-10-01T00:00',
+                    'ends_at' => '2026-10-17T18:00',
+                    'enabled' => '1',
+                    'private_offer' => '1',
+                ],
+            ],
+        ]);
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $unchanged)
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $tiers->each->refresh();
+        $this->assertTrue($tiers[0]->private_offer);
+        $this->assertTrue($tiers[1]->private_offer);
+        $this->assertSame(2, TicketPriceTier::query()->count());
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'private_offers_enabled' => '1',
+                'tiers' => [
+                    [
+                        'public_id' => $tiers[0]->public_id,
+                        'name' => 'Early Bird',
+                        'amount' => '19.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-09-01T09:00',
+                        'ends_at' => '2026-09-30T23:59',
+                        'enabled' => '1',
+                        'private_offer' => '0',
+                    ],
+                    [
+                        'public_id' => $tiers[1]->public_id,
+                        'name' => 'General',
+                        'amount' => '35.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-10-01T00:00',
+                        'ends_at' => '2026-10-17T18:00',
+                        'enabled' => '1',
+                        'private_offer' => '1',
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $tiers->each->refresh();
+        $this->assertFalse($tiers[0]->private_offer);
+        $this->assertTrue($tiers[1]->private_offer);
+        $this->assertSame($tiers[1]->id, $configuration->fresh()->default_offer_price_tier_id);
+
+        $reloaded = $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertOk();
+        $html = $reloaded->getContent();
+        $this->assertSame(1, substr_count($html, '\u0022private_offer\u0022:true'));
+        $this->assertSame(1, substr_count($html, '\u0022private_offer\u0022:false'));
+
+        $this->actingAs($director)
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'private_offers_enabled' => '1',
+                'tiers' => [
+                    [
+                        'public_id' => $tiers[0]->public_id,
+                        'name' => 'Early Bird',
+                        'amount' => '19.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-09-01T09:00',
+                        'ends_at' => '2026-09-30T23:59',
+                        'enabled' => '1',
+                        'private_offer' => '1',
+                    ],
+                    [
+                        'public_id' => $tiers[1]->public_id,
+                        'name' => 'General',
+                        'amount' => '35.00',
+                        'currency' => 'NZD',
+                        'starts_at' => '2026-10-01T00:00',
+                        'ends_at' => '2026-10-17T18:00',
+                        'enabled' => '1',
+                        'private_offer' => '0',
+                    ],
+                ],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance));
+
+        $tiers->each->refresh();
+        $this->assertTrue($tiers[0]->private_offer);
+        $this->assertFalse($tiers[1]->private_offer);
+    }
+
+    public function test_private_offer_choices_survive_a_validation_failure(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $this->actingAs($director)
+            ->from(route('studio.performances.ticketing.edit', $performance))
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'private_offers_enabled' => '1',
+                'tiers' => [[
+                    'name' => 'Early Bird',
+                    'amount' => '19.00',
+                    'currency' => 'NZD',
+                    'enabled' => '1',
+                    'private_offer' => '0',
+                ]],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance))
+            ->assertSessionHasErrors('tiers');
+
+        $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+
+        $this->actingAs($director)
+            ->from(route('studio.performances.ticketing.edit', $performance))
+            ->followingRedirects()
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'sales_open_at' => '2026-10-17T18:00',
+                'sales_close_at' => '2026-10-01T09:00',
+                'tiers' => [
+                    [
+                        'name' => 'Early Bird',
+                        'amount' => '19.00',
+                        'currency' => 'NZD',
+                        'enabled' => '1',
+                        'private_offer' => '1',
+                    ],
+                    [
+                        'name' => 'General',
+                        'amount' => '35.00',
+                        'currency' => 'NZD',
+                        'enabled' => '1',
+                        'private_offer' => '0',
+                    ],
+                ],
+            ]))
+            ->assertOk()
+            ->assertSee('Ticketing was not saved.', false)
+            ->assertSee('Sales must close after they open.', false)
+            ->assertSee('\u0022private_offer\u0022:\u00221\u0022', false)
+            ->assertSee('\u0022private_offer\u0022:\u00220\u0022', false);
+
+        $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+    }
+
+    public function test_a_disabled_tier_cannot_be_marked_as_a_private_offer(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+
+        $this->actingAs($director)
+            ->from(route('studio.performances.ticketing.edit', $performance))
+            ->put(route('studio.performances.ticketing.update', $performance), $this->ticketingPayload([
+                'private_offers_enabled' => '1',
+                'tiers' => [[
+                    'name' => 'Early Bird',
+                    'amount' => '19.00',
+                    'currency' => 'NZD',
+                    'enabled' => '0',
+                    'private_offer' => '1',
+                ]],
+            ]))
+            ->assertRedirect(route('studio.performances.ticketing.edit', $performance))
+            ->assertSessionHasErrors('tiers');
+
+        $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+    }
+
     private function saveTicketing(User $director, Performance $performance, array $overrides = []): void
     {
         $this->actingAs($director)

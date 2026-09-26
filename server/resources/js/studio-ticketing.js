@@ -1,7 +1,10 @@
-export function studioTicketing(tierRows = [], defaultOfferIndex = '') {
+export function studioTicketing(tierRows = []) {
+    const tiers = Array.isArray(tierRows) && tierRows.length > 0
+        ? tierRows.map((tier) => normalizeTier(tier))
+        : [blankTier()];
+
     return {
-        tiers: Array.isArray(tierRows) && tierRows.length > 0 ? tierRows : [blankTier()],
-        defaultOfferIndex: String(defaultOfferIndex ?? ''),
+        tiers,
         addTier() {
             const currency = document.getElementById('ticketing-currency')?.value || '';
             this.tiers.push(blankTier(currency));
@@ -11,10 +14,6 @@ export function studioTicketing(tierRows = [], defaultOfferIndex = '') {
 
             if (this.tiers.length === 0) {
                 this.tiers.push(blankTier());
-            }
-
-            if (String(this.defaultOfferIndex) === String(index)) {
-                this.defaultOfferIndex = '';
             }
         },
     };
@@ -30,5 +29,24 @@ function blankTier(currency = '') {
         starts_at: '',
         ends_at: '',
         enabled: '1',
+        private_offer: false,
+    };
+}
+
+function normalizeTier(tier) {
+    return {
+        public_id: tier?.public_id ?? '',
+        name: tier?.name ?? '',
+        amount: tier?.amount ?? '',
+        currency: tier?.currency ?? '',
+        category: tier?.category ?? '',
+        starts_at: tier?.starts_at ?? '',
+        ends_at: tier?.ends_at ?? '',
+        enabled: tier?.enabled === false || tier?.enabled === 0 || tier?.enabled === '0' ? '0' : '1',
+        private_offer: tier?.private_offer === true
+            || tier?.private_offer === 1
+            || tier?.private_offer === '1'
+            || tier?.private_offer === 'true'
+            || tier?.private_offer === 'on',
     };
 }

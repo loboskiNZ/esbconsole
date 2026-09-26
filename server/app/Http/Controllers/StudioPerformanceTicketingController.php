@@ -37,7 +37,6 @@ class StudioPerformanceTicketingController extends Controller
             'performance' => $portalPerformance,
             'configuration' => $configuration,
             'tierRows' => $this->tierRows($configuration),
-            'defaultOfferIndex' => (string) old('default_offer_tier', $this->defaultOfferIndex($configuration)),
             'capacity' => $capacity->snapshot($portalPerformance),
             'guests' => GuestListEntry::query()->where('performance_id', $portalPerformance->id)->with('checkIns')->orderBy('guest_name')->get(),
             'promos' => PromotionalAllocation::query()->where('performance_id', $portalPerformance->id)->with('checkIns')->orderBy('id')->get(),
@@ -276,6 +275,7 @@ class StudioPerformanceTicketingController extends Controller
                 'starts_at' => '',
                 'ends_at' => '',
                 'enabled' => '1',
+                'private_offer' => false,
             ]];
         }
 
@@ -289,20 +289,8 @@ class StudioPerformanceTicketingController extends Controller
                 'starts_at' => $configuration->localInput($tier->starts_at),
                 'ends_at' => $configuration->localInput($tier->ends_at),
                 'enabled' => $tier->enabled ? '1' : '0',
+                'private_offer' => (bool) $tier->private_offer,
             ];
         })->all();
-    }
-
-    private function defaultOfferIndex(?PerformanceTicketingConfiguration $configuration): string
-    {
-        if ($configuration?->default_offer_price_tier_id === null) {
-            return '';
-        }
-
-        $index = $configuration->priceTiers->search(
-            fn (TicketPriceTier $tier): bool => $tier->id === $configuration->default_offer_price_tier_id,
-        );
-
-        return $index === false ? '' : (string) $index;
     }
 }

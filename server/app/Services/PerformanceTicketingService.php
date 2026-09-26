@@ -41,7 +41,6 @@ class PerformanceTicketingService
      *     abandoned_checkout_reminder_minutes: int,
      *     complimentary_allocation: int,
      *     promotional_allocation: int,
-     *     default_offer_tier: ?string,
      *     tiers: list<array{
      *         public_id: ?string,
      *         name: string,
@@ -51,6 +50,7 @@ class PerformanceTicketingService
      *         starts_at: ?string,
      *         ends_at: ?string,
      *         enabled: bool,
+     *         private_offer: bool,
      *     }>,
      * }  $payload
      */
@@ -87,7 +87,6 @@ class PerformanceTicketingService
                 'abandoned_checkout_reminder_minutes' => $payload['abandoned_checkout_reminder_minutes'],
                 'complimentary_allocation' => $payload['complimentary_allocation'],
                 'promotional_allocation' => $payload['promotional_allocation'],
-                'default_offer_price_tier_id' => null,
             ]);
             $configuration->save();
 
@@ -98,9 +97,7 @@ class PerformanceTicketingService
             }
 
             $tiers = $this->syncTiers($configuration, $payload['tiers'], $payload['timezone']);
-            $defaultTier = $this->resolveDefaultTier($tiers, $payload['default_offer_tier']);
-            $configuration->default_offer_price_tier_id = $defaultTier?->id;
-            $configuration->save();
+            $this->syncDefaultOfferPointer($configuration, $tiers);
 
             $configuration->unsetRelation('priceTiers');
             TicketingAuditEntry::query()->create([
@@ -129,6 +126,7 @@ class PerformanceTicketingService
      *     starts_at: ?string,
      *     ends_at: ?string,
      *     enabled: bool,
+     *     private_offer: bool,
      * }>  $rows
      * @return list<TicketPriceTier>
      */
@@ -170,6 +168,7 @@ class PerformanceTicketingService
                 'starts_at' => $this->parseLocal($row['starts_at'], $timezone),
                 'ends_at' => $this->parseLocal($row['ends_at'], $timezone),
                 'enabled' => $row['enabled'],
+                'private_offer' => $row['private_offer'],
                 'sort_order' => $index,
             ]);
             $tier->save();
@@ -198,13 +197,15 @@ class PerformanceTicketingService
     /**
      * @param  list<TicketPriceTier>  $tiers
      */
-    private function resolveDefaultTier(array $tiers, ?string $index): ?TicketPriceTier
+    private function syncDefaultOfferPointer(PerformanceTicketingConfiguration $configuration, array $tiers): void
     {
-        if ($index === null || $index === '' || ! ctype_digit($index)) {
-            return null;
-        }
+        $marked = array_values(array_filter(
+            $tiers,
+            fn (TicketPriceTier $tier): bool => $tier->private_offer,
+        ));
 
-        return $tiers[(int) $index] ?? null;
+        $configuration->default_offer_price_tier_id = count($marked) === 1 ? $marked[0]->id : null;
+        $configuration->save();
     }
 
     /**
@@ -237,6 +238,7 @@ class PerformanceTicketingService
                 'amount_minor' => $tier->amount_minor,
                 'currency' => $tier->currency,
                 'enabled' => $tier->enabled,
+                'private_offer' => $tier->private_offer,
                 'sort_order' => $tier->sort_order,
             ])->all(),
         ];

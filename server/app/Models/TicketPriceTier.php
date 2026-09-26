@@ -21,6 +21,7 @@ class TicketPriceTier extends Model
         'starts_at',
         'ends_at',
         'enabled',
+        'private_offer',
         'sort_order',
     ];
 
@@ -31,6 +32,7 @@ class TicketPriceTier extends Model
     {
         return [
             'enabled' => 'boolean',
+            'private_offer' => 'boolean',
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
