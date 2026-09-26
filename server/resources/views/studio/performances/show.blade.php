@@ -130,12 +130,16 @@
                         @include('studio.performances.partials._ticketing-capacity', ['capacity' => $ticketingCapacity])
                     @endif
                     <div class="esb-studio__schedule-item-actions mt-4">
-                        <a href="{{ route('studio.performances.ticketing.edit', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
-                            Configure ticketing
-                        </a>
                         @if ($ticketingCapacity['enabled'])
+                            <a href="{{ route('studio.performances.ticketing.edit', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
+                                Ticketing
+                            </a>
                             <a href="{{ route('studio.performances.door', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
-                                Door
+                                Door / Check-in
+                            </a>
+                        @else
+                            <a href="{{ route('studio.performances.ticketing.edit', $performance) }}" class="esb-studio__show-pill esb-studio__show-pill--action">
+                                Set up ticketing
                             </a>
                         @endif
                     </div>

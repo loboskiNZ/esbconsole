@@ -44,6 +44,8 @@ class StudioPerformanceTicketingTest extends TestCase
             ->get(route('studio.performances.show', $performance))
             ->assertOk()
             ->assertSee('Ticketing is off for this performance', false)
+            ->assertSee('Set up ticketing', false)
+            ->assertDontSee('Door / Check-in', false)
             ->assertSee('No availability records yet.', false);
 
         $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
@@ -59,6 +61,10 @@ class StudioPerformanceTicketingTest extends TestCase
 
         $this->actingAs($musician)
             ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertForbidden();
+
+        $this->actingAs($musician)
+            ->get(route('studio.performances.door', $performance))
             ->assertForbidden();
     }
 
@@ -594,6 +600,137 @@ class StudioPerformanceTicketingTest extends TestCase
         $configuration->refresh();
         $this->assertSame('Europe/Madrid', $configuration->timezone);
         $this->assertSame('2026-07-15 17:17:00', $configuration->sales_open_at->copy()->utc()->format('Y-m-d H:i:s'));
+    }
+
+    public function test_director_home_links_to_ticketing_and_reuses_capacity_counts(): void
+    {
+        $director = $this->createDirectorUser();
+        $soon = $this->seedPerformance();
+        $later = $this->seedPerformance();
+        $soon->update([
+            'performance_date' => now()->toDateString(),
+            'location_name' => 'Grainstore',
+        ]);
+        $later->update([
+            'performance_date' => now()->addDays(21)->toDateString(),
+            'location_name' => 'Wellington',
+        ]);
+
+        $this->saveTicketing($director, $soon, [
+            'capacity' => 10,
+            'complimentary_allocation' => 4,
+            'promotional_allocation' => 0,
+        ]);
+        $this->saveTicketing($director, $later, [
+            'capacity' => 10,
+            'complimentary_allocation' => 4,
+            'promotional_allocation' => 0,
+        ]);
+        $this->actingAs($director)->post(route('studio.performances.guests.store', $soon), [
+            'guest_name' => 'Jordan',
+            'quantity' => 2,
+        ])->assertRedirect();
+
+        $snapshot = app(PerformanceCapacityService::class)->snapshot($soon->fresh());
+
+        $home = $this->actingAs($director)->get(route('studio'));
+        $home->assertOk()
+            ->assertSee($soon->show->name, false)
+            ->assertSee('Ticketing on · Allocated '.$snapshot['seats_held'].' · Remaining '.$snapshot['remaining'].' · Checked in '.$snapshot['checked_in'], false)
+            ->assertSee('href="'.route('studio.performances.ticketing.edit', $soon).'"', false)
+            ->assertSee('Door / Check-in', false)
+            ->assertSee('href="'.route('studio.performances.door', $soon).'"', false)
+            ->assertSee('href="'.route('studio.performances.ticketing.edit', $later).'"', false)
+            ->assertDontSee('href="'.route('studio.performances.door', $later).'"', false);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $soon))
+            ->assertOk()
+            ->assertSee($soon->eventContextLabel(), false)
+            ->assertSee('Studio Home', false)
+            ->assertSee('href="'.route('studio.performances.show', $soon).'"', false)
+            ->assertSee('Door / Check-in', false);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.show', $soon))
+            ->assertOk()
+            ->assertSee('Ticketing', false)
+            ->assertSee('Door / Check-in', false)
+            ->assertSee('href="'.route('studio.performances.door', $soon).'"', false);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.door', $soon))
+            ->assertOk()
+            ->assertSee($soon->show->name, false)
+            ->assertSee($soon->formattedPerformanceDate(), false)
+            ->assertSee('Grainstore', false)
+            ->assertSee('Studio Home', false)
+            ->assertSee('href="'.route('studio.performances.ticketing.edit', $soon).'"', false)
+            ->assertSee('href="'.route('studio.performances.show', $soon).'"', false);
+    }
+
+    public function test_live_performance_without_ticketing_offers_setup_and_rehearsals_stay_plain(): void
+    {
+        $director = $this->createDirectorUser();
+        $live = $this->seedPerformance();
+        $rehearsal = $this->seedPerformance();
+        $live->update(['performance_date' => now()->addDays(3)->toDateString()]);
+        $rehearsal->update([
+            'performance_type' => Performance::TYPE_REHEARSAL,
+            'performance_date' => now()->addDays(4)->toDateString(),
+        ]);
+
+        $home = $this->actingAs($director)->get(route('studio'));
+        $home->assertOk()
+            ->assertSee($live->show->name, false)
+            ->assertSee($rehearsal->show->name, false)
+            ->assertSee('Set up ticketing', false)
+            ->assertSee('href="'.route('studio.performances.ticketing.edit', $live).'"', false)
+            ->assertDontSee('href="'.route('studio.performances.ticketing.edit', $rehearsal).'"', false)
+            ->assertDontSee('Door / Check-in', false)
+            ->assertDontSee('Ticketing on', false);
+    }
+
+    public function test_musician_does_not_see_ticketing_actions_on_home_or_the_performance(): void
+    {
+        $director = $this->createDirectorUser();
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+        $performance = $this->seedPerformance();
+        $performance->update([
+            'performance_date' => now()->toDateString(),
+            'location_name' => 'Grainstore',
+        ]);
+        $this->saveTicketing($director, $performance, [
+            'capacity' => 10,
+            'complimentary_allocation' => 0,
+            'promotional_allocation' => 0,
+        ]);
+
+        $this->actingAs($musician)
+            ->get(route('studio'))
+            ->assertOk()
+            ->assertSee($performance->show->name, false)
+            ->assertDontSee('Ticketing on', false)
+            ->assertDontSee('Set up ticketing', false)
+            ->assertDontSee('Door / Check-in', false)
+            ->assertDontSee(route('studio.performances.ticketing.edit', $performance), false)
+            ->assertDontSee(route('studio.performances.door', $performance), false);
+
+        $this->actingAs($musician)
+            ->get(route('studio.performances.show', $performance))
+            ->assertOk()
+            ->assertDontSee('Set up ticketing', false)
+            ->assertDontSee('Door / Check-in', false)
+            ->assertDontSee(route('studio.performances.ticketing.edit', $performance), false)
+            ->assertDontSee(route('studio.performances.door', $performance), false);
+
+        $this->actingAs($musician)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertForbidden();
+        $this->actingAs($musician)
+            ->get(route('studio.performances.door', $performance))
+            ->assertForbidden();
     }
 
     /**

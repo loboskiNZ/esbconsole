@@ -154,6 +154,17 @@ class Performance extends Model
         return $this->performance_date?->format('D j M Y') ?? '—';
     }
 
+    public function eventContextLabel(): string
+    {
+        $parts = array_filter([
+            $this->show?->name,
+            $this->formattedPerformanceDate() !== '—' ? $this->formattedPerformanceDate() : null,
+            $this->locationNameLabel() !== '—' ? $this->locationNameLabel() : null,
+        ], fn (mixed $part): bool => is_string($part) && $part !== '');
+
+        return implode(' · ', $parts);
+    }
+
     public function formattedTime(?string $value): string
     {
         if (! is_string($value) || trim($value) === '') {

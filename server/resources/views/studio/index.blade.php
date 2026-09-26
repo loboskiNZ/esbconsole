@@ -210,7 +210,11 @@
                                 @else
                                     <ul class="esb-studio__schedule-list mt-3">
                                         @foreach ($scheduleItems as $item)
-                                            @include('studio.partials._schedule-item', ['item' => $item])
+                                            @include('studio.partials._schedule-item', [
+                                                'item' => $item,
+                                                'isDirector' => $isDirector,
+                                                'ticketingHome' => $ticketingHome[$item['card']['id']] ?? null,
+                                            ])
                                         @endforeach
                                     </ul>
                                 @endif

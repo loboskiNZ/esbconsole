@@ -1,6 +1,6 @@
 @extends('layouts.portal')
 
-@section('title', 'Door — The Studio')
+@section('title', ($performance->eventContextLabel() ?: 'Door').' — Door — The Studio')
 
 @section('body-attributes')
     class="esb-portal esb-portal--studio antialiased"
@@ -9,8 +9,8 @@
 @section('content')
     <main class="esb-studio__shell relative z-10 flex min-h-dvh w-full flex-col">
         @include('studio.partials._chrome-header', [
-            'pageTitle' => 'Door',
-            'pageLead' => $performance->show?->name,
+            'pageTitle' => $performance->eventContextLabel() ?: 'Door',
+            'pageLead' => 'Door / Check-in',
             'breadcrumbs' => [
                 ['label' => 'Studio', 'url' => route('studio')],
                 ['label' => 'Schedule', 'url' => route('studio.calendar.index')],
@@ -20,6 +20,11 @@
         ])
 
         <div class="esb-studio__shell-body">
+            @include('studio.performances.partials._ticketing-nav', [
+                'performance' => $performance,
+                'showTicketing' => true,
+            ])
+
             @if (session('door_success'))
                 <p class="esb-portal__success mb-4" role="status">{{ session('door_success') }}</p>
             @endif
