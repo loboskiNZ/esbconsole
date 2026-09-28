@@ -11,6 +11,7 @@ use App\Models\GuestListEntry;
 use App\Models\Performance;
 use App\Models\PerformanceTicketingConfiguration;
 use App\Models\PromotionalAllocation;
+use App\Models\PurchaseOffer;
 use App\Models\Ticket;
 use App\Models\TicketOrder;
 use App\Models\TicketPriceTier;
@@ -44,6 +45,10 @@ class StudioPerformanceTicketingController extends Controller
             'currencies' => Iso4217::codes(),
             'timezones' => timezone_identifiers_list(),
             'promoStatuses' => PromotionalAllocation::statuses(),
+            'purchaseOffers' => PurchaseOffer::query()
+                ->where('performance_id', $portalPerformance->id)
+                ->orderByDesc('id')
+                ->get(['slug']),
         ]);
     }
 

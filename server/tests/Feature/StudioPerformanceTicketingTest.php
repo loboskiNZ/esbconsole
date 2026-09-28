@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AudienceRegistration;
 use App\Models\CheckIn;
 use App\Models\Performance;
 use App\Models\PerformanceTicketingConfiguration;
+use App\Models\PurchaseOffer;
 use App\Models\Show;
 use App\Models\Ticket;
 use App\Models\TicketingAuditEntry;
@@ -17,6 +19,7 @@ use App\Services\StudioShowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\Concerns\AssignsStudioRoles;
 use Tests\Concerns\EnsuresPortalBand;
 use Tests\TestCase;
@@ -1183,6 +1186,43 @@ class StudioPerformanceTicketingTest extends TestCase
             ->assertSessionHasErrors('tiers');
 
         $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
+    }
+
+    public function test_ticketing_page_shows_the_private_offer_slug(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+        $registration = AudienceRegistration::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'performance_id' => $performance->id,
+            'first_name' => 'Ada',
+            'email' => 'ada.private-offer@example.com',
+            'registered_at' => now(),
+        ]);
+        PurchaseOffer::query()->create([
+            'public_id' => (string) Str::uuid(),
+            'performance_id' => $performance->id,
+            'audience_registration_id' => $registration->id,
+            'slug' => 'early-bird-slug',
+            'amount_minor' => 1900,
+            'currency' => 'NZD',
+            'status' => PurchaseOffer::STATUS_OPEN,
+            'expires_at' => now()->addDay(),
+        ]);
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertOk()
+            ->assertSee('early-bird-slug', false)
+            ->assertDontSee('ada.private-offer@example.com', false)
+            ->assertDontSee('Generate campaign link', false);
+
+        $musician = User::factory()->create();
+        $this->assignMusicianRole($musician);
+
+        $this->actingAs($musician)
+            ->get(route('studio.performances.ticketing.edit', $performance))
+            ->assertForbidden();
     }
 
     private function saveTicketing(User $director, Performance $performance, array $overrides = []): void

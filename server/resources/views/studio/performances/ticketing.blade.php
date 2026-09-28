@@ -241,6 +241,15 @@
                 </div>
             </form>
 
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
+                <h2 class="esb-studio__card-title">Private offers</h2>
+                @forelse ($purchaseOffers as $offer)
+                    <p class="esb-studio__field-hint mt-2">{{ $offer->slug }}</p>
+                @empty
+                    <p class="esb-studio__field-hint mt-2">No private offers yet.</p>
+                @endforelse
+            </section>
+
             @if ($configuration?->enabled)
                 <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                     <h2 class="esb-studio__card-title">Guest list</h2>
