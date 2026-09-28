@@ -25,6 +25,21 @@
                 'showDoor' => (bool) $configuration?->enabled,
             ])
 
+            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mb-4">
+                <h2 class="esb-studio__card-title">Private offer link</h2>
+                @if ($offerLink)
+                    <label class="sr-only" for="offer-link">Offer link</label>
+                    <input id="offer-link" class="esb-portal__input mt-3" type="text" readonly value="{{ $offerLink }}">
+                    <button
+                        type="button"
+                        class="esb-portal__button esb-portal__button--secondary mt-3"
+                        @click="navigator.clipboard.writeText(document.getElementById('offer-link').value).then(() => { $el.textContent = 'Copied' })"
+                    >Copy link</button>
+                @else
+                    <p class="esb-portal__error mt-2">The offer link is not available until the public site signing key is configured.</p>
+                @endif
+            </section>
+
             @if (session('ticketing_saved'))
                 <p class="esb-portal__success mb-4" role="status">Ticketing settings saved.</p>
             @endif
@@ -240,15 +255,6 @@
                     <button type="submit" class="esb-portal__button esb-portal__button--primary">Save ticketing</button>
                 </div>
             </form>
-
-            <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
-                <h2 class="esb-studio__card-title">Private offers</h2>
-                @forelse ($purchaseOffers as $offer)
-                    <p class="esb-studio__field-hint mt-2">{{ $offer->slug }}</p>
-                @empty
-                    <p class="esb-studio__field-hint mt-2">No private offers yet.</p>
-                @endforelse
-            </section>
 
             @if ($configuration?->enabled)
                 <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">

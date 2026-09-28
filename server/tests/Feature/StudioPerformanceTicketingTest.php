@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\AudienceRegistration;
 use App\Models\CheckIn;
 use App\Models\Performance;
 use App\Models\PerformanceTicketingConfiguration;
-use App\Models\PurchaseOffer;
 use App\Models\Show;
 use App\Models\Ticket;
 use App\Models\TicketingAuditEntry;
@@ -16,10 +14,11 @@ use App\Models\User;
 use App\Services\PerformanceCapacityService;
 use App\Services\StudioPerformanceService;
 use App\Services\StudioShowService;
+use App\Services\Ticketing\PrivateOfferCampaign;
+use App\Services\Ticketing\PrivateOfferLink;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Str;
 use Tests\Concerns\AssignsStudioRoles;
 use Tests\Concerns\EnsuresPortalBand;
 use Tests\TestCase;
@@ -1188,34 +1187,49 @@ class StudioPerformanceTicketingTest extends TestCase
         $this->assertSame(0, PerformanceTicketingConfiguration::query()->count());
     }
 
-    public function test_ticketing_page_shows_the_private_offer_slug(): void
+    public function test_ticketing_page_shows_the_meta_offer_link_for_this_gig(): void
     {
+        config([
+            'ticketing.public_base_url' => 'https://edandtheshadowboys.com',
+            'ticketing.campaign_key' => config('app.key'),
+        ]);
+        require_once dirname(base_path(), 2).'/edandtheshadows/app/Services/Ticketing/PrivateOfferCampaign.php';
+
         $director = $this->createDirectorUser();
         $performance = $this->seedPerformance();
-        $registration = AudienceRegistration::query()->create([
-            'public_id' => (string) Str::uuid(),
-            'performance_id' => $performance->id,
-            'first_name' => 'Ada',
-            'email' => 'ada.private-offer@example.com',
-            'registered_at' => now(),
-        ]);
-        PurchaseOffer::query()->create([
-            'public_id' => (string) Str::uuid(),
-            'performance_id' => $performance->id,
-            'audience_registration_id' => $registration->id,
-            'slug' => 'early-bird-slug',
-            'amount_minor' => 1900,
-            'currency' => 'NZD',
-            'status' => PurchaseOffer::STATUS_OPEN,
-            'expires_at' => now()->addDay(),
-        ]);
+        $other = $this->seedPerformance();
+        $url = app(PrivateOfferLink::class)->url($performance);
+
+        $this->assertSame(
+            '/performances/'.$performance->public_id,
+            parse_url($url, PHP_URL_PATH),
+        );
+        $this->assertNotSame((string) $performance->id, $performance->public_id);
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        $this->assertSame('meta', $query['campaign']);
+        $this->assertSame('meta', $query['source']);
+        $this->assertTrue(app(PrivateOfferCampaign::class)->isValid(
+            $performance,
+            'meta',
+            'meta',
+            $query['entry'],
+        ));
+        $this->assertFalse(app(PrivateOfferCampaign::class)->isValid(
+            $other,
+            'meta',
+            'meta',
+            $query['entry'],
+        ));
+        $this->assertStringNotContainsString('/t/', $url);
 
         $this->actingAs($director)
             ->get(route('studio.performances.ticketing.edit', $performance))
             ->assertOk()
-            ->assertSee('early-bird-slug', false)
-            ->assertDontSee('ada.private-offer@example.com', false)
-            ->assertDontSee('Generate campaign link', false);
+            ->assertSee('Private offer link', false)
+            ->assertSee('Copy link', false)
+            ->assertSee($performance->public_id, false)
+            ->assertSee('campaign=meta', false)
+            ->assertDontSee('/t/', false);
 
         $musician = User::factory()->create();
         $this->assignMusicianRole($musician);

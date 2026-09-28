@@ -11,7 +11,6 @@ use App\Models\GuestListEntry;
 use App\Models\Performance;
 use App\Models\PerformanceTicketingConfiguration;
 use App\Models\PromotionalAllocation;
-use App\Models\PurchaseOffer;
 use App\Models\Ticket;
 use App\Models\TicketOrder;
 use App\Models\TicketPriceTier;
@@ -19,6 +18,7 @@ use App\Services\PerformanceAttendanceService;
 use App\Services\PerformanceCapacityService;
 use App\Services\PerformanceTicketingService;
 use App\Services\StudioPerformanceService;
+use App\Services\Ticketing\PrivateOfferLink;
 use App\Support\Iso4217;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +30,7 @@ class StudioPerformanceTicketingController extends Controller
         Performance $performance,
         StudioPerformanceService $performances,
         PerformanceCapacityService $capacity,
+        PrivateOfferLink $offerLink,
     ): View {
         $portalPerformance = $performances->performanceForPortal($performance->id);
         $configuration = $portalPerformance->ticketingConfiguration()->with('priceTiers')->first();
@@ -45,10 +46,7 @@ class StudioPerformanceTicketingController extends Controller
             'currencies' => Iso4217::codes(),
             'timezones' => timezone_identifiers_list(),
             'promoStatuses' => PromotionalAllocation::statuses(),
-            'purchaseOffers' => PurchaseOffer::query()
-                ->where('performance_id', $portalPerformance->id)
-                ->orderByDesc('id')
-                ->get(['slug']),
+            'offerLink' => $offerLink->url($portalPerformance),
         ]);
     }
 
