@@ -41,11 +41,19 @@
                 <p class="esb-studio__field-hint mt-4">Arrival times are shown in {{ $performance->ticketingConfiguration->timezone }}.</p>
             @endif
 
-            <form class="esb-portal__panel esb-studio__card mt-4" method="POST" action="{{ route('studio.performances.door.check-in', $performance) }}">
+            <form id="door-check-in" class="esb-portal__panel esb-studio__card mt-4" method="POST" action="{{ route('studio.performances.door.check-in', $performance) }}">
                 @csrf
                 <label class="esb-portal__label mb-2 block" for="door-token">Ticket code</label>
-                <input id="door-token" name="token" type="text" class="esb-portal__input" autofocus autocomplete="off" placeholder="Scan or paste the ticket code">
-                <button type="submit" class="esb-portal__button esb-portal__button--primary mt-4">Check in</button>
+                <div class="esb-studio__door-entry">
+                    <button type="button" id="door-scan-start" class="esb-portal__button esb-portal__button--secondary" aria-controls="door-scan-panel" aria-expanded="false">Scan QR</button>
+                    <input id="door-token" name="token" type="text" class="esb-portal__input" autofocus autocomplete="off" placeholder="Scan or paste the ticket code">
+                    <button type="submit" class="esb-portal__button esb-portal__button--primary">Check in</button>
+                </div>
+                <p id="door-scan-status" class="esb-portal__error mt-3" role="status" hidden></p>
+                <div id="door-scan-panel" class="esb-studio__door-preview" hidden>
+                    <video id="door-scan-video" class="esb-studio__door-video" playsinline muted autoplay aria-label="Ticket QR camera preview"></video>
+                    <button type="button" id="door-scan-cancel" class="esb-portal__button esb-portal__button--secondary mt-3">Cancel scan</button>
+                </div>
             </form>
 
             <form class="mt-4" method="GET" action="{{ route('studio.performances.door', $performance) }}">
@@ -141,3 +149,17 @@
         </footer>
     </main>
 @endsection
+
+@push('scripts')
+    @php
+        $doorScannerReady = file_exists(public_path('hot'));
+
+        if (! $doorScannerReady && file_exists(public_path('build/manifest.json'))) {
+            $doorScannerManifest = json_decode((string) file_get_contents(public_path('build/manifest.json')), true);
+            $doorScannerReady = is_array($doorScannerManifest) && isset($doorScannerManifest['resources/js/studio-door-scan.js']);
+        }
+    @endphp
+    @if ($doorScannerReady)
+        @vite(['resources/js/studio-door-scan.js'])
+    @endif
+@endpush

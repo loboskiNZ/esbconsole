@@ -382,6 +382,48 @@ class StudioPerformanceTicketingTest extends TestCase
             ->assertDontSee('Riley');
     }
 
+    public function test_door_page_offers_qr_scanning_as_an_input_for_the_existing_check_in(): void
+    {
+        $director = $this->createDirectorUser();
+        $performance = $this->seedPerformance();
+        $this->saveTicketing($director, $performance, [
+            'capacity' => 10,
+            'complimentary_allocation' => 0,
+            'promotional_allocation' => 0,
+        ]);
+        $this->actingAs($director)->post(route('studio.performances.manual-admissions.store', $performance), [
+            'attendee_name' => 'Ada',
+            'quantity' => 1,
+        ])->assertRedirect();
+
+        $ticket = Ticket::query()->firstOrFail();
+
+        $this->actingAs($director)
+            ->get(route('studio.performances.door', $performance))
+            ->assertOk()
+            ->assertSee('id="door-check-in"', false)
+            ->assertSee('id="door-scan-start"', false)
+            ->assertSee('Scan QR', false)
+            ->assertSee('id="door-scan-cancel"', false)
+            ->assertSee('Cancel scan', false)
+            ->assertSee('id="door-scan-video"', false)
+            ->assertSee('playsinline', false)
+            ->assertSee('id="door-token"', false)
+            ->assertSee('name="token"', false)
+            ->assertSee('Scan or paste the ticket code', false)
+            ->assertSee('Check in', false)
+            ->assertSee(route('studio.performances.door.check-in', $performance), false)
+            ->assertDontSee('door/scan', false);
+
+        $this->actingAs($director)->post(route('studio.performances.door.check-in', $performance), [
+            'token' => $ticket->public_id,
+        ])->assertRedirect()->assertSessionHas('door_success');
+
+        $this->actingAs($director)->post(route('studio.performances.door.check-in', $performance), [
+            'token' => 'not-a-ticket',
+        ])->assertRedirect()->assertSessionHas('door_error', 'That ticket was not found for this performance.');
+    }
+
     public function test_ticket_cannot_be_checked_in_twice_or_when_cancelled(): void
     {
         $director = $this->createDirectorUser();
