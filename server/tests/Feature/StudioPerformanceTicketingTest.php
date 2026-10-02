@@ -413,7 +413,14 @@ class StudioPerformanceTicketingTest extends TestCase
             ->assertSee('Scan or paste the ticket code', false)
             ->assertSee('Check in', false)
             ->assertSee(route('studio.performances.door.check-in', $performance), false)
-            ->assertDontSee('door/scan', false);
+            ->assertDontSee('door/scan', false)
+            ->assertSeeInOrder([
+                'id="door-check-in"',
+                'Scan QR',
+                'id="door-search"',
+                $ticket->public_id,
+                'Venue capacity',
+            ], false);
 
         $this->actingAs($director)->post(route('studio.performances.door.check-in', $performance), [
             'token' => $ticket->public_id,

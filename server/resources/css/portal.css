@@ -1817,6 +1817,15 @@
     font-weight: 700;
 }
 
+.esb-studio__door-ticket-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--esb-ink);
+    user-select: all;
+    word-break: break-all;
+}
+
 .esb-studio__availability-notes {
     font-size: 0.78rem;
     color: var(--esb-muted);

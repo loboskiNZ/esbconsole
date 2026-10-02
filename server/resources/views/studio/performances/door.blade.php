@@ -35,12 +35,6 @@
                 <p class="esb-portal__error mb-4" role="alert">{{ session('door_error') }}</p>
             @endif
 
-            @include('studio.performances.partials._ticketing-capacity', ['capacity' => $capacity])
-
-            @if ($performance->ticketingConfiguration?->timezone)
-                <p class="esb-studio__field-hint mt-4">Arrival times are shown in {{ $performance->ticketingConfiguration->timezone }}.</p>
-            @endif
-
             <form id="door-check-in" class="esb-portal__panel esb-studio__card mt-4" method="POST" action="{{ route('studio.performances.door.check-in', $performance) }}">
                 @csrf
                 <label class="esb-portal__label mb-2 block" for="door-token">Ticket code</label>
@@ -62,6 +56,10 @@
                 <button type="submit" class="esb-portal__button esb-portal__button--secondary mt-3">Search</button>
             </form>
 
+            @if ($performance->ticketingConfiguration?->timezone)
+                <p class="esb-studio__field-hint mt-4">Arrival times are shown in {{ $performance->ticketingConfiguration->timezone }}.</p>
+            @endif
+
             <section class="esb-portal__panel esb-studio__card esb-studio__show-section mt-4">
                 <h2 class="esb-studio__card-title">Tickets</h2>
                 <ul class="esb-studio__availability-list mt-4">
@@ -75,6 +73,8 @@
                                     Not arrived
                                 @endif
                             </span>
+                            <span class="esb-studio__availability-notes">Ticket code</span>
+                            <span class="esb-studio__door-ticket-code">{{ $ticket->public_id }}</span>
                             @unless ($ticket->checkIn)
                                 <form method="POST" action="{{ route('studio.performances.door.check-in', $performance) }}">
                                     @csrf
@@ -139,6 +139,8 @@
                     @endforelse
                 </ul>
             </section>
+
+            @include('studio.performances.partials._ticketing-capacity', ['capacity' => $capacity])
         </div>
 
         <footer class="esb-studio__chrome-footer">
